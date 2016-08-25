@@ -1,0 +1,8 @@
+.spinner {
+	display: flex;
+	width: 20px;height: 20px;
+	-webkit-animation: sweep 1s infinite linear;
+	border-radius:10px;
+	border-bottom:1px solid gray;
+}
+@-webkit-keyframes sweep { to { -webkit-transform: rotate(360deg); } }

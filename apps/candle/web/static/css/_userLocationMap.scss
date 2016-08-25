@@ -1,0 +1,21 @@
+.user-location-map-component {
+  position: relative;
+  display: flex;
+  height: calc(100% - 60px);
+
+  #user-location-map {
+    height: 100%;
+    width: 100%;
+  }
+
+  .region-display {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    height: 2rem;
+    background-color: white;
+    padding: 5px;
+    border: 1px solid black;
+    z-index: 1;
+  }
+}

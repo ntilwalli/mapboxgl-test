@@ -1,0 +1,11 @@
+/ - homepage
+
+/login - log-in
+/signup - sign-up
+/presignup - pre-signup
+
+/create/listing - Create listing
+/create/listing/location - Set listing location (not saved)
+/create/listing/[0-9]*/location - Set listing location (saved)
+/create/listing/[0-9]*/.* - Set listing * (saved)
+
