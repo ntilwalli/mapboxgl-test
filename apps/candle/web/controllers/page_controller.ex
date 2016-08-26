@@ -2,9 +2,13 @@ defmodule Candle.PageController do
   use Candle.Web, :controller
   plug :put_layout, false
 
-  def index(conn, _params, _current_user, _claims) do
+  def index(conn, _params, current_user, _claims) do
     authorization = Plug.Conn.get_session(conn, "authorization")
     expires = Plug.Conn.get_session(conn, "x-expires")
+
+    IO.puts("Current user...")
+    IO.inspect(current_user)
+    IO.inspect(authorization)
 
     case authorization do
       nil ->

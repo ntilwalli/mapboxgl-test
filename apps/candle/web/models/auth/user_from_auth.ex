@@ -15,7 +15,7 @@ defmodule Candle.UserFromAuth do
 
 
   def get_or_insert(auth, nil, current_user, repo) do
-    IO.puts "Attempting oauth signuplogin"
+    IO.puts "Attempting oauth signup/login"
     case auth_and_validate(auth, repo) do
       {:error, :not_found} ->
         IO.puts "Returning partial"

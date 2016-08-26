@@ -31,7 +31,7 @@ defmodule Candle.PresignupController do
               data: Map.put(params, "errors", [Helpers.convert_error(error)])
             })
           {:ok, user} ->
-            new_conn = Guardian.Plug.api_sign_in(conn, user)
+            new_conn = Guardian.Plug.sign_in(conn, user)
             jwt = Guardian.Plug.current_token(new_conn)
             {:ok, claims} = Guardian.Plug.claims(new_conn)
             exp = Map.get(claims, "exp")

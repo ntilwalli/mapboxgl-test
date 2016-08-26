@@ -23,17 +23,23 @@ defmodule Candle.AuthController do
   end
 
   def callback(%{assigns: %{ueberauth_auth: auth}} = conn, _params, current_user, _claims) do
-    #IO.puts "Attempting oauth signup/login"
+    IO.puts "Callback: attempting oauth signup/login"
     partial = UserFromAuth.partial_authorization_from_auth(auth)
 
     case UserFromAuth.get_or_insert(partial, nil, current_user, Repo) do
       {:ok, user} ->
-        new_conn = Guardian.Plug.api_sign_in(conn, user)
+        IO.puts("get_or_insert ok, printing user...")
+        IO.inspect(user)
+        new_conn = Guardian.Plug.sign_in(conn, user)
         jwt = Guardian.Plug.current_token(new_conn)
+        IO.puts("JWT...")
+        IO.inspect(jwt)
         {:ok, claims} = Guardian.Plug.claims(new_conn)
+        IO.puts("Claims...")
+        IO.inspect(claims)
         exp = Map.get(claims, "exp")
 
-        conn
+        new_conn
         |> Plug.Conn.put_session("authorization", "Bearer #{jwt}")
         |> Plug.Conn.put_session("x-expires", Integer.to_string(exp))
         |> redirect(to: "/")

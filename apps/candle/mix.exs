@@ -38,7 +38,8 @@ defmodule Candle.Mixfile do
        :ueberauth_github,
        :ueberauth_identity,
        :ueberauth_twitter,
-       :gettext
+       :gettext,
+       :user
     ]]
   end
 
@@ -67,7 +68,8 @@ defmodule Candle.Mixfile do
      {:ueberauth_identity, "~> 0.2.3"},
      {:guardian, "~> 0.12.0"},
      {:guardian_db, "~> 0.7.0"},
-     {:oauth2, "== 0.6.0", override: true}
+     {:oauth2, "== 0.6.0", override: true},
+     {:user, in_umbrella: true}
    ]
   end
 
