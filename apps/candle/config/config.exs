@@ -21,10 +21,10 @@ config :logger, :console,
 
 
 config :guardian, Guardian,
-  issuer: "Candle.#{Mix.env}",
+  issuer: "Auth.#{Mix.env}",
   ttl: {30, :days},
   verify_issuer: true,
-  serializer: Candle.GuardianSerializer,
+  serializer: Auth.GuardianSerializer,
   secret_key: to_string(Mix.env),
   hooks: GuardianDb,
   permissions: %{

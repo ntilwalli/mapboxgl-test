@@ -4,12 +4,12 @@ defmodule Candle.AuthController do
   plug :put_layout, false
   plug :fetch_session
 
-  alias Candle.UserFromAuth
-  alias Candle.User
+  #alias Candle.UserFromAuth
+  #alias Candle.User
   #alias Candle.Authorization
 
-  alias Ueberauth.Auth
-  alias Ueberauth.Auth.Extra
+  #alias Ueberauth.Auth, as: UeberauthAuth
+  #alias Ueberauth.Auth.Extra
 
 
   def request(_conn, _params, _current_user, _claims) do
@@ -22,11 +22,11 @@ defmodule Candle.AuthController do
     |> redirect(to: "/")
   end
 
-  def callback(%{assigns: %{ueberauth_auth: auth}} = conn, _params, current_user, _claims) do
+  def callback(%{assigns: %{ueberauth_auth: auth}} = conn, _params, _current_user, _claims) do
     IO.puts "Callback: attempting oauth signup/login"
-    partial = UserFromAuth.partial_authorization_from_auth(auth)
+    #partial = UserFromAuth.partial_authorization_from_auth(auth)
 
-    case UserFromAuth.get_or_insert(partial, nil, current_user, Repo) do
+    case Auth.Manager.oauth_login(Auth.Manager, auth) do
       {:ok, user} ->
         IO.puts("get_or_insert ok, printing user...")
         IO.inspect(user)
@@ -43,17 +43,12 @@ defmodule Candle.AuthController do
         |> Plug.Conn.put_session("authorization", "Bearer #{jwt}")
         |> Plug.Conn.put_session("x-expires", Integer.to_string(exp))
         |> redirect(to: "/")
-      :partial ->
+      :error ->
         conn
         |> reset_cookies()
-        |> Plug.Conn.put_session("partial_authorization", partial)
+        |> Plug.Conn.put_session("partial_authorization", auth)
         |> Plug.Conn.put_resp_cookie("suggested_name", name_from_auth(auth), http_only: false)
         |> redirect(to: "/?modal=presignup")
-      {:error, error} ->
-        IO.inspect error
-
-        conn
-        |> redirect(to: "/")
     end
   end
 

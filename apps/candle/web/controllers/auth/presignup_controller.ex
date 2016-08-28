@@ -3,9 +3,9 @@ defmodule Candle.PresignupController do
   plug Ueberauth
   plug :fetch_session
 
-  alias Candle.UserFromAuth
-  alias Candle.User
-  alias Candle.Repo
+  # alias Candle.UserFromAuth
+  # alias Candle.User
+  # alias Candle.Repo
   alias Candle.Auth.Helpers
 
 
@@ -16,15 +16,14 @@ defmodule Candle.PresignupController do
       "email" => email
     } = params, current_user, claims) do
 
-    partial = Plug.Conn.get_session(conn, "partial_authorization")
-    user_info = %User{type: type, name: name, username: username, email: email}
+    auth = Plug.Conn.get_session(conn, "partial_authorization")
 
-    case partial do
+    case auth do
       nil ->
         conn
         |> render(message: %{type: "redirect", data: "/?modal=signup"})
       _ ->
-        case UserFromAuth.get_or_insert(partial, user_info, current_user, Repo) do
+        case Auth.Manager.oauth_signup(Auth.Manager, params, auth) do
           {:error, error} ->
             render(conn, message: %{
               type: "error",

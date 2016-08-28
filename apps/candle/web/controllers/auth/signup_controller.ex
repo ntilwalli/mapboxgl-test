@@ -17,16 +17,22 @@ defmodule Candle.SignupController do
         "password" => password
       } = auth, current_user, _claims) do
 
-    partial = UserFromAuth.get_authorization_with_token(%Authorization{uid: username, password: password, provider: :identity})
-    #partial = UserFromAuth.partial_authorization_from_auth(newauth)
-    user_info = %User{type: type, name: name, username: username, email: email}
-    case UserFromAuth.get_or_insert(partial, user_info, current_user, Repo) do
+    # partial = UserFromAuth.get_authorization_with_token(%Authorization{uid: username, password: password, provider: :identity})
+    # #partial = UserFromAuth.partial_authorization_from_auth(newauth)
+    # user_info = %User{type: type, name: name, username: username, email: email}
+    # case UserFromAuth.get_or_insert(partial, user_info, current_user, Repo) do
+    out = Auth.Manager.signup(Auth.Manager, auth)
+    IO.puts "Signup called..."
+    IO.inspect out
+    case out do
       {:error, error} ->
+        IO.puts "Error"
         render(conn, message: %{
           type: "error",
           data: Map.put(auth, "errors", [Helpers.convert_error(error)])
         })
       {:ok, user} ->
+        IO.puts "User"
         new_conn = Guardian.Plug.sign_in(conn, user)
         jwt = Guardian.Plug.current_token(new_conn)
         {:ok, claims} = Guardian.Plug.claims(new_conn)

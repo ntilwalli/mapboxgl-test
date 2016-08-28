@@ -1,8 +1,8 @@
-defmodule User.Mixfile do
+defmodule Auth.Mixfile do
   use Mix.Project
 
   def project do
-    [app: :user,
+    [app: :auth,
      version: "0.1.0",
      build_path: "../../_build",
      config_path: "../../config/config.exs",
@@ -18,8 +18,14 @@ defmodule User.Mixfile do
   #
   # Type "mix help compile.app" for more information
   def application do
-    [applications: [:logger, :shared],
-     mod: {User, []}]
+    [
+      applications: [
+        :logger,
+        :comeonin, 
+        :shared
+      ],
+      mod: {Auth, []}
+    ]
   end
 
   # Dependencies can be Hex packages:
@@ -37,7 +43,11 @@ defmodule User.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
-      {:shared, in_umbrella: true}
+      {:shared, in_umbrella: true},
+      {:ueberauth, "~> 0.3.0"},
+      {:guardian, "~> 0.12.0"},
+      {:guardian_db, "~> 0.7.0"},
+      {:comeonin, "~> 2.4"}
     ]
   end
 end

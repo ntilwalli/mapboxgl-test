@@ -1,8 +1,8 @@
-defmodule User.Mixfile do
+defmodule Shared.Mixfile do
   use Mix.Project
 
   def project do
-    [app: :user,
+    [app: :shared,
      version: "0.1.0",
      build_path: "../../_build",
      config_path: "../../config/config.exs",
@@ -18,8 +18,8 @@ defmodule User.Mixfile do
   #
   # Type "mix help compile.app" for more information
   def application do
-    [applications: [:logger, :shared],
-     mod: {User, []}]
+    [applications: [:logger, :postgrex],
+     mod: {Shared, []}]
   end
 
   # Dependencies can be Hex packages:
@@ -37,7 +37,9 @@ defmodule User.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
-      {:shared, in_umbrella: true}
+      {:postgrex, "0.11.2"},
+      {:ecto, "~> 2.0.0"},
+      {:geo, "~> 1.1"}
     ]
   end
 end
