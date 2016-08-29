@@ -1,6 +1,7 @@
 defmodule Shared.User do
   use Shared.Lib, :model
-  #@derive {Poison.Encoder, except: [:__meta__]}
+
+  @derive {Poison.Encoder, only: [:id, :name, :username, :email, :type]}
   schema "users" do
     field :name, :string
     field :username, :string

@@ -1,4 +1,4 @@
 defmodule Auth.Credential do
-  defstruct username: nil, 
-            password: nil
+  @derive {Poison.Encoder, only: [:username]}
+  defstruct [:username, :password]
 end

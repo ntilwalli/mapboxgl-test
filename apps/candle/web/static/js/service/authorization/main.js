@@ -27,13 +27,26 @@ export default function Authorization(sources, inputs) {
     })
     .filter(x => x.type === COOKIE_INDICATOR && x.data)
     .map(x => x.data)
-    // .map(x => {
-    //   console.log(`cookie authorization: `, x)
-    //   return x
-    // })
     .map(x => {
-      if (Object.keys(x).length) {
-        return x
+      console.log(`cookie authorization: `, x && x.authorization)
+      const out = x && x.authorization
+      return out
+    })
+    .map(x => {
+      if (x) {
+        const re = /^Bearer ([a-zA-Z0-9_-]*).([a-zA-Z0-9_-]*).([a-zA-Z0-9_-]*)$/
+        const m = re.exec(x)
+        if (m) {
+          const [_, eHeader, ePayload, eSignature] = m
+          const dPayload = window.atob(ePayload)
+          const {exp, sub} = JSON.parse(dPayload)
+          const user = JSON.parse(sub)
+
+          console.log("Authenticated user:", user)
+          return m
+        } else {
+          return undefined
+        }
       } else {
         return undefined
       }

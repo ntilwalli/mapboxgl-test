@@ -39,7 +39,8 @@ defmodule Shared.Mixfile do
     [
       {:postgrex, "0.11.2"},
       {:ecto, "~> 2.0.0"},
-      {:geo, "~> 1.1"}
+      {:geo, "~> 1.1"},
+      {:poison, "~> 2.2"}
     ]
   end
 end

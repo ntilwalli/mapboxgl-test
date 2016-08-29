@@ -47,7 +47,8 @@ defmodule Auth.Mixfile do
       {:ueberauth, "~> 0.3.0"},
       {:guardian, "~> 0.12.0"},
       {:guardian_db, "~> 0.7.0"},
-      {:comeonin, "~> 2.4"}
+      {:comeonin, "~> 2.4"},
+      {:poison, "~> 2.2"}
     ]
   end
 end
