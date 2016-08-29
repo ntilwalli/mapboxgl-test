@@ -23,25 +23,16 @@ defmodule Candle.AuthController do
   end
 
   def callback(%{assigns: %{ueberauth_auth: auth}} = conn, _params, _current_user, _claims) do
-    IO.puts "Callback: attempting oauth signup/login"
-    #partial = UserFromAuth.partial_authorization_from_auth(auth)
-
     case Auth.Manager.oauth_login(Auth.Manager, auth) do
       {:ok, user} ->
-        IO.puts("get_or_insert ok, printing user...")
-        IO.inspect(user)
         new_conn = Guardian.Plug.sign_in(conn, user)
         jwt = Guardian.Plug.current_token(new_conn)
-        IO.puts("JWT...")
-        IO.inspect(jwt)
-        {:ok, claims} = Guardian.Plug.claims(new_conn)
-        IO.puts("Claims...")
-        IO.inspect(claims)
-        exp = Map.get(claims, "exp")
+        #{:ok, claims} = Guardian.Plug.claims(new_conn)
+        #exp = Map.get(claims, "exp")
 
         new_conn
         |> Plug.Conn.put_session("authorization", "Bearer #{jwt}")
-        |> Plug.Conn.put_session("x-expires", Integer.to_string(exp))
+        #|> Plug.Conn.put_session("x-expires", Integer.to_string(exp))
         |> redirect(to: "/")
       :error ->
         conn
@@ -60,9 +51,10 @@ defmodule Candle.AuthController do
     end
 
     conn
+    |> Guardian.Plug.sign_out
     |> reset_cookies()
     |> Plug.Conn.delete_session("authorization")
-    |> Plug.Conn.delete_session("x-expires")
+    #|> Plug.Conn.delete_session("x-expires")
     |> render("index.json", message: %{type: "success"})
   end
 

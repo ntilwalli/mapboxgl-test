@@ -4,6 +4,7 @@ defmodule Auth.Utils do
   alias Shared.Authorization
 
   alias Auth.Registration
+  alias Auth.Credential
   alias Ueberauth.Auth, as: UberauthAuth
 
   def signup(%Registration{
@@ -15,7 +16,7 @@ defmodule Auth.Utils do
     } = registration, repo) do
     case is_username_available(username, repo) do
       :ok ->
-        auth_temp = get_authorization(registration, nil)
+        auth_temp = transform_registration_authorization(registration)
         user_temp = %User{type: type, name: name, username: username, email: email}
         create_user_authorization(auth_temp, user_temp, repo)
       {:error, error} = val -> val
@@ -29,14 +30,14 @@ defmodule Auth.Utils do
         type: type, 
         email: email, 
       } = registration,
-      %UberauthAuth{provider: provider} = auth
+      %UberauthAuth{provider: provider, uid: uid} = auth
     }, repo) do
-    case get_existing_authorization(auth, repo) do
+    case get_existing_authorization(provider, uid, repo) do
       :error ->
         # IO.puts "No existing auth"
         case is_username_available(username, repo) do
           :ok ->
-            auth_temp = get_authorization(registration, auth)
+            auth_temp = transform_oauth_authorization(auth)
             user_temp = %User{type: type, name: name, username: username, email: email}
             create_user_authorization(auth_temp, user_temp, repo)
           {:error, error} = val -> val
@@ -47,13 +48,39 @@ defmodule Auth.Utils do
     end
   end
 
-  def oauth_login(%UberauthAuth{provider: provider} = auth, repo) do
-    case get_existing_authorization(auth, repo) do
-      {:ok, auth} -> {:ok, repo.get!(User, auth.user_id)}
+  def login(%Credential{username: username, password: password}, repo) do
+    case get_existing_authorization(:identity, username, repo) do
+      {:ok, auth} ->
+        case password do
+          password when is_binary(password) ->
+            if Comeonin.Bcrypt.checkpw(password, auth.token) do
+              {:ok, auth.user}
+            else
+              {:error, :password_does_not_match}
+            end
+          _ -> {:error, :password_required}
+        end
       val -> val
     end
   end
 
+  def oauth_login(%UberauthAuth{provider: provider, uid: uid} = oauth_auth, repo) do
+    case get_existing_authorization(provider, uid, repo) do
+      {:ok, authorization} ->
+        temp = transform_oauth_authorization(oauth_auth)
+        Authorization.changeset(
+          authorization, 
+          scrub(%{
+            token: temp.token, 
+            refresh_token: temp.refresh_token,
+            expires_at: temp.expires_at,
+            profile: oauth_auth
+          })
+        ) |> repo.update
+        {:ok, authorization.user}
+      val -> val
+    end
+  end
 
   def is_username_available(username, repo) do
     user = repo.get_by(User, username: username)
@@ -64,10 +91,10 @@ defmodule Auth.Utils do
     end
   end
 
-  def get_existing_authorization(%UberauthAuth{provider: provider, uid: uid}, repo) do
+  def get_existing_authorization(provider, uid, repo) do
     str_provider = to_string(provider)
     query = from u in Authorization, where: u.provider == ^str_provider and u.uid == ^uid
-    case repo.one(query) do
+    case repo.preload(repo.one(query), [:user])  do
       nil -> :error
       auth -> {:ok, auth}
     end
@@ -121,7 +148,7 @@ defmodule Auth.Utils do
     end
   end
 
-  def get_authorization(%Registration{username: username, password: password}, nil) do
+  defp transform_registration_authorization(%Registration{username: username, password: password}) do
     %Authorization{
       provider: :identity,
       uid: username,
@@ -129,7 +156,7 @@ defmodule Auth.Utils do
     }
   end
 
-  def get_authorization(%Registration{} = registration, %UberauthAuth{} = auth) do
+  defp transform_oauth_authorization(%UberauthAuth{} = auth) do
     %Authorization{
       provider: auth.provider,
       uid: auth.uid,

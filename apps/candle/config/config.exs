@@ -57,7 +57,7 @@ config :ueberauth, Ueberauth.Strategy.Twitter.OAuth,
   consumer_secret: System.get_env("TWITTER_CONSUMER_SECRET")
 
 config :guardian_db, GuardianDb,
-       repo: Candle.Repo
+       repo: Shared.Repo
 
 
 
@@ -70,4 +70,4 @@ config :phoenix, :generators,
   migration: true,
   binary_id: false
 
-config :candle, ecto_repos: [Candle.Repo]
+config :candle, ecto_repos: [Shared.Repo]

@@ -7,6 +7,7 @@ defmodule Auth.Manager do
 
   alias Auth.Utils
   alias Auth.Registration
+  alias Auth.Credential
   alias Ueberauth.Auth, as: UberauthAuth
 
   # Client functions
@@ -39,7 +40,20 @@ defmodule Auth.Manager do
     {:ok, nil}
   end
 
-  def handle_call({:signup, %{
+  def handle_call({:login, %{
+        "username" => username,
+        "password" => password
+      }}, _from, state) do
+
+   out = Utils.login(
+     %Credential{
+        username: username, 
+        password: password
+      }, Repo)
+   {:reply, out, state}
+  end
+
+    def handle_call({:signup, %{
         "name" => name,
         "username" => username,
         "email" => email,

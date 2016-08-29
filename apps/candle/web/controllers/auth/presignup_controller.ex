@@ -32,13 +32,13 @@ defmodule Candle.PresignupController do
           {:ok, user} ->
             new_conn = Guardian.Plug.sign_in(conn, user)
             jwt = Guardian.Plug.current_token(new_conn)
-            {:ok, claims} = Guardian.Plug.claims(new_conn)
-            exp = Map.get(claims, "exp")
+            #{:ok, claims} = Guardian.Plug.claims(new_conn)
+            #exp = Map.get(claims, "exp")
 
-            conn
+            new_conn
             |> Plug.Conn.delete_session("partial_authorization")
             |> Plug.Conn.put_session("authorization", "Bearer #{jwt}")
-            |> Plug.Conn.put_session("x-expires", Integer.to_string(exp))
+            #|> Plug.Conn.put_session("x-expires", Integer.to_string(exp))
             |> render(message: %{type: "success"})
         end
     end
