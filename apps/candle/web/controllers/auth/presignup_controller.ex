@@ -3,9 +3,6 @@ defmodule Candle.PresignupController do
   plug Ueberauth
   plug :fetch_session
 
-  # alias Candle.UserFromAuth
-  # alias Candle.User
-  # alias Candle.Repo
   alias Candle.Auth.Helpers
 
 

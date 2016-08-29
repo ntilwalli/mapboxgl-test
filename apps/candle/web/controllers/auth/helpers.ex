@@ -9,7 +9,6 @@ defmodule Candle.Auth.Helpers do
     %{"type" => "general", "error" => "Invalid username/password"}
   end
   def convert_error(error) do
-    IO.inspect error
     %{"type" => "general", "error" => "General error"}
   end
 end

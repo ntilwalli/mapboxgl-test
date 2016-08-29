@@ -3,10 +3,6 @@ defmodule Candle.LoginController do
   plug Ueberauth
   plug :fetch_session
 
-  # alias Candle.UserFromAuth
-  # alias Candle.User
-  # alias Candle.Authorization
-  # alias Candle.Repo
   alias Candle.Auth.Helpers
 
 
@@ -15,9 +11,6 @@ defmodule Candle.LoginController do
       "password" => password
     } = params, current_user, _claims) do
 
-    #partial = %Authorization{provider: :identity, uid: username, password: password}
-
-    #case UserFromAuth.get_or_insert(partial, nil, current_user, Repo) do
     case Auth.Manager.login(Auth.Manager, params) do
       {:error, error} ->
         render(conn, message: %{

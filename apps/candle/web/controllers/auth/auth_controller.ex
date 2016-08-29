@@ -4,14 +4,6 @@ defmodule Candle.AuthController do
   plug :put_layout, false
   plug :fetch_session
 
-  #alias Candle.UserFromAuth
-  #alias Candle.User
-  #alias Candle.Authorization
-
-  #alias Ueberauth.Auth, as: UeberauthAuth
-  #alias Ueberauth.Auth.Extra
-
-
   def request(_conn, _params, _current_user, _claims) do
     raise "Auth request should be redirected before we get here..."
   end
@@ -58,29 +50,10 @@ defmodule Candle.AuthController do
     |> render("index.json", message: %{type: "success"})
   end
 
-  # def logout(conn, _params, _current_user, {:error, _}) do
-  #   conn
-  #   |> Plug.Conn.delete_session("authorization")
-  #   |> Plug.Conn.delete_session("x-expires")
-  #   |> render("index.json", message: %{type: "error"})
-  # end
-
   defp reset_cookies(conn) do
     conn
     |> Plug.Conn.put_resp_cookie("suggested_name", "", max_age: -1)
   end
-
-  # defp reset_guardian_token_cookie(conn) do
-  #   conn
-  #   |> Plug.Conn.put_resp_cookie("guardian_token", "", max_age: -1)
-  # end
-
-  # defp add_csrf_token(conn) do
-  #   csrf_token = Plug.CSRFProtection.get_csrf_token()
-  #
-  #   conn
-  #   |> Plug.Conn.put_resp_cookie("_csrf_token", csrf_token, http_only: false)
-  # end
 
   defp name_from_auth(auth) do
     if auth.info.name do
