@@ -26,15 +26,19 @@ import Login from './library/authorization/login/main'
 import Signup from './library/authorization/signup/main'
 import Presignup from './library/authorization/presignup/main'
 
+
+
 function main(sources) {
 
   const toServicesMessage$ = createProxy()
   const hideModal$ = createProxy()
 
-  const services = startServices(sources, {message$: toServicesMessage$
-    .map(x => {
-      return x
-    }).cache(1)})
+  const services = startServices(sources, {
+    message$: toServicesMessage$
+      .map(x => {
+        return x
+      }).cache(1)
+    })
 
   const routedComponent = route(sources, services.outputs)
   const actions = intent(sources)

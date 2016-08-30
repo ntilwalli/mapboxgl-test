@@ -31,8 +31,8 @@ defmodule Auth.Manager do
     GenServer.call(server, {:oauth_signup, {registration, auth}})
   end
 
-  def logout(server, info) do
-    GenServer.call(server, {:logout, info})
+  def logout(server, user_id) do
+    GenServer.call(server, {:logout, user_id})
   end
 
   # Server functions
@@ -98,6 +98,10 @@ defmodule Auth.Manager do
      Utils.oauth_signup(input, Repo), 
      state
     }
+  end
+
+  def handle_call({:logout, user_id}, _from, state) do
+    {:reply, nil, state}
   end
 
 end

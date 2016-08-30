@@ -11,4 +11,10 @@ defmodule Candle.Auth.Helpers do
   def convert_error(error) do
     %{"type" => "general", "error" => "General error"}
   end
+
+  def reset_cookies(conn) do
+    conn
+    |> Plug.Conn.put_resp_cookie("suggested_name", "", max_age: -1)
+    |> Plug.Conn.put_resp_cookie("authorization", "", max_age: -1)
+  end
 end

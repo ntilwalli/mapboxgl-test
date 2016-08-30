@@ -39,6 +39,7 @@ defmodule Candle.Mixfile do
        :ueberauth_identity,
        :ueberauth_twitter,
        :gettext,
+       :shared,
        :auth,
        :user
     ]]
@@ -70,6 +71,7 @@ defmodule Candle.Mixfile do
      {:guardian, "~> 0.12.0"},
      {:guardian_db, "~> 0.7.0"},
      {:oauth2, "== 0.6.0", override: true},
+     {:shared, in_umbrella: true},
      {:auth, in_umbrella: true},
      {:user, in_umbrella: true}
    ]

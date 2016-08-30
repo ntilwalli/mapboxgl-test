@@ -93,8 +93,8 @@ defmodule Auth.Utils do
 
   def get_existing_authorization(provider, uid, repo) do
     str_provider = to_string(provider)
-    query = from u in Authorization, where: u.provider == ^str_provider and u.uid == ^uid
-    case repo.preload(repo.one(query), [:user])  do
+    query = from u in Authorization, where: u.provider == ^str_provider and u.uid == ^uid, preload: [:user]
+    case repo.one(query)  do
       nil -> :error
       auth -> {:ok, auth}
     end

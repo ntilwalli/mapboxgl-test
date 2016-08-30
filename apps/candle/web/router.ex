@@ -1,11 +1,18 @@
 defmodule Candle.Router do
   use Candle.Web, :router
 
+  # pipeline :accepts_html do
+  #   plug :accepts, ["html"]
+  # end
+
+  pipeline :accepts_json do
+    plug :accepts, ["json"]
+  end
+
   pipeline :browser do
-    plug :accepts, ["html"]
     plug :fetch_session
-    plug :fetch_flash
-    plug :protect_from_forgery
+    # plug :fetch_flash
+    # plug :protect_from_forgery
     plug :put_secure_browser_headers
   end
 
@@ -34,7 +41,7 @@ defmodule Candle.Router do
   end
 
   scope "/api_auth", Candle do
-    pipe_through [:api, :api_auth]
+    pipe_through [:accepts_json, :browser, :browser_auth]
 
     post "/login", LoginController, :index
     post "/signup", SignupController, :index
@@ -43,7 +50,7 @@ defmodule Candle.Router do
   end
 
   scope "/api", Candle do
-    pipe_through [:api, :api_auth]
+    pipe_through [:accepts_json, :browser, :browser_auth]
 
     get "/retrieve/listing", RetrieveController, :listing
     post "/create/listing", CreateController, :listing

@@ -6,7 +6,7 @@ defmodule User.Router do
   end
 
   def route(router, message) do
-      GenServer.call({:route, message})
+      GenServer.call(router, {:route, message})
   end
 
   def init(:ok) do

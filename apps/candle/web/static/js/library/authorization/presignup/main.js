@@ -9,6 +9,8 @@ import isEmail from 'validator/lib/isEmail'
 import isAlphanumeric from 'validator/lib/isAlphanumeric'
 import isAlpha from 'validator/lib/isAlpha'
 
+const COOKIE_INDICATOR = `cookie`
+
 const emailInputProps = O.of({
   placeholder: `E-mail address`,
   validator: val => {
@@ -56,7 +58,10 @@ export default function main(sources, inputs) {
   const nameInput = TextInput(sources, {
     props$: nameInputProps, 
     error$,
-    initialText$: O.of(undefined)
+    initialText$: sources.Global
+      .filter(x => x.type === COOKIE_INDICATOR && x.data)
+      .map(x => x.data)
+      .map(x => x.suggested_name)
   })
 
   const usernameInput = TextInput(sources, {
@@ -91,6 +96,12 @@ export default function main(sources, inputs) {
 
   return {
     DOM: vtree$,
+    // Global: O.of({
+    //   type: `cookie`,
+    //   data: {
+    //     type: `get`
+    //   }
+    // }),
     message$: actions.submit$.withLatestFrom(state$, (_, state) => {
       const {type, name, username, email} = state
       return {

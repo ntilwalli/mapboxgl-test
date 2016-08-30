@@ -2,7 +2,6 @@ defmodule Candle.AuthController do
   use Candle.Web, :controller
   plug Ueberauth
   plug :put_layout, false
-  plug :fetch_session
 
   def request(_conn, _params, _current_user, _claims) do
     raise "Auth request should be redirected before we get here..."
@@ -10,25 +9,17 @@ defmodule Candle.AuthController do
 
   def callback(%{assigns: %{ueberauth_failure: _fails}} = conn, _params, _current_user, _claims) do
     conn
-    |> reset_cookies()
     |> redirect(to: "/")
   end
 
   def callback(%{assigns: %{ueberauth_auth: auth}} = conn, _params, _current_user, _claims) do
     case Auth.Manager.oauth_login(Auth.Manager, auth) do
       {:ok, user} ->
-        new_conn = Guardian.Plug.sign_in(conn, user)
-        jwt = Guardian.Plug.current_token(new_conn)
-        #{:ok, claims} = Guardian.Plug.claims(new_conn)
-        #exp = Map.get(claims, "exp")
-
-        new_conn
-        |> Plug.Conn.put_session("authorization", "Bearer #{jwt}")
-        #|> Plug.Conn.put_session("x-expires", Integer.to_string(exp))
+        conn
+        |> Guardian.Plug.sign_in(user)
         |> redirect(to: "/")
       :error ->
         conn
-        |> reset_cookies()
         |> Plug.Conn.put_session("partial_authorization", auth)
         |> Plug.Conn.put_resp_cookie("suggested_name", name_from_auth(auth), http_only: false)
         |> redirect(to: "/?modal=presignup")
@@ -44,15 +35,7 @@ defmodule Candle.AuthController do
 
     conn
     |> Guardian.Plug.sign_out
-    |> reset_cookies()
-    |> Plug.Conn.delete_session("authorization")
-    #|> Plug.Conn.delete_session("x-expires")
     |> render("index.json", message: %{type: "success"})
-  end
-
-  defp reset_cookies(conn) do
-    conn
-    |> Plug.Conn.put_resp_cookie("suggested_name", "", max_age: -1)
   end
 
   defp name_from_auth(auth) do

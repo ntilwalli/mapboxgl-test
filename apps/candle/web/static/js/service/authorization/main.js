@@ -27,17 +27,18 @@ export default function Authorization(sources, inputs) {
     })
     .filter(x => x.type === COOKIE_INDICATOR && x.data)
     .map(x => x.data)
+    //.do(x => console.log("cookies:", x))
     .map(x => x && x.authorization)
     .map(x => {
-      if (x ) {
-        const re = /^Bearer ([a-zA-Z0-9_-]*).([a-zA-Z0-9_-]*).([a-zA-Z0-9_-]*)$/
+      if (x) {
+        //console.log("Authorization", x)
+        const re = /^([a-zA-Z0-9_-]*).([a-zA-Z0-9_-]*).([a-zA-Z0-9_-]*)$/
         const m = re.exec(x)
         if (m) {
           const [_, eHeader, ePayload, eSignature] = m
           const dPayload = window.atob(ePayload)
           const {exp, sub} = JSON.parse(dPayload)
           const user = JSON.parse(sub)
-
           console.log("Authenticated:", user)
           return m
         } else {
