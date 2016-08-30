@@ -8,7 +8,6 @@ defmodule Auth.Manager do
   alias Auth.Utils
   alias Auth.Registration
   alias Auth.Credential
-  alias Ueberauth.Auth, as: UberauthAuth
 
   # Client functions
   def start_link(opts \\ []) do
@@ -72,7 +71,7 @@ defmodule Auth.Manager do
    {:reply, out, state}
   end
 
-  def handle_call({:oauth_login, %UberauthAuth{} = auth}, _from, state) do
+  def handle_call({:oauth_login, %Authorization{} = auth}, _from, state) do
     {:reply, Utils.oauth_login(auth, Repo), state}
   end
 
@@ -83,17 +82,17 @@ defmodule Auth.Manager do
         "email" => email,
         "type" => type
       } = registration,
-      %UberauthAuth{} = auth
+      %Authorization{} = auth
     }}, _from, state) do
-   IO.inspect registration
-   IO.inspect auth
+  #  IO.inspect registration
+  #  IO.inspect auth
    input = {%Registration{
       name: name, 
       username: username, 
       email: email, 
       type: type
     }, auth}
-   IO.inspect input
+  #  IO.inspect input
    {:reply,
      Utils.oauth_signup(input, Repo), 
      state

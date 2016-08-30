@@ -3,6 +3,8 @@ defmodule Candle.AuthController do
   plug Ueberauth
   plug :put_layout, false
 
+  alias Shared.Authorization
+
   def request(_conn, _params, _current_user, _claims) do
     raise "Auth request should be redirected before we get here..."
   end
@@ -13,14 +15,23 @@ defmodule Candle.AuthController do
   end
 
   def callback(%{assigns: %{ueberauth_auth: auth}} = conn, _params, _current_user, _claims) do
-    case Auth.Manager.oauth_login(Auth.Manager, auth) do
+    partial = %Authorization{
+      provider: auth.provider,
+      uid: auth.uid,
+      token: auth.credentials.token,
+      refresh_token: auth.credentials.refresh_token,
+      expires_at: auth.credentials.expires_at,
+      profile: auth.info
+    }
+
+    case Auth.Manager.oauth_login(Auth.Manager, partial) do
       {:ok, user} ->
         conn
         |> Guardian.Plug.sign_in(user)
         |> redirect(to: "/")
       :error ->
         conn
-        |> Plug.Conn.put_session("partial_authorization", auth)
+        |> Plug.Conn.put_session("partial_authorization", partial)
         |> Plug.Conn.put_resp_cookie("suggested_name", name_from_auth(auth), http_only: false)
         |> redirect(to: "/?modal=presignup")
     end

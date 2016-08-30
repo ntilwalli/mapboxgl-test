@@ -9,14 +9,14 @@ defmodule Candle.PresignupController do
       "email" => email
     } = params, current_user, claims) do
 
-    auth = Plug.Conn.get_session(conn, "partial_authorization")
+    partial = Plug.Conn.get_session(conn, "partial_authorization")
 
-    case auth do
+    case partial do
       nil ->
         conn
         |> render(message: %{type: "redirect", data: "/?modal=signup"})
       _ ->
-        case Auth.Manager.oauth_signup(Auth.Manager, params, auth) do
+        case Auth.Manager.oauth_signup(Auth.Manager, params, partial) do
           {:error, error} ->
             conn
             |> render(message: %{
