@@ -2,12 +2,16 @@ defmodule Candle.LoginController do
   use Candle.Web, :controller
   plug Ueberauth
 
+  alias Candle.Auth.Helpers
+
   def index(conn, %{
       "username" => username,
       "password" => password
     } = params, current_user, _claims) do
-
-    case Auth.Manager.login(Auth.Manager, params) do
+    
+    user = Helpers.get_user(conn, current_user)
+    case User.Router.route(User.Router, {user, {:login, params}}) do
+    #case Auth.Manager.login(Auth.Manager, params) do
       {:error, error} ->
         conn
         |> render(message: %{

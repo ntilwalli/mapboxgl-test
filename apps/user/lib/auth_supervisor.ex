@@ -7,7 +7,7 @@ defmodule User.Auth.Supervisor do
     Supervisor.start_link(__MODULE__, :ok, [name: @name])
   end
 
-  def start_user do
+  def start_user(user_id) do
     Supervisor.start_child(@name, [])
   end
 

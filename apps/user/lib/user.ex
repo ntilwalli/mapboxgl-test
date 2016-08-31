@@ -10,9 +10,10 @@ defmodule User do
     children = [
       # Starts a worker by calling: User.Worker.start_link(arg1, arg2, arg3)
       # worker(User.Worker, [arg1, arg2, arg3]),
-      supervisor(User.Router.Supervisor, [[name: User.Router.Supervisor]]),
       supervisor(User.Anon.Supervisor, []),
-      supervisor(User.Auth.Supervisor, [])
+      supervisor(User.Auth.Supervisor, []),
+      supervisor(User.Registry.Supervisor, [[name: User.Registry.Supervisor]]),
+      supervisor(User.Router.Supervisor, [[name: User.Router.Supervisor]])
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html

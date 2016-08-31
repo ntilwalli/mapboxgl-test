@@ -3,6 +3,7 @@ defmodule Candle.AuthController do
   plug Ueberauth
   plug :put_layout, false
 
+  alias Candle.Auth.Helpers
   alias Shared.Authorization
 
   def request(_conn, _params, _current_user, _claims) do
@@ -14,7 +15,10 @@ defmodule Candle.AuthController do
     |> redirect(to: "/")
   end
 
-  def callback(%{assigns: %{ueberauth_auth: auth}} = conn, _params, _current_user, _claims) do
+  def callback(%{assigns: %{ueberauth_auth: auth}} = conn, _params, current_user, _claims) do
+
+    user = Helpers.get_user(conn, current_user)
+
     partial = %Authorization{
       provider: auth.provider,
       uid: auth.uid,
@@ -24,7 +28,8 @@ defmodule Candle.AuthController do
       profile: auth.info
     }
 
-    case Auth.Manager.oauth_login(Auth.Manager, partial) do
+    case User.Router.route(User.Router, {user, {:oauth_login, partial}}) do
+    #case Auth.Manager.oauth_login(Auth.Manager, partial) do
       {:ok, user} ->
         conn
         |> Guardian.Plug.sign_in(user)
@@ -37,11 +42,9 @@ defmodule Candle.AuthController do
     end
   end
 
-  def logout(conn, _params, _current_user, _claims) do
-    jwt = Guardian.Plug.current_token(conn)
-    if jwt do
-      {:ok, claims} = Guardian.Plug.claims(conn)
-      Guardian.revoke!(jwt, claims)
+  def logout(conn, _params, current_user, _claims) do
+    if current_user != nil do
+      Auth.Manager.logout(Auth.Manager, current_user.id)
     end
 
     conn

@@ -18,7 +18,7 @@ defmodule User.Mixfile do
   #
   # Type "mix help compile.app" for more information
   def application do
-    [applications: [:logger, :shared],
+    [applications: [:logger, :shared, :auth],
      mod: {User, []}]
   end
 
@@ -37,7 +37,8 @@ defmodule User.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
-      {:shared, in_umbrella: true}
+      {:shared, in_umbrella: true},
+      {:auth, in_umbrella: true}
     ]
   end
 end

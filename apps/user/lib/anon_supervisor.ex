@@ -7,7 +7,7 @@ defmodule User.Anon.Supervisor do
     Supervisor.start_link(__MODULE__, :ok, [name: @name])
   end
 
-  def start_user do
+  def start_user(anonymous_id) do
     Supervisor.start_child(@name, [])
   end
 

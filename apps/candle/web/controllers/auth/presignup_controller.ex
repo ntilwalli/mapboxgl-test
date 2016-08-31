@@ -2,6 +2,8 @@ defmodule Candle.PresignupController do
   use Candle.Web, :controller
   plug Ueberauth
 
+  alias Candle.Auth.Helpers
+
   def index(conn, %{
       "name" => name,
       "username" => username,
@@ -16,7 +18,9 @@ defmodule Candle.PresignupController do
         conn
         |> render(message: %{type: "redirect", data: "/?modal=signup"})
       _ ->
-        case Auth.Manager.oauth_signup(Auth.Manager, params, partial) do
+        user = Helpers.get_user(conn, current_user)
+        case User.Router.route(User.Router, {user, {:oauth_signup, {params, partial}}}) do
+        #case Auth.Manager.oauth_signup(Auth.Manager, {params, partial}) do
           {:error, error} ->
             conn
             |> render(message: %{
@@ -26,6 +30,7 @@ defmodule Candle.PresignupController do
           {:ok, user} ->
             conn
             |> Guardian.Plug.sign_in(user)
+            |> Plug.Conn.delete_session("partial_authorization")
             |> render(message: %{type: "success"})
         end
     end
