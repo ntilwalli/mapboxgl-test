@@ -14,10 +14,12 @@ config :candle, Candle.Endpoint,
   pubsub: [name: Candle.PubSub,
            adapter: Phoenix.PubSub.PG2]
 
-# Configures Elixir's Logger
-config :logger, :console,
+#Configures Elixir's Logger
+config :logger, 
+  backends: [:console],
   format: "$time $metadata[$level] $message\n",
-  metadata: [:request_id]
+  metadata: [:request_id],
+  level: :debug
 
 
 config :guardian, Guardian,

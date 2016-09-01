@@ -1,5 +1,6 @@
 defmodule User.Router do
   use GenServer
+  require Logger
 
   def start_link(opts \\ []) do
     GenServer.start_link(__MODULE__, :ok, opts)
@@ -14,8 +15,9 @@ defmodule User.Router do
   end
 
   def handle_call({:route, {%{anonymous_id: anonymous_id} = user_info, message}}, _from, state) do
+    Logger.debug "Anonymous route..."
+    IO.puts "IO puts anonymous route"
     out = User.Registry.get_process(User.Registry, user_info)
-    IO.puts "Anonymous route..."
     IO.inspect out
     case out do
       pid -> 
@@ -26,6 +28,7 @@ defmodule User.Router do
   end
 
   def handle_call({:route, {%{user_id: user_id} = user_info, message}}, _from, state) do
+    Logger.debug "Authenticated route..."
     out = User.Registry.get_process(User.Registry, user_info)
     case out do
       pid -> 

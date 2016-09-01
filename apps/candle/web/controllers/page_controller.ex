@@ -2,6 +2,8 @@ defmodule Candle.PageController do
   use Candle.Web, :controller
   plug :put_layout, false
 
+  require Logger
+
   alias Candle.Auth.Helpers
 
   def index(conn, _params, current_user, _claims) do
@@ -10,7 +12,7 @@ defmodule Candle.PageController do
     case current_user do
       nil ->
         anon_id = User.Registry.register_app_load(User.Registry, %{:anonymous_id => session_anon_id})
-        IO.puts "Register anonymous user app load: #{anon_id}"
+        Logger.debug "Register anonymous user app load: #{anon_id}"
 
         conn
         |> Plug.Conn.put_resp_cookie("aid", anon_id)
@@ -18,7 +20,7 @@ defmodule Candle.PageController do
         |> render("index.html")
       auth ->
         User.Registry.register_app_load(User.Registry, %{:user_id => current_user.id, :anonymous_id => session_anon_id})
-        IO.puts "Register user app load: #{current_user.id}, transition from anonymous: #{session_anon_id}"
+        Logger.debug "Register user app load: #{current_user.id}, transition from anonymous: #{session_anon_id}"
 
         conn
         #|> Plug.Conn.delete_session("aid")

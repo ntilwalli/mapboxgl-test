@@ -1,5 +1,6 @@
 defmodule User.Registry do
   use GenServer
+  require Logger
 
   alias Shared.User, as: UserTable
 
@@ -12,7 +13,6 @@ defmodule User.Registry do
   end
 
   def create_auth_process(router, user_id) do
-    IO.puts "Client: Trying to start new auth process"
     GenServer.call(router, {:create_auth_process, user_id})
   end
 
@@ -22,7 +22,6 @@ defmodule User.Registry do
 
   defp add_auth_process(user_id, %{auth: auth, auth_ref: auth_ref} = state) do
     {:ok, pid} = User.Auth.Supervisor.start_user(user_id)
-    # IO.puts "Created new auth process"
     ref = Process.monitor(pid)
     auth = Map.put(auth, user_id, pid)
     auth_ref = Map.put(auth_ref, ref, user_id)
@@ -37,9 +36,7 @@ defmodule User.Registry do
     
     state = %{auth: auth, anon: anon, auth_ref: auth_ref, anon_ref: anon_ref}
     user_ids = Enum.map(Shared.Repo.all(UserTable), fn x -> x.id end)
-    state = Enum.reduce(user_ids, state, &add_auth_process/2)#&test_func/2)#fn(u, acc) -> acc + 1 end)
-    # state = Enum.reduce(users, state, &add_auth_process/2)
-
+    state = Enum.reduce(user_ids, state, &add_auth_process/2)
     {:ok, state}
   end
 
@@ -65,20 +62,20 @@ defmodule User.Registry do
   end
 
   def handle_call({:register_app_load, %{:anonymous_id => anonymous_id}}, _from, %{anon: anon, anon_ref: anon_ref} = state) do
-    IO.puts "Handling anonymous register"
+    # IO.puts "Handling anonymous register"
     case anonymous_id do
       nil -> 
-        IO.puts "Generating new UUID..."
+        # Logger.debug "Generating new UUID..."
         uuid = to_string(Ecto.UUID.autogenerate())
         {:ok, pid} = User.Anon.Supervisor.start_user(uuid)
         ref = Process.monitor(pid)
-        IO.puts "Adding anon process..."
-        IO.inspect pid
+        # IO.puts "Adding anon process..."
+        # IO.inspect pid
         anon = Map.put(anon, uuid, pid)
         anon_ref = Map.put(anon_ref, ref, uuid)
         {:reply, uuid, %{%{state | anon: anon} | anon_ref: anon_ref}}
       a_id ->
-        IO.puts "Using existing anonymous_id: #{a_id}"
+        # IO.puts "Using existing anonymous_id: #{a_id}"
         case Map.get(anon, a_id) do
           nil -> 
             {:ok, pid} = User.Anon.Supervisor.start_user(a_id)
