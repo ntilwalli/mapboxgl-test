@@ -27,7 +27,7 @@ defmodule User.Anon do
     out = Auth.Manager.signup(Auth.Manager, info)
     case out do
       {:ok, user} -> 
-        User.Registry.create_auth_process(User.Registry, user.id)
+        User.Registry.create_auth_process(User.Registry, user)
         {:reply, out, state}
       _ -> 
         {:reply, out, state}
@@ -39,7 +39,7 @@ defmodule User.Anon do
     case out do
       {:ok, user} -> 
         IO.puts "Handling oauth signup"
-        User.Registry.create_auth_process(User.Registry, user.id)
+        User.Registry.create_auth_process(User.Registry, user)
         {:reply, out, state}
       _ -> 
         {:reply, out, state}

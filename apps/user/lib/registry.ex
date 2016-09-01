@@ -20,9 +20,10 @@ defmodule User.Registry do
     GenServer.call(router, {:get_process, info})
   end
 
-  defp add_auth_process(user_id, %{auth: auth, auth_ref: auth_ref} = state) do
-    {:ok, pid} = User.Auth.Supervisor.start_user(user_id)
+  defp add_auth_process(user, %{auth: auth, auth_ref: auth_ref} = state) do
+    {:ok, pid} = User.Auth.Supervisor.start_user(user)
     ref = Process.monitor(pid)
+    user_id = user.id
     auth = Map.put(auth, user_id, pid)
     auth_ref = Map.put(auth_ref, ref, user_id)
     %{%{state | auth: auth} | auth_ref: auth_ref}
@@ -35,8 +36,8 @@ defmodule User.Registry do
     anon_ref = %{}
     
     state = %{auth: auth, anon: anon, auth_ref: auth_ref, anon_ref: anon_ref}
-    user_ids = Enum.map(Shared.Repo.all(UserTable), fn x -> x.id end)
-    state = Enum.reduce(user_ids, state, &add_auth_process/2)
+    users = Shared.Repo.all(UserTable)
+    state = Enum.reduce(users, state, &add_auth_process/2)
     {:ok, state}
   end
 
@@ -48,10 +49,12 @@ defmodule User.Registry do
     {:reply, Map.get(auth, user_id), state}
   end
 
-  def handle_call({:create_auth_process, user_id}, _from, %{auth: auth} = state) do
+  def handle_call({:create_auth_process, user}, _from, %{auth: auth} = state) do
+    user_id = user.id
     case Map.get(auth, user_id) do
       nil -> 
-        add_auth_process(user_id, state)
+        user = Shared.Repo.get(Shared.User, user)
+        add_auth_process(user, state)
       pid -> 
         {:reply, user_id, state}
     end
