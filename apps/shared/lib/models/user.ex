@@ -9,7 +9,8 @@ defmodule Shared.User do
     field :type, :string, default: "individual"
 
     has_many :authorizations, Shared.Authorization
-
+    has_many :listings, Shared.Listing
+    has_many :user_listings, Shared.UserListing
     timestamps
   end
 
