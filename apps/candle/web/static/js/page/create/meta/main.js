@@ -130,9 +130,9 @@ export default function main(sources, inputs) {
     props$: stepProps
   }))
 
-  const heading = normalizeComponent(Heading(sources, spread(
+  const headingGenerator = (saving$) => normalizeComponent(Heading(sources, spread(
     inputs, {
-      saving$: O.never()
+      saving$
     })))
 
   const instruction = {
@@ -140,13 +140,12 @@ export default function main(sources, inputs) {
   }
 
   const workflowStep = Step(sources, spread(inputs, {
-    heading, 
+    headingGenerator, 
     content, 
     instruction, 
     props$: O.of({
       panelClass: `create-meta`
-    }),
-    save$: O.merge(heading.save$, content.save$)
+    })
   }))
 
   return workflowStep

@@ -27,5 +27,4 @@ defmodule Shared.User do
     |> cast(params, @required_fields, @optional_fields)
     |> validate_format(:email, ~r/@/)
   end
-
 end

@@ -52,8 +52,7 @@ defmodule Candle.Router do
   scope "/api", Candle do
     pipe_through [:accepts_json, :browser, :browser_auth]
 
-    get "/retrieve/listing", RetrieveController, :listing
-    post "/create/listing", CreateController, :listing
+    post "/user", UserController, :route
   end
 
   scope "/", Candle do

@@ -17,12 +17,22 @@ defmodule User.Auth do
     }}
   end
 
-  def handle_call(%{route: "/listing/save", data: %{id: nil} = listing}, _from, state) do
-    
+  def handle_call(%{"route" => "/listing/save", "data" => %{"id" => id} = listing}, _from, state) do
+    IO.puts "Got listing with id"
+    IO.inspect listing
+    {:reply, {:ok, %{type: "success"}}, state}
   end
   
-  def handle_call(%{route: "/listing/save", data: %{id: _} = listing}, _from, state) do
-    
+  def handle_call(%{"route" => "/listing/save", "data" => %{"id" => nil} = listing}, _from, state) do
+    IO.puts "Got listing with nil id"
+    IO.inspect listing
+    {:reply, {:ok, %{type: "success"}}, state}
+  end
+
+  def handle_call(%{"route" => "/listing/save", "data" => listing}, _from, state) do
+    IO.puts "Got listing with no id"
+    IO.inspect listing
+    {:reply, {:ok, %{type: "success"}}, state}
   end
 
 end
