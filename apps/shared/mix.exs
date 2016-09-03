@@ -18,7 +18,7 @@ defmodule Shared.Mixfile do
   #
   # Type "mix help compile.app" for more information
   def application do
-    [applications: [:logger, :postgrex],
+    [applications: [:logger, :timex, :postgrex],
      mod: {Shared, []}]
   end
 
@@ -37,6 +37,8 @@ defmodule Shared.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
+      {:timex, "~> 3.0"},
+      {:timex_ecto, "~> 3.0"},
       {:postgrex, "0.11.2"},
       {:ecto, "~> 2.0.0"},
       {:geo, "~> 1.1"},

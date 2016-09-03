@@ -20,7 +20,7 @@ defmodule Shared.Authorization do
     model
     |> cast(params, @required_fields, @optional_fields)
     |> foreign_key_constraint(:user_id)
-    |> unique_constraint(:provider_uid)
+    |> unique_constraint(:uid, name: :authorizations_provider_uid_index)
   end
 
 end

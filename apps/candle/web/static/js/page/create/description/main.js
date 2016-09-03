@@ -23,7 +23,7 @@ function contentComponent(sources, inputs) {
   const titleInput = TextInput(sources, {
     props$: titleInputProps, 
     error$: O.never(),
-    initialText$: actions.listing$.map(x => x.description && x.description.title)
+    initialText$: actions.listing$.map(x => x.profile && x.profile.description && x.profile.description.title)
   })
   const state$ = model(actions, spread(inputs, {
     title$: titleInput.value$,

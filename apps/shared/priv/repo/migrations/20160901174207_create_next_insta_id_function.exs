@@ -11,7 +11,7 @@ defmodule Shared.Repo.Migrations.CreateNextInstaIdFunction do
           now_millis bigint;
           shard_id int := 0;
       BEGIN
-          SELECT nextval('insta_id_seq') %% 1024 INTO seq_id;
+          SELECT nextval('insta_id_seq') % 1024 INTO seq_id;
           SELECT FLOOR(EXTRACT(EPOCH FROM clock_timestamp()) * 1000) INTO now_millis;
           result := (now_millis - our_epoch) << 23;
           result := result | (shard_id << 10);

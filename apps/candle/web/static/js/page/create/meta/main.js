@@ -19,8 +19,11 @@ function contentComponent(sources, inputs) {
     .map(route => route.state || getEmptyListing())
     .cache(1)
 
-  const meta$ = listing$
-    .map(listing => listing && listing.meta)
+  const profile$ = listing$
+    .map(x => {
+      return x
+    })
+    .map(listing => listing && listing.profile)
     .cache(1)
 
   const creationTypeInput = RadioInput(sources, {
@@ -35,12 +38,9 @@ function contentComponent(sources, inputs) {
       displayValue: `Custom grouping`,
       value: `group`
     }],
-    props$: meta$
-        .map(x => {
-          return x
-        })
-        .map(meta => meta && meta.creationType)
-        .map(selected => ({selected}))
+    props$: listing$
+      .map(listing => listing && listing.type)
+      .map(selected => ({selected}))
   })
 
   const visibilityInput = RadioInput(sources, {
@@ -60,8 +60,8 @@ function contentComponent(sources, inputs) {
     //   value: `secret`
     // }
     ],
-    props$: meta$
-      .map(meta => ({selected: meta && meta.visibility}))
+    props$: profile$
+      .map(profile => ({selected: profile.meta && profile.meta.visibility}))
   })
 
   const eventTypeInput = RadioInput(sources, {
@@ -82,7 +82,7 @@ function contentComponent(sources, inputs) {
     // }
     ],
     props$: O.merge(
-      meta$.map(meta => meta && meta.eventType),
+      profile$.map(profile => profile.meta && profile.meta.eventType),
       creationTypeInput.selected$.skip(1).filter(x => x === `group`).mapTo(undefined)
     ).map(selected => ({selected})),
   })

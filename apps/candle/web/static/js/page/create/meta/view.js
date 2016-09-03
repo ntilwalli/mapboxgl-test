@@ -9,8 +9,8 @@ function renderCreationType(info) {
   const {state, components} = info
   const {listing} = state
   const {creationTypeInput} = components
-  const section = `meta`
-  const property = `creationType`
+  const section = `listing`
+  const property = `type`
   const disabled = isDisabled(section, property, listing)
   if (!disabled) {
     return div(`.creation-type`, [

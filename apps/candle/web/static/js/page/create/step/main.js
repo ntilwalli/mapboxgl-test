@@ -54,7 +54,7 @@ function intent(sources) {
   const openInstruction$ =  DOM.select(`.appOpenInstruction`).events(`click`)
   const {good$, bad$, ugly$} = processHTTP(sources, `saveListing`)
   const fromHTTP$ = O.merge(
-    good$.map(data => ({type: `saved`})), 
+    good$.map(data => ({type: `saved`, data: new Date()})), 
     bad$.map(data => ({type: `error`, data: data})), 
     ugly$.map(data => {
       return {type: `error`, data: data}

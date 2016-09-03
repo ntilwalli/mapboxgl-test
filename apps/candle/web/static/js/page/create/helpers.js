@@ -2,7 +2,7 @@ import {div, h5} from '@cycle/dom'
 import {isOptional} from './listing'
 
 export function renderHeading(val, section, property, listing) {
-  const optional = isOptional(section, property, listing)
+  const optional = section ? isOptional(section, property, listing) : false
   return div(`.panel-title`, [
     h5([`${val}${optional ? ' (optional)': ''}`])
   ])

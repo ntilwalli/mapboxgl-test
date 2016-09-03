@@ -13,10 +13,10 @@ function reducers(actions, inputs) {
 
   const creationTypeR = inputs.creationType$.map(val => state => {
     const listing = state.get(`listing`)
-    const meta = listing.meta
-    meta.creationType = val
+    listing.type = val
     if (val === `group`) {
-      meta.eventType = undefined
+      const profile = listing.profile
+      profile.meta.eventType = undefined
     }
 
     return setValidity(state.set(`listing`, listing))
@@ -24,7 +24,8 @@ function reducers(actions, inputs) {
 
   const visibilityR = inputs.visibility$.map(val => state => {
     const listing = state.get(`listing`)
-    const meta = listing.meta
+    const {profile} = listing
+    const {meta} = profile
     meta.visibility = val
 
     return setValidity(state.set(`listing`, listing))
@@ -32,7 +33,8 @@ function reducers(actions, inputs) {
 
   const eventTypeR = inputs.eventType$.map(val => state => {
     const listing = state.get(`listing`)
-    const meta = listing.meta
+    const {profile} = listing
+    const {meta} = profile
     meta.eventType = val
 
     return setValidity(state.set(`listing`, listing))

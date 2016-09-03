@@ -2,6 +2,7 @@ import {Observable as O} from 'rxjs'
 import {div, span, a, button} from '@cycle/dom'
 import Immutable from 'immutable'
 import {combineObj, normalizeComponent, renderExternalLink, spread, mergeSinks, attrs} from '../../../utils'
+import moment from 'moment'
 
 import Logo from '../logo'
 
@@ -65,9 +66,10 @@ function renderInstruction(state) {
 
 function renderSaveArea(state) {
   const {lastSaved, isSaving} = state
+  console.log("Last saved", lastSaved)
   return div(`.listing-save-area`, [
     div(`.hidden-sm-down.last-saved-status`, [
-      isSaving ? span(`.spinner`) : div([lastSaved ? lastSaved : `Not saved`])
+      isSaving ? span(`.spinner`) : div([lastSaved ? moment(lastSaved).fromNow() : `Not saved`])
     ]),
     button(`.appSaveListing.menu-link`, [`Save and Exit`])
   ])

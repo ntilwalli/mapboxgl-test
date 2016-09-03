@@ -11,17 +11,17 @@ defmodule Candle.UserController do
       {:ok, response} ->
         IO.puts "Ok route"
         conn
-        |> render("route.json", %{message: response})
+        |> render("route.json", message: response)
       {:error, response} ->
         conn
-        |> render("route.json", %{message: response})
+        |> render("route.json", message: response)
     end
   end
 
-  def route(conn, params, current_user, _claims) do
-    IO.puts "Routed to user controller default"
-    IO.inspect params
-    conn
-    |> render("route.json", %{message: %{type: "success"}})
-  end
+  # def route(conn, params, current_user, _claims) do
+  #   IO.puts "Routed to user controller default"
+  #   IO.inspect params
+  #   conn
+  #   |> render("route.json", %{message: %{type: "success"}})
+  # end
 end

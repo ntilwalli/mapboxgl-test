@@ -1,26 +1,30 @@
 export function getEmptyListing() {
   return {
     id: undefined,
-    lastUpdated: undefined,
-    meta: {
-      creationType: `single`,
-      eventType: undefined,
-      visibility: undefined
-    },
-    description: {
-      title: undefined,
-      description: undefined,
-      shortDescription: undefined,
-      categories: []
-    },
-    where: {
-      mode: `venue`,
-      vicinity: undefined,
-      info: undefined,
-      mapSettings: {
-        center: undefined,
-        zoom: undefined,
-        viewport: undefined
+    parentId: undefined,
+    type: `single`,
+    insertedAt: undefined,
+    updatedAt: undefined,
+    profile: {
+      meta: {
+        eventType: undefined,
+        visibility: undefined
+      },
+      description: {
+        title: undefined,
+        description: undefined,
+        shortDescription: undefined,
+        categories: []
+      },
+      where: {
+        mode: `venue`,
+        vicinity: undefined,
+        info: undefined,
+        mapSettings: {
+          center: undefined,
+          zoom: undefined,
+          viewport: undefined
+        }
       }
     }
     // {
@@ -37,23 +41,25 @@ function length(val) {
   return {type: `length`, data: val}
 }
 
-
-
 export function getValidators(step, listing) {
-  const {meta} = listing
-  const listingDescription = listing.description
-  const {creationType, visibility, eventType} = meta
-  const {title, description, categories} = listingDescription
-  if (step === `meta`) {
-    if (!creationType || creationType !== `group`) {
+  const {type, profile} = listing
+  const profileDescription = profile.description
+  const profileMeta = profile.meta
+  const {visibility, eventType} = profileMeta
+  const {title, description, categories} = profileDescription
+  if (step === "listing") {
+    return {
+      type: [required]
+    }
+  }
+  else if (step === `meta`) {
+    if (type !== `group`) {
       return {
-        creationType: [required],
         visibility: [required],
         eventType: [required]
       }
     } else {
       return {
-        creationType: [required],
         visibility: [required],
         eventType: [disabled]
       }
@@ -127,13 +133,16 @@ export function validate(validators, obj) {
 }
 
 export function validateMeta(listing) {
-  const {meta} = listing
-  const validators = getValidators(`meta`, listing)
-  return validate(validators, meta)
+  const {profile} = listing
+  const {meta} = profile
+  const metaValidators = getValidators(`meta`, listing)
+  const listingValidators = getValidators(`listing`, listing)
+  return validate(metaValidators, meta) && validate(listingValidators, listing)
 }
 
 export function validateDescription(listing) {
-  const {description} = listing
+  const {profile} = listing
+  const profileDescription = profile.description
   const validators = getValidators(`description`, listing)
-  return validate(validators, description)
+  return validate(validators, profileDescription)
 }

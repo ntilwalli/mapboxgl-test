@@ -7,6 +7,7 @@ import {isDisabled} from '../listing'
 function renderTitle(info) {
   const {state, components} = info
   const {listing} = state
+  const {profile} = listing
   const {titleInput} = components
   const section = `description`
   const property = `title`
@@ -23,7 +24,8 @@ function renderTitle(info) {
 
 function renderDescription(state) {
   const {listing} = state
-  const {description} = listing.description
+  const {profile} = listing
+  const {description} = profile.description
   const section = `description`
   const property = `description`
   const disabled = isDisabled(section, property, listing)
@@ -39,8 +41,8 @@ function renderDescription(state) {
 
 function renderShortDescription(state) {
   const {listing} = state
-  const meta = listing.meta
-  const {shortDescription} = listing.description
+  const {profile} = listing
+  const {shortDescription} = profile.description
   const section = `description`
   const property = `shortDescription`
   const disabled = isDisabled(section, property, listing)
@@ -56,8 +58,8 @@ function renderShortDescription(state) {
 
 function renderCategories(state) {
   const {listing} = state
-  const meta = listing.meta
-  const {categories} = listing.description
+  const {profile} = listing
+  const {categories} = profile.description
   const section = `description`
   const property = `categories`
   const disabled = isDisabled(section, property, listing)
@@ -74,10 +76,7 @@ function renderCategories(state) {
 }
 
 function renderPanel(info) {
-  const {state, components} = info
-  const {titleInput} = components
-  const {listing} = state
-  const description = listing.description
+  const {state} = info
   return div(`.panel`, [
     renderTitle(info),
     renderDescription(state),
