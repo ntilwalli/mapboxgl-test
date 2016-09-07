@@ -3,8 +3,8 @@ import {Observable as O} from 'rxjs'
 const LOGIN_ENDPOINT = `/api_auth/login`
 
 function intent(sources) {
-  const response$ = sources.HTTP.response$$
-    .filter(res$ => res$.request.url === LOGIN_ENDPOINT)
+  const response$ = sources.HTTP.select(`login`)
+    //.filter(res$ => res$.request.url === LOGIN_ENDPOINT)
     .switchMap(x => x)
     // .map(x => {
     //   return x

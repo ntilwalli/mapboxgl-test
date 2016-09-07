@@ -19,10 +19,7 @@ function toGeotagHTTPRequest (props, position) {
 }
 
 function getResponseStream(props, HTTP) {
-  if (props && props.category)
-    return HTTP.select(props.category)
-  else
-    return HTTP.response$$.filter(res$ => res$.request.url.indexOf(geoTagUrl) > -1)
+  return HTTP.select(props.category)
 }
 
 

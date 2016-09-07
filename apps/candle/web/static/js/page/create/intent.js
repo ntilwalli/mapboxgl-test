@@ -5,8 +5,8 @@ import {getEmptyListing} from './listing'
 
 export default function intent(sources) {
   const {HTTP, Storage} = sources
-  const fromHTTP$ = HTTP.response$$
-    .filter(x => x.request.url === RETRIEVE_LISTING_URL)
+  const fromHTTP$ = HTTP.select(`retrieveListing`)
+    //.filter(x => x.request.url === RETRIEVE_LISTING_URL)
     .switchMap(x => x)
     .filter(x => x.status === 200)
     .map(x => {

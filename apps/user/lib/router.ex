@@ -29,12 +29,14 @@ defmodule User.Router do
 
   def handle_call({:route, {%{user_id: user_id} = user_info, message}}, _from, state) do
     Logger.debug "Authenticated route..."
-    out = User.Registry.get_process(User.Registry, user_info)
-    case out do
-      pid -> 
-          {:reply, User.Auth.route(pid, message), state}
+    matched_pid = User.Registry.get_process(User.Registry, user_info)
+    case matched_pid do
       nil -> 
-          {:reply, {:error, "Could not find user process: #{user_id}"}, state}
+        {:reply, {:error, "Could not find user process: #{user_id}"}, state}
+      pid -> 
+        IO.puts "Found user process"
+        IO.inspect pid
+        {:reply, User.Auth.route(pid, message), state}
     end
   end
 end

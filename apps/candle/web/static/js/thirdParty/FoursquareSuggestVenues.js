@@ -25,7 +25,8 @@ function toHTTP({props, partial, centerZoom}) {
   return  {
     url: url,
     //method: `get`,
-    type: `text/plain`
+    type: `text/plain`,
+    category: `suggestVenues`
   }
 
 }
@@ -35,8 +36,8 @@ function FoursquareSuggestVenues (sources, inputs) {
   const {props$, input$, centerZoom$} = inputs
 
 
-  const fromHttp$ = HTTP.response$$
-    .filter(res$ => res$.request.url.indexOf(`suggestcompletion`) > -1)
+  const fromHttp$ = HTTP.select(`suggestVenues`)
+    //.filter(res$ => res$.request.url.indexOf(`suggestcompletion`) > -1)
     .switchMap(res => {
       return res.map(res => {
         if (res.statusCode === 200) {

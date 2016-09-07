@@ -2,16 +2,29 @@ import {Observable as O} from 'rxjs'
 import {div, button, span} from '@cycle/dom'
 import Immutable from 'immutable'
 import isolate from '@cycle/isolate'
-import {combineObj, createProxy, spread, normalizeComponent, normalizeSink, mergeSinks, defaultNever} from '../../../utils'
+import {combineObj, createProxy, spread, normalizeComponent, normalizeSink, mergeSinks, defaultNever, processHTTP} from '../../../utils'
 
 
 function intent(sources) {
   const {DOM, HTTP} = sources
   const next$ = DOM.select(`.appNextButton`).events(`click`)
   const back$ = DOM.select(`.appBackButton`).events(`click`)
-  
+  const {good$, bad$, ugly$} = processHTTP(sources, `saveListingOnNext`)
+  const created$ = good$.filter(x => x.type === `created`)
+    .map(x => {
+      return x
+    })
+    .share()
+  const saved$ = good$.filter(x => x.type === `saved`)
+  const fromHTTP$ = O.merge(
+    created$,
+    saved$,
+    bad$,
+    ugly$,
+  )
+
   return {
-    next$, back$
+    next$, back$, fromHTTP$, created$
   }
 }
 
@@ -94,29 +107,65 @@ export default function main(sources, inputs) {
 
     const vtree$ = view(state$, components)
     
-    const toNextScreen$ = actions.next$
+    const decision$ = actions.next$
       .withLatestFrom(state$, (_, state) => {
         const {contentState} = state
         const {listing} = contentState
         if (listing.id) {
           return {
-            pathname: `/create/${listing.id}/${next}`,
-            action: `PUSH`,
-            state: listing
+            type: "Router",
+            data: {
+              pathname: `/create/${listing.id}/${next}`,
+              action: `PUSH`,
+              state: listing
+            }
           }
         } else if (!nextRequiresListingId) {
           const out = {
-            pathname: `/create/${next}`,
-            action: `PUSH`,
-            state: listing
+            type: "Router",
+            data: {
+              pathname: `/create/${next}`,
+              action: `PUSH`,
+              state: listing
+            }
           }
 
           return out
         } else {
-          throw new Error(`No listing id and not valid create flag.`)
+          return {
+            type: "HTTP",
+            data: listing
+          }
+        }
+      }).share()
+
+    const toHTTP$ = decision$.filter(x => x.type === "HTTP")
+      .map(x => {
+        const listing = x.data
+        return {
+          url: `/api/user`,
+          method: `post`,
+          type: `json`,
+          send: {
+            route: `/listing/save`,
+            data: listing
+          },
+          category: `saveListingOnNext`
         }
       })
- 
+      .share()
+
+    const toNextScreen$ = O.merge(
+      decision$.filter(x => x.type === "Router").map(x => x.data),
+      actions.created$.map(x => x.data).map(listing => {
+        return {
+          pathname: `/create/${listing.id}/${next}`,
+          action: `PUSH`,
+          state: listing
+        }
+      })
+    )
+    
 
     const toPreviousScreen$ = actions.back$
       .withLatestFrom(state$, (_, state) => {
@@ -124,7 +173,7 @@ export default function main(sources, inputs) {
         const {listing} = contentState
 
         if (listing.id) {
-          const pathname = previous ? `/create/${listing.id}/previous` : `/create/${listing.id}`
+          const pathname = previous ? `/create/${listing.id}/${previous}` : `/create/${listing.id}`
           return {
             pathname,
             action: `PUSH`,
@@ -140,34 +189,54 @@ export default function main(sources, inputs) {
         }
       })
 
-    const mergableSinks = {
-      Router: O.merge(
-        toNextScreen$, 
-        toPreviousScreen$
-      )
-    }
+    // const mergableSinks = {
+    //   HTTP: toHTTP$.map(x => {
+    //     return x
+    //   }),
+    //   Router: O.merge(
+    //     toNextScreen$, 
+    //     toPreviousScreen$
+    //   )
+    // }
 
     // return spread(mergeSinks(mergableSinks, content), {
-    //   DOM: vtree$
-    //           .do(x => console.log(`Got DOM`, x)),
+    //   DOM: vtree$,//.do(x => console.log(`Got DOM`, x)),
     //   listing$: state$
     //     .map(x => x.contentState.listing)
     //     .map(x => {
     //       return x
-    //     })
-    //     .cache(1),
-    //   save$: defaultNever(content, `save$`)
+    //     }),
+    //   save$: defaultNever(content, `save$`),
+    //   saveStatus$: O.merge(
+    //     actions.fromHTTP$,
+    //     toHTTP$.map(x => ({type: `saving`}))
+    //   )
     // })
 
-    return spread(mergeSinks(mergableSinks, content), {
-      DOM: vtree$,//.do(x => console.log(`Got DOM`, x)),
+    return {
+      DOM: vtree$,
+      HTTP: toHTTP$.map(x => {
+        return x
+      }),
+      Router: O.merge(
+        toNextScreen$, 
+        toPreviousScreen$
+      ),
+      MapDOM: O.never(),
+      Storage: O.never(),
+      Global: O.never(),
       listing$: state$
         .map(x => x.contentState.listing)
         .map(x => {
           return x
         }),
-      save$: defaultNever(content, `save$`)
-    })
+      save$: defaultNever(content, `save$`),
+      saveStatus$: O.merge(
+        actions.fromHTTP$,
+        toHTTP$.map(x => ({type: `saving`}))
+      )
+
+    }
 
   })
   .cache(1)
@@ -178,9 +247,12 @@ export default function main(sources, inputs) {
     Router: normalizeSink(component$, `Router`),
     Global: normalizeSink(component$, `Global`),
     Storage: normalizeSink(component$, `Storage`),
-    HTTP: normalizeSink(component$, `HTTP`),
+    HTTP: normalizeSink(component$, `HTTP`).map(x => {
+      return x
+    }),
     message$: normalizeSink(component$, `message$`),
     listing$: normalizeSink(component$, `listing$`),
-    save$: normalizeSink(component$, `save$`)
+    save$: normalizeSink(component$, `save$`),
+    saveStatus$: normalizeSink(component$, `saveStatus$`)
   }
 }

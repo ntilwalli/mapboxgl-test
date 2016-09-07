@@ -19,7 +19,7 @@
   "dependencies": {
     "@cycle/dom": "^12.1.0",
     "@cycle/history": "^4.0.0",
-    "@cycle/http": "^9.0.3",
+    "@cycle/http": "^11.0.0",
     "@cycle/isolate": "^1.4.0",
     "@cycle/rxjs-run": "^3.0.3",
     "@cycle/storage": "3.0.0-rc3",
@@ -27,7 +27,7 @@
     "cookie_js": "^1.2.0",
     "cycle-circular": "^0.2.0",
     "cycle-mapdom": "^3.0.1",
-    "cyclic-router": "file:custom_deps/cyclic-router",
+    "cyclic-router": "file:///Users/ntilwalli/dev/cycle/cyclic-router",
     "history": "^3.0.0",
     "immutable": "^3.8.1",
     "moment": "^2.13.0",

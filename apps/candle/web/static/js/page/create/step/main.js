@@ -1,49 +1,29 @@
 import {Observable as O} from 'rxjs'
 import {div, span} from '@cycle/dom'
 import Immutable from 'immutable'
-import {combineObj, mergeSinks, normalizeComponent, spread, createProxy} from '../../../utils'
+import {combineObj, mergeSinks, normalizeComponent, spread, createProxy, processHTTP} from '../../../utils'
 
 function processValid(response) {
   return response
 }
 
-function processHTTP(sources, cat) {
-  const {HTTP} = sources
 
-  const out$ = HTTP.select(cat)
-    .switchMap(res$ => res$
-      .map(res => {
-        if (res.statusCode === 200) {
-          return {
-            type: "success",
-            data: res.body
-          }
-        } else {
-          return {
-            type: `bad`,
-            data: `Unsuccessful response from server`
-          }
-        }
-      })
-      .catch((e, orig$) => {
-        return O.of({type: `ugly`, data: e.message})
-      })
-    ).share()
-
-  return {
-    good$: out$.filter(x => x.type === "success").map(x => x.data),
-    bad$: out$.filter(x => x.type === "bad").map(x => x.data),
-    ugly$: out$.filter(x => x.type === "ugly").map(x => x.data)
-      .map(x => {
-        return x
-      })
-  }
-
-}
 
 function intent(sources) {
-  const {DOM, HTTP, Global} = sources
+  const {DOM, Router, HTTP, Global} = sources
   
+  const route$ = Router.history$.take(1)
+    .map(x => {
+      const path = x.pathname
+      const m = /^\/create\/([0-9]*\/)?(.*)\/?$/.exec(path)
+      return {
+        id: m[1],
+        stepName: m[2]
+      }
+    })
+    .cache(1)
+
+
   const closeInstruction$ = O.merge(
     Global.filter(x => x.type === `thresholdUp`).map(x => {
       return x
@@ -53,12 +33,23 @@ function intent(sources) {
 
   const openInstruction$ =  DOM.select(`.appOpenInstruction`).events(`click`)
   const {good$, bad$, ugly$} = processHTTP(sources, `saveListing`)
+  const created$ = good$
+    .map(x => {
+      return x
+    })
+    .filter(x => x.type === `created`)
+    //.map(x => x.data)
+    .share()
+  const saved$ = good$
+    .filter(x => x.type === `saved`)
+    //.map(x => x.data)
+    .share()
+
   const fromHTTP$ = O.merge(
-    good$.map(data => ({type: `saved`, data: new Date()})), 
-    bad$.map(data => ({type: `error`, data: data})), 
-    ugly$.map(data => {
-      return {type: `error`, data: data}
-    }),
+    created$,
+    saved$,
+    bad$,
+    ugly$,
   ).map(x => {
     return x
   })
@@ -67,7 +58,9 @@ function intent(sources) {
   return {
     closeInstruction$,
     openInstruction$,
-    fromHTTP$
+    fromHTTP$,
+    created$,
+    route$
   }
 }
 
@@ -165,11 +158,16 @@ export default function main(sources, inputs) {
   })
   .share()
 
-  saving$.attach(O.merge(
+  const saveStatus$ = O.merge(
     toHTTP$.mapTo({
       type: `saving`
     }),
     actions.fromHTTP$
+  )
+
+  saving$.attach(O.merge(
+    saveStatus$,
+    content.saveStatus$
   ))
 
   const components = {
@@ -180,11 +178,24 @@ export default function main(sources, inputs) {
 
   const vtree$ = view(state$, components)
 
-  return spread(mergeSinks(heading, content, instruction), {
-    DOM: vtree$,
+  const mergeableSinks = {
     HTTP: toHTTP$
       .map(x => {
         return x
-      })
+      }),
+    Router: actions.created$.withLatestFrom(actions.route$, (created, route) => {
+      const {data} = created
+      const listing = data
+      const {stepName} = route
+      return {
+        pathname: `/create/${listing.id}/${stepName}`,
+        action: `PUSH`,
+        state: listing
+      }
+    })
+  }
+
+  return spread(mergeSinks(heading, content, instruction, mergeableSinks), {
+    DOM: vtree$
   })
 }

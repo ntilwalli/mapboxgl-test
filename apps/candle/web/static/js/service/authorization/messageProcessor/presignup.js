@@ -3,8 +3,8 @@ import {Observable as O} from 'rxjs'
 const PRESIGNUP_ENDPOINT = `/api_auth/presignup`
 
 function intent(sources) {
-  const response$ = sources.HTTP.response$$
-    .filter(res$ => res$.request.url === PRESIGNUP_ENDPOINT)
+  const response$ = sources.HTTP.select(`presignup`)
+    //.filter(res$ => res$.request.url === PRESIGNUP_ENDPOINT)
     .switchMap(x => x)
     .map(x => {
       return x
@@ -71,7 +71,7 @@ export default function process(sources, message$) {
         method: `post`,
         type: `json`,
         send: x,
-        category: `signup`
+        category: `presignup`
     }))
     .map(x => {
       return x

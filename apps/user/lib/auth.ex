@@ -12,7 +12,7 @@ defmodule User.Auth do
   end
 
   def route(server, message) do
-    GenServer.call(server, message)
+    GenServer.call(server, {:route, message})
   end
 
   def init([{:user, user}] = args) do
@@ -21,9 +21,12 @@ defmodule User.Auth do
     }}
   end
 
-  def handle_call(%{"route" => "/listing/save", "data" => listing}, _from, %{user: user} = state) do
-    IO.puts "Got listing with no id"
+  def handle_call({:route, %{"route" => "/listing/save", "data" => listing} = message} , _from, state) do
+    IO.puts "Got save request"
     IO.inspect listing
+    %{"route" => "/listing/save", "data" => listing} = message
+    %{user: user} = state
+
 
 
     id = Map.get(listing, "id")
@@ -50,11 +53,11 @@ defmodule User.Auth do
           {:ok, val} -> 
             IO.puts "insert ok"
             IO.inspect val
-            {:reply, {:ok, %{type: "success"}}, state}
+            {:reply, {:ok, %{type: "created", data: val}}, state}
           {:error, val} -> 
             IO.puts "insert error"
             IO.inspect val
-            {:reply, {:ok, %{type: "error"}}, state}
+            {:reply, {:ok, %{type: "error", data: val}}, state}
         end
       val ->
         IO.puts "Update existing listing"
@@ -62,8 +65,8 @@ defmodule User.Auth do
           "id" => val,
           "parent_id" => parent_id,
           "type" => type,
-          "profile" => profile,
-          "inserted_at" => Timex.now
+          "profile" => profile#,
+          #"updated_at" => Timex.now
         }
 
         changeset = Listing.update_changeset(listing, params)
@@ -73,11 +76,11 @@ defmodule User.Auth do
           {:ok, val} -> 
             IO.puts "update ok"
             IO.inspect val
-            {:reply, {:ok, %{type: "success"}}, state}
+            {:reply, {:ok, %{type: "saved", data: val}}, state}
           {:error, val} -> 
             IO.puts "update error"
             IO.inspect val
-            {:reply, {:ok, %{type: "error"}}, state}
+            {:reply, {:ok, %{type: "error", data: val}}, state}
         end
     end
   end

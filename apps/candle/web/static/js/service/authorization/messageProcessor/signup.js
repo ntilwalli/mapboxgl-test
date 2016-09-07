@@ -3,8 +3,8 @@ import {Observable as O} from 'rxjs'
 const SIGNUP_ENDPOINT = `/api_auth/signup`
 
 function intent(sources) {
-  const response$ = sources.HTTP.response$$
-    .filter(res$ => res$.request.url === SIGNUP_ENDPOINT)
+  const response$ = sources.HTTP.select(`signup`)
+    //.filter(res$ => res$.request.url === SIGNUP_ENDPOINT)
     .switchMap(x => x)
     .map(x => {
       return x

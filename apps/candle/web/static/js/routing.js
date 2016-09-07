@@ -11,10 +11,12 @@ import Restricted from './restricted'
 import CreateListing from './page/create/main'
 //import CreateListing from './createListing/main'
 
+import routeFunction from './localDrivers/routeFunction/main'
+
 const routes = [
-  {pattern: '/create', value: CreateListing},
-	{pattern: '/restricted', value: Restricted},
-  {pattern: '*', value: Home}
+  {pattern: /\/create/, value: CreateListing},
+	{pattern: /\/restricted/, value: Restricted},
+  {pattern: /.*/, value: Home}
 ]
 
 // const routes = {
@@ -25,13 +27,16 @@ const routes = [
 // }
 
 export default function routing(sources, inputs) {
+  console.log(routeFunction)
   const {Router} = sources
-  const routing$ = Router.define(routes)
+  const routing$ = Router.define(routes, routeFunction)
     .map(x => {
       return x
     })
     .map(route => {
-      return route.value(spread(
+      const data = route.value
+      const component = data.info
+      return component(spread(
         sources, {
         Router: Router.path(route.path)
       }), inputs)

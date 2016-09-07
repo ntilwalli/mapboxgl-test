@@ -79,29 +79,6 @@ export function renderAlerts(state) {
   ])
 }
 
-export function getHTTPStreams(url, {HTTP}) {
-  const response$ = HTTP.response$$.filter(res$ => res$.request.url === url).switchMap(x => x).cache()
-  const response_good$ = response$
-    .filter(x => x.status === 200)
-    .map(x => x.body)
-
-  const bad$ = response$
-    .filter(x => x.status !== 200)
-
-  const error$ = response_good$
-    .filter(x => x.type === `error`)
-    .map(x => x.data)
-
-  const success$ = response_good$
-    .filter(x => x.type === `success`)
-
-  return {
-    bad$,
-    error$,
-    success$
-  }
-}
-
 export function defaultNever(component, sinkName) {
   const out = component[sinkName] || O.never()
   return out
@@ -119,6 +96,7 @@ export function blankComponent() {
     Global: O.never(),
     Storage: O.never(),
     HTTP: O.never(),
+    Heartbeat: O.never(),
     message$: O.never()
   }
 }
@@ -131,6 +109,7 @@ export function blankComponentUndefinedDOM() {
     Global: O.never(),
     Storage: O.never(),
     HTTP: O.never(),
+    Heartbeat: O.never(),
     message$: O.never()
   }
 }
@@ -154,9 +133,10 @@ export function mergeSinks(...components) {
   const Router = mergeSelective(...components.map(c => c.Router).filter(x => !!x))
   const Global = mergeSelective(...components.map(c => c.Global).filter(x => !!x))
   const Storage = mergeSelective(...components.map(c => c.Storage).filter(x => !!x))
+  const Heartbeat = mergeSelective(...components.map(c => c.Heartbeat).filter(x => !!x))
   const message$ = mergeSelective(...components.map(c => c.message$).filter(x => !!x))
   return {
-    MapDOM, HTTP, Router, Global, Storage, message$
+    MapDOM, HTTP, Router, Global, Storage, Heartbeat, message$
   }
 }
 
@@ -169,6 +149,7 @@ export function normalizeComponent(component) {
     Global: defaultNever(component, `Global`),
     Storage: defaultNever(component, `Storage`),
     HTTP: defaultNever(component, `HTTP`),
+    Heartbeat: defaultNever(component, `Heartbeat`),
     message$: defaultNever(component, `message$`),
   }
 }
@@ -181,6 +162,7 @@ export function normalizeComponentStream(component$) {
     Global: normalizeSink(component$, `Global`),
     Storage: normalizeSink(component$, `Storage`),
     HTTP: normalizeSink(component$, `HTTP`),
+    Heartbeat: normalizeSink(component$, `Heartbeat`),
     message$: normalizeSink(component$, `message$`),
   }
 }
@@ -251,6 +233,37 @@ export function notBetween(first, second) {
 }
 
 export const checkValidity = x => x.valid ? x.value : null
+
+export function processHTTP(sources, category) {
+  const {HTTP} = sources
+
+  const out$ = HTTP.select(category)
+    .switchMap(res$ => res$
+      .map(res => {
+        if (res.statusCode === 200) {
+          return {
+            type: "good",
+            data: res.body
+          }
+        } else {
+          return {
+            type: `bad`,
+            data: `Unsuccessful response from server`
+          }
+        }
+      })
+      .catch((e, orig$) => {
+        return O.of({type: `ugly`, data: e.message})
+      })
+    ).share()
+
+  return {
+    good$: out$.filter(x => x.type === "good").map(x => x.data).share(),
+    bad$: out$.filter(x => x.type === "bad").map(x => x.data),
+    ugly$: out$.filter(x => x.type === "ugly").map(x => x.data)
+  }
+
+}
 
 // export function filterHTTP(sources, url) {
 //   const response$ = sources.HTTP.response$$.filter(res$ => res$.request.url === url).flatten().remember()

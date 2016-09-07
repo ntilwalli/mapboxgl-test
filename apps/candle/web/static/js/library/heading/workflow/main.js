@@ -4,24 +4,27 @@ import Immutable from 'immutable'
 import {combineObj, normalizeComponent, renderExternalLink, spread, mergeSinks, attrs} from '../../../utils'
 import moment from 'moment'
 
+import routeFunction from '../../../localDrivers/routeFunction/main'
+
 import Logo from '../logo'
 
 function intent(sources) {
-  const {DOM, Router} = sources
+  const {DOM, Router, Heartbeat} = sources
   const save$ = DOM.select(`.appSaveListing`).events(`click`)
   const listing$ = Router.history$.map(x => x.state)
   const instruction$ = Router.define([
     {pattern: `/meta`, value: `Step 1: Preliminary info`},
     {pattern: `/description`, value: `Step 2: Add a title and description`},
     {pattern: `*`, value: `Step default: Should not get here`}
-  ]).map(x => {
-    return x.value
+  ], routeFunction).map(x => {
+    return x.value.info
   })
 
   return {
     save$,
     instruction$,
-    listing$
+    listing$,
+    Heartbeat
   }
 }
 
@@ -30,11 +33,15 @@ function reducers(actions, inputs) {
     if (val.type === `saving`) {
       return state.set(`isSaving`, true)
     } else if (val.type === `saved` || val.type === `error`) {
-      return state.set(`lastSaved`, val.data).set(`isSaving`, false)
+      return state.set(`lastSaved`, val.data.updated_at).set(`isSaving`, false)
+    } else if (val.type === `created`) {
+      return state.set(`lastSaved`, val.data.inserted_at).set(`isSaving`, false)
     }
   })
 
-  return O.merge(savingR)
+  const heartbeatR = actions.Heartbeat.map(() => state => state)
+
+  return O.merge(savingR, heartbeatR)
 }
 
 function model(actions, inputs) {
@@ -43,7 +50,7 @@ function model(actions, inputs) {
 
   return combineObj({
     instruction$: actions.instruction$.take(1),
-    lastSaved$: actions.listing$.map(x => x && x.lastUpdated).take(1)
+    lastSaved$: actions.listing$.map(x => x && x.updatedAt).take(1)
   })
     .map(inputs => {
       const {instruction, lastSaved} = inputs

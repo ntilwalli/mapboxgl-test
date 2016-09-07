@@ -4,8 +4,8 @@ const LOGIN_ENDPOINT = `/api_auth/login`
 const LOGOUT_ENDPOINT = `/api_auth/logout`
 
 function intent(sources) {
-  const redirect$ = sources.HTTP.response$$
-    .filter(res$ => res$.request.url === LOGOUT_ENDPOINT)
+  const redirect$ = sources.HTTP.select(`logout`)
+    //.filter(res$ => res$.request.url === LOGOUT_ENDPOINT)
     .switchMap(x => x)
     .share()
 

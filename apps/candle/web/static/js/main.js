@@ -95,7 +95,10 @@ function main(sources) {
       routedComponent.HTTP,
       defaultNever(services, 'HTTP'),
       normalizeSink(modal$, 'HTTP')
-    )
+    ).map(x => {
+      return x
+    }),
+    Heartbeat: O.never()
   }
 }
 
@@ -106,5 +109,8 @@ Cycle.run(main, {
   Router: makeRouterDriver(createHistory(), {capture: true}),
   Global: makeGlobalDOMEventDriver(),
   Storage: storageDriver,
-  HTTP: makeHTTPDriver()
+  HTTP: makeHTTPDriver(),
+  Heartbeat: () => {
+    return O.interval(60000).map(() => new Date()).share()
+  }
 })

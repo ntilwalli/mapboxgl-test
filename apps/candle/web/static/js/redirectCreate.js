@@ -6,7 +6,7 @@ export default function main(sources, inputs, route) {
     DOM: O.of(null),
     Global: O.of({
       type: `redirect`,
-      data: `/`
+      data: `/create`
     })
   }
 }

@@ -8,7 +8,7 @@ import view from './view'
 import {normalizeSink, normalizeSinkUndefined, createProxy, spread} from '../../utils'
 
 import Modal from '../../library/modal/simple/main'
-import Vicinity from '../../page/create/workflow/location/vicinity/main'
+import Vicinity from '../../page/create/oldWorkflow/location/vicinity/main'
 import Presignup from '../../library/authorization/presignup/main'
 
 function getBlankModal() {

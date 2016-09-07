@@ -24,9 +24,15 @@ defmodule User.Registry do
     {:ok, pid} = User.Auth.Supervisor.start_user(user)
     ref = Process.monitor(pid)
     user_id = user.id
+    IO.puts "Old auth"
+    IO.inspect auth
     auth = Map.put(auth, user_id, pid)
+
     auth_ref = Map.put(auth_ref, ref, user_id)
-    %{%{state | auth: auth} | auth_ref: auth_ref}
+    new_state = %{%{state | auth: auth} | auth_ref: auth_ref}
+    IO.puts "New auth"
+    IO.inspect new_state.auth
+    new_state
   end
 
   def init(:ok) do
@@ -53,8 +59,13 @@ defmodule User.Registry do
     user_id = user.id
     case Map.get(auth, user_id) do
       nil -> 
-        user = Shared.Repo.get(Shared.User, user)
-        add_auth_process(user, state)
+        IO.puts "Adding new user, old state"
+        IO.inspect state
+        user = Shared.Repo.get(Shared.User, user_id)
+        new_state = add_auth_process(user, state)
+        IO.puts "Adding new user, new state"
+        IO.inspect new_state
+        {:reply, user_id, new_state}
       pid -> 
         {:reply, user_id, state}
     end
