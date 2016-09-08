@@ -121,7 +121,7 @@ export default function main(sources, inputs) {
   const stepProps = O.of({
     contentComponent,
     create: false,
-    nextRequiresListingId: true,
+    nextRequiresListingId: false,
     previous: undefined,
     next: `description`
   })

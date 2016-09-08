@@ -27,7 +27,7 @@
     "cookie_js": "^1.2.0",
     "cycle-circular": "^0.2.0",
     "cycle-mapdom": "^3.0.1",
-    "cyclic-router": "file:///Users/ntilwalli/dev/cycle/cyclic-router",
+    "cyclic-router": "^3.0.0",
     "history": "^3.0.0",
     "immutable": "^3.8.1",
     "moment": "^2.13.0",

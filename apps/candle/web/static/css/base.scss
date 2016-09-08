@@ -1,21 +1,21 @@
-@import url(https://fonts.googleapis.com/css?family=Lato);
-
-// @font-face {
-//   font-family: ArcherBook;
-//   src: local("ArcherBook"), url("file:///Users/ntilwalli/dev/most/candle/priv/static/fonts/archer-book/Archer-Book-Pro.otf")
-// }
+//@import url(https://fonts.googleapis.com/css?family=Lato);
 
 @font-face {
-  font-family: ArcherBook2;
-  src: local("ArcherBook"), url("/fonts/archer-book/Archer-Book-Pro.otf") format('opentype')
+  font-family: ArcherBook;
+  src: local("ArcherBook"), url("file:///Users/ntilwalli/dev/most/candle/priv/static/fonts/archer-book/Archer-Book-Pro.otf")
 }
+
+// @font-face {
+//   font-family: ArcherBook2;
+//   src: local("ArcherBook"), url("/fonts/archer-book/Archer-Book-Pro.otf") format('opentype')
+// }
 
 html, body, #app-main, .root-container {
   height: 100%;
 }
 
 body {
-  font-family: 'Lato', serif;
+  //font-family: 'Lato', serif;
   font-family: serif;
 }
 

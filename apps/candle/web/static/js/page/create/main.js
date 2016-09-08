@@ -15,7 +15,6 @@ import Description from './description/main'
 
 import RedirectRestricted from '../../redirectRestricted'
 import RedirectCreate from '../../redirectCreate'
-import routeFunction from '../../localDrivers/routeFunction/main'
 
 import Workflow from './workflow/main'
 
@@ -68,7 +67,7 @@ export default function main(sources, inputs) {
     .filter(x => !x)
     .map(() => RedirectRestricted(sources, inputs))
 
-  const route$ = isAuthorized$.switchMap(() => Router.define(routes, routeFunction))
+  const route$ = isAuthorized$.switchMap(() => Router.define(routes))
     .map(x => {
       return x
     })
@@ -82,7 +81,8 @@ export default function main(sources, inputs) {
     .map(route => ({
         url: RETRIEVE_LISTING_URL,
         action: `GET`,
-        send: {id: route.value.data}
+        send: {id: route.value.data},
+        category: `retrieveListing`
     }))
     .map(x => {
       return x

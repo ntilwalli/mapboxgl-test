@@ -1,4 +1,5 @@
 import {Observable as O} from 'rxjs'
+import {div} from '@cycle/dom'
 import routeFunction from '../../../localDrivers/routeFunction/main'
 
 import {normalizeComponentStream} from '../../../utils'
@@ -8,6 +9,10 @@ import Meta from '../meta/main'
 import Description from '../description/main'
 import RedirectRestricted from '../../../redirectRestricted'
 import RedirectCreate from '../../../redirectCreate'
+
+// const Description = () => ({
+//   DOM: O.of(div([`Workflow`]))
+// })
 
 const routes = [
   {pattern: /^\/meta$/, value: {type: "component", data: Meta}},

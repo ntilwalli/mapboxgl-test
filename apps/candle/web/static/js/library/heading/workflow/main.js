@@ -4,8 +4,6 @@ import Immutable from 'immutable'
 import {combineObj, normalizeComponent, renderExternalLink, spread, mergeSinks, attrs} from '../../../utils'
 import moment from 'moment'
 
-import routeFunction from '../../../localDrivers/routeFunction/main'
-
 import Logo from '../logo'
 
 function intent(sources) {
@@ -16,7 +14,7 @@ function intent(sources) {
     {pattern: `/meta`, value: `Step 1: Preliminary info`},
     {pattern: `/description`, value: `Step 2: Add a title and description`},
     {pattern: `*`, value: `Step default: Should not get here`}
-  ], routeFunction).map(x => {
+  ]).map(x => {
     return x.value.info
   })
 

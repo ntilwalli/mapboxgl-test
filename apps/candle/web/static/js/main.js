@@ -26,7 +26,7 @@ import Login from './library/authorization/login/main'
 import Signup from './library/authorization/signup/main'
 import Presignup from './library/authorization/presignup/main'
 
-
+import routeFunction from './localDrivers/routeFunction/main'
 
 function main(sources) {
 
@@ -106,7 +106,7 @@ Cycle.run(main, {
   DOM: makeDOMDriver(`#app-main`),
   MapDOM: makeMapDOMDriver(
     `pk.eyJ1IjoibXJyZWRlYXJzIiwiYSI6ImNpbHJsZnJ3NzA4dHZ1bGtub2hnbGVnbHkifQ.ph2UH9MoZtkVB0_RNBOXwA`),
-  Router: makeRouterDriver(createHistory(), {capture: true}),
+  Router: makeRouterDriver(createHistory(), routeFunction, {capture: true}),
   Global: makeGlobalDOMEventDriver(),
   Storage: storageDriver,
   HTTP: makeHTTPDriver(),

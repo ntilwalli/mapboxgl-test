@@ -11,8 +11,6 @@ import Restricted from './restricted'
 import CreateListing from './page/create/main'
 //import CreateListing from './createListing/main'
 
-import routeFunction from './localDrivers/routeFunction/main'
-
 const routes = [
   {pattern: /\/create/, value: CreateListing},
 	{pattern: /\/restricted/, value: Restricted},
@@ -27,9 +25,8 @@ const routes = [
 // }
 
 export default function routing(sources, inputs) {
-  console.log(routeFunction)
   const {Router} = sources
-  const routing$ = Router.define(routes, routeFunction)
+  const routing$ = Router.define(routes)
     .map(x => {
       return x
     })
