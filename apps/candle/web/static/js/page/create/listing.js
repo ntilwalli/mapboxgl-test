@@ -16,7 +16,7 @@ export function getEmptyListing() {
         shortDescription: undefined,
         categories: []
       },
-      where: {
+      location: {
         mode: `venue`,
         vicinity: undefined,
         info: undefined,

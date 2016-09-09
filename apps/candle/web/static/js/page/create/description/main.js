@@ -50,7 +50,7 @@ export default function main(sources, inputs) {
     create: false,
     nextRequiresListingId: true,
     previous: `meta`,
-    next: `where`
+    next: `location`
   })
 
   const content = StepContent(sources, spread(inputs, {
