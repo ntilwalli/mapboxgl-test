@@ -8,12 +8,6 @@ export default function intent(sources) {
   const {DOM, MapDOM, HTTP, Router} = sources
   const showVicinityScreen$ = DOM.select(`.appChangeVicinityButton`).events(`click`)
     .mapTo(true)
-  const hideVicinityScreen$ = O.merge(
-    DOM.select(`.appModal`).events(`click`)
-      .filter(targetIsOwner),
-    DOM.select(`.appModalClose`).events(`click`)
-      .filter(targetIsOwner)
-  ).mapTo(false)
 
   const mapClick$ = MapDOM.chooseMap(`addEventMapAnchor`).select(`.addEventMap`).events(`click`)
      .map(ev => ev.latlng)
@@ -57,7 +51,7 @@ export default function intent(sources) {
     toHTTP$: regionService.HTTP,
     mapClick$,
     locationDescription$,
-    vicinityScreen$: O.merge(showVicinityScreen$, hideVicinityScreen$),
+    showVicinityScreen$: showVicinityScreen$,
     listing$
   }
 }

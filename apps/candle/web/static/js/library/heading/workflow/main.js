@@ -13,6 +13,7 @@ function intent(sources) {
   const instruction$ = Router.define([
     {pattern: `/meta`, value: `Step 1: Preliminary info`},
     {pattern: `/description`, value: `Step 2: Add a title and description`},
+    {pattern: `/location`, value: `Step 3: Add a location`},
     {pattern: `*`, value: `Step default: Should not get here`}
   ]).map(x => {
     return x.value.info

@@ -6,11 +6,11 @@ function toLatLngArray(center) {
 }
 
 function renderMapMode(listing) {
-  const location = listing.profile.location
+  const {location, mapSettings} = listing.profile
   const anchorId = `addEventMapAnchor`
   const centerZoom = location.info ? {center: toLatLngArray(location.info.latLng), zoom: 15} : {center: toLatLngArray(location.vicinity.position.center), zoom: 15}
   const properties = {attributes: {class: `addEventMap`}, centerZoom, disablePanZoom: false, anchorId, mapOptions: {zoomControl: true}}
-  const tile = listing.mapSettings ? state.mapSettings.tile : `mapbox.streets`
+  const tile = mapSettings ? mapSettings.tile : `mapbox.streets`
 
   return new VNode(`map`, properties, [
     new VNode(`tileLayer`, { tile }),

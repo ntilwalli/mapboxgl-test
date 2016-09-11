@@ -67,8 +67,9 @@ function reducers(actions, inputs) {
 
 
 function model(actions, inputs) {
-  const {geolocation$} = inputs
+  const {listing$, geolocation$} = inputs
   return combineObj({
+      listing$,
       vicinity$: geolocation$.take(1)
     })
     .switchMap(({vicinity}) => {
@@ -89,7 +90,8 @@ function model(actions, inputs) {
     .cache(1)
 }
 
-function renderVicinityModalBody(state, components) {
+function renderVicinityModalBody(info) {
+  const {state, components} = info
   return div(`.change-vicinity-modal`, [
     components.autocomplete,
     div(`.map.sub-section`, [
@@ -100,8 +102,8 @@ function renderVicinityModalBody(state, components) {
 }
 
 function view({state$, components}) {
-  return combineObj({state$, components$: combineObj(components)}).map(({state, components}) => {
-    return renderVicinityModalBody(state, components)
+  return combineObj({state$, components$: combineObj(components)}).map(info => {
+    return renderVicinityModalBody(info)
   })
 }
 
@@ -243,6 +245,6 @@ export default function main(sources, inputs) {
     DOM: view({state$, components: {autocomplete$: populatedPlaceInput.DOM}}),
     MapDOM: mapView(state$),
     HTTP: O.merge(populatedPlaceInput.HTTP, magicKeyConverter.HTTP, actions.toHTTP$),
-    result$: state$.map(x => x.vicinity)
+    output$: state$.map(x => x.vicinity)
   }
 }

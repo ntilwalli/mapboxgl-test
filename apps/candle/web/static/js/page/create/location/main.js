@@ -14,7 +14,13 @@ import FoursquareSuggestVenues from '../../../thirdParty/FoursquareSuggestVenues
 import VicinityScreen from './vicinity/main'
 import AddressInput from './address/main'
 
-import {normalizeSink, normalizeSinkUndefined, spread, createProxy} from '../../../utils'
+import Heading from '../../../library/heading/workflow/main'
+import Step from '../step/main'
+import StepContent from '../stepContent/standard'
+
+import getModal from './getModal'
+
+import {normalizeSink, normalizeSinkUndefined, normalizeComponent, spread, createProxy} from '../../../utils'
 import {getVicinityFromGeolocation} from './utils'
 
 
@@ -64,7 +70,7 @@ const venueItemConfigs = {
 // Autocomplete: Vicinity
 //
 
-const validVicinity = l => l && l.location && l.location.vicinity
+const validVicinity = l => l && l.profile && l.profile.location && l.profile.location.vicinity
 const validGeolocation = x => x
 
 function getDefaultVicinity(sources, inputs) {
@@ -75,7 +81,7 @@ function getDefaultVicinity(sources, inputs) {
 
   const validVicinity$ = listing$
     .filter(validVicinity)
-    .map(l => l.location.vicinity)
+    .map(l => l.profile.location.vicinity)
     //.debug(`validVicinity$...`)
 
   const invalidVicinity$ = listing$
@@ -155,7 +161,7 @@ function getDefaultVicinity(sources, inputs) {
 // Vicinity is:
 // - init : location.mapSettings || location.vicinity || userLocation
 
-export default function main(sources, inputs) {
+function contentComponent(sources, inputs) {
 
   const actions = intent(sources)
 
@@ -188,20 +194,30 @@ export default function main(sources, inputs) {
 
   const toHTTPMimic$ = createProxy()
   const location$ = createProxy()
+  const hideModal$ = createProxy()
   const vicinityFromScreen$ = createProxy()
 
   const state$ = model(actions, spread(enrichedInputs, {
-    defaultVicinity$: defaultVicinity$.do(x => console.log(`defVic`, x)),
-    vicinityFromScreen$: vicinityFromScreen$.do(x => console.log(`vic`, x)),
-    location$: location$.do(x => console.log(`loc`, x)),
-    radio$: radioInput.selected$.do(x => console.log(`radio`, x))
+    defaultVicinity$: defaultVicinity$,
+    vicinityFromScreen$: vicinityFromScreen$,
+    location$: location$,
+    radio$: radioInput.selected$,
+    hideModal$
   }))
 
-  const modal$ = state$.map(state => {
-    return state.modal
-  }).distinctUntilChanged()
-    .map(modal => getModal(sources, services.outputs, modal))
+  const modal$ = state$
+    .map(x => {
+      return x
+    })
+    .distinctUntilChanged(null, x => x.modal)
+    .map(x => {
+      return x
+    })
+    .map(state => getModal(sources, inputs, {modal: state.modal, listing: state.listing}))
     .cache(1)
+
+  hideModal$.attach(normalizeSink(modal$, `close$`))
+  vicinityFromScreen$.attach(normalizeSink(modal$, `done$`))
 
   const centerZoom$ = state$.map(x => x.listing.profile.location.vicinity.position)
   const venueAutocompleteInput = AutocompleteInput(sources, {
@@ -224,24 +240,22 @@ export default function main(sources, inputs) {
     addressInput.result$.skip(1)
   ))
 
+  // //const vicinityScreen = VicinityScreen(sources, {parentVicinity$: vicinity$})
+  // const vicinityScreenProxy = state$.map(state => {
+  //   if (state.showVicinityScreen) return VicinityScreen(sources, {parentVicinity$: vicinity$})
+  //   else return {}
+  // })
+  // .cache(1)
+
+  // const vicinityScreen = {
+  //   HTTP: normalizeSink(vicinityScreenProxy, `HTTP`),
+  //   MapDOM: normalizeSink(vicinityScreenProxy, `MapDOM`),
+  //   DOM: normalizeSinkUndefined(vicinityScreenProxy, `DOM`),
+  //   result$: normalizeSink(vicinityScreenProxy, `result$`)//,
+  //   //close$: normalizeSink(vicinityScreenProxy, `close$`)
+  // }
 
 
-  //const vicinityScreen = VicinityScreen(sources, {parentVicinity$: vicinity$})
-  const vicinityScreenProxy = state$.map(state => {
-    if (state.showVicinityScreen) return VicinityScreen(sources, {parentVicinity$: vicinity$})
-    else return {}
-  })
-  .cache(1)
-
-  const vicinityScreen = {
-    HTTP: normalizeSink(vicinityScreenProxy, `HTTP`),
-    MapDOM: normalizeSink(vicinityScreenProxy, `MapDOM`),
-    DOM: normalizeSinkUndefined(vicinityScreenProxy, `DOM`),
-    result$: normalizeSink(vicinityScreenProxy, `result$`)//,
-    //close$: normalizeSink(vicinityScreenProxy, `close$`)
-  }
-
-  vicinityFromScreen$.attach(vicinityScreen.result$.do(x => console.log(`from vicinity screen`, x)))
   //closeVicinity$.imitate(vicinityScreen.close$)
 
 
@@ -250,7 +264,7 @@ export default function main(sources, inputs) {
     radio: radioInput.DOM,
     venueAutocomplete: venueAutocompleteInput.DOM,
     addressInput: addressInput.DOM,
-    vicinityScreen: vicinityScreen.DOM
+    modal: normalizeSink(modal$, `DOM`)
   })
 
   // const vtree$ = view(state$, {
@@ -260,38 +274,6 @@ export default function main(sources, inputs) {
   //   vicinityScreen: O.of(div([`Hello`]))//vicinityScreen.DOM
   // })
 
-
-  const toNextScreen$ = actions.next$
-    .switchMap(() => state$.filter(state => state.valid)
-      .map(state => state.listing)
-      .map(listing => {
-        const mode = listing.profile.location.mode
-        if (mode === `venue` || mode === `map`) {
-          return {
-            pathname: `/create/${listing.id}/time`,
-            action: `PUSH`,
-            state: listing
-          }
-        } else if (mode === `address`) {
-          return {
-            pathname: `/create/${listing.id}/confirmAddressLocation`,
-            action: `PUSH`,
-            state: listing
-          }
-        }
-      })
-    )
-
-  const toPreviousScreen$ = actions.back$
-    .switchMap(() => state$.map(state => {
-        return {
-          pathname: `/create/${state.listing.id}/name`,
-          action: `PUSH`,
-          state: state.listing
-        }
-
-    }))
-    .do(x => console.log(`location back$`, x))
 
 
   const mapVTree$ = mapView(state$)
@@ -314,18 +296,46 @@ export default function main(sources, inputs) {
 
     return {
       DOM: vtree$,
-      HTTP: O.merge(venueAutocompleteInput.HTTP, addressInput.HTTP, vicinityScreen.HTTP, actions.toHTTP$),
-      Router: O.merge(toNextScreen$, toPreviousScreen$),
+      HTTP: O.merge(venueAutocompleteInput.HTTP, addressInput.HTTP, normalizeSink(modal$, `HTTP`), actions.toHTTP$),
       Global: venueAutocompleteInput.Global,
-      Storage: O.never(),
-      MapDOM: O.merge(vicinityScreen.MapDOM, mapVTree$),
-      message$: state$
-        .map(state => state.listing)
-        .filter(listing => !!listing && listing.id)
-        .map(listing => ({
-          type: `listing`,
-          data: listing
-        }))
+      MapDOM: O.merge(normalizeSink(modal$, `MapDOM`), mapVTree$),
+      state$
     }
 
+}
+
+export default function main(sources, inputs) {
+  // {contentComponent, create, nextRequiresListingId, previous, next}
+
+  const stepProps = O.of({
+    contentComponent,
+    create: false,
+    nextRequiresListingId: false,
+    previous: `description`,
+    next: `time`
+  })
+
+  const content = StepContent(sources, spread(inputs, {
+    props$: stepProps
+  }))
+
+  const headingGenerator = (saving$) => normalizeComponent(Heading(sources, spread(
+    inputs, {
+      saving$
+    })))
+
+  const instruction = {
+    DOM: O.of(div([`Location info`]))
+  }
+
+  const workflowStep = Step(sources, spread(inputs, {
+    headingGenerator, 
+    content, 
+    instruction, 
+    props$: O.of({
+      panelClass: `create-location`
+    })
+  }))
+
+  return workflowStep
 }

@@ -222,9 +222,9 @@ export default function main(sources, inputs) {
         toNextScreen$, 
         toPreviousScreen$
       ),
-      MapDOM: O.never(),
-      Storage: O.never(),
-      Global: O.never(),
+      MapDOM: defaultNever(content, `MapDOM`),
+      Storage: defaultNever(content, `Storage`),
+      Global: defaultNever(content, `Global`),
       listing$: state$
         .map(x => x.contentState.listing)
         .map(x => {

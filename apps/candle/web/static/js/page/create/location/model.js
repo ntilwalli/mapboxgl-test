@@ -2,6 +2,7 @@ import {Observable as O} from 'rxjs'
 import Immutable from 'immutable'
 import {combineObj} from '../../../utils'
 import {getEmptyListing} from '../listing'
+import getModal from './getModal'
 
 function isValid (location) {
   // if (location.mode === `map`) {
@@ -20,31 +21,36 @@ function isValid (location) {
 
 function reducers(actions, inputs) {
 
-  const showVicinityScreenReducer$ = actions.vicinityScreen$
+  const showModalR = actions.showVicinityScreen$
     .map(show => state => {
       //console.log(`vicinityScreen`)
-      return state.set(`showVicinityScreen`, show)
+      return state.set(`modal`, `vicinity`)
     })
 
-  const vicinityFromScreenReducer$ = inputs.vicinityFromScreen$.map(vicinity => state => {
+  const hideModalR = inputs.hideModal$
+    .map(show => state => {
+      return state.set(`modal`, ``)
+    })
+
+  const vicinityFromScreenR = inputs.vicinityFromScreen$.map(vicinity => state => {
     const listing = state.get(`listing`)
-    listing.location.vicinity = vicinity
+    listing.profile.location.vicinity = vicinity
     return state.set(`listing`, listing)
       .set(`vicinityMode`, `screen`)
-      .set(`showVicinityScreen`, false)
-      .set(`valid`, isValid(listing.location))
+      .set(`modal`, ``)
+      .set(`valid`, isValid(listing.profile.location))
   })
 
-  const locationReducer$ = inputs.location$.map(loc => state => {
+  const locationR = inputs.location$.map(loc => state => {
     //console.log(`locationReducer`)
     //console.log(loc)
     const listing = state.get(`listing`)// || getEmptyListing()
     //if (!listing.location) listing.location = getBlankLocation()
-    listing.location.info = loc
-    return state.set(`listing`, listing).set(`valid`, isValid(listing.location))
+    listing.profile.location.info = loc
+    return state.set(`listing`, listing).set(`valid`, isValid(listing.profile.location))
   })
 
-  const modeReducer$ = inputs.radio$.skip(1).map(mode => state => {
+  const modeR = inputs.radio$.skip(1).map(mode => state => {
     //console.log(`modeReducer`)
     const listing = state.get(`listing`)// || getEmptyListing()
     //if (!listing.location) listing.location = getBlankLocation()
@@ -54,31 +60,31 @@ function reducers(actions, inputs) {
     listing.profile.location.info = undefined
     listing.profile.location.mode = mode
 
-    return state.set(`listing`, listing).set(`valid`, isValid(listing.location))
+    return state.set(`listing`, listing).set(`valid`, isValid(listing.profile.location))
   })
 
-  const defaultVicinityReducer$ = inputs.defaultVicinity$.skip(1).map(vicinity => state => {
+  const defaultVicinityR = inputs.defaultVicinity$.skip(1).map(vicinity => state => {
     //console.log(`defaultVicinityReducer`)
     if (state.get(`vicinityMode`) === `default`) {
       const listing = state.get(`listing`)
       //console.log(`defaultVicinityReducer`)
-      listing.location.vicinity = vicinity
-      return state.set(`listing`, listing).set(`valid`, isValid(listing.location))
+      listing.profile.location.vicinity = vicinity
+      return state.set(`listing`, listing).set(`valid`, isValid(listing.profile.location))
     } else {
       return state
     }
   })
 
-  const mapVicinityReducer$ = actions.mapVicinity$.map(vicinity => state => {
+  const mapVicinityR = actions.mapVicinity$.map(vicinity => state => {
     //console.log(`mapVicinityReducer`)
     //console.log(vicinity)
     const listing = state.get(`listing`)
-    listing.location.vicinity = vicinity
-    return state.set(`listing`, listing).set(`vicinityMode`, `map`).set(`valid`, isValid(listing.location))
+    listing.profile.location.vicinity = vicinity
+    return state.set(`listing`, listing).set(`vicinityMode`, `map`).set(`valid`, isValid(listing.profile.location))
   })
 
 
-  const mapClickReducer$ = actions.mapClick$.map(latLng => state => {
+  const mapClickR = actions.mapClick$.map(latLng => state => {
     //console.log(`mapClickReducer`)
     const listing = state.get(`listing`)
     const location = listing.profile.location
@@ -88,34 +94,35 @@ function reducers(actions, inputs) {
         description: undefined
       }
 
-      return state.set(`listing`, listing).set(`valid`, isValid(listing.location))
+      return state.set(`listing`, listing).set(`valid`, isValid(listing.profile.location))
     }
 
     return state
   })
 
-  const locationDescriptionReducer$ = actions.locationDescription$.map(desc => state => {
+  const locationDescriptionR = actions.locationDescription$.map(desc => state => {
     //console.log(`locationDescriptionReducer`)
     const listing = state.get(`listing`)
     const location = listing.profile.location
     if(location.mode === `map`) {
       location.info.description = desc
 
-      return state.set(`listing`, listing).set(`valid`, isValid(listing.location))
+      return state.set(`listing`, listing).set(`valid`, isValid(listing.profile.location))
     }
 
     return state
   })
 
   return O.merge(
-    showVicinityScreenReducer$,
-    vicinityFromScreenReducer$,
-    locationReducer$,
-    modeReducer$,
-    mapVicinityReducer$,
-    defaultVicinityReducer$,
-    mapClickReducer$,
-    locationDescriptionReducer$
+    showModalR,
+    hideModalR,
+    vicinityFromScreenR,
+    locationR,
+    modeR,
+    mapVicinityR,
+    defaultVicinityR,
+    mapClickR,
+    locationDescriptionR
   )
 }
 
@@ -139,7 +146,7 @@ export default function model(actions, inputs) {
         listing: listing,
         vicinityMode: 'default',
         valid: isValid(listing.profile.location),
-        showVicinityScreen: false
+        modal: ``
       }
 
       return reducer$.startWith(Immutable.Map(initial)).scan((acc, f) => f(acc))

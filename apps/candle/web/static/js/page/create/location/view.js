@@ -65,60 +65,26 @@ function renderMapDisplay(info) {
 
 }
 
-function renderVicinityModalBody(state) {
-  return div([`Hello`])
-}
-
-function renderChangeRegionScreen({state, components}) {
-  const show = state.showVicinityScreen
-  return div(`.change-region-screen`, [
-    div(`.modal-backdrop.fade.in${ show ? '.show' : '' }`),
-    show ? div(`.appModal.modal.fade.in.show`, [
-      components.vicinityScreen
-    ]) : null
-  ])
-}
-
 function renderPanel(info) {
   const state = info.state
   const {waiting, listing} = state
   const mode = listing.profile.location.mode
-  const {radio, venueAutocomplete, addressAutocomplete, addressInput} = info.components
+  const {radio, venueAutocomplete, addressInput, modal} = info.components
 
   if (waiting) {
     return div(`.panel.modal`, [`Waiting`])
   } else {
-    return div(`.input-section`, [
-      div(`.form-section`, [
-        div(`.empty-section`),
-        div(`.content-section`, [
-          div(`.panel`, [
-            div(`.panel-title`, [h4([`Where is the event?`])]),
-            renderVicinity(info),
-            renderLocationMode(info),
-            // This div below ensures the previous autocomplete box DOM is removed on mode switch and replaced fully
-            // preventing erroneous DOM events
-            div(`.${mode}`, [
-              mode === `venue` ? venueAutocomplete : mode === `address` ? addressInput : null,
-            ]),
-            renderMapDisplay(info)
-          ])
-        ])
-      ])
-      , div(`.controller-section`, [
-        div(`.separator`),
-        div(`.button-section`, [
-          button(`.appBackButton.back-button`, [
-            span(`.fa.fa-angle-left`),
-            span(`.back-text`, [`Back`])
-          ]),
-          button(`.appNextButton.next-button${state.valid ? '' : '.disabled'}`, [
-            span(`.next-text`, [`Next`]),
-            span(`.fa.fa-angle-right`)
-          ])
-        ])
+    return div(`.panel`, [
+      div(`.panel-title`, [h4([`Where is the event?`])]),
+      renderVicinity(info),
+      renderLocationMode(info),
+      // This div below ensures the previous autocomplete box DOM is removed on mode switch and replaced fully
+      // preventing erroneous DOM events
+      div(`.${mode}`, [
+        mode === `venue` ? venueAutocomplete : mode === `address` ? addressInput : null,
       ]),
-      renderChangeRegionScreen(info)
+      renderMapDisplay(info),
+      modal
     ])
   }
 }
