@@ -194,7 +194,7 @@ export default function main(sources, inputs) {
       }
     })
   }
-
+  
   return spread(mergeSinks(heading, content, instruction, mergeableSinks), {
     DOM: vtree$
   })

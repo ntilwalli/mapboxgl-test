@@ -8,6 +8,7 @@ import Landing from '../landing/main'
 import Meta from '../meta/main'
 import Description from '../description/main'
 import Location from '../location/main'
+import ConfirmAddressLocation from '../confirmAddressLocation/main'
 
 import RedirectRestricted from '../../../redirectRestricted'
 import RedirectCreate from '../../../redirectCreate'
@@ -20,6 +21,7 @@ const routes = [
   {pattern: /^\/meta$/, value: {type: "component", data: Meta}},
   {pattern: /^\/description$/, value: {type: "component", data: Description}},
   {pattern: /^\/location$/, value: {type: "component", data: Location}},
+  {pattern: /^\/confirmAddressLocation$/, value: {type: "component", data: ConfirmAddressLocation}},
   {pattern: /^\/?$/, value: {type: "component", data: Landing}},
   {pattern: /\/?.*/, value: {type: `error`, data: RedirectCreate}},
 ]

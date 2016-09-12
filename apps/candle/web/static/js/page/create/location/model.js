@@ -1,23 +1,8 @@
 import {Observable as O} from 'rxjs'
 import Immutable from 'immutable'
 import {combineObj} from '../../../utils'
-import {getEmptyListing} from '../listing'
+import {getEmptyListing, validateLocation as isValid} from '../listing'
 import getModal from './getModal'
-
-function isValid (location) {
-  // if (location.mode === `map`) {
-  //   return location.info
-  //
-  // } else if (location.mode === `venue`) {
-  //
-  //   return location.info
-  //
-  // } else if (location.mode === `address`) {
-  //
-  // }
-
-  return location.info
-}
 
 function reducers(actions, inputs) {
 
@@ -38,7 +23,7 @@ function reducers(actions, inputs) {
     return state.set(`listing`, listing)
       .set(`vicinityMode`, `screen`)
       .set(`modal`, ``)
-      .set(`valid`, isValid(listing.profile.location))
+      .set(`valid`, isValid(listing))
   })
 
   const locationR = inputs.location$.map(loc => state => {
@@ -47,7 +32,7 @@ function reducers(actions, inputs) {
     const listing = state.get(`listing`)// || getEmptyListing()
     //if (!listing.location) listing.location = getBlankLocation()
     listing.profile.location.info = loc
-    return state.set(`listing`, listing).set(`valid`, isValid(listing.profile.location))
+    return state.set(`listing`, listing).set(`valid`, isValid(listing))
   })
 
   const modeR = inputs.radio$.skip(1).map(mode => state => {
@@ -60,7 +45,7 @@ function reducers(actions, inputs) {
     listing.profile.location.info = undefined
     listing.profile.location.mode = mode
 
-    return state.set(`listing`, listing).set(`valid`, isValid(listing.profile.location))
+    return state.set(`listing`, listing).set(`valid`, isValid(listing))
   })
 
   const defaultVicinityR = inputs.defaultVicinity$.skip(1).map(vicinity => state => {
@@ -69,7 +54,7 @@ function reducers(actions, inputs) {
       const listing = state.get(`listing`)
       //console.log(`defaultVicinityReducer`)
       listing.profile.location.vicinity = vicinity
-      return state.set(`listing`, listing).set(`valid`, isValid(listing.profile.location))
+      return state.set(`listing`, listing).set(`valid`, isValid(listing))
     } else {
       return state
     }
@@ -80,7 +65,7 @@ function reducers(actions, inputs) {
     //console.log(vicinity)
     const listing = state.get(`listing`)
     listing.profile.location.vicinity = vicinity
-    return state.set(`listing`, listing).set(`vicinityMode`, `map`).set(`valid`, isValid(listing.profile.location))
+    return state.set(`listing`, listing).set(`vicinityMode`, `map`).set(`valid`, isValid(listing))
   })
 
 
@@ -94,7 +79,7 @@ function reducers(actions, inputs) {
         description: undefined
       }
 
-      return state.set(`listing`, listing).set(`valid`, isValid(listing.profile.location))
+      return state.set(`listing`, listing).set(`valid`, isValid(listing))
     }
 
     return state
@@ -107,7 +92,7 @@ function reducers(actions, inputs) {
     if(location.mode === `map`) {
       location.info.description = desc
 
-      return state.set(`listing`, listing).set(`valid`, isValid(listing.profile.location))
+      return state.set(`listing`, listing).set(`valid`, isValid(listing))
     }
 
     return state
@@ -145,7 +130,7 @@ export default function model(actions, inputs) {
         geolocation: inputs.geolocation,
         listing: listing,
         vicinityMode: 'default',
-        valid: isValid(listing.profile.location),
+        valid: isValid(listing),
         modal: ``
       }
 

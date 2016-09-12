@@ -255,9 +255,11 @@ function main(sources, {suggester, itemConfigs, displayFunction, placeholder, in
   const state$ = model(actions, {suggestions$: suggestionComponent.results$}, itemConfigs)
   const vtree$ = view(state$, itemConfigs, displayFunction, placeholder, initialText$ || O.of(``))
   const prevented$ = preventedEvents(actions, state$)
+  const toHTTP$ = suggestionComponent.HTTP
+  //toHTTP$.subscribe()
   return {
     DOM: vtree$,
-    HTTP: suggestionComponent.HTTP,
+    HTTP: toHTTP$,
     Global: O.merge(
       prevented$.map(ev => ({type: `preventDefault`, data: ev})),
       actions.inputBlur$.map(ev => ({type: `preventWindowBlur`, data: ev}))

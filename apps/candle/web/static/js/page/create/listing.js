@@ -47,12 +47,34 @@ export function getValidators(step, listing) {
   const profileMeta = profile.meta
   const {visibility, eventType} = profileMeta
   const {title, description, categories} = profileDescription
+  const {mode} = profile.location
   if (step === "listing") {
     return {
       type: [required]
     }
-  }
-  else if (step === `meta`) {
+  } else if (step === `location`) {
+    if (mode === `address`) {
+      return {
+        street: [required],
+        city: [required],
+        stateAbbr: [required],
+        zipCode: [required],
+        aptSuiteBldg: [optional],
+        countryCode: [required],
+        latLng: [optional]
+      }
+    } else if (mode === `map`) {
+      return {
+        latLng: [required],
+        description: [optional]
+      }
+    } else if (mode === `venue`) {
+      return {
+        type: [required],
+        data: [required]
+      }
+    }
+  } else if (step === `meta`) {
     if (type !== `group`) {
       return {
         visibility: [required],
@@ -96,6 +118,8 @@ export function isOptional(section, property, listing) {
 }
 
 export function validate(validators, obj) {
+  if (!obj) return false
+
   for (let key in validators) {
     if (validators.hasOwnProperty(key)) {
       const vals = validators[key]
@@ -145,4 +169,11 @@ export function validateDescription(listing) {
   const profileDescription = profile.description
   const validators = getValidators(`description`, listing)
   return validate(validators, profileDescription)
+}
+
+export function validateLocation(listing) {
+  const {profile} = listing
+  const {location} = profile
+  const validators = getValidators(`location`, listing)
+  return validate(validators, location.info)
 }

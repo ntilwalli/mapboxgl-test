@@ -110,6 +110,7 @@ function FoursquareSuggestVenues (sources, inputs) {
       })),
       emptyResult$
     ),
+    //results$: O.never(),
     isProcessing$: O.merge(
       fromHttp$.map(() => false),
       toHttp$.map(() => true)

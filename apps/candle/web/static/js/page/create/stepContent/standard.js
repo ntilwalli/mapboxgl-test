@@ -158,8 +158,12 @@ export default function main(sources, inputs) {
     const toNextScreen$ = O.merge(
       decision$.filter(x => x.type === "Router").map(x => x.data),
       actions.created$.map(x => x.data).map(listing => {
+        let nextScreen = next
+        if (typeof next === 'function') {
+          nextScreen = next(listing)
+        }
         return {
-          pathname: `/create/${listing.id}/${next}`,
+          pathname: `/create/${listing.id}/${nextScreen}`,
           action: `PUSH`,
           state: listing
         }
@@ -172,15 +176,20 @@ export default function main(sources, inputs) {
         const {contentState} = state
         const {listing} = contentState
 
+        let previousScreen = previous
+        if (typeof previous === 'function') {
+          previousScreen = previous(listing)
+        }
+
         if (listing.id) {
-          const pathname = previous ? `/create/${listing.id}/${previous}` : `/create/${listing.id}`
+          const pathname = previous ? `/create/${listing.id}/${previousScreen}` : `/create/${listing.id}`
           return {
             pathname,
             action: `PUSH`,
             state: listing
           }
         } else {
-          const pathname = previous ? `/create/${previous}` : `/create`
+          const pathname = previous ? `/create/${previousScreen}` : `/create`
           return {
             pathname,
             action: `PUSH`,
@@ -215,9 +224,12 @@ export default function main(sources, inputs) {
 
     return {
       DOM: vtree$,
-      HTTP: toHTTP$.map(x => {
-        return x
-      }),
+      HTTP: O.merge(
+        content.HTTP,
+        toHTTP$.map(x => {
+          return x
+        })
+      ),
       Router: O.merge(
         toNextScreen$, 
         toPreviousScreen$
@@ -241,15 +253,19 @@ export default function main(sources, inputs) {
   })
   .cache(1)
 
+  const toHTTP$ = normalizeSink(component$, `HTTP`).map(x => {
+      return x
+    })
+
+  //toHTTP$.subscribe()
+
   return {
     DOM: normalizeSink(component$, `DOM`),
     MapDOM: normalizeSink(component$, `MapDOM`),
     Router: normalizeSink(component$, `Router`),
     Global: normalizeSink(component$, `Global`),
     Storage: normalizeSink(component$, `Storage`),
-    HTTP: normalizeSink(component$, `HTTP`).map(x => {
-      return x
-    }),
+    HTTP: toHTTP$,
     message$: normalizeSink(component$, `message$`),
     listing$: normalizeSink(component$, `listing$`),
     save$: normalizeSink(component$, `save$`),

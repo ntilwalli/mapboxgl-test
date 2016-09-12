@@ -166,6 +166,8 @@ export default function main(sources, inputs) {
     placeholder: `Drag map or type city/state here...`
   })
 
+  populatedPlaceInput.HTTP.subscribe()
+
   const magicKeyConverter = ArcGISGetMagicKey(sources, {
     props$: O.of({}),
     input$: populatedPlaceInput.selected$
@@ -241,10 +243,14 @@ export default function main(sources, inputs) {
       return vicinity
     }))
 
-  return {
+  const out = {
     DOM: view({state$, components: {autocomplete$: populatedPlaceInput.DOM}}),
     MapDOM: mapView(state$),
-    HTTP: O.merge(populatedPlaceInput.HTTP, magicKeyConverter.HTTP, actions.toHTTP$),
+    HTTP: O.merge(populatedPlaceInput.HTTP, magicKeyConverter.HTTP, actions.toHTTP$).cache(1),
     output$: state$.map(x => x.vicinity)
   }
+
+  //out.HTTP.subscribe()
+
+  return out
 }

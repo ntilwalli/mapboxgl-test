@@ -240,26 +240,6 @@ function contentComponent(sources, inputs) {
     addressInput.result$.skip(1)
   ))
 
-  // //const vicinityScreen = VicinityScreen(sources, {parentVicinity$: vicinity$})
-  // const vicinityScreenProxy = state$.map(state => {
-  //   if (state.showVicinityScreen) return VicinityScreen(sources, {parentVicinity$: vicinity$})
-  //   else return {}
-  // })
-  // .cache(1)
-
-  // const vicinityScreen = {
-  //   HTTP: normalizeSink(vicinityScreenProxy, `HTTP`),
-  //   MapDOM: normalizeSink(vicinityScreenProxy, `MapDOM`),
-  //   DOM: normalizeSinkUndefined(vicinityScreenProxy, `DOM`),
-  //   result$: normalizeSink(vicinityScreenProxy, `result$`)//,
-  //   //close$: normalizeSink(vicinityScreenProxy, `close$`)
-  // }
-
-
-  //closeVicinity$.imitate(vicinityScreen.close$)
-
-
-
   const vtree$ = view(state$, {
     radio: radioInput.DOM,
     venueAutocomplete: venueAutocompleteInput.DOM,
@@ -267,52 +247,34 @@ function contentComponent(sources, inputs) {
     modal: normalizeSink(modal$, `DOM`)
   })
 
-  // const vtree$ = view(state$, {
-  //   radio: O.of(div([`Hello`])),//radioInput.DOM,
-  //   venueAutocomplete: O.of(div([`Hello`])),//venueAutocompleteInput.DOM,
-  //   addressInput: O.of(div([`Hello`])),//addressInput.DOM,
-  //   vicinityScreen: O.of(div([`Hello`]))//vicinityScreen.DOM
-  // })
-
-
-
   const mapVTree$ = mapView(state$)
 
-    // return {
-    //   DOM: vtree$,
-    //   HTTP: O.merge(venueAutocompleteInput.HTTP, addressInput.HTTP, vicinityScreen.HTTP, actions.toHTTP$),
-    //   Router: O.merge(toNextScreen$, toPreviousScreen$),
-    //   Global: venueAutocompleteInput.Global,
-    //   Storage: O.never(),
-    //   MapDOM: O.merge(vicinityScreen.MapDOM, mapVTree$),
-    //   message$: state$
-    //     .map(state => state.listing)
-    //     .filter(listing => !!listing && listing.id)
-    //     .map(listing => ({
-    //       type: `listing`,
-    //       data: listing
-    //     }))
-    // }
-
-    return {
-      DOM: vtree$,
-      HTTP: O.merge(venueAutocompleteInput.HTTP, addressInput.HTTP, normalizeSink(modal$, `HTTP`), actions.toHTTP$),
-      Global: venueAutocompleteInput.Global,
-      MapDOM: O.merge(normalizeSink(modal$, `MapDOM`), mapVTree$),
-      state$
-    }
+  return {
+    DOM: vtree$,
+    HTTP: O.merge(venueAutocompleteInput.HTTP, addressInput.HTTP, normalizeSink(modal$, `HTTP`), actions.toHTTP$),
+    Global: venueAutocompleteInput.Global,
+    MapDOM: O.merge(normalizeSink(modal$, `MapDOM`), mapVTree$),
+    state$
+  }
 
 }
 
 export default function main(sources, inputs) {
-  // {contentComponent, create, nextRequiresListingId, previous, next}
 
   const stepProps = O.of({
     contentComponent,
     create: false,
-    nextRequiresListingId: false,
+    nextRequiresListingId: true,
     previous: `description`,
-    next: `time`
+    next: listing => {
+      const profile = listing.profile
+      const location = profile.location
+      if (location.mode === `address`) {
+        return `confirmAddressLocation`
+      } else {
+        return `time`
+      }
+    }
   })
 
   const content = StepContent(sources, spread(inputs, {
