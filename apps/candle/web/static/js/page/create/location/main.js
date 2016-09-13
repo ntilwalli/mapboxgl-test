@@ -13,6 +13,7 @@ import FoursquareSuggestVenues from '../../../thirdParty/FoursquareSuggestVenues
 
 import VicinityScreen from './vicinity/main'
 import AddressInput from './address/main'
+import VenueInput from './venue/main'
 
 import Heading from '../../../library/heading/workflow/main'
 import Step from '../step/main'
@@ -23,7 +24,12 @@ import getModal from './getModal'
 import {normalizeSink, normalizeSinkUndefined, normalizeComponent, spread, createProxy} from '../../../utils'
 import {getVicinityFromGeolocation} from './utils'
 
-
+const MapInput = (sources, inputs) => ({
+  DOM: O.of(div([`MapInput`])),
+  MapDOM: O.never(),
+  HTTP: O.never(),
+  result$: O.never()
+})
 
 const venueItemConfigs = {
   default: {
@@ -165,11 +171,9 @@ function contentComponent(sources, inputs) {
 
   const actions = intent(sources)
 
-  const enrichedInputs = spread(inputs, {
+  const defaultVicinity$ = getDefaultVicinity(sources, spread(inputs, {
     listing$: actions.listing$
-  })
-
-  const defaultVicinity$ = getDefaultVicinity(sources, enrichedInputs)
+  }))
 
   //defaultVicinity$.addListener(noopListener)
 
@@ -197,13 +201,15 @@ function contentComponent(sources, inputs) {
   const hideModal$ = createProxy()
   const vicinityFromScreen$ = createProxy()
 
-  const state$ = model(actions, spread(enrichedInputs, {
+  const state$ = model(actions, spread(inputs, {
     defaultVicinity$: defaultVicinity$,
     vicinityFromScreen$: vicinityFromScreen$,
     location$: location$,
     radio$: radioInput.selected$,
-    hideModal$
+    hideModal$,
+    listing$: actions.listing$
   }))
+
 
   const modal$ = state$
     .map(x => {
@@ -219,43 +225,53 @@ function contentComponent(sources, inputs) {
   hideModal$.attach(normalizeSink(modal$, `close$`))
   vicinityFromScreen$.attach(normalizeSink(modal$, `done$`))
 
-  const centerZoom$ = state$.map(x => x.listing.profile.location.vicinity.position)
-  const venueAutocompleteInput = AutocompleteInput(sources, {
-    suggester: (sources, inputs) => FoursquareSuggestVenues(sources, {props$: O.of({}), centerZoom$, input$: inputs.input$}),
-    itemConfigs: venueItemConfigs,
-    displayFunction: x => x.name,
-    placeholder: `Start typing venue name here...`
-  })
+  const listing$ = state$.map(x => x.listing).cache(1)
+  const inputComponent$ = state$
+    .distinctUntilChanged(null, x => x.listing.profile.location.mode)
+    .map(state => {
+      const mode = state.listing.profile.location.mode
+      if (mode === `address`) {
+        return AddressInput(sources, spread(inputs, {
+          props$: O.of({}),
+          listing$
+        }))
+      } else if (mode === `venue`) {
+        return VenueInput(sources, spread(inputs, {
+          props$: O.of({}),
+          listing$
+        }))
+      } else if (mode === `map`) {
+        return MapInput(sources, inputs)
+      }
+    })
+    .map(normalizeComponent)
+    .cache(1)
 
-  const vicinity$ =  state$.map(s => {
-    return s.listing.profile.location.vicinity
-  })
-  const addressInput = AddressInput(sources, spread(enrichedInputs, {
-    props$: O.of({}),
-    vicinity$ 
-  }))
-
-  location$.attach(O.merge(
-    venueAutocompleteInput.selected$.map(x => ({type: `foursquare`, data: x})),
-    addressInput.result$.skip(1)
-  ))
+  location$.attach(normalizeSink(inputComponent$, `result$`))
 
   const vtree$ = view(state$, {
     radio: radioInput.DOM,
-    venueAutocomplete: venueAutocompleteInput.DOM,
-    addressInput: addressInput.DOM,
+    inputComponent: normalizeSink(inputComponent$, `DOM`),
     modal: normalizeSink(modal$, `DOM`)
   })
 
-  const mapVTree$ = mapView(state$)
+  //const mapVTree$ = mapView(state$)
 
   return {
     DOM: vtree$,
-    HTTP: O.merge(venueAutocompleteInput.HTTP, addressInput.HTTP, normalizeSink(modal$, `HTTP`), actions.toHTTP$),
-    Global: venueAutocompleteInput.Global,
-    MapDOM: O.merge(normalizeSink(modal$, `MapDOM`), mapVTree$),
+    HTTP: O.merge(normalizeSink(inputComponent$, `HTTP`), normalizeSink(modal$, `HTTP`), actions.toHTTP$),
+    Global: normalizeSink(inputComponent$, `Global`),
+    MapDOM: O.merge(normalizeSink(modal$, `MapDOM`), normalizeSink(inputComponent$, `MapDOM`)),
     state$
   }
+
+  // return {
+  //   DOM: normalizeSink(inputComponent$, `DOM`),
+  //   HTTP: O.merge(normalizeSink(inputComponent$, `HTTP`), normalizeSink(modal$, `HTTP`), actions.toHTTP$),
+  //   Global: normalizeSink(inputComponent$, `Global`),
+  //   MapDOM: O.merge(normalizeSink(modal$, `MapDOM`), normalizeSink(inputComponent$, `MapDOM`)),
+  //   state$
+  // }
 
 }
 

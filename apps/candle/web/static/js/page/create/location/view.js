@@ -69,7 +69,7 @@ function renderPanel(info) {
   const state = info.state
   const {waiting, listing} = state
   const mode = listing.profile.location.mode
-  const {radio, venueAutocomplete, addressInput, modal} = info.components
+  const {radio, inputComponent, modal} = info.components
 
   if (waiting) {
     return div(`.panel.modal`, [`Waiting`])
@@ -80,10 +80,7 @@ function renderPanel(info) {
       renderLocationMode(info),
       // This div below ensures the previous autocomplete box DOM is removed on mode switch and replaced fully
       // preventing erroneous DOM events
-      div(`.${mode}`, [
-        mode === `venue` ? venueAutocomplete : mode === `address` ? addressInput : null,
-      ]),
-      renderMapDisplay(info),
+      inputComponent,
       modal
     ])
   }

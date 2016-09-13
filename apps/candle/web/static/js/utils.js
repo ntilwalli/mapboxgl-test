@@ -21,9 +21,6 @@ export function createProxy() {
   return proxy
 }
 
-
-
-
 export function attrs (val, monoProps) {
   if (monoProps) {
     if (monoProps.some(x => x === `checked`)) {
@@ -44,6 +41,10 @@ export function attrs (val, monoProps) {
 
 export function targetIsOwner(ev) {
   return ev.target === ev.ownerTarget
+}
+
+export function toLatLngArray(center) {
+  return [center.lat, center.lng]
 }
 
 export function noop() {}

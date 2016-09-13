@@ -36,16 +36,20 @@ function FoursquareSuggestVenues (sources, inputs) {
   const {props$, input$, centerZoom$} = inputs
 
 
-  const fromHttp$ = HTTP.select(`suggestVenues`)
+  const fromHttp$ = HTTP.select()
+    .do(x => console.log(`all responses...`, x))
+    .filter(res$ => res$.request && res$.request.category === `suggestVenues`)
     //.filter(res$ => res$.request.url.indexOf(`suggestcompletion`) > -1)
     .switchMap(res => {
       return res.map(res => {
         if (res.statusCode === 200) {
+          console.log(`recieved HTTP response`)
           return {
             type: `success`,
             data: res.body.response
           }
         } else {
+          console.log(`recieved HTTP error`)
           return {
             type: `error`,
             data: `Unsuccessful response from server`
@@ -53,13 +57,14 @@ function FoursquareSuggestVenues (sources, inputs) {
         }
       })
       .catch((e, orig$) => {
+        console.log(`received HTTP major error`)
         return O.of({
           type: `error`,
           data: e
         })
       })
     })
-    .cache(1)
+    .publishReplay(1).refCount()
 
   const validResponse$ = fromHttp$.filter(res => res.type === `success`).map(res => res.data)
   const invalidResponse$ = fromHttp$.filter(res => res.type === `error`).map(res => res.data)
@@ -79,37 +84,46 @@ function FoursquareSuggestVenues (sources, inputs) {
     .map(x => {
       return x
     })
-    .cache(1)
-  const sendablePartial$ = sharedPartial$.filter(x => {
-    return x.length >= 3
-  })//.do(makeLogger('sendablePartial$...'))
+    .publishReplay(1).refCount()
+  const sendablePartial$ = sharedPartial$
+    .filter(x => {
+      return x.length >= 3
+    })
+    .do(x => console.log('sendablePartial$...', x))
+
   const unsendablePartial$ = sharedPartial$.filter(x => {
     return x.length < 3
   })
   const emptyResult$ = O.merge(invalidResponse$, unsendablePartial$)
     .map(() => [])//.do(makeLogger('emptyResult$...'))
 
-  const rProps$ = props$.cache(1)
-  const rCenterZoom$ = centerZoom$.cache(1)
+  const rProps$ = props$.publishReplay(1).refCount()
+  const rCenterZoom$ = centerZoom$.publishReplay(1).refCount()
 
-  //const test$ = combineObj({props$, centerZoom$}).cache(1)
+  //const test$ = combineObj({props$, centerZoom$}).publishReplay(1).refCount()
   const toHttp$ = sendablePartial$
     .switchMap(partial => {
       return combineObj({props$: rProps$.take(1), centerZoom$: rCenterZoom$.take(1)})
         .map(({props, centerZoom}) => ({props, partial, centerZoom}))
     }) // with latest from idiom
     .map(toHTTP) // need to add cancellation
-    .cache(1)
+    .publishReplay(1).refCount()
+
+  const results$ = O.merge(
+    minivenues$.map(venues => venues.map(x => {
+      x.type = `default`
+      return x
+    })),
+    emptyResult$
+  ).publishReplay(1).refCount()
+
+  window.results$ = results$
+  //results$.subscribe()
 
   return {
-    HTTP: toHttp$,
-    results$: O.merge(
-      minivenues$.map(venues => venues.map(x => {
-        x.type = `default`
-        return x
-      })),
-      emptyResult$
-    ),
+    HTTP: toHttp$
+      .do(x => console.log(`toHTTP$`, x)),
+    results$,
     //results$: O.never(),
     isProcessing$: O.merge(
       fromHttp$.map(() => false),

@@ -29,6 +29,11 @@ import Presignup from './library/authorization/presignup/main'
 import routeFunction from './localDrivers/routeFunction/main'
 
 function main(sources) {
+  // sources.HTTP.select().subscribe(
+  //   x => {
+  //     console.log(`All HTTP main root: `, x)
+  //   }
+  // )
 
   const toServicesMessage$ = createProxy()
   const hideModal$ = createProxy()

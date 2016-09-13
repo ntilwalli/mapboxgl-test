@@ -143,10 +143,23 @@ function reducers(actions, inputs) {
 
 function model(actions, {props$, suggestions$}, itemConfigs) {
   const reducer$ = reducers(actions)
+  //suggestions$.subscribe()
+  // const blahSuggestions$ = O.merge(O.of([{
+  //   name: `Hello`,
+  //   address: [`56 Derby Court`, `IL`, `60523`].join(`, `),
+  //   venueId: `454`,
+  //   latLng: [70.876, -40.076],
+  //   source: `Foursquare`,
+  //   retrieved: (new Date()).getTime(),
+  //   type: `default`
+  // }]), O.never()).cache(1)
 
   const state$ = O.merge(
     actions.wantsSuggestions$
-      .switchMap(accepted => suggestions$.map(suggestions => accepted ? suggestions : []))
+      .switchMap(accepted => {
+        //console.log("Suggestions accepted?", accepted)
+        return suggestions$.map(suggestions => accepted ? suggestions : [])
+      })
       .map(suggestions => ({suggestions, highlighted: null, selected: null})),
     (props$ || O.of(undefined)).map(init => ({suggestions: [], highlighted: null, selected: init || null}))
   )
@@ -158,6 +171,8 @@ function model(actions, {props$, suggestions$}, itemConfigs) {
     return x
   })
   .cache(1)
+
+  //state$.subscribe()
 
   return state$
 }
@@ -256,7 +271,7 @@ function main(sources, {suggester, itemConfigs, displayFunction, placeholder, in
   const vtree$ = view(state$, itemConfigs, displayFunction, placeholder, initialText$ || O.of(``))
   const prevented$ = preventedEvents(actions, state$)
   const toHTTP$ = suggestionComponent.HTTP
-  //toHTTP$.subscribe()
+  //state$.subscribe()
   return {
     DOM: vtree$,
     HTTP: toHTTP$,

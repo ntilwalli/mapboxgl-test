@@ -206,15 +206,16 @@ function view({state$, components}) {
 
 export default function USAddress(sources, inputs) {
 
-  const {vicinity$} = inputs
-  const centerZoom$ = vicinity$.map(v => v.position)
+  const {listing$} = inputs
+  const vicinity$ = listing$.map(x => x.profile.location.vicinity).cache(1)
+  const centerZoom$ = vicinity$.map(v => v.position).cache(1)
 
 
   const autocomplete$ = createProxy()
   const streetAddress$ = createProxy()
 
   const actions = intent(sources)
-  const state$ = model(actions, {autocomplete$, streetAddress$, ...inputs})
+  const state$ = model(actions, {autocomplete$, streetAddress$, vicinity$, ...inputs})
 
   const addressAutocompleteInput = AutocompleteInput(sources, {
     suggester: (sources, inputs) => ArcGISSuggest(sources, {
