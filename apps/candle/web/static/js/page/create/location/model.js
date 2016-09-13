@@ -26,7 +26,7 @@ function reducers(actions, inputs) {
       .set(`valid`, isValid(listing))
   })
 
-  const locationR = inputs.location$.map(loc => state => {
+  const locationR = inputs.location$.skip(1).map(loc => state => {
     //console.log(`locationReducer`)
     //console.log(loc)
     const listing = state.get(`listing`)// || getEmptyListing()

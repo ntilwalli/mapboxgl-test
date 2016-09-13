@@ -121,26 +121,26 @@ export default function makeGlobalDOMEventDriver() {
         return x
       })
     
-    // sharedSource$
-    //   .filter(x => x.type === `preventDefault`)
-    //   .map(x => x.data)
-    //   .map(ev => {
-    //     if(ev.type === `blur`) {
-    //       console.log(`preventing blur default, keeping input focus`)
-    //       setTimeout(() => ev.target.focus(), 4)
-    //     } else {
-    //       ev.preventDefault()
-    //     }
-    //   }).subscribe(() => {})
+    sharedSource$
+      .filter(x => x.type === `preventDefault`)
+      .map(x => x.data)
+      .map(ev => {
+        if(ev.type === `blur`) {
+          console.log(`preventing blur default, keeping input focus`)
+          setTimeout(() => ev.target.focus(), 4)
+        } else {
+          ev.preventDefault()
+        }
+      }).subscribe(() => {})
     
-    // sharedSource$
-    //   .filter(x => x.type === `preventWindowBlur`)
-    //   .debug(x => console.log(`preventWindowBlur`))
-    //   .map(x => x.data)
-    //   .filter(ev => document.activeElement !== ev.ownerTarget)
-    //   .map(ev => {
-    //     ev.preventDefault()
-    //   }).subscribe(() => {})
+    sharedSource$
+      .filter(x => x.type === `preventWindowBlur`)
+      .do(x => console.log(`preventWindowBlur`))
+      .map(x => x.data)
+      .filter(ev => document.activeElement !== ev.ownerTarget)
+      .map(ev => {
+        ev.preventDefault()
+      }).subscribe(() => {})
     
 
     sharedSource$

@@ -85,8 +85,8 @@ function view(state$, components) {
         venue,
         info ? div(`.map.sub-section`, [
             div(`.location-info-section`, [
-              div(`.name`, [info.data.name]),
-              div(`.address`, [info.data.address])
+              div(`.name`, [info.name]),
+              div(`.address`, [info.address])
             ]),
             div(`#addEventMapAnchor`)
           ]) : null
@@ -172,6 +172,7 @@ export default function main(sources, inputs) {
     //DOM: O.of(div([`VenueInput`])),
     DOM: view(state$, {venue$: venueAutocompleteInput.DOM}),
     MapDOM: mapview(state$),
+    Global: venueAutocompleteInput.Global,
     HTTP: venueAutocompleteInput.HTTP.map(x => {
       return x
     }),

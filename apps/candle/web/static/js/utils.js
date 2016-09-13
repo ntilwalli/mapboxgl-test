@@ -216,7 +216,9 @@ export function combineObj(obj) {
  * output: ----------c----d-------------h---i--------
  */
 export function between(first, second) {
-  return (source) => first.switchMap(() => source.takeUntil(second))
+  return (source) => first.switchMap(() => {
+    return source.takeUntil(second)
+  })
 }
 
 /**

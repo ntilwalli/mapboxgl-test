@@ -36,20 +36,15 @@ function FoursquareSuggestVenues (sources, inputs) {
   const {props$, input$, centerZoom$} = inputs
 
 
-  const fromHttp$ = HTTP.select()
-    .do(x => console.log(`all responses...`, x))
-    .filter(res$ => res$.request && res$.request.category === `suggestVenues`)
-    //.filter(res$ => res$.request.url.indexOf(`suggestcompletion`) > -1)
+  const fromHttp$ = HTTP.select(`suggestVenues`)
     .switchMap(res => {
       return res.map(res => {
         if (res.statusCode === 200) {
-          console.log(`recieved HTTP response`)
           return {
             type: `success`,
             data: res.body.response
           }
         } else {
-          console.log(`recieved HTTP error`)
           return {
             type: `error`,
             data: `Unsuccessful response from server`
@@ -57,7 +52,6 @@ function FoursquareSuggestVenues (sources, inputs) {
         }
       })
       .catch((e, orig$) => {
-        console.log(`received HTTP major error`)
         return O.of({
           type: `error`,
           data: e
@@ -75,7 +69,7 @@ function FoursquareSuggestVenues (sources, inputs) {
       name: result.name,
       address: [result.location.address, result.location.state, result.location.postalCode].join(`, `),
       venueId: result.id,
-      latLng: [result.location.lat, result.location.lng],
+      latLng: {lat: result.location.lat, lng: result.location.lng},
       source: `Foursquare`,
       retrieved: (new Date()).getTime()
     })))
@@ -89,7 +83,7 @@ function FoursquareSuggestVenues (sources, inputs) {
     .filter(x => {
       return x.length >= 3
     })
-    .do(x => console.log('sendablePartial$...', x))
+    //.do(x => console.log('sendablePartial$...', x))
 
   const unsendablePartial$ = sharedPartial$.filter(x => {
     return x.length < 3

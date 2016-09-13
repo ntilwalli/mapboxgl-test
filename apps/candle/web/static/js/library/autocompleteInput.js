@@ -12,14 +12,24 @@ function intent(DOM) {
   const ESC_KEYCODE = 27
   const TAB_KEYCODE = 9
 
-  const input$ = DOM.select('.appAutocompleteable').events('input').share()
+  const input$ = DOM.select('.appAutocompleteable').events('input')
+    .share()
   const keydown$ = DOM.select('.appAutocompleteable').events('keydown')
   const itemHover$ = DOM.select('.appAutocompleteItem').events('mouseenter')
+    .do(x => console.log(`itemHover`, x))
+    .share()
   const itemMouseDown$ = DOM.select('.appAutocompleteItem').events('mousedown')
+    .do(x => console.log(`itemMouseDown`, x))
+    .share()
   const itemMouseUp$ = DOM.select('.appAutocompleteItem').events('mouseup')
+    .do(x => console.log(`itemMouseDown`, x))
+    .share()
+
   const inputFocus$ = DOM.select('.appAutocompleteable').events('focus').share()
   const inputBlur$ = DOM.select('.appAutocompleteable').events('blur')
     .filter(ev => ev.target !== document.activeElement) // <--- sketchy? :)
+    .do(x => console.log(`inputBlur`, x))
+    .share()
 
   const enterPressed$ = keydown$.filter(({keyCode}) => keyCode === ENTER_KEYCODE)
   const tabPressed$ = keydown$.filter(({keyCode}) => keyCode === TAB_KEYCODE)
@@ -27,11 +37,17 @@ function intent(DOM) {
   const clearField$ = input$.filter(ev => ev.target.value.length === 0)
 
   const inputBlurToItem$ = inputBlur$.let(between(itemMouseDown$, itemMouseUp$))
+    .do(x => console.log(`inputBlurToItem`, x))
+    .share()
   const inputBlurToElsewhere$ = inputBlur$.let(notBetween(itemMouseDown$, itemMouseUp$))
 
 
   const itemMouseClick$ = itemMouseDown$
     .switchMap(down => itemMouseUp$.filter(up => down.target === up.target))
+    .do(x => console.log(`itemMouseClick`, x))
+    .share()
+
+  //inputBlurToItem$.subscribe() 
 
   return {
     input$: O.merge(input$, inputFocus$).map(ev => ev.target.value),
@@ -143,21 +159,10 @@ function reducers(actions, inputs) {
 
 function model(actions, {props$, suggestions$}, itemConfigs) {
   const reducer$ = reducers(actions)
-  //suggestions$.subscribe()
-  // const blahSuggestions$ = O.merge(O.of([{
-  //   name: `Hello`,
-  //   address: [`56 Derby Court`, `IL`, `60523`].join(`, `),
-  //   venueId: `454`,
-  //   latLng: [70.876, -40.076],
-  //   source: `Foursquare`,
-  //   retrieved: (new Date()).getTime(),
-  //   type: `default`
-  // }]), O.never()).cache(1)
 
   const state$ = O.merge(
     actions.wantsSuggestions$
       .switchMap(accepted => {
-        //console.log("Suggestions accepted?", accepted)
         return suggestions$.map(suggestions => accepted ? suggestions : [])
       })
       .map(suggestions => ({suggestions, highlighted: null, selected: null})),
@@ -170,7 +175,7 @@ function model(actions, {props$, suggestions$}, itemConfigs) {
   .map(x => {
     return x
   })
-  .cache(1)
+  .publishReplay(1).refCount()
 
   //state$.subscribe()
 
@@ -249,8 +254,9 @@ function view(state$, itemConfigs, displayFunction, placeholder, initialText$) {
 
 function preventedEvents(actions, state$) {
   return state$
-    .switchMap(state =>
-      actions.keepFocusOnInput$.map(event => {
+    .switchMap(state => {
+      console.log(`Subscribing to keepFocusOnInput$`)
+      return actions.keepFocusOnInput$.map(event => {
         if (state.suggestions.length > 0
         && state.highlighted !== null) {
           return event
@@ -258,7 +264,7 @@ function preventedEvents(actions, state$) {
           return null
         }
       })
-    )
+    })
     .filter(ev => ev !== null)
 }
 
