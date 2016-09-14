@@ -21,9 +21,9 @@ function intent(DOM) {
   const itemMouseDown$ = DOM.select('.appAutocompleteItem').events('mousedown')
     .do(x => console.log(`itemMouseDown`, x))
     .publish().refCount()
-  const itemMouseUp$ = DOM.select('.appAutocompleteItem').events('mouseup')
-    .do(x => console.log(`itemMouseDown`, x))
-    //.publish().refCount()
+  // const itemMouseUp$ = DOM.select('.appAutocompleteItem').events('mouseup')
+  //   .do(x => console.log(`itemMouseDown`, x.currentTarget))
+  //   .publish().refCount()
 
   const inputFocus$ = DOM.select('.appAutocompleteable').events('focus').publish().refCount()
   const inputBlur$ = DOM.select('.appAutocompleteable').events('blur')
@@ -36,10 +36,10 @@ function intent(DOM) {
   const escPressed$ = keydown$.filter(({keyCode}) => keyCode === ESC_KEYCODE)
   const clearField$ = input$.filter(ev => ev.target.value.length === 0)
 
-  const inputBlurToItem$ = inputBlur$.let(between(itemMouseDown$, itemMouseUp$))
+  const inputBlurToItem$ = inputBlur$.let(between(itemMouseDown$, DOM.select('.appAutocompleteItem')))
     .do(x => console.log(`inputBlurToItem`, x))
     .publish().refCount()
-  const inputBlurToElsewhere$ = inputBlur$.let(notBetween(itemMouseDown$, itemMouseUp$))
+  const inputBlurToElsewhere$ = inputBlur$.let(notBetween(itemMouseDown$, DOM.select('.appAutocompleteItem')))
 
 
   const itemMouseClick$ = itemMouseDown$
