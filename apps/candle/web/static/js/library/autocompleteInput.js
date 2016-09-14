@@ -12,23 +12,23 @@ function intent(DOM) {
   const ESC_KEYCODE = 27
   const TAB_KEYCODE = 9
 
-  const input$ = DOM.select('.appAutocompleteable').events('input')
-    .publish().refCount()
+  const input$ = DOM.select('.appAutocompleteable').events('input').publish().refCount()
+  const inputClick$ = DOM.select('.appAutocompleteable').events('click')
+    .filter(ev => ev.target !== document.activeElement)
+
   const keydown$ = DOM.select('.appAutocompleteable').events('keydown')
   const itemHover$ = DOM.select('.appAutocompleteItem').events('mouseenter')
-    .do(x => console.log(`itemHover`, x))
     .publish().refCount()
   const itemMouseDown$ = DOM.select('.appAutocompleteItem').events('mousedown')
-    .do(x => console.log(`itemMouseDown`, x))
+
     .publish().refCount()
-  // const itemMouseUp$ = DOM.select('.appAutocompleteItem').events('mouseup')
-  //   .do(x => console.log(`itemMouseDown`, x.currentTarget))
-  //   .publish().refCount()
+  const itemMouseUp$ = DOM.select('.appAutocompleteItem').events('mouseup')
+    .publish().refCount()
 
   const inputFocus$ = DOM.select('.appAutocompleteable').events('focus').publish().refCount()
   const inputBlur$ = DOM.select('.appAutocompleteable').events('blur')
-    //.filter(ev => ev.target !== document.activeElement) // <--- sketchy? :)
-    .do(x => console.log(`inputBlur`, x))
+    .filter(ev => ev.target !== document.activeElement) // <--- sketchy? :)
+    //.do(x => console.log(`inputBlur`, x))
     .publish().refCount()
 
   const enterPressed$ = keydown$.filter(({keyCode}) => keyCode === ENTER_KEYCODE)
@@ -36,19 +36,32 @@ function intent(DOM) {
   const escPressed$ = keydown$.filter(({keyCode}) => keyCode === ESC_KEYCODE)
   const clearField$ = input$.filter(ev => ev.target.value.length === 0)
 
-  const inputBlurToItem$ = inputBlur$.let(between(itemMouseDown$, DOM.select('.appAutocompleteItem')))
-    .do(x => console.log(`inputBlurToItem`, x))
+  const inputBlurToItem$ = inputBlur$
+    .do(x => console.log(`blur item`))
+    .let(between(itemMouseDown$, itemMouseUp$))
+    // .do(x => console.log(`inputBlurToItem`, x))
+    // .startWith(`start`)
+    // .do(x => {
+    //   if (x === `start`) {
+    //     console.log(`subscribing to inputBlurToItem$`)
+    //   }
+    //   return x
+    // })
+    // .filter(x => x !== `start`)
     .publish().refCount()
-  const inputBlurToElsewhere$ = inputBlur$.let(notBetween(itemMouseDown$, DOM.select('.appAutocompleteItem')))
+  const inputBlurToElsewhere$ = inputBlur$
+    .do(x => console.log(`blur elsewhere`))
+    .let(notBetween(itemMouseDown$, itemMouseUp$))
 
 
-  const itemMouseClick$ = itemMouseDown$
-    //.switchMap(down => itemMouseUp$.filter(up => down.target === up.target))
-    .switchMap(down => DOM.select('.appAutocompleteItem').events('mouseup').filter(up => down.target === up.target))
-    .do(x => console.log(`itemMouseClick`, x))
+  // const itemMouseClick$ = itemMouseDown$
+  //   .switchMap(down => {
+  //     return itemMouseUp$.filter(up => down.target === up.target)
+  //   })
+  //   .publish().refCount()
+
+  const itemMouseClick$ = DOM.select('.appAutocompleteItem').events('click')
     .publish().refCount()
-
-  //inputBlurToItem$.subscribe() 
 
   return {
     input$: O.merge(input$, inputFocus$).map(ev => ev.target.value),
@@ -67,21 +80,22 @@ function intent(DOM) {
     setHighlight$: itemHover$
       .map(ev => parseInt(ev.target.dataset.index)),
     keepFocusOnInput$:
-      O.merge(inputBlurToItem$, enterPressed$, tabPressed$),
+      O.never(),
+      //O.merge(inputBlurToItem$, enterPressed$, tabPressed$),
+      //O.merge(enterPressed$, tabPressed$),
     selectHighlighted$:
       O.merge(itemMouseClick$, enterPressed$, tabPressed$).debounceTime(1),
     wantsSuggestions$:
-      O.merge(inputFocus$.mapTo(true), inputBlur$.mapTo(false)),
+      O.merge(inputFocus$.mapTo(true), inputBlur$.mapTo(false), inputClick$.mapTo(true)),
     quitAutocomplete$:
       O.merge(clearField$, inputBlurToElsewhere$, escPressed$),
-    inputBlur$: O.never(),
+    itemMouseDown$,
     itemMouseClick$,
-    itemMouseDown$
   }
 }
 
 function reducers(actions, inputs) {
-  const moveHighlightReducer$ = actions.moveHighlight$
+  const moveHighlightR = actions.moveHighlight$
     .map(delta => function moveHighlightReducer(state, itemConfigs) {
       const suggestions = state.get('suggestions')
       const length = suggestions.length
@@ -118,8 +132,11 @@ function reducers(actions, inputs) {
         }
       })
     })
+    // .finally(() => {
+    //   console.log(`autocomplete moveHighlightR terminating`)
+    // })
 
-  const setHighlightReducer$ = actions.setHighlight$
+  const setHighlightR = actions.setHighlight$
     .map(highlighted => function (state, itemConfigs) {
       //console.log(`setHighlightReducer...`)
       const suggestions = state.get('suggestions')
@@ -130,8 +147,11 @@ function reducers(actions, inputs) {
         return state
       }
     })
+    // .finally(() => {
+    //   console.log(`autocomplete setHighlightR terminating`)
+    // })
 
-  const selectHighlightedReducer$ = actions.selectHighlighted$
+  const selectHighlightedR = actions.selectHighlighted$
     .switchMap(() => O.of(true, false))
     .map(selected => function selectHighlightedReducer(state) {
       const suggestions = state.get('suggestions')
@@ -146,26 +166,48 @@ function reducers(actions, inputs) {
         return state.set('selected', null)
       }
     })
+    // .finally(() => {
+    //   console.log(`autocomplete selectHighlightedR terminating`)
+    // })
 
-  const hideReducer$ = actions.quitAutocomplete$
+  const hideR = actions.quitAutocomplete$
     .mapTo(function hideReducer(state) {
       return state.set('suggestions', [])
     })
+    // .finally(() => {
+    //   console.log(`autocomplete hideR terminating`)
+    // })
 
   return O.merge(
-    moveHighlightReducer$,
-    setHighlightReducer$,
-    selectHighlightedReducer$,
-    hideReducer$
+    moveHighlightR,
+    setHighlightR,
+    selectHighlightedR,
+    hideR
   )
+  // .finally(() => {
+  //   console.log(`autocomplete reducer$ terminating`)
+  // })
 }
 
 function model(actions, {props$, suggestions$}, itemConfigs) {
   const reducer$ = reducers(actions)
+  //suggestions$.subscribe()
+
+    // .mapTo([{
+    //   name: `Hello`,
+    //   address: [`56 Derby Court`, `IL`, `60523`].join(`, `),
+    //   venueId: `454`,
+    //   latLng: [70.876, -40.076],
+    //   source: `Foursquare`,
+    //   retrieved: (new Date()).getTime(),
+    //   type: `default`
+    // }])
 
   const state$ = O.merge(
     actions.wantsSuggestions$
       .switchMap(accepted => {
+        console.log(`wants suggestions?`, accepted)
+        //return suggestions$.map(suggestions => accepted ? suggestions : [])
         return suggestions$.map(suggestions => accepted ? suggestions : [])
       })
       .map(suggestions => ({suggestions, highlighted: null, selected: null})),
@@ -178,6 +220,9 @@ function model(actions, {props$, suggestions$}, itemConfigs) {
   .map(x => {
     return x
   })
+  // .finally(() => {
+  //   console.log(`autocomplete state$ terminating`)
+  // })
   .publishReplay(1).refCount()
 
   //state$.subscribe()
@@ -203,8 +248,10 @@ function renderAutocompleteMenu({suggestions, highlighted}, itemConfigs) {
 
         const el = renderer(suggestion, index, highlighted === index)
 
-        el.data.class = {
-          appAutocompleteItem: true
+        if (config.selectable) {
+          el.data.class = {
+            appAutocompleteItem: true
+          }
         }
 
         //console.log(`Rendered autocomplete item`)
@@ -258,15 +305,24 @@ function view(state$, itemConfigs, displayFunction, placeholder, initialText$) {
 function preventedEvents(actions, state$) {
   return state$
     .switchMap(state => {
-      console.log(`Subscribing to keepFocusOnInput$`)
-      return actions.keepFocusOnInput$.map(event => {
-        if (state.suggestions.length > 0
-        && state.highlighted !== null) {
-          return event
-        } else {
-          return null
-        }
-      })
+      //console.log(`Subscribing to keepFocusOnInput$`)
+      return actions.keepFocusOnInput$
+        .startWith(`start`)
+        .do(x => {
+          if (x === `start`) {
+            console.log(`subscribing to keepFocusOnInput$`)
+          }
+          return x
+        })
+        .filter(x => x !== `start`)
+        .map(event => {
+          if (state.suggestions.length > 0
+          && state.highlighted !== null) {
+            return event
+          } else {
+            return null
+          }
+        })
     })
     .filter(ev => ev !== null)
 }
@@ -275,8 +331,8 @@ function main(sources, {suggester, itemConfigs, displayFunction, placeholder, in
   const actions = intent(sources.DOM)
 
   const suggestionComponent = suggester(sources, {input$: actions.input$})
-
   const state$ = model(actions, {suggestions$: suggestionComponent.results$}, itemConfigs)
+  
   const vtree$ = view(state$, itemConfigs, displayFunction, placeholder, initialText$ || O.of(``))
   const prevented$ = preventedEvents(actions, state$)
   const toHTTP$ = suggestionComponent.HTTP
@@ -285,16 +341,19 @@ function main(sources, {suggester, itemConfigs, displayFunction, placeholder, in
     DOM: vtree$,
     HTTP: toHTTP$,
     Global: O.merge(
-      //prevented$.map(ev => ({type: `preventDefault`, data: ev})),
+      prevented$.map(ev => ({type: `preventDefault`, data: ev})),
       actions.itemMouseDown$.map(ev => ({type: `preventDefault`, data: ev})),
-      //actions.inputBlur$.map(ev => ({type: `preventWindowBlur`, data: ev}))
+      // actions.itemMouseClick$.map(ev => ({type: `blur`, data: document.activeElement}))
+      //   .delay(4)
     ),
-    input$: actions.input$.do(x => {
+    input$: //O.never(),
+    actions.input$.do(x => {
         console.log(`Autocomplete input...`)
         console.log(x)
       })
       .filter(x => !!x),
-    selected$: state$.map(state => state.selected)
+    selected$: //O.never()
+    state$.map(state => state.selected)
       .filter(x => !!x)
       .do(x => {
         console.log(`Autocomplete selected...`)
@@ -303,4 +362,4 @@ function main(sources, {suggester, itemConfigs, displayFunction, placeholder, in
   }
 }
 
-export default (sources, inputs) => isolate(main)(sources, inputs)
+export default (sources, inputs) => /*isolate(main)*/main(sources, inputs)
