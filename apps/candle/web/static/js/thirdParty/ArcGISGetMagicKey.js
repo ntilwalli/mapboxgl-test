@@ -107,7 +107,7 @@ function getResults ({HTTP}, {input$}) {
 
 function ArcGISGetMagicKey (sources, inputs) {
 
-  const streams$ = getResults(sources, inputs).cache(1)
+  const streams$ = getResults(sources, inputs).publishReplay(1).refCount()
 
   return {
     HTTP: streams$.switchMap(x => x.HTTP),//.do(makeLogger('toHTTP$..')),

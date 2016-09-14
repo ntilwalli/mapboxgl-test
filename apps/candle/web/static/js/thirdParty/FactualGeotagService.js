@@ -77,7 +77,7 @@ export default function FactualGeotagService ({props$, latLng$, HTTP}) {
       result$: getFromHTTPStream(props, HTTP),
       HTTP: O.of(toGeotagHTTPRequest(props, latLng))
     }
-  }).share()
+  }).publish().refCount()
 
   return {
     HTTP: info$.switchMap(x => x.HTTP),

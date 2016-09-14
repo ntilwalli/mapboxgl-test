@@ -71,10 +71,10 @@ export default function main(sources, inputs) {
     .map(x => {
       return x
     })
-    .cache(1)
+    .publishReplay(1).refCount()
 
   // const route$ = isAuthorized$.switchMap(() => Router.history$.map(toRoutes))
-  //   .cache(1)
+  //   .publishReplay(1).refCount()
 
   const toHTTP$ = route$
     .filter(route => isForHTTP(route))
@@ -87,7 +87,7 @@ export default function main(sources, inputs) {
     .map(x => {
       return x
     })
-    .cache(1)
+    .publishReplay(1).refCount()
 
   const toComponent$ = route$
     .filter(route => !isForHTTP(route))
@@ -112,7 +112,7 @@ export default function main(sources, inputs) {
         }
       }
     })
-  ).cache(1)
+  ).publishReplay(1).refCount()
 
   const actions = intent(sources)
 

@@ -53,7 +53,7 @@ export default function main(sources, inputs) {
     .filter(x => x.type === `error`)
     .map(x => x.data)
     //.startWith(undefined)
-    .cache(1)
+    .publishReplay(1).refCount()
 
   const nameInput = TextInput(sources, {
     props$: nameInputProps, 

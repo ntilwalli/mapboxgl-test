@@ -38,6 +38,7 @@ function contentComponent(sources, inputs) {
 
   return {
     DOM: vtree$,
+    HTTP: O.never(),
     state$
   }
 }

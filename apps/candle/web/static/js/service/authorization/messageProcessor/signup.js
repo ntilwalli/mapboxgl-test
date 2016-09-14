@@ -9,7 +9,7 @@ function intent(sources) {
     .map(x => {
       return x
     })
-    .cache(1)
+    .publishReplay(1).refCount()
 
   const good$ = response$
     .map(x => {
@@ -17,7 +17,7 @@ function intent(sources) {
     })
     .filter(x => x.status === 200)
     .map(x => x.body)
-    .share()
+    .publish().refCount()
 
   const bad$ = response$
     .filter(x => x.status !== 200)
@@ -50,7 +50,7 @@ export default function process(sources, message$) {
   const signup$ = message$
     .filter(x => x.type === `signup`)
     .map(x => x.data)
-    .share()
+    .publish().refCount()
 
   const attempt$ = signup$
     .filter(x => x.type === `attempt`)
@@ -65,7 +65,7 @@ export default function process(sources, message$) {
     .map(x => {
       return x
     })
-    .share()
+    .publish().refCount()
 
   const toMessage$ = O.merge(
     actions.failed$

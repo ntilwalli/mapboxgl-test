@@ -41,7 +41,7 @@ export default function routing(sources, inputs) {
     .map(x => {
       return x
     })
-    .cache(1)
+    .publishReplay(1).refCount()
 
   return normalizeComponentStream(routing$)
 }

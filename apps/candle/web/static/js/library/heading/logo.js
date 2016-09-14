@@ -11,7 +11,7 @@ function intent(sources) {
 }
 
 function model(actions, inputs) {
-  return O.of({}).cache(1)
+  return O.of({}).publishReplay(1).refCount()
 }
 
 function view(state$) {

@@ -17,7 +17,7 @@ export default function intent(sources) {
       console.log(`mapMove`)
     })
     .map(getCenterZoom)
-    .cache(1)
+    .publishReplay(1).refCount()
 
   console.log(`in location fgs`)
   const regionService = FactualGeotagService({props$: O.of({category: `region from location`}), latLng$: mapMove$.map(x => x.center), HTTP})
@@ -42,7 +42,7 @@ export default function intent(sources) {
   const locationDescription$ = sources.DOM.select(`.appLocationDescription`).events(`input`)
     .map(ev => ev.target.value)
 
-  const listing$ = Router.history$.take(1).map(x => x.state).cache(1)
+  const listing$ = Router.history$.take(1).map(x => x.state).publishReplay(1).refCount()
 
   return {
     next$: sources.DOM.select(`.appNextButton`).events(`click`),

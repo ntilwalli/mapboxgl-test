@@ -58,7 +58,7 @@ export default function main(sources, inputs) {
     .map(x => x.data)
     .filter(x => x.type === `error`)
     .map(x => x.data)
-    .cache(1)
+    .publishReplay(1).refCount()
 
 
   const nameInput = TextInput(sources, {

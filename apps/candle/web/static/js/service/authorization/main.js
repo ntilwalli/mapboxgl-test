@@ -14,7 +14,7 @@ export default function Authorization(sources, inputs) {
     })
     .filter(x => x.type === AUTHORIZATION_INDICATOR)
     .map(x => x.data)
-    .share()
+    .publish().refCount()
 
   const login = Login(sources, authMessage$)
   const logout = Logout(sources, authMessage$)
@@ -48,7 +48,7 @@ export default function Authorization(sources, inputs) {
         return undefined
       }
     })
-    .cache(1)
+    .publishReplay(1).refCount()
 
   return {
     status$: status$,

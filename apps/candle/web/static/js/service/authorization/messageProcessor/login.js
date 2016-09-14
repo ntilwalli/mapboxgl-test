@@ -9,25 +9,25 @@ function intent(sources) {
     // .map(x => {
     //   return x
     // })
-    .share()
+    .publish().refCount()
 
   const response_good$ = response$
     .filter(x => x.status === 200)
     .map(x => x.body)
-    .share()
+    .publish().refCount()
 
   const response_bad$ = response$
     .filter(x => x.status !== 200)
-    .share()
+    .publish().refCount()
 
   const failedLogin$ = response_good$
     .filter(x => x.type === `error`)
     .map(x => x.data)
-    .share()
+    .publish().refCount()
 
   const success$ = response_good$
     .filter(x => x.type === `success`)
-    .share()
+    .publish().refCount()
 
 
   return {
@@ -44,7 +44,7 @@ export default function process(sources, message$) {
   const data$ = message$
     .filter(x => x.type === `login`)
     .map(x => x.data)
-    .share()
+    .publish().refCount()
 
   const local$ = data$
     .filter(x => x.type === 'local')
@@ -59,7 +59,7 @@ export default function process(sources, message$) {
     .map(x => {
       return x
     })
-    .share()
+    .publish().refCount()
 
   const facebook$ = data$
     .filter(x => x.type === `facebook`)

@@ -37,19 +37,14 @@ function FoursquareSuggestVenues (sources, inputs) {
 
 
   const fromHttp$ = HTTP.select(`suggestVenues`)
-    // .do(x => console.log(`all responses...`, x))
-    // .filter(res$ => res$.request && res$.request.category === `suggestVenues`)
-    //.filter(res$ => res$.request.url.indexOf(`suggestcompletion`) > -1)
     .switchMap(res => {
       return res.map(res => {
         if (res.statusCode === 200) {
-          //console.log(`recieved HTTP response`)
           return {
             type: `success`,
             data: res.body.response
           }
         } else {
-          //console.log(`recieved HTTP error`)
           return {
             type: `error`,
             data: `Unsuccessful response from server`
@@ -57,15 +52,13 @@ function FoursquareSuggestVenues (sources, inputs) {
         }
       })
       .catch((e, orig$) => {
-        //console.log(`received HTTP major error`)
         return O.of({
           type: `error`,
           data: e
         })
       })
     })
-    .publish().refCount()
-    //.publishReplay(1).refCount()
+    .publishReplay(1).refCount()
 
   const validResponse$ = fromHttp$.filter(res => res.type === `success`).map(res => res.data)
   const invalidResponse$ = fromHttp$.filter(res => res.type === `error`).map(res => res.data)
@@ -101,7 +94,7 @@ function FoursquareSuggestVenues (sources, inputs) {
   const rProps$ = props$.publishReplay(1).refCount()
   const rCenterZoom$ = centerZoom$.publishReplay(1).refCount()
 
-  //const test$ = combineObj({props$, centerZoom$}).cache(1)
+  //const test$ = combineObj({props$, centerZoom$}).publishReplay(1).refCount()
   const toHttp$ = sendablePartial$
     .switchMap(partial => {
       return combineObj({props$: rProps$.take(1), centerZoom$: rCenterZoom$.take(1)})
@@ -116,13 +109,14 @@ function FoursquareSuggestVenues (sources, inputs) {
       return x
     })),
     emptyResult$
-  )
-  .publish().refCount()
-  //.publishReplay(1).refCount()
+  ).publishReplay(1).refCount()
+
+  window.results$ = results$
+  //results$.subscribe()
 
   return {
-    HTTP: toHttp$,
-      //.do(x => console.log(`toHTTP$`, x)),
+    HTTP: toHttp$
+      .do(x => console.log(`toHTTP$`, x)),
     results$,
     //results$: O.never(),
     isProcessing$: O.merge(

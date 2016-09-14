@@ -7,7 +7,7 @@ function intent(sources) {
   const redirect$ = sources.HTTP.select(`logout`)
     //.filter(res$ => res$.request.url === LOGOUT_ENDPOINT)
     .switchMap(x => x)
-    .share()
+    .publish().refCount()
 
   return {
     redirect$
@@ -21,7 +21,7 @@ export default function process(sources, message$) {
     .map(x => {
       return x
     })
-    .share()
+    .publish().refCount()
 
   const toHTTP$ = logout$
     .mapTo({

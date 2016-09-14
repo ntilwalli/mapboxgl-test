@@ -29,7 +29,7 @@ export default function intent(sources) {
       return listing
     })
     //.do(x => console.log(`retrieved listing`, x))
-    .cache(1)
+    .publishReplay(1).refCount()
 
   const storedState$ = Storage.local.getItem(`createListing`)
   const initialState$ = storedState$

@@ -7,9 +7,9 @@ export default function intent(sources) {
     .map(route => {
       return route.state
     })
-    .cache(1)
+    .publishReplay(1).refCount()
   const continue$ = DOM.select(`.appContinueStep1Button`).events(`click`)
-    .cache(1)
+    .publishReplay(1).refCount()
 
   return {
     listing$, 

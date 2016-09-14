@@ -21,7 +21,7 @@ function intent(sources) {
         stepName: m[2]
       }
     })
-    .cache(1)
+    .publishReplay(1).refCount()
 
 
   const closeInstruction$ = O.merge(
@@ -39,11 +39,11 @@ function intent(sources) {
     })
     .filter(x => x.type === `created`)
     //.map(x => x.data)
-    .share()
+    .publish().refCount()
   const saved$ = good$
     .filter(x => x.type === `saved`)
     //.map(x => x.data)
-    .share()
+    .publish().refCount()
 
   const fromHTTP$ = O.merge(
     created$,
@@ -93,7 +93,7 @@ function model(actions, inputs) {
     // .do(x => {
     //   console.log(`step state`, x)
     // })
-    .cache(1)
+    .publishReplay(1).refCount()
 }
 
 function view(state$, components) {
@@ -156,7 +156,7 @@ export default function main(sources, inputs) {
   }).map(x => {
     return x
   })
-  .share()
+  .publish().refCount()
 
   const saveStatus$ = O.merge(
     toHTTP$.mapTo({
@@ -198,4 +198,8 @@ export default function main(sources, inputs) {
   return spread(mergeSinks(heading, content, instruction, mergeableSinks), {
     DOM: vtree$
   })
+
+  // return spread(mergeSinks(heading, content), {
+  //   DOM: vtree$
+  // })
 }

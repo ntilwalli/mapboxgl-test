@@ -83,7 +83,7 @@ function getDefaultVicinity(sources, inputs) {
 
   const listing$ = inputs.listing$.take(1)
     //.debug(`vicinity listing$...`)
-    .cache(1)
+    .publishReplay(1).refCount()
 
   const validVicinity$ = listing$
     .filter(validVicinity)
@@ -93,11 +93,11 @@ function getDefaultVicinity(sources, inputs) {
   const invalidVicinity$ = listing$
     .filter(x => !validVicinity(x))
     //.debug(`invalidVicinity$...`)
-    .cache(1)
+    .publishReplay(1).refCount()
 
   const fallbackGeolocation$ = invalidVicinity$
     .switchMap(() => inputs.geolocation$)
-    .cache(1)
+    .publishReplay(1).refCount()
 
   const fallbackGeolocationValid$ = fallbackGeolocation$
     .filter(validGeolocation)
@@ -132,7 +132,7 @@ function getDefaultVicinity(sources, inputs) {
   .map(x => {
     return x
   })
-  .cache(1)
+  .publishReplay(1).refCount()
 
   return defaultVicinity$
 
@@ -220,12 +220,12 @@ function contentComponent(sources, inputs) {
       return x
     })
     .map(state => getModal(sources, inputs, {modal: state.modal, listing: state.listing}))
-    .cache(1)
+    .publishReplay(1).refCount()
 
   hideModal$.attach(normalizeSink(modal$, `close$`))
   vicinityFromScreen$.attach(normalizeSink(modal$, `done$`))
 
-  const listing$ = state$.map(x => x.listing).cache(1)
+  const listing$ = state$.map(x => x.listing).publishReplay(1).refCount()
   const inputComponent$ = state$
     .distinctUntilChanged(null, x => x.listing.profile.location.mode)
     .map(state => {
@@ -245,7 +245,7 @@ function contentComponent(sources, inputs) {
       }
     })
     .map(normalizeComponent)
-    .cache(1)
+    .publishReplay(1).refCount()
 
   location$.attach(normalizeSink(inputComponent$, `result$`))
 

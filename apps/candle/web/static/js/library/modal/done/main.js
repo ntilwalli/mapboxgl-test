@@ -69,7 +69,7 @@ export default function main(sources, inputs) {
     throw new Error(`Component requires DOM and output$ sinks.`)
   }
 
-  const holdOutput$ = component.output$.cache(1)
+  const holdOutput$ = component.output$.publishReplay(1).refCount()
   const normalized = normalizeComponent(component)
   const actions = intent(sources)
   return spread(

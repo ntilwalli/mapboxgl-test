@@ -36,7 +36,7 @@ function model(actions, inputs) {
     .map(inputs => inputs.initialState)
     .switchMap(initialState => reducer$.startWith(Immutable.Map(initialState)).scan((acc, f) => f(acc)))
     .map(x => x.toJS())
-    .cache(1)
+    .publishReplay(1).refCount()
 }
 
 function view(state$, components) {

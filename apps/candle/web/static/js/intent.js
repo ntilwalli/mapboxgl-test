@@ -6,7 +6,7 @@ export default function intent(sources) {
   const urlParams$ = Router.history$
     .map(x => queryString.parse(x.search))
     .map(x => x.modal)
-    .cache(1)
+    .publishReplay(1).refCount()
 
   //const resize$ = sources.DOM.select(`body`).events(`resize`).subscribe(ev => console.log(ev))
 
@@ -15,6 +15,6 @@ export default function intent(sources) {
     thresholdUp$: Global.filter(x => x.type === `thresholdUp`),
     modal$: urlParams$.map(x => {
       return (x === `login` || x === `signup` || x === `presignup`) ? x : null
-    }).cache(1)
+    }).publishReplay(1).refCount()
   }
 }

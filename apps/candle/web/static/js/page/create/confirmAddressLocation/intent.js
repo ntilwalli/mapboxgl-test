@@ -12,7 +12,7 @@ export default function intent(sources) {
       console.log(`mapMove`, x)
     })
     .map(getCenterZoom)
-    .cache(1)
+    .publishReplay(1).refCount()
 
   return {
     next$: DOM.select(`.appNextButton`).events(`click`),

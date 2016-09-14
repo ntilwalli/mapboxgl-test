@@ -14,7 +14,7 @@ function intent(sources) {
     .map(x => {
       return x
     })
-    .share()
+    .publish().refCount()
   const saved$ = good$.filter(x => x.type === `saved`)
   const fromHTTP$ = O.merge(
     created$,
@@ -51,7 +51,7 @@ function model(actions, inputs) {
     })
     .map(x => x.toJS())
     //.do(x => console.log(`stepComponent state`, x))
-    .cache(1)
+    .publishReplay(1).refCount()
 }
 
 function view(state$, components) {
@@ -137,7 +137,7 @@ export default function main(sources, inputs) {
             data: listing
           }
         }
-      }).share()
+      }).publish().refCount()
 
     const toHTTP$ = decision$.filter(x => x.type === "HTTP")
       .map(x => {
@@ -153,7 +153,7 @@ export default function main(sources, inputs) {
           category: `saveListingOnNext`
         }
       })
-      .share()
+      .publish().refCount()
 
     const toNextScreen$ = O.merge(
       decision$.filter(x => x.type === "Router").map(x => x.data),
@@ -251,13 +251,26 @@ export default function main(sources, inputs) {
     }
 
   })
-  .cache(1)
+  .publishReplay(1).refCount()
 
   const toHTTP$ = normalizeSink(component$, `HTTP`).map(x => {
       return x
     })
 
   //toHTTP$.subscribe()
+
+  // return {
+  //   DOM: normalizeSink(component$, `DOM`),
+  //   MapDOM: normalizeSink(component$, `MapDOM`),
+  //   Router: normalizeSink(component$, `Router`),
+  //   Global: normalizeSink(component$, `Global`),
+  //   Storage: normalizeSink(component$, `Storage`),
+  //   HTTP: toHTTP$,
+  //   message$: normalizeSink(component$, `message$`),
+  //   listing$: normalizeSink(component$, `listing$`),
+  //   save$: normalizeSink(component$, `save$`),
+  //   saveStatus$: normalizeSink(component$, `saveStatus$`)
+  // }
 
   return {
     DOM: normalizeSink(component$, `DOM`),

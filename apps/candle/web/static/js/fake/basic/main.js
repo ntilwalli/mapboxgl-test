@@ -44,7 +44,7 @@ export default function main(sources, inputs, route) {
       return getBlankModal()
     }
   })
-  .cache(1)
+  .publishReplay(1).refCount()
 
   const modal$ = modalComponent$.switchMap(x => {
     return x.DOM
@@ -62,7 +62,7 @@ export default function main(sources, inputs, route) {
   // close$.attach(modalClose$)
   // done$.attach(modalDone$)
 
-  // const aMessage$ = inputs.message$.filter(x => x.type ===`authorization`).map(x => x.data).share()
+  // const aMessage$ = inputs.message$.filter(x => x.type ===`authorization`).map(x => x.data).publish().refCount()
   // const loginMessage$ = aMessage$.filter(x => x.type === `login`).map(x => x.data)
   // const signupMessage$ = aMessage$.filter(x => x.type === `signup`).map(x => x.data)
   // const inMessage$ = most.merge(loginMessage$, signupMessage$)

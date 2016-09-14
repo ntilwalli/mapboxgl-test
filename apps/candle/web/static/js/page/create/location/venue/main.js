@@ -72,7 +72,7 @@ function model(inputs) {
     .map(x => {
       return x
     })
-    .cache(1)
+    .publishReplay(1).refCount()
 }
 
 function view(state$, components) {
@@ -83,13 +83,15 @@ function view(state$, components) {
       const {info} = state
       return div([
         venue,
-        info ? div(`.map.sub-section`, [
+        info ? //null
+          div(`.map.sub-section`, [
             div(`.location-info-section`, [
               div(`.name`, [info.name]),
               div(`.address`, [info.address])
             ]),
             div(`#addEventMapAnchor`)
-          ]) : null
+          ]) 
+          : null
       ])
     })
 }
@@ -99,6 +101,7 @@ function mapview(state$) {
     .map(state => {
       const {info, vicinity, mapSettings} = state
       if (info) {
+        //return null
         const anchorId = `addEventMapAnchor`
         const centerZoom = {
           center: toLatLngArray(info.latLng), 
@@ -145,13 +148,13 @@ export default function main(sources, inputs) {
   const {listing$} = inputs
   const mapSettings$ = listing$.map(x => x.profile.mapSettings)
     .distinctUntilChanged()
-    .cache(1)
+    .publishReplay(1).refCount()
   const vicinity$ = listing$.map(x => x.profile.location.vicinity)
     .distinctUntilChanged()
-    .cache(1)
+    .publishReplay(1).refCount()
   const info$ = listing$.map(x => x.profile.location.info)
     .distinctUntilChanged()
-    .cache(1)
+    .publishReplay(1).refCount()
 
   const venueAutocompleteInput = AutocompleteInput(sources, {
     suggester: (sources, inputs) => FoursquareSuggestVenues(sources, {props$: O.of({}), centerZoom$: vicinity$.map(v => v.position), input$: inputs.input$}),
@@ -176,6 +179,6 @@ export default function main(sources, inputs) {
     HTTP: venueAutocompleteInput.HTTP.map(x => {
       return x
     }),
-    result$: state$.map(state => state.info).cache(1)
+    result$: state$.map(state => state.info).publishReplay(1).refCount()
   }
 }

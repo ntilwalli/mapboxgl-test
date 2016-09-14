@@ -37,7 +37,7 @@ export default function main(sources, inputs) {
       const {type, data} = value.info
       return data(sources, inputs)
     })
-    .cache(1)
+    .publishReplay(1).refCount()
 
   return normalizeComponentStream(component$)
 }

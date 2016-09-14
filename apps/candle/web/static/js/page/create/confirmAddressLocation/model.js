@@ -75,6 +75,6 @@ export default function model(actions, inputs) {
     })
     .map(x => x.toJS())
     .do(x => console.log(`location state...`, x))
-    .cache(1)
+    .publishReplay(1).refCount()
 
 }

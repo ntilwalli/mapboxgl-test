@@ -42,7 +42,7 @@ function main(sources) {
     message$: toServicesMessage$
       .map(x => {
         return x
-      }).cache(1)
+      }).publishReplay(1).refCount()
     })
 
   const routedComponent = route(sources, services.outputs)
@@ -56,7 +56,7 @@ function main(sources) {
     return state.modal
   }).distinctUntilChanged()
     .map(modal => getModal(sources, services.outputs, modal))
-    .cache(1)
+    .publishReplay(1).refCount()
 
   const components = {
     child$: routedComponent.DOM,
@@ -116,6 +116,6 @@ Cycle.run(main, {
   Storage: storageDriver,
   HTTP: makeHTTPDriver(),
   Heartbeat: () => {
-    return O.interval(60000).map(() => new Date()).share()
+    return O.interval(60000).map(() => new Date()).publish().refCount()
   }
 })

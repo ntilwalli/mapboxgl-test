@@ -145,7 +145,7 @@ function model(actions, inputs) {
     })
     .map(x => x.toJS())
     .do(x => console.log(`address state`, x))
-    .cache(1)
+    .publishReplay(1).refCount()
 }
 
 const countries = [
@@ -207,8 +207,8 @@ function view({state$, components}) {
 export default function USAddress(sources, inputs) {
 
   const {listing$} = inputs
-  const vicinity$ = listing$.map(x => x.profile.location.vicinity).cache(1)
-  const centerZoom$ = vicinity$.map(v => v.position).cache(1)
+  const vicinity$ = listing$.map(x => x.profile.location.vicinity).publishReplay(1).refCount()
+  const centerZoom$ = vicinity$.map(v => v.position).publishReplay(1).refCount()
 
 
   const autocomplete$ = createProxy()

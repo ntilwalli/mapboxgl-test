@@ -12,7 +12,7 @@ export function createProxy() {
     if (sub) {
       sub.unsubscribe()
     }
-  }).share()
+  }).publish().refCount()
 
   proxy.attach = (stream) => {
     sub = stream.subscribe(source)
@@ -258,10 +258,10 @@ export function processHTTP(sources, category) {
       .catch((e, orig$) => {
         return O.of({type: `ugly`, data: e.message})
       })
-    ).share()
+    ).publish().refCount()
 
   return {
-    good$: out$.filter(x => x.type === "good").map(x => x.data).share(),
+    good$: out$.filter(x => x.type === "good").map(x => x.data).publish().refCount(),
     bad$: out$.filter(x => x.type === "bad").map(x => x.data),
     ugly$: out$.filter(x => x.type === "ugly").map(x => x.data)
   }

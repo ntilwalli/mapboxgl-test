@@ -3,7 +3,7 @@ import {Observable as O} from 'rxjs'
 export default function intent(sources) {
   const {DOM, Router} = sources
 
-  const listing$ = Router.history$.map(x => x.state).cache(1)
+  const listing$ = Router.history$.map(x => x.state).publishReplay(1).refCount()
 
   const description$ = DOM.select(`.appDescriptionInput`).events(`input`)
     .map(ev => ev.target.value)

@@ -34,6 +34,6 @@ export default function model(actions, inputs) {
     // .do(x => {
     //   console.log(`from create state$...`, x)
     // })
-    .cache(1)
+    .publishReplay(1).refCount()
 
 }

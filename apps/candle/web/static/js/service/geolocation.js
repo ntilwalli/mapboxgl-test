@@ -15,7 +15,7 @@ function intent(sources) {
   const geolocation$ = sources.Global
     .filter(x => x.type === GEOLOCATION_INDICATOR)
     .map(x => x.data)
-    .share()
+    .publish().refCount()
 
   const position$ = geolocation$
     .filter(x => x.type === `position`)
@@ -27,7 +27,7 @@ function intent(sources) {
     //   console.log(`latest geolocation: `, x)
     //   return x
     // })
-    .share()
+    .publish().refCount()
 
   const error$ = geolocation$
     .filter(x => x.type === `error`)
@@ -43,7 +43,7 @@ function intent(sources) {
   })
 
   const region$ = regionService.result$
-    .share()
+    .publish().refCount()
 
   const storagePosition$ = sources.Storage.local.getItem(`position`)
   const storageRegion$ = sources.Storage.local.getItem(`region`)
@@ -97,7 +97,7 @@ export default function GeoLocation(sources, inputs) {
   .map(x => {
     return x
   })
-  .cache(1)
+  .publishReplay(1).refCount()
 
   const toStorage$ = O.merge(
     actions.position$.map(x => ({
@@ -118,7 +118,7 @@ export default function GeoLocation(sources, inputs) {
   const geoMessage$ = inputs.message$
     .filter(x => x.type === GEOLOCATION_INDICATOR)
     .map(x => x.data)
-    .share()
+    .publish().refCount()
 
   const changeGeoProperties$ = geoMessage$
     .filter(x => x.type === `change`)

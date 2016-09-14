@@ -43,5 +43,5 @@ export default function model(actions, inputs) {
     .map(x => {
       return x
     })
-    .cache(1)
+    .publishReplay(1).refCount()
 }

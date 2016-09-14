@@ -27,5 +27,5 @@ export default function model(actions, inputs) {
     })
     .switchMap(initialState => reducer$.startWith(Immutable.Map(initialState)).scan((acc, mod) => mod(acc)))
     .map(x => x.toJS())
-    .cache(1)
+    .publishReplay(1).refCount()
 }

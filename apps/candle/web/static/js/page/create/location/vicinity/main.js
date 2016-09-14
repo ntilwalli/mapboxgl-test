@@ -35,7 +35,7 @@ function intent(sources, inputs) {
   const {DOM, MapDOM} = sources
   const mapMove$ = MapDOM.chooseMap(`changeVicinityMapAnchor`).select(`.changeVicinity`).events(`moveend`)
      .map(getCenterZoom)
-     .cache(1)
+     .publishReplay(1).refCount()
 
   const regionService = FactualGeotagService({props$: O.of({category: 'geotag from vicinity'}), latLng$: mapMove$.map(x => x.center), HTTP: sources.HTTP})
   const mapVicinity$ = regionService.result$
@@ -87,7 +87,7 @@ function model(actions, inputs) {
     .map(x => {
       return x
     })
-    .cache(1)
+    .publishReplay(1).refCount()
 }
 
 function renderVicinityModalBody(info) {
@@ -246,7 +246,7 @@ export default function main(sources, inputs) {
   const out = {
     DOM: view({state$, components: {autocomplete$: populatedPlaceInput.DOM}}),
     MapDOM: mapView(state$),
-    HTTP: O.merge(populatedPlaceInput.HTTP, magicKeyConverter.HTTP, actions.toHTTP$).cache(1),
+    HTTP: O.merge(populatedPlaceInput.HTTP, magicKeyConverter.HTTP, actions.toHTTP$).publishReplay(1).refCount(),
     output$: state$.map(x => x.vicinity)
   }
 

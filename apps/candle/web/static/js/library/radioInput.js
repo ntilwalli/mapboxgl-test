@@ -37,7 +37,7 @@ function model(actions, inputs) {
         .scan((acc, reducer) => reducer(acc))
     })
     .map(x => x.toJS())
-    .cache(1)
+    .publishReplay(1).refCount()
 
 }
 
@@ -74,7 +74,7 @@ function main(sources, inputs) {
       .map(x => {
         return x
       })
-      .cache(1)
+      .publishReplay(1).refCount()
   }
 }
 

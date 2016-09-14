@@ -99,7 +99,7 @@ function getResults ({HTTP}, {props$, input$, center$}) {
             return O.of({type: `error`, data: e})
           })
         )
-        .share()
+        .publish().refCount()
 
 
       const suggestionsError$ = suggestionsResponse$.filter(x => x.type === `error`).map(x => [x.data])
@@ -124,7 +124,7 @@ function getResults ({HTTP}, {props$, input$, center$}) {
 
 function ArcGISSuggest (sources, inputs) {
 
-  const streams$ = getResults(sources, inputs).share()
+  const streams$ = getResults(sources, inputs).publish().refCount()
 
   return {
     HTTP: streams$.switchMap(x => x.HTTP)

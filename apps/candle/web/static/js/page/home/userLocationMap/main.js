@@ -12,7 +12,7 @@ function intent(sources) {
   const {DOM, MapDOM} = sources
   const mapMove$ = MapDOM.chooseMap(MAP_ANCHOR_ID).select(`.${MAP_ROOT_CLASS}`).events(`moveend`)
      .map(getCenterZoom)
-     .cache(1)
+     .publishReplay(1).refCount()
 
   return {
     mapMove$
@@ -31,7 +31,7 @@ function model(actions, inputs) {
     return O.never().startWith(Immutable.Map(initialState)).scan((acc, f) => f(acc))
   })
   .map(x => x.toJS())
-  .cache(1)
+  .publishReplay(1).refCount()
 }
 
 function view(state$) {

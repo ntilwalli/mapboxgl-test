@@ -72,7 +72,7 @@ function model(actions, props, forced$) {
       return reducer$.startWith(Immutable.Map(initialState)).scan((acc, f) => f(acc))
     })
     .map(x => x.toJS())
-    .cache(1)
+    .publishReplay(1).refCount()
 }
 
 function view(state$, {type, key, placeholder, name}) {

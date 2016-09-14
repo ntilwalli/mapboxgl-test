@@ -17,14 +17,14 @@ import {combineObj, spread, normalizeComponent, mergeSinks} from '../../../utils
 function contentComponent(sources, inputs) {
   const listing$ = sources.Router.history$
     .map(route => route.state || getEmptyListing())
-    .cache(1)
+    .publishReplay(1).refCount()
 
   const profile$ = listing$
     .map(x => {
       return x
     })
     .map(listing => listing && listing.profile)
-    .cache(1)
+    .publishReplay(1).refCount()
 
   const creationTypeInput = RadioInput(sources, {
     styleClass: `.circle`,
@@ -109,6 +109,7 @@ function contentComponent(sources, inputs) {
 
   const content = {
     DOM: vtree$,
+    HTTP: O.never(),
     state$
   }
 

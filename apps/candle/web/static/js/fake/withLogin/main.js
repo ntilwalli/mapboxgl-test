@@ -40,7 +40,7 @@ export default function main(sources, inputs, route) {
       return getBlankModal()
     }
   })
-  .cache(1)
+  .publishReplay(1).refCount()
 
   const modalClose$ = modalComponent$.switchMap(x => {
     return x.close$

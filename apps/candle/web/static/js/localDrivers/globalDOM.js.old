@@ -125,12 +125,13 @@ export default function makeGlobalDOMEventDriver() {
       .filter(x => x.type === `preventDefault`)
       .map(x => x.data)
       .map(ev => {
-        ev.preventDefault()
         if(ev.type === `blur`) {
           console.log(`preventing blur default, keeping input focus`)
-          ev.target.focus()
-          //setTimeout(() => ev.target.focus(), 4)
-        } 
+          setTimeout(() => ev.target.focus(), 4)
+        } else {
+          console.log(`preventing default`)
+          ev.preventDefault()
+        }
       }).subscribe(() => {})
     
     sharedSource$
@@ -140,14 +141,6 @@ export default function makeGlobalDOMEventDriver() {
       .filter(ev => document.activeElement !== ev.ownerTarget)
       .map(ev => {
         ev.preventDefault()
-      }).subscribe(() => {})
-
-    sharedSource$
-      .filter(x => x.type === `blur`)
-      .do(x => console.log(`blur`))
-      .map(x => x.data)
-      .map(el => {
-        el.blur()
       }).subscribe(() => {})
     
 

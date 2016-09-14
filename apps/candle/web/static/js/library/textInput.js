@@ -88,7 +88,7 @@ function model(actions, inputs) {
       return reducer$.startWith(Immutable.Map(initialState)).scan((acc, f) => f(acc))
     })
     .map(x => x.toJS())
-    .cache(1)
+    .publishReplay(1).refCount()
 }
 
 function view(state$, inputs) {
@@ -116,7 +116,7 @@ function main(sources, inputs) {
 
   const {props$, error$, initialValue$} = inputs
   const updatedInputs = spread(inputs, {
-    props$: props$.cache(1)
+    props$: props$.publishReplay(1).refCount()
   })
 
   const actions = intent(sources)
@@ -131,7 +131,7 @@ function main(sources, inputs) {
       .map(x => {
         return x
       })
-      .cache(1)
+      .publishReplay(1).refCount()
   }
 }
 

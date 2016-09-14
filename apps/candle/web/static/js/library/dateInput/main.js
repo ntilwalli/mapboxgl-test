@@ -30,7 +30,7 @@ export default function main(sources, inputs) {
     .map(({current}) => current ? moment(current.toISOString()) : undefined)
     //.debug(`initialCurrent`)
     //.filter(x => x)
-    .cache(1)
+    .publishReplay(1).refCount()
 
   const initialHour$ = initialCurrent$
     .map(x => ({hour: x ? x.hour() : ``}))
