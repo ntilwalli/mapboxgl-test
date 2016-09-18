@@ -23,7 +23,7 @@ function intent(DOM) {
 
     .publish().refCount()
   const itemMouseUp$ = DOM.select('.appAutocompleteItem').events('mouseup')
-    .publish().refCount()
+    //.publish().refCount()
 
   const inputFocus$ = DOM.select('.appAutocompleteable').events('focus').publish().refCount()
   const inputBlur$ = DOM.select('.appAutocompleteable').events('blur')
@@ -54,14 +54,15 @@ function intent(DOM) {
     .let(notBetween(itemMouseDown$, itemMouseUp$))
 
 
-  // const itemMouseClick$ = itemMouseDown$
-  //   .switchMap(down => {
-  //     return itemMouseUp$.filter(up => down.target === up.target)
-  //   })
-  //   .publish().refCount()
-
-  const itemMouseClick$ = DOM.select('.appAutocompleteItem').events('click')
+  const itemMouseClick$ = itemMouseDown$
+    .switchMap(down => {
+      return itemMouseUp$.filter(up => down.target === up.target)
+      //return DOM.select('.appAutocompleteItem').events('mouseup').filter(up => down.target === up.target)
+    })
     .publish().refCount()
+
+  // const itemMouseClick$ = DOM.select('.appAutocompleteItem').events('click')
+  //   .publish().refCount()
 
   return {
     input$: O.merge(input$, inputFocus$).map(ev => ev.target.value),
@@ -362,4 +363,4 @@ function main(sources, {suggester, itemConfigs, displayFunction, placeholder, in
   }
 }
 
-export default (sources, inputs) => /*isolate(main)*/main(sources, inputs)
+export default (sources, inputs) => isolate(main)(sources, inputs)

@@ -40,6 +40,7 @@ function intent(sources, inputs) {
   const regionService = FactualGeotagService({props$: O.of({category: 'geotag from vicinity'}), latLng$: mapMove$.map(x => x.center), HTTP: sources.HTTP})
   const mapVicinity$ = regionService.result$
     .switchMap(region => {
+      console.log(`region`, region)
       return mapMove$.take(1).map(position => ({region, position}))
     })
     .map(getVicinityFromMapLocation)
@@ -52,8 +53,8 @@ function intent(sources, inputs) {
 
 function reducers(actions, inputs) {
   const vicinityReducer$ = O.merge(
-    //actions.mapVicinity$,
-    inputs.inputVicinity$
+    actions.mapVicinity$,
+    inputs.inputVicinity$ || O.never()
   )
   .map(v => state => {
     return state.set(`vicinity`, v)
@@ -147,9 +148,6 @@ export default function main(sources, inputs) {
     inputVicinity$
   )
 
-  //const autocomplete$ = createProxy()
-
-  //const state$ = model(actions, {autocomplete$, inputVicinity$, ...inputs})
   const state$ = model(actions, spread({inputVicinity$}, inputs))
 
   const populatedPlaceInput = AutocompleteInput(sources, {
@@ -166,14 +164,15 @@ export default function main(sources, inputs) {
     placeholder: `Drag map or type city/state here...`
   })
 
-  populatedPlaceInput.HTTP.subscribe()
-
   const magicKeyConverter = ArcGISGetMagicKey(sources, {
     props$: O.of({}),
     input$: populatedPlaceInput.selected$
   })
 
   inputVicinity$.attach(magicKeyConverter.result$
+    .do(x => {
+      console.log(`magic key result`, x)
+    })
     .filter(x => x.type === `success`)
     .map(x => x.data)
     .map(x => {
@@ -196,10 +195,7 @@ export default function main(sources, inputs) {
               countryAbbr: countryToAlpha2(country)
             }
           },
-          position: {
-            center: x.latLng
-            //zoom: 8
-          }
+          position: x.latLng
         }
       } else if (match = x.address.match(/^(.*),(.*)$/)) {
         const state = match[1].trim()
@@ -217,10 +213,7 @@ export default function main(sources, inputs) {
               countryAbbr: countryToAlpha2(country)
             }
           },
-          position: {
-            center: x.latLng
-            //zoom: 11
-          }
+          position: x.latLng
         }
       } else {
         vicinity = {
@@ -233,13 +226,10 @@ export default function main(sources, inputs) {
               country: undefined,
             }
           },
-          position: {
-            center: x.latLng
-            //zoom: 7
-          }
+          position: x.latLng
         }
       }
-      //console.log(x)
+
       return vicinity
     }))
 
@@ -249,8 +239,6 @@ export default function main(sources, inputs) {
     HTTP: O.merge(populatedPlaceInput.HTTP, magicKeyConverter.HTTP, actions.toHTTP$).publishReplay(1).refCount(),
     output$: state$.map(x => x.vicinity)
   }
-
-  //out.HTTP.subscribe()
 
   return out
 }

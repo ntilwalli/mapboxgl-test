@@ -75,7 +75,10 @@ function main(sources) {
 
   return {
     DOM: view(state$, components),
-    MapDOM: routedComponent.MapDOM,
+    MapDOM: O.merge(
+      routedComponent.MapDOM,
+      normalizeSink(modal$, `MapDOM`)
+    ),
     Router: O.merge(
       routedComponent.Router,
       normalizeSink(modal$, 'Router')//,

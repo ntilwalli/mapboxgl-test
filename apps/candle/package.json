@@ -17,10 +17,11 @@
     "test": "browserify -t babelify test/static/js/*.js | tap"
   },
   "dependencies": {
-    "@cycle/dom": "^12.2.5",
+    "@cycle/dom": "file:///Users/ntilwalli/dev/cycle/cyclejs/dom",
     "@cycle/history": "^4.0.0",
     "@cycle/http": "^11.0.0",
     "@cycle/isolate": "^1.4.0",
+    "@cycle/rxjs-adapter": "file:///Users/ntilwalli/dev/cycle/cyclejs/rxjs-adapter",
     "@cycle/rxjs-run": "^3.0.3",
     "@cycle/storage": "3.0.0-rc3",
     "@cycle/xstream-run": "^3.0.3",
@@ -39,7 +40,7 @@
     "validator": "^5.2.0",
     "xregexp": "^3.1.1",
     "xs-combine-obj": "^1.1.1",
-    "xstream": "^6.2.0"
+    "xstream": "^6.3.0"
   },
   "devDependencies": {
     "babel-cli": "^6.8.0",

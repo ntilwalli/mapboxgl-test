@@ -149,7 +149,7 @@ export function normalizeComponent(component) {
     Router: defaultNever(component, `Router`),
     Global: defaultNever(component, `Global`),
     Storage: defaultNever(component, `Storage`),
-    HTTP: defaultNever(component, `HTTP`),
+    HTTP: defaultNever(component, `HTTP`).publish().refCount(),
     Heartbeat: defaultNever(component, `Heartbeat`),
     message$: defaultNever(component, `message$`),
   }

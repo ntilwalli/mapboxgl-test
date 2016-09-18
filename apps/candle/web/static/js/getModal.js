@@ -4,9 +4,11 @@ import {blankComponentUndefinedDOM, spread} from './utils'
 import Menu from './library/menu/main'
 import LeftMenuContent from './library/menu/left/main'
 import Modal from './library/modal/simple/main'
+import DoneModal from './library/modal/done/main'
 import Login from './library/authorization/login/main'
 import Signup from './library/authorization/signup/main'
 import Presignup from './library/authorization/presignup/main'
+import Vicinity from './page/create/location/vicinity/main'
 
 export default function getModal(sources, inputs, modal) {
     if (modal === `leftMenu`) {
@@ -45,6 +47,82 @@ export default function getModal(sources, inputs, modal) {
           alwaysShowHeader: false
         })
       }))
+    } else if (modal === `vicinity`) {
+      const doneModal = DoneModal(sources, {
+          component: (sources, inputs) => Vicinity(sources, {
+            geolocation$: O.of({
+              position: {
+                lat: 40.7128, 
+                lng: -74.0059
+              },
+              region: {
+                type: `somewhere`,
+                data: {
+                  country: `US`,
+                  city: `New York`,
+                  state: `New York`,
+                  stateAbbr: `NY`
+                }
+              }
+            }),
+            listing$: O.of({
+              profile: {
+                location: {
+                  position: {
+                    lat: 40.7128, 
+                    lng: -74.0059
+                  }
+                }
+              }
+            })
+          }),
+          props$: O.of({
+            headerText: `Change Vicinity`,
+            type: `standard`,
+            alwaysShowHeader: false
+          })
+        })
+
+        const DOM = doneModal.DOM.publishReplay(1).refCount()
+        const HTTP= doneModal.HTTP.publishReplay(1).refCount()
+        const MapDOM= doneModal.MapDOM
+          .do(x => console.log(`MapDOM`, x))
+          .publishReplay(1).refCount()
+        const Global= O.never().publish().refCount()
+
+        DOM.subscribe()
+        HTTP.subscribe()
+        MapDOM.subscribe()
+        Global.subscribe()
+
+        return {
+          DOM,
+          HTTP,
+          MapDOM,  
+          Global
+        }
+
+
+      // const out = DoneModal(sources, spread(
+      //   inputs, {
+      //   component: (sources, inputs) => Vicinity(sources, spread(inputs, {
+      //     listing$: O.of({
+      //       profile: {
+      //         location: {
+      //           position: {lat: 40, lng: -70},
+      //         }
+      //       }
+      //     })
+      //   })),
+      //   props$: O.of({
+      //     headerText: `Change Vicinity`,
+      //     type: `standard`,
+      //     alwaysShowHeader: false
+      //   })
+      // }))
+
+      // out.HTTP.subscribe()
+      // return out
     } else {
       const out = blankComponentUndefinedDOM(sources, inputs)
       return out

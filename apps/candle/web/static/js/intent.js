@@ -14,7 +14,7 @@ export default function intent(sources) {
   return {
     thresholdUp$: Global.filter(x => x.type === `thresholdUp`),
     modal$: urlParams$.map(x => {
-      return (x === `login` || x === `signup` || x === `presignup`) ? x : null
+      return (x === `login` || x === `signup` || x === `presignup` || x === `vicinity`) ? x : null
     }).publishReplay(1).refCount()
   }
 }

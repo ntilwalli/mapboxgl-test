@@ -101,7 +101,6 @@ function FoursquareSuggestVenues (sources, inputs) {
   const rProps$ = props$.publishReplay(1).refCount()
   const rCenterZoom$ = centerZoom$.publishReplay(1).refCount()
 
-  //const test$ = combineObj({props$, centerZoom$}).cache(1)
   const toHttp$ = sendablePartial$
     .switchMap(partial => {
       return combineObj({props$: rProps$.take(1), centerZoom$: rCenterZoom$.take(1)})

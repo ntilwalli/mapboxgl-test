@@ -1,12 +1,12 @@
 import {Observable as O} from 'rxjs'
 import moment from 'moment'
-import {noopListener, combineObj} from '../utils'
+import {combineObj} from '../utils'
 import Immutable from 'immutable'
 
 const suggestUrlPrefix = `http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/suggest`
 const defaultCategory = "ArgGISSuggest"
 
-function toSuggestionsHTTP({props, input, center}) {
+function toRequest({props, input, center}) {
   const parameters = []
   parameters.push(["text", input].join("="))
   parameters.push(["f", "json"].join("="))
@@ -27,116 +27,68 @@ function toSuggestionsHTTP({props, input, center}) {
   }
 }
 
+function ArcGISSuggest (sources, inputs) {
+  const {props$, input$, center$} = inputs
+  const sharedProps$ = props$.publishReplay(1).refCount()
 
-function isValidSuggestionsRequest (url) {
-  const hasParam = url.indexOf("?text=")
-  if (hasParam) {
-    const afterText = url.substring(hasParam + 6)
-    const firstAmp = afterText.indexOf("&")
-    if (firstAmp > 0) {
-      return true
-    } else {
-      return false
-    }
-  }
-
-  return false
-}
-
-function getResults ({HTTP}, {props$, input$, center$}) {
   const filteredInput$ = input$.filter(x => x.length)
-    .map(x => {
-      return x
-    })
     .filter(input => input.length > 0)
 
   const withLatestInput$ = combineObj({
-    props$,
+    props$: sharedProps$,
     input$: filteredInput$,
     center$
   })
   .distinctUntilChanged((x, y) => x.input === y.input)
 
-  const output$ = withLatestInput$
+  const toHTTP$ = withLatestInput$
     .map(({props, input, center}) => {
-      //console.log(`address suggester partial: ${input}`)
-      let suggestionsRequest = toSuggestionsHTTP({props: props || {}, input, center})
-      let suggestionsRequest$ = O.of(suggestionsRequest)
-      let suggestionsUrl = suggestionsRequest.url
-      let isValid = isValidSuggestionsRequest(suggestionsUrl)
+      return toRequest({props: props || {}, input, center})
+    }).delay(4)
 
-      if (!isValid) {
-        return {
-          HTTP: most.empty(),
-          results$: most.of([]),
-          error$: most.of([])
-        }
-      }
-
-      //console.log(`suggestions url ${suggestionsUrl}`)
-      const suggestionsResponse$ = HTTP.select(props.category || defaultCategory)
-        // .filter(res$ => {
-        //   const url = res$.request.url
-        //   const isEqual = url === suggestionsUrl
-        //   return isEqual
-        // })
-        .switchMap(res$ => res$
-          .map(res => {
-            if (res.statusCode === 200) {
-              const respData = JSON.parse(res.text)
-              return {
-                type: `success`,
-                data: respData.suggestions
-              }
-            } else {
-              return {
-                type: `error`,
-                data: `Unsuccessful response from server`
-              }
+  const suggestionsResponse$ = sharedProps$.switchMap(props => {
+    return sources.HTTP.select(props.category || defaultCategory)
+      .switchMap(res$ => res$
+        .map(res => {
+          if (res.statusCode === 200) {
+            const respData = JSON.parse(res.text)
+            return {
+              type: `success`,
+              data: respData.suggestions
             }
-          })
-          .catch((e, orig$) => {
-            return O.of({type: `error`, data: e})
-          })
-        )
-        .publish().refCount()
-
-
-      const suggestionsError$ = suggestionsResponse$.filter(x => x.type === `error`).map(x => [x.data])
-      const suggestionsSuccess$ = suggestionsResponse$
-        .filter(x => x.type === `success`)
-        .map(x => {
-          return x.data.map(result => ({
-            name: result.text,
-            magicKey: result.magicKey
-          }))
+          } else {
+            return {
+              type: `error`,
+              data: `Unsuccessful response from server`
+            }
+          }
         })
-
-      return {
-        HTTP: suggestionsRequest$.take(1),
-        results$: suggestionsSuccess$.take(1),
-        error$: suggestionsError$.take(1)
-      }
+        .catch((e, orig$) => {
+          return O.of({type: `error`, data: e})
+        })
+      )
     })
+    .publish().refCount()
 
-    return output$
-}
-
-function ArcGISSuggest (sources, inputs) {
-
-  const streams$ = getResults(sources, inputs).publish().refCount()
+  const error$ = suggestionsResponse$
+    .filter(x => x.type === `error`)
+    .map(x => [x.data])
+    .publish().refCount()
+  const results$ = suggestionsResponse$
+    .filter(x => x.type === `success`)
+    .map(x => {
+      return x.data.map(result => ({
+        name: result.text,
+        magicKey: result.magicKey,
+        type: `default`
+      }))
+    })
+    .publish().refCount()
 
   return {
-    HTTP: streams$.switchMap(x => x.HTTP)
-      .map(x => {
-        return x
-      }),
-    results$: streams$.switchMap(x => x.results$)
-      .map(results => results.map(x => {
-        x.type = `default`
-        return x
-      })),
-    error$: streams$.switchMap(x => x.error$)
+    HTTP: toHTTP$,
+    results$,
+    error$
   }
 }
 
