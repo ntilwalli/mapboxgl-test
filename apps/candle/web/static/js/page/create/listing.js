@@ -18,14 +18,21 @@ export function getEmptyListing() {
       },
       location: {
         mode: `venue`,
-        vicinity: undefined,
         info: undefined,
-        mapSettings: {
-          center: undefined,
-          zoom: undefined,
-          viewport: undefined
-        }
-      }
+        vicinity: undefined
+      },
+      searchArea: undefined,
+      // {
+      //   center: undefined,
+      //   region: undefined,
+      //   radius: undefined
+      // },
+      mapSettings: undefined
+      // {
+      //   center: undefined,
+      //   zoom: undefined,
+      //   viewport: undefined
+      // }
     }
     // {
     //   mode: undefined,
@@ -70,8 +77,9 @@ export function getValidators(step, listing) {
       }
     } else if (mode === `venue`) {
       return {
-        type: [required],
-        data: [required]
+        source: [required],
+        data: [required],
+        type: [optional]
       }
     }
   } else if (step === `meta`) {
@@ -129,7 +137,7 @@ export function validate(validators, obj) {
         const prop = obj[key]
         switch (v.type) {
           case `required`:
-            if (!prop || !prop.length) {
+            if (!prop || (Array.isArray(prop) && !prop.length)) {
               return false
             }
             break

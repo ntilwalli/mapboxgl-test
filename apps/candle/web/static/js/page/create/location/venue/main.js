@@ -14,12 +14,13 @@ const venueItemConfigs = {
   default: {
     selectable: true,
     renderer: (suggestion, index, highlighted) => {
+      const info = suggestion.data
       return li(
         `.venue-autocomplete-item.autocomplete-item-style.custom-autocomplete-input-style.${highlighted ? '.light-gray' : ''}`,
         {attrs: {'data-index': index}},
         [
-          span(`.venue-name`, [suggestion.name]),
-          span(`.venue-address`, [suggestion.address])
+          span(`.venue-name`, [info.name]),
+          span(`.venue-address`, [info.address])
         ]
       )
     }
@@ -27,39 +28,34 @@ const venueItemConfigs = {
 }
 
 function reducers(inputs) {
-  const {selected$, vicinity$, mapSettings$} = inputs
+  const {selected$, searchArea$, mapSettings$} = inputs
   const selectedR = selected$.map(val => state => {
     return state.set(`info`, val)
   })
 
-  const mapSettingsR = mapSettings$.skip(1).map(val => state => {
-    return state.set(`mapSettings`, val)
-  })
-
-  const vicinityR = vicinity$.skip(1).map(val => state => {
-    return state.set(`vicinity`, val)
+  const searchAreaR = searchArea$.map(val => state => {
+    return state.set(`searchArea`, val)
   })
 
   return O.merge(
     selectedR,
-    mapSettingsR,
-    vicinityR
+    searchAreaR
   )
 }
 
 function model(inputs) {
-  const {props$, vicinity$, mapSettings$} = inputs
+  const {listing$} = inputs
   const reducer$ = reducers(inputs)
-  return combineObj({
-      props$: props$.take(1),
-      mapSettings$: mapSettings$.take(1),
-      vicinity$: vicinity$.take(1)
-    })
-    .map(({props, vicinity, mapSettings}) => {
+  return listing$
+    .take(1)
+    .map(listing => {
+      const location = listing.profile.location
+      const mapSettings = listing.profile.mapSettings
+      const searchArea = listing.searchArea
       return {
-        info: props,
+        info: location.info,
         mapSettings,
-        vicinity
+        searchArea
       }
     })
     .switchMap(initialState => {
@@ -68,7 +64,7 @@ function model(inputs) {
         .scan((state, f) => f(state))
     })
     .map(x => x.toJS())
-    .do(x => console.log(`venue state`, x))
+    //.do(x => console.log(`venue state`, x))
     .map(x => {
       return x
     })
@@ -86,10 +82,10 @@ function view(state$, components) {
         info ? //null
           div(`.map.sub-section`, [
             div(`.location-info-section`, [
-              div(`.name`, [info.name]),
-              div(`.address`, [info.address])
+              div(`.name`, [info.data.name]),
+              div(`.address`, [info.data.address])
             ]),
-            div(`#addEventMapAnchor`)
+            div(`#addSelectVenueMapAnchor`)
           ]) 
           : null
       ])
@@ -99,18 +95,18 @@ function view(state$, components) {
 function mapview(state$) {
   return state$
     .map(state => {
-      const {info, vicinity, mapSettings} = state
+      const {info, searchArea, mapSettings} = state
       if (info) {
         //return null
-        const anchorId = `addEventMapAnchor`
+        const anchorId = `addSelectVenueMapAnchor`
         const centerZoom = {
-          center: toLatLngArray(info.latLng), 
+          center: toLatLngArray(info.data.latLng), 
           zoom: 15
         }
 
         const properties = {
           attributes: {
-            class: `addEventMap`
+            class: `selectVenueMap`
           }, 
           centerZoom, 
           disablePanZoom: false, 
@@ -145,34 +141,29 @@ function mapview(state$) {
 
 export default function main(sources, inputs) {
 
-  const {listing$} = inputs
-  const mapSettings$ = listing$.map(x => x.profile.mapSettings)
-    .distinctUntilChanged()
-    .publishReplay(1).refCount()
-  const vicinity$ = listing$.map(x => x.profile.location.vicinity)
-    .distinctUntilChanged()
-    .publishReplay(1).refCount()
-  const info$ = listing$.map(x => x.profile.location.info)
-    .distinctUntilChanged()
-    .publishReplay(1).refCount()
+  const {listing$, searchArea$} = inputs
+
+  const centerZoom$ = O.merge(
+    listing$.take(1).map(x => x.profile.searchArea),
+    searchArea$
+  ).map(v => ({center: v.center, zoom: 8}))
+  .do(x => console.log(`search area:`, x))
 
   const venueAutocompleteInput = AutocompleteInput(sources, {
-    suggester: (sources, inputs) => FoursquareSuggestVenues(sources, {props$: O.of({}), centerZoom$: vicinity$.map(v => v.position), input$: inputs.input$}),
+    suggester: (sources, inputs) => FoursquareSuggestVenues(sources, {props$: O.of({}), centerZoom$, input$: inputs.input$}),
     itemConfigs: venueItemConfigs,
-    displayFunction: x => x.name,
+    displayFunction: x => x.data.name,
     placeholder: `Start typing venue name here...`
   })
 
   const state$ = model({
-    props$: info$,
-    vicinity$,
-    mapSettings$,
+    listing$,
+    searchArea$,
     selected$: venueAutocompleteInput.selected$
   })
 
 
   return {
-    //DOM: O.of(div([`VenueInput`])),
     DOM: view(state$, {venue$: venueAutocompleteInput.DOM}),
     MapDOM: mapview(state$),
     Global: venueAutocompleteInput.Global,

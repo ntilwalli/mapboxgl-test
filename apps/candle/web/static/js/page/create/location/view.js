@@ -1,17 +1,17 @@
 import {Observable as O} from 'rxjs'
 import {h, h3, h4, h5, h6, nav, ul, li, div, a, i, span, button, input} from '@cycle/dom'
 import {attrs, renderModal, combineObj} from '../../../utils'
-import {getVicinityFromListing, getVicinityString} from './utils'
+import {getSearchAreaFromListing, getSearchAreaString} from './utils'
 
-function renderVicinity(info) {
+function renderSearchArea(info) {
   const {geolocation, listing} = info.state
-  const vicinity = getVicinityFromListing(listing, geolocation)
+  const sa = getSearchAreaFromListing(listing)
 
-  return div(`.vicinity.sub-section`, [
-    div(`.heading`, [h5([`Vicinity`])]),
+  return div(`.search-area.sub-section`, [
+    div(`.heading`, [h5([`Search area`])]),
     div(`.content`, [
-      span([getVicinityString(vicinity)]),
-      button(`.appChangeVicinityButton.link.change-button`, [`change`])
+      span([getSearchAreaString(sa)]),
+      button(`.appChangeSearchAreaButton.link.change-button`, [`change`])
     ])
   ])
 }
@@ -31,7 +31,6 @@ function renderMapDisplay(info) {
   const location = state.listing.profile.location
   let mapDiv
   if (location.mode === `map`) {
-
     return div(`.map.sub-section`, [
       location.info ? div(`.location-info-section`, [
         div(`.latitude-section`, [
@@ -76,7 +75,7 @@ function renderPanel(info) {
   } else {
     return div(`.panel`, [
       div(`.panel-title`, [h4([`Where is the event?`])]),
-      renderVicinity(info),
+      renderSearchArea(info),
       renderLocationMode(info),
       // This div below ensures the previous autocomplete box DOM is removed on mode switch and replaced fully
       // preventing erroneous DOM events

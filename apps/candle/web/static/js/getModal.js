@@ -8,7 +8,7 @@ import DoneModal from './library/modal/done/main'
 import Login from './library/authorization/login/main'
 import Signup from './library/authorization/signup/main'
 import Presignup from './library/authorization/presignup/main'
-import Vicinity from './page/create/location/vicinity/main'
+import SearchArea from './page/create/location/searchArea/main'
 
 export default function getModal(sources, inputs, modal) {
     if (modal === `leftMenu`) {
@@ -49,7 +49,7 @@ export default function getModal(sources, inputs, modal) {
       }))
     } else if (modal === `vicinity`) {
       const doneModal = DoneModal(sources, {
-          component: (sources, inputs) => Vicinity(sources, {
+          component: (sources, inputs) => SearchArea(sources, {
             geolocation$: O.of({
               position: {
                 lat: 40.7128, 

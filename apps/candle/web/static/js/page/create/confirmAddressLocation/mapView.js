@@ -9,7 +9,7 @@ function render(state) {
   const listing = state.listing
   const profile = listing.profile
   const location = profile.location
-  const mapSettings = location.mapSettings
+  const mapSettings = profile.mapSettings
   const info = location.info
   const anchorId = `modifyLocationMapAnchor`
   const mapClass = `modifyLocationMap`

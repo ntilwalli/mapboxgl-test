@@ -73,12 +73,14 @@ function FoursquareSuggestVenues (sources, inputs) {
   const minivenues$ = validResponse$
     .map(res => res.minivenues)
     .map(results => results.map(result =>({
-      name: result.name,
-      address: [result.location.address, result.location.state, result.location.postalCode].join(`, `),
-      venueId: result.id,
-      latLng: {lat: result.location.lat, lng: result.location.lng},
       source: `Foursquare`,
-      retrieved: (new Date()).getTime()
+      data: {
+        name: result.name,
+        address: [result.location.address, result.location.state, result.location.postalCode].join(`, `),
+        venueId: result.id,
+        latLng: {lat: result.location.lat, lng: result.location.lng},
+        retrieved: (new Date()).getTime()
+      }
     })))
 
   const sharedPartial$ = input$
@@ -98,16 +100,13 @@ function FoursquareSuggestVenues (sources, inputs) {
   const emptyResult$ = O.merge(invalidResponse$, unsendablePartial$)
     .map(() => [])//.do(makeLogger('emptyResult$...'))
 
-  const rProps$ = props$.publishReplay(1).refCount()
-  const rCenterZoom$ = centerZoom$.publishReplay(1).refCount()
+  //const rProps$ = props$.publishReplay(1).refCount()
 
-  const toHttp$ = sendablePartial$
-    .switchMap(partial => {
-      return combineObj({props$: rProps$.take(1), centerZoom$: rCenterZoom$.take(1)})
-        .map(({props, centerZoom}) => ({props, partial, centerZoom}))
-    }) // with latest from idiom
-    .map(toHTTP) // need to add cancellation
-    .publishReplay(1).refCount()
+  const toHttp$ = sendablePartial$.withLatestFrom(
+    combineObj({props$, centerZoom$}),
+    (partial, info) => ({props: info.props, partial, centerZoom: info.centerZoom})
+  ).map(toHTTP) // need to add cancellation
+   .publishReplay(1).refCount()
 
   const results$ = O.merge(
     minivenues$.map(venues => venues.map(x => {

@@ -34,12 +34,10 @@ function ArcGISSuggest (sources, inputs) {
   const filteredInput$ = input$.filter(x => x.length)
     .filter(input => input.length > 0)
 
-  const withLatestInput$ = combineObj({
+  const withLatestInput$ = filteredInput$.withLatestFrom(combineObj({
     props$: sharedProps$,
-    input$: filteredInput$,
     center$
-  })
-  .distinctUntilChanged((x, y) => x.input === y.input)
+  }), (input, info) => ({props: info.props, input, center: info.center}))
 
   const toHTTP$ = withLatestInput$
     .map(({props, input, center}) => {

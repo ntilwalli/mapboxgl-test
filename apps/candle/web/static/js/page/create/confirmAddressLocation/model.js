@@ -21,7 +21,7 @@ function reducers(actions, inputs) {
 
   const mapMoveReducer$ = actions.mapMove$.map(centerZoom => state => {
     const listing = state.get(`listing`)
-    const mapSettings = listing.profile.location.mapSettings
+    const mapSettings = listing.profile.mapSettings
     mapSettings.center = centerZoom.center
     mapSettings.zoom = centerZoom.zoom
     return state.set(`listing`, listing)

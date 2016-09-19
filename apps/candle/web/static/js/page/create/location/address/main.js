@@ -120,15 +120,15 @@ function reducers(actions, inputs) {
 
 
 function model(actions, inputs) {
-  const {props$, listing$, vicinity$} = inputs
+  const {props$, listing$, searchArea$} = inputs
   return combineObj({
       props$: props$.take(1),
       listing$: listing$.take(1),
-      vicinity$: vicinity$.take(1)
+      searchArea$: searchArea$.take(1)
     })
-    .switchMap(({props, listing, vicinity}) => {
+    .switchMap(({props, listing, searchArea}) => {
       const info = listing.profile.location.info
-      const cc = vicinity.region.type === `somewhere` ? vicinity.region.data.country : undefined
+      const cc = searchArea.region.type === `somewhere` ? searchArea.region.data.country : undefined
       const initialState = {
         countryCode: cc,
         street: info && info.street || undefined,
@@ -207,15 +207,15 @@ function view({state$, components}) {
 export default function USAddress(sources, inputs) {
 
   const {listing$} = inputs
-  const vicinity$ = listing$.map(x => x.profile.location.vicinity).publishReplay(1).refCount()
-  const centerZoom$ = vicinity$.map(v => v.position).publishReplay(1).refCount()
+  const searchArea$ = listing$.map(x => x.profile.searchArea).publishReplay(1).refCount()
+  const center$ = searchArea$.map(v => v.center).publishReplay(1).refCount()
 
 
   const autocomplete$ = createProxy()
   const streetAddress$ = createProxy()
 
   const actions = intent(sources)
-  const state$ = model(actions, {autocomplete$, streetAddress$, vicinity$, ...inputs})
+  const state$ = model(actions, {autocomplete$, streetAddress$, searchArea$, ...inputs})
 
   const addressAutocompleteInput = AutocompleteInput(sources, {
     suggester: (sources, inputs) => ArcGISSuggest(sources, {
@@ -223,7 +223,7 @@ export default function USAddress(sources, inputs) {
           countryCode$: state$.map(s => s.country),
           category: O.of('Address')
         }),
-        center$: centerZoom$.map(x => x.center),
+        center$,
         input$: inputs.input$
       }),
     itemConfigs: addressItemConfigs,

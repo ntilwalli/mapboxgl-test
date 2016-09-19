@@ -20,15 +20,13 @@ function intent(DOM) {
   const itemHover$ = DOM.select('.appAutocompleteItem').events('mouseenter')
     .publish().refCount()
   const itemMouseDown$ = DOM.select('.appAutocompleteItem').events('mousedown')
-
     .publish().refCount()
   const itemMouseUp$ = DOM.select('.appAutocompleteItem').events('mouseup')
-    //.publish().refCount()
+    .publish().refCount()
 
   const inputFocus$ = DOM.select('.appAutocompleteable').events('focus').publish().refCount()
   const inputBlur$ = DOM.select('.appAutocompleteable').events('blur')
     .filter(ev => ev.target !== document.activeElement) // <--- sketchy? :)
-    //.do(x => console.log(`inputBlur`, x))
     .publish().refCount()
 
   const enterPressed$ = keydown$.filter(({keyCode}) => keyCode === ENTER_KEYCODE)
@@ -37,20 +35,11 @@ function intent(DOM) {
   const clearField$ = input$.filter(ev => ev.target.value.length === 0)
 
   const inputBlurToItem$ = inputBlur$
-    .do(x => console.log(`blur item`))
+    //.do(x => console.log(`blur item`))
     .let(between(itemMouseDown$, itemMouseUp$))
-    // .do(x => console.log(`inputBlurToItem`, x))
-    // .startWith(`start`)
-    // .do(x => {
-    //   if (x === `start`) {
-    //     console.log(`subscribing to inputBlurToItem$`)
-    //   }
-    //   return x
-    // })
-    // .filter(x => x !== `start`)
     .publish().refCount()
   const inputBlurToElsewhere$ = inputBlur$
-    .do(x => console.log(`blur elsewhere`))
+    //.do(x => console.log(`blur elsewhere`))
     .let(notBetween(itemMouseDown$, itemMouseUp$))
 
 
@@ -308,14 +297,14 @@ function preventedEvents(actions, state$) {
     .switchMap(state => {
       //console.log(`Subscribing to keepFocusOnInput$`)
       return actions.keepFocusOnInput$
-        .startWith(`start`)
-        .do(x => {
-          if (x === `start`) {
-            console.log(`subscribing to keepFocusOnInput$`)
-          }
-          return x
-        })
-        .filter(x => x !== `start`)
+        // .startWith(`start`)
+        // .do(x => {
+        //   if (x === `start`) {
+        //     console.log(`subscribing to keepFocusOnInput$`)
+        //   }
+        //   return x
+        // })
+        // .filter(x => x !== `start`)
         .map(event => {
           if (state.suggestions.length > 0
           && state.highlighted !== null) {
@@ -348,18 +337,19 @@ function main(sources, {suggester, itemConfigs, displayFunction, placeholder, in
       //   .delay(4)
     ),
     input$: //O.never(),
-    actions.input$.do(x => {
-        console.log(`Autocomplete input...`)
-        console.log(x)
-      })
-      .filter(x => !!x),
-    selected$: //O.never()
-    state$.map(state => state.selected)
-      .filter(x => !!x)
-      .do(x => {
-        console.log(`Autocomplete selected...`)
-        console.log(x)
-      })
+      actions.input$
+        // .do(x => {
+        //   console.log(`Autocomplete input...`)
+        //   console.log(x)
+        // })
+        .filter(x => !!x),
+    selected$:
+      state$.map(state => state.selected)
+        .filter(x => !!x)
+        // .do(x => {
+        //   console.log(`Autocomplete selected...`)
+        //   console.log(x)
+        // })
   }
 }
 

@@ -361,7 +361,7 @@
     }
   }
 
-  #addEventMapAnchor, #displayVenueMapAnchor, #chooseMapLocationMapAnchor {
+  #addSelectVenueMapAnchor, #displayVenueMapAnchor, #chooseMapLocationMapAnchor {
     width: 100%;
     height: 300px;
     margin-bottom: 20px;
@@ -420,9 +420,9 @@
 
 }
 
-.change-vicinity-modal {
+.change-search-area-modal {
 
-  #changeVicinityMapAnchor {
+  #changeSearchAreaMapAnchor {
     height: 300px;
   }
 

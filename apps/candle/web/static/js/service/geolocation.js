@@ -15,6 +15,7 @@ function intent(sources) {
   const geolocation$ = sources.Global
     .filter(x => x.type === GEOLOCATION_INDICATOR)
     .map(x => x.data)
+    .do(x => console.log(`Got new geolocation...`, x))
     .publish().refCount()
 
   const position$ = geolocation$
@@ -43,6 +44,16 @@ function intent(sources) {
   })
 
   const region$ = regionService.result$
+    .startWith(`start`)
+    .do(x => {
+      if (x === `start`) {
+        console.log(`starting region$`)
+      }
+    })
+    .filter(x => x !== `start`)
+    .finally(() => {
+      console.log(`ending region$`)
+    })
     .publish().refCount()
 
   const storagePosition$ = sources.Storage.local.getItem(`position`)

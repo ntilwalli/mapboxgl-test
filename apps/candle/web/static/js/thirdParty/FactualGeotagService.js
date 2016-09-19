@@ -18,69 +18,71 @@ function toGeotagHTTPRequest (props, position) {
   }
 }
 
-function getResponseStream(props, HTTP) {
-  return HTTP.select(props.category)
-}
 
+function getFromHTTPStream (props$, HTTP) {
 
-function getFromHTTPStream (props, HTTP) {
-
-  return getResponseStream(props, HTTP)
-      .switchMap(res$ => res$
-        .map(res => {
-          // console.log(`geotag response`)
-          // console.log(res)
-          if (res.statusCode === 200) {
-            //const respData = JSON.parse(res.text)
-            return {
-              type: `success`,
-              data: res.body.response.data
-            }
-          } else {
-            return {
-              type: `error`,
-              data: `Unsuccessful response from server`
-            }
-          }
-        })
-        .catch((e, orig$) => {
-          return O.of({type: `error`, data: e})
-        })
-      )
-      .filter(x => x.type === `success`)
-      .map(x => x.data)
-      .map(x => {
-        if (x.country && x.locality && x.region) {
+  return props$.switchMap(props => {
+      return HTTP.select(props.category)
+    }).switchMap(res$ => res$
+      .map(res => {
+        // console.log(`geotag response`)
+        // console.log(res)
+        if (res.statusCode === 200) {
+          //const respData = JSON.parse(res.text)
           return {
-            type: `somewhere`,
-            data: {
-              country: x.country.name,
-              locality: x.locality.name,
-              region: x.region.name
-            }
+            type: `success`,
+            data: res.body.response.data
           }
         } else {
           return {
-            type: `nowhere`
+            type: `error`,
+            data: `Unsuccessful response from server`
           }
         }
       })
+      .catch((e, orig$) => {
+        return O.of({type: `error`, data: e})
+      })//.publish().refCount()
+    )
+    .filter(x => x.type === `success`)
+    .map(x => x.data)
+    .map(x => {
+      if (x.country && x.locality && x.region) {
+        return {
+          source: `Factual`,
+          type: `somewhere`,
+          data: {
+            country: x.country.name,
+            locality: x.locality.name,
+            region: x.region.name
+          }
+        }
+      } else {
+        return {
+          type: `nowhere`
+        }
+      }
+    })
 }
 
 
-
-
-
 export default function FactualGeotagService ({props$, latLng$, HTTP}) {
-  const info$ = combineObj({props$: props$ || O.of({}), latLng$}).map(({props, latLng}) => {
-    return {
-      result$: getFromHTTPStream(props, HTTP),
-      HTTP: O.of(toGeotagHTTPRequest(props, latLng))
-    }
+  const sharedProps$ = props$.publishReplay(1).refCount()
+  const fromHTTP$ = getFromHTTPStream(sharedProps$, HTTP)
+    .publish().refCount()
+  const toHTTP$ = latLng$.withLatestFrom(sharedProps$, (latLng, props) => {
+    return toGeotagHTTPRequest(props, latLng)
   }).publish().refCount()
 
   return {
-    HTTP: info$.switchMap(x => x.HTTP),
-    result$: info$.switchMap(x => x.result$)
+    HTTP: toHTTP$,
+    isProcessing$: O.merge(
+        fromHTTP$.map(() => false),
+        toHTTP$.map(() => true)
+      ).startWith(false),
+    result$: fromHTTP$.filter(x => x.type !== `error`)
+      .publish().refCount(),
+    error$: fromHTTP$.filter(x => x.type === `error`)
+      .publish().refCount()
   }
 }

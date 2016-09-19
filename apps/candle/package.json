@@ -19,7 +19,7 @@
   "dependencies": {
     "@cycle/dom": "file:///Users/ntilwalli/dev/cycle/cyclejs/dom",
     "@cycle/history": "^4.0.0",
-    "@cycle/http": "^11.0.0",
+    "@cycle/http": "^11.0.1",
     "@cycle/isolate": "^1.4.0",
     "@cycle/rxjs-adapter": "file:///Users/ntilwalli/dev/cycle/cyclejs/rxjs-adapter",
     "@cycle/rxjs-run": "^3.0.3",

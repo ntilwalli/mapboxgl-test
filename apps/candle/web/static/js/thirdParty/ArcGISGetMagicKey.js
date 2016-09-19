@@ -3,6 +3,8 @@ import moment from 'moment'
 import {combineObj, spread} from '../utils'
 import Immutable from 'immutable'
 import ParseAddress from 'parse-address'
+import {countryToAlpha2} from '../util/countryCodes'
+import {getState} from '../util/states'
 
 
 const geocodeUrlPrefix = `http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates`
@@ -73,6 +75,68 @@ function ArcGISGetMagicKey(sources, inputs) {
     .map(x => [x.data])
   const result$ = response$
     .filter(x => x.type === `success`)
+    .map(x => x.data)
+    .map(x => {
+      let match
+      let searchArea
+      if (match = x.address.match(/^(.*),(.*),(.*)$/)) {
+        const city = match[1].trim()
+        const state = match[2].trim()
+        const country = match[3].trim()
+        searchArea = {
+          region: {
+            source: `ArcGIS`,
+            type: `somewhere`,
+            data: {
+              raw: x.address,
+              city: city,
+              state: state,
+              country: country,
+              cityAbbr: undefined,
+              stateAbbr: getState(state),
+              countryAbbr: countryToAlpha2(country)
+            }
+          },
+          center: x.latLng
+        }
+      } else if (match = x.address.match(/^(.*),(.*)$/)) {
+        const state = match[1].trim()
+        const country = match[2].trim()
+        searchArea = {
+          region: {
+            source: `ArcGIS`,
+            type: `somewhere`,
+            data: {
+              raw: x.address,
+              city: undefined,
+              state: state,
+              country:  country,
+              cityAbbr: undefined,
+              stateAbbr: getState(state),
+              countryAbbr: countryToAlpha2(country)
+            }
+          },
+          center: x.latLng
+        }
+      } else {
+        searchArea = {
+          region: {
+            source: `ArcGIS`,
+            type: `somewhere`,
+            data: {
+              raw: x.address,
+              city: undefined,
+              state: undefined,
+              country: undefined,
+            }
+          },
+          center: x.latLng
+        }
+      }
+
+      return searchArea
+    })
+
 
 
   return {
