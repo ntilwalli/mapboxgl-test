@@ -13,6 +13,7 @@ import FoursquareSuggestVenues from '../../../thirdParty/FoursquareSuggestVenues
 import SearchAreaScreen from './searchArea/main'
 import AddressInput from './address/main'
 import VenueInput from './venue/main'
+import MapInput from './map/main'
 
 import Heading from '../../../library/heading/workflow/main'
 import Step from '../step/main'
@@ -23,12 +24,12 @@ import getModal from './getModal'
 import {normalizeSink, normalizeSinkUndefined, normalizeComponent, spread, createProxy} from '../../../utils'
 import {getSearchAreaFromGeolocation} from './utils'
 
-const MapInput = (sources, inputs) => ({
-  DOM: O.of(div([`MapInput`])),
-  MapDOM: O.never(),
-  HTTP: O.never(),
-  result$: O.never()
-})
+// const MapInput = (sources, inputs) => ({
+//   DOM: O.of(div([`MapInput`])),
+//   MapDOM: O.never(),
+//   HTTP: O.never(),
+//   result$: O.never()
+// })
 
 const venueItemConfigs = {
   default: {
@@ -160,11 +161,14 @@ function contentComponent(sources, inputs) {
           props$: O.of({}),
           searchArea$: searchAreaFromScreen$,
           listing$: listing$
-            .do(x => console.log(`VenueInput got new listing`, x))
             .publish().refCount()
         }))
       } else if (mode === `map`) {
-        return MapInput(sources, inputs)
+        return MapInput(sources, spread(inputs, {
+          listing$: listing$
+            .do(x => console.log(`MapInput got new listing`, x))
+            .publish().refCount()
+        }))
       }
     })
     .map(normalizeComponent)
