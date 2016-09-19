@@ -169,7 +169,9 @@ export default function main(sources, inputs) {
   })
 
   const magicKeyConverter = ArcGISGetMagicKey(sources, {
-    props$: O.of({}),
+    props$: O.of({
+      category: `location search area`
+    }),
     input$: populatedPlaceInput.selected$
   })
 

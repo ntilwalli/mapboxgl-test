@@ -10,27 +10,30 @@ import {getState} from '../util/states'
 const geocodeUrlPrefix = `http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates`
 const defaultCategory = `ArgGISGetMagicKey`
 
-function toRequest({name, magicKey}) {
+function toRequest({category}, {name, magicKey}) {
 	const url = `${geocodeUrlPrefix}?singleLine=${name}&&f=json&magicKey=${magicKey}`
 
   return  {
     url: url,
     method: `get`,
     type: `text/plain`, //'json'
-		category: defaultCategory
+		category
   }
 
 }
 
 function ArcGISGetMagicKey(sources, inputs) {
-  const {input$} = inputs
+  const {input$, props$} = inputs
+  const sharedProps$ = props$.publishReplay(1).refCount()
 
-  const toHTTP$ = input$
+  const toHTTP$ = sharedProps$.switchMap(props => input$
     .map(input => {
-      return toRequest(input)
+      return toRequest(props, input)
     }).delay(4)
+  )
 
-  const response$ = sources.HTTP.select(defaultCategory)
+  const response$ = props$
+    .switchMap(props => sources.HTTP.select(props.category))
     .switchMap(res$ => res$
       .map(res => {
         // console.log(`response`)
@@ -88,6 +91,7 @@ function ArcGISGetMagicKey(sources, inputs) {
             source: `ArcGIS`,
             type: `somewhere`,
             data: {
+              parsedAddress: x.parsedAddress,
               raw: x.address,
               city: city,
               state: state,
@@ -107,6 +111,7 @@ function ArcGISGetMagicKey(sources, inputs) {
             source: `ArcGIS`,
             type: `somewhere`,
             data: {
+              parsedAddress: x.parsedAddress,
               raw: x.address,
               city: undefined,
               state: state,
@@ -124,6 +129,7 @@ function ArcGISGetMagicKey(sources, inputs) {
             source: `ArcGIS`,
             type: `somewhere`,
             data: {
+              parsedAddress: x.parsedAddress,
               raw: x.address,
               city: undefined,
               state: undefined,

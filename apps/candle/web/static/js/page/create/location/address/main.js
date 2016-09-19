@@ -31,7 +31,7 @@ const extractStreetAddress = x => {
       if (val) {
         return val[1]
       } else {
-        return `Error`
+        return `error`
       }
     }
 
@@ -92,17 +92,18 @@ function reducers(actions, inputs) {
   const autocompleteR = inputs.autocomplete$.map(sa => state => {
     // console.log(`street address reducer`)
     // console.log(sa.data)
-    const pa = sa.data.parsedAddress
-    const street = extractStreetAddress(sa.data.address)
+    const region = sa.region
+    const pa = region.data.parsedAddress
+    const street = extractStreetAddress(region.data.raw)
     const stateAbbr = getState(pa.state)
     return state
       .set(`city`, pa.city)
       .set(`zipCode`, pa.zip)
       .set(`stateAbbr`, stateAbbr)
-      .set(`street`, street)
+      .set(`street`, street !== `error` ? street : undefined)
       .set(`latLng`, {
         type: `auto`,
-        data: sa.data.latLng
+        data: sa.center
       })
   })
 
@@ -235,7 +236,9 @@ export default function USAddress(sources, inputs) {
   streetAddress$.attach(addressAutocompleteInput.input$)
 
   const magicKeyConverter = ArcGISGetMagicKey(sources, {
-    props$: O.of({}),
+    props$: O.of({
+      category: `location address`
+    }),
     input$: addressAutocompleteInput.selected$
   })
 
