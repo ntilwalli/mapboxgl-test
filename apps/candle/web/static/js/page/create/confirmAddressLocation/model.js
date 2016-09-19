@@ -1,46 +1,29 @@
 import {Observable as O} from 'rxjs'
 import Immutable from 'immutable'
-import {getEmptyListing, combineObj} from '../../../utils'
-
-function isValid (location) {
-  // if (location.mode === `map`) {
-  //   return location.info
-  //
-  // } else if (location.mode === `venue`) {
-  //
-  //   return location.info
-  //
-  // } else if (location.mode === `address`) {
-  //
-  // }
-
-  return location.info
-}
+import {combineObj} from '../../../utils'
 
 function reducers(actions, inputs) {
 
-  const mapMoveReducer$ = actions.mapMove$.map(centerZoom => state => {
+  const mapMoveR = actions.mapMove$.map(centerZoom => state => {
     const listing = state.get(`listing`)
-    const mapSettings = listing.profile.mapSettings
-    mapSettings.center = centerZoom.center
-    mapSettings.zoom = centerZoom.zoom
+    listing.profile.mapSettings.center = centerZoom.center
+    listing.profile.mapSettings.zoom = centerZoom.zoom
+    return state.set(`listing`, listing)
+
+  })
+
+  const markerMoveR = actions.markerMove$.map(latLng => state => {
+    console.log(`markerMoveReducer`, latLng)
+    const listing = state.get(`listing`)
+    listing.profile.location.info.latLng = {
+      type: `manual`,
+      data: latLng
+    }
+  
     return state.set(`listing`, listing)
   })
 
-  // const markerDragReducer$ = actions.mapVicinity$.map(vicinity => state => {
-  //   //console.log(`mapVicinityReducer`)
-  //   //console.log(vicinity)
-  //   const listing = state.get(`listing`)
-  //   listing.location.info.latLng = {
-  //     type: `manual`,
-  //     data: latLng
-  //   }
-  //
-  //   return state.set(`listing`, listing)
-  // })
-
-  const mapClickReducer$ = actions.mapClick$.map(latLng => state => {
-    //console.log(`mapClickReducer`)
+  const mapClickR = actions.mapClick$.map(latLng => state => {
     const listing = state.get(`listing`)
     listing.profile.location.info.latLng = {
       type: `manual`,
@@ -51,9 +34,9 @@ function reducers(actions, inputs) {
   })
 
   return O.merge(
-    mapMoveReducer$,
-    //markerDragReducer$,
-    mapClickReducer$
+    mapMoveR,
+    markerMoveR,
+    mapClickR
   )
 }
 
@@ -66,15 +49,23 @@ export default function model(actions, inputs) {
       listing$: inputs.listing$.take(1)
     })
     .map(inputs => {
+      const listing = inputs.listing
+      listing.profile.mapSettings = listing.profile.mapSettings || {
+        center: listing.profile.location.info.latLng.data,
+        zoom: 15,
+        tile: `mapbox.streets`
+      }
+
       return {
-        listing: inputs.listing
+        listing,
+        valid: true
       }
     })
     .switchMap(initialState => {
       return reducer$.startWith(Immutable.Map(initialState)).scan((acc, mod) => mod(acc))
     })
     .map(x => x.toJS())
-    .do(x => console.log(`location state...`, x))
+    //.do(x => console.log(`confirm address location state...`, x))
     .publishReplay(1).refCount()
 
 }

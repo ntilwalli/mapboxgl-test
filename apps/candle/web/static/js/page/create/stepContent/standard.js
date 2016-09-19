@@ -111,11 +111,17 @@ export default function main(sources, inputs) {
       .withLatestFrom(state$, (_, state) => {
         const {contentState} = state
         const {listing} = contentState
+
+        let nextScreen = next
+        if (typeof next === 'function') {
+          nextScreen = next(listing)
+        }
+
         if (listing.id) {
           return {
             type: "Router",
             data: {
-              pathname: `/create/${listing.id}/${next}`,
+              pathname: `/create/${listing.id}/${nextScreen}`,
               action: `PUSH`,
               state: listing
             }
@@ -124,7 +130,7 @@ export default function main(sources, inputs) {
           const out = {
             type: "Router",
             data: {
-              pathname: `/create/${next}`,
+              pathname: `/create/${nextScreen}`,
               action: `PUSH`,
               state: listing
             }

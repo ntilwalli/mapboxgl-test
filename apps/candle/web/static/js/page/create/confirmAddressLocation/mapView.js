@@ -1,9 +1,6 @@
+import {toLatLngArray} from '../../../utils'
 import VirtualDOM from 'virtual-dom'
 const VNode = VirtualDOM.VNode
-
-function toLatLngArray(center) {
-  return [center.lat, center.lng]
-}
 
 function render(state) {
   const listing = state.listing
@@ -13,13 +10,19 @@ function render(state) {
   const info = location.info
   const anchorId = `modifyLocationMapAnchor`
   const mapClass = `modifyLocationMap`
-  const centerZoom = {center: toLatLngArray(mapSettings && mapSettings.center || info.latLng.data), zoom: mapSettings && mapSettings.zoom || 15}
+  const centerZoom = {center: toLatLngArray(mapSettings.center || info.latLng.data), zoom: mapSettings.zoom}
   const properties = {attributes: {class: mapClass}, centerZoom, disablePanZoom: false, anchorId, mapOptions: {zoomControl: true}}
   const tile = mapSettings && mapSettings.tile || `mapbox.streets`
 
   return new VNode(`map`, properties, [
     new VNode(`tileLayer`, { tile }),
-      new VNode(`marker`, { latLng: toLatLngArray(info.latLng.data), attributes: {id: `latLngMarker`}}, [
+      new VNode(`marker`, { 
+        latLng: toLatLngArray(info.latLng.data), 
+        attributes: {id: `latLngMarker`},
+        options: {
+          draggable: true
+        }
+      }, [
             // new VNode(`divIcon`, {
             //   options: {
             //     iconSize: 80,

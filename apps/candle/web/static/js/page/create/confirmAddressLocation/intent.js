@@ -3,22 +3,31 @@ import {getCenterZoom} from '../../../util/map'
 import {combineObj} from '../../../utils'
 
 export default function intent(sources) {
-  const {DOM, MapDOM} = sources
+  const {Router, MapDOM} = sources
   const mapClick$ = MapDOM.chooseMap(`modifyLocationMapAnchor`).select(`.modifyLocationMap`).events(`click`)
      .map(ev => ev.latlng)
 
   const mapMove$ = MapDOM.chooseMap(`modifyLocationMapAnchor`).select(`.modifyLocationMap`).events(`moveend`)
-    .do(x => {
-      console.log(`mapMove`, x)
-    })
+    // .do(x => {
+    //   console.log(`mapMove`, x)
+    // })
     .map(getCenterZoom)
-    .publishReplay(1).refCount()
+    //.publish().refCount()
+
+  const markerMove$ = MapDOM.chooseMap(`modifyLocationMapAnchor`).select(`#latLngMarker`).events(`dragstart`)
+    .switchMap(_ => MapDOM.chooseMap(`modifyLocationMapAnchor`).select(`#latLngMarker`).events(`dragend`))
+    // .do(x => {
+    //   console.log(`markerMove`, x)
+    // })
+    .map(ev => ev.target._latlng)
+
+  const listing$ = Router.history$.take(1).map(x => x.state).publishReplay(1).refCount()
+
 
   return {
-    next$: DOM.select(`.appNextButton`).events(`click`),
-    back$: DOM.select(`.appBackButton`).events(`click`),
+    listing$,
     mapClick$,
-    mapMove$//,
-    //dragMarker$
+    mapMove$,
+    markerMove$
   }
 }

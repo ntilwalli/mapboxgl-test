@@ -147,7 +147,7 @@ export default function main(sources, inputs) {
     listing$.take(1).map(x => x.profile.searchArea),
     searchArea$
   ).map(v => ({center: v.center, zoom: 8}))
-  .do(x => console.log(`search area:`, x))
+  //.do(x => console.log(`search area:`, x))
 
   const venueAutocompleteInput = AutocompleteInput(sources, {
     suggester: (sources, inputs) => FoursquareSuggestVenues(sources, {props$: O.of({}), centerZoom$, input$: inputs.input$}),

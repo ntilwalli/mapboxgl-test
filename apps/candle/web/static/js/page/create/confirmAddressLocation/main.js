@@ -7,18 +7,25 @@ import Immutable from 'immutable'
 
 import {div, li, span} from '@cycle/DOM'
 
-import {noopListener, normalizeSink, normalizeSinkUndefined, spread, combineObj} from '../../../utils'
+import {noopListener, normalizeSink, normalizeSinkUndefined, normalizeComponent, spread, combineObj} from '../../../utils'
+
+import Heading from '../../../library/heading/workflow/main'
+import Step from '../step/main'
+import StepContent from '../stepContent/standard'
 
 function contentComponent(sources, inputs) {
 
   const actions = intent(sources)
-  const state$ = model(actions, inputs)
+  const state$ = model(actions, spread(inputs, {
+    listing$: actions.listing$
+  }))
   const vtree$ = view(state$)
   const mapvtree$ = mapView(state$)
 
   return {
     DOM: vtree$,
     MapDOM: mapvtree$,
+    HTTP: O.never(),
     state$
   }
 }

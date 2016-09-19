@@ -1,7 +1,7 @@
 import {Observable as O} from 'rxjs'
 import Immutable from 'immutable'
 import {combineObj} from '../../../utils'
-import {getEmptyListing, validateLocation as isValid} from '../listing'
+import {validateLocation as isValid} from '../listing'
 import getModal from './getModal'
 
 function reducers(actions, inputs) {
@@ -74,7 +74,7 @@ export default function model(actions, inputs) {
       return reducer$.startWith(Immutable.Map(initial)).scan((acc, f) => f(acc))
     })
     .map(x => x.toJS())
-    .do(x => console.log(`location state...`, x))
+    //.do(x => console.log(`location state...`, x))
     .map(x => {
       return x
     })

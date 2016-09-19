@@ -1,4 +1,4 @@
-import {div, span} from '@cycle/dom'
+import {div, span, h4} from '@cycle/dom'
 import {combineObj} from '../../../utils'
 
 

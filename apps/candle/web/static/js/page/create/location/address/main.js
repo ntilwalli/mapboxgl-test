@@ -145,7 +145,7 @@ function model(actions, inputs) {
         .scan((state, f) => f(state))
     })
     .map(x => x.toJS())
-    .do(x => console.log(`address state`, x))
+    //.do(x => console.log(`address state`, x))
     .publishReplay(1).refCount()
 }
 

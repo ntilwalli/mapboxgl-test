@@ -74,7 +74,7 @@ function getDefaultSearchArea(sources, inputs) {
       },
       radius: 50
     }))
-    .do(x => console.log(`fallbackNewYork$...`, x))
+    //.do(x => console.log(`fallbackNewYork$...`, x))
 
   const defaultSearchArea$ = O.merge(
     validGeolocation$,
@@ -166,7 +166,7 @@ function contentComponent(sources, inputs) {
       } else if (mode === `map`) {
         return MapInput(sources, spread(inputs, {
           listing$: listing$
-            .do(x => console.log(`MapInput got new listing`, x))
+            //.do(x => console.log(`MapInput got new listing`, x))
             .publish().refCount()
         }))
       }
@@ -189,14 +189,6 @@ function contentComponent(sources, inputs) {
     MapDOM: O.merge(normalizeSink(modal$, `MapDOM`), normalizeSink(inputComponent$, `MapDOM`)),
     state$
   }
-
-  // return {
-  //   DOM: normalizeSink(inputComponent$, `DOM`),
-  //   HTTP: O.merge(normalizeSink(inputComponent$, `HTTP`), normalizeSink(modal$, `HTTP`), actions.toHTTP$),
-  //   Global: normalizeSink(inputComponent$, `Global`),
-  //   MapDOM: O.merge(normalizeSink(modal$, `MapDOM`), normalizeSink(inputComponent$, `MapDOM`)),
-  //   state$
-  // }
 
 }
 

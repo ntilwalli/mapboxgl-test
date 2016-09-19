@@ -196,7 +196,7 @@ function model(actions, {props$, suggestions$}, itemConfigs) {
   const state$ = O.merge(
     actions.wantsSuggestions$
       .switchMap(accepted => {
-        console.log(`wants suggestions?`, accepted)
+        //console.log(`wants suggestions?`, accepted)
         //return suggestions$.map(suggestions => accepted ? suggestions : [])
         return suggestions$.map(suggestions => accepted ? suggestions : [])
       })

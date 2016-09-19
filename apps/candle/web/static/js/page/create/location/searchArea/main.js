@@ -42,7 +42,7 @@ function intent(sources, inputs) {
 
   const regionService = FactualGeotagService({props$: O.of({category: 'geotag from searchArea'}), latLng$: mapCenterZoom$.map(x => x.center), HTTP: sources.HTTP})
   const mapSearchArea$ = regionService.result$
-    .withLatestFrom(mapCenterZoom$.do(x => console.log(`B`)), (region, position) => {
+    .withLatestFrom(mapCenterZoom$, (region, position) => {
       return {region, center: position.center}
     })
     .map(getSearchAreaFromMapLocation)
@@ -88,7 +88,7 @@ function model(actions, inputs) {
         .scan((state, reducer) => reducer(state))
     })
     .map(x => x.toJS())
-    .do(x => console.log(`searchArea state...`, x))
+    //.do(x => console.log(`searchArea state...`, x))
     .map(x => {
       return x
     })
@@ -175,10 +175,7 @@ export default function main(sources, inputs) {
     input$: populatedPlaceInput.selected$
   })
 
-  inputSearchArea$.attach(magicKeyConverter.result$
-    .do(x => {
-      console.log(`magic key result`, x)
-    }))
+  inputSearchArea$.attach(magicKeyConverter.result$)
 
   const out = {
     DOM: view({state$, components: {autocomplete$: populatedPlaceInput.DOM}}),
