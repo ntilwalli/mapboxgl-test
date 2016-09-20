@@ -10,8 +10,15 @@ function reducers(actions, inputs) {
     return state.set(`listing`, listing).set(`valid`, isValid(listing))
   })
 
+  const endDateR = inputs.endDate$.map(val => state => {
+    const listing = state.get(`listing`)
+    listing.profile.time.end = val
+    return state.set(`listing`, listing).set(`valid`, isValid(listing))
+  })
+
   return O.merge(
-    startDateR
+    startDateR,
+    endDateR
   )
 }
 

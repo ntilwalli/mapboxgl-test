@@ -2,7 +2,7 @@ import {Observable as O} from 'rxjs'
 import {div} from '@cycle/dom'
 import routeFunction from '../../../localDrivers/routeFunction/main'
 
-import {normalizeComponentStream} from '../../../utils'
+import {normalizeComponentStream, spread} from '../../../utils'
 
 import Landing from '../landing/main'
 import Meta from '../meta/main'
@@ -37,7 +37,8 @@ export default function main(sources, inputs) {
       const {value, path} = route
       const match = value.match
       const {type, data} = value.info
-      return data(sources, inputs)
+      //return data(sources, inputs)
+      return data(spread(sources, {Router: Router.path(path)}), spread(inputs, {ParentRouter: Router}))
     })
     .publishReplay(1).refCount()
 

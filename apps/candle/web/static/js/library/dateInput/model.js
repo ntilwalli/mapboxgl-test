@@ -2,10 +2,9 @@ import {Observable as O} from 'rxjs'
 import Immutable from 'immutable'
 import moment from 'moment'
 import {between, notBetween, combineObj, spread} from '../../utils'
-import {getMomentFromStateInfo, getDateFromStateInfo} from './utils'
+import {getMomentFromStateInfo, getDateFromStateInfo, AM, PM} from './utils'
 
-const AM = `A.M.`
-const PM = `P.M.`
+
 
 const getReverseMode = (mode) => mode === AM ? PM : AM
 
@@ -196,16 +195,14 @@ export default function model(actions, inputs) {
   const initialState$ = inputs.initialState$ || O.of(undefined)
   const props$ = inputs.props$ || O.of({defaultNow: false})
 
-  return combineObj({initialState$, props$})
+  return combineObj({
+    initialState$: initialState$.do(x => console.log(`A`)), 
+    props$: props$.do(x => console.log(`B`))
+  })
     .switchMap(({initialState, props}) => {
-
-      if (initialState) {
-
-      }
 
       let now = moment((new Date()).toISOString())
       let locked = false
-      let initDate = initialState
       let currentDate, currentTime, current
 
       let rangeStart = props.rangeStart ? moment(props.rangeStart.toISOString()) : undefined
@@ -221,7 +218,7 @@ export default function model(actions, inputs) {
         }
 
         locked = true
-        current = moment(initDate.toISOString()).add(1, 'hour').startOf('hour')
+        current = moment(initialState.toISOString())
         currentDate = getCurrentDate(current)
         currentTime = getCurrentTime(current)
 
@@ -245,7 +242,7 @@ export default function model(actions, inputs) {
 
       let displayStart
       if (currentDate && currentTime) {
-        displayStart = moment(getCurrentDate(currentDate, currentTime).toISOString)
+        displayStart = getMomentFromStateInfo(currentDate, currentTime)
       } else if (rangeStart) {
         displayStart = rangeStart
       } else {

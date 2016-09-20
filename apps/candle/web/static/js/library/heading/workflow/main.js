@@ -6,11 +6,11 @@ import moment from 'moment'
 
 import Logo from '../logo'
 
-function intent(sources) {
+function intent(sources, inputs) {
   const {DOM, Router, Heartbeat} = sources
   const save$ = DOM.select(`.appSaveListing`).events(`click`)
   const listing$ = Router.history$.map(x => x.state)
-  const instruction$ = Router.define([
+  const instruction$ = inputs.ParentRouter.define([
     {pattern: `/meta`, value: `Step 1: Preliminary info`},
     {pattern: `/description`, value: `Step 2: Add a title and description`},
     {pattern: `/location`, value: `Step 3: Add a location`},
@@ -107,7 +107,7 @@ export default function main(sources, inputs) {
   validateInputs(inputs)
   const logo = Logo(sources, inputs)
   
-  const actions = intent(sources)
+  const actions = intent(sources, inputs)
   const state$ = model(actions, inputs)
   const components = {
     logo$: logo.DOM

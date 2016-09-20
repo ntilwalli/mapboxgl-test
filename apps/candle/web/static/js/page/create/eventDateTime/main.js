@@ -28,6 +28,7 @@ function contentComponent(sources, inputs) {
     rangeEnd$: rangeEndProxy$
   })
 
+
   const endDate = DateInput(sources, {
     props$: O.of({
       defaultNow: false
@@ -37,6 +38,8 @@ function contentComponent(sources, inputs) {
     rangeStart$: startDate.result$,
     rangeEnd$: O.never()
   })
+
+  //actions.listing$.subscribe()
 
   rangeEndProxy$.attach(endDate.result$)
 
