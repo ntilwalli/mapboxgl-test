@@ -25,14 +25,6 @@ function getCurrentTime(d) {
   }
 }
 
-function getDefaultCurrentTime() {
-  return {
-    hour: 12,
-    minute: 0,
-    mode: PM
-  }
-}
-
 function getCurrentDate(d) {
   return {
     year: d.year(),
@@ -42,16 +34,12 @@ function getCurrentDate(d) {
 }
 
 function reducers(actions, inputs) {
-  const displayPickerR = O.merge(
+  const displayPickerReducer$ = O.merge(
     actions.displayPicker$,
     (inputs.close$ || O.never()).mapTo(false) 
   ).map(val => state => {
         //console.log(`Display picker reducer`, val)
     return state.set(`displayPicker`, val)
-  })
-
-  const clearR = actions.clear$.map(x => state => {
-    return state.set(`currentTime`, getDefaultCurrentTime()).set(`currentDate`, undefined)
   })
 
   const dateReducer$ = (actions.date$ || O.never()).map(val => state => {
@@ -172,8 +160,7 @@ function reducers(actions, inputs) {
 
 
   return O.merge(
-    //displayPickerReducer$,
-    clearR,
+    displayPickerReducer$,
     rangeStartReducer$,
     rangeEndReducer$,
     itemClickReducer$,
@@ -240,7 +227,7 @@ export default function model(actions, inputs) {
         currentTime = getCurrentTime(current)
       } else {
         currentDate = undefined
-        currentTime = getDefaultCurrentTime()
+        currentTime = {hour: 12, minute: 0, mode: PM}
       }
 
       let displayStart
@@ -254,7 +241,7 @@ export default function model(actions, inputs) {
 
       const init = {
         locked,
-        displayPicker: true,
+        displayPicker: false,
         dateFormat: `MMDDYYYY`,
         month: displayStart.month(),
         date: displayStart.date(),

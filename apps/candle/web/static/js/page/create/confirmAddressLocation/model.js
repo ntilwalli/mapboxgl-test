@@ -13,7 +13,6 @@ function reducers(actions, inputs) {
   })
 
   const markerMoveR = actions.markerMove$.map(latLng => state => {
-    //console.log(`markerMoveReducer`, latLng)
     const listing = state.get(`listing`)
     listing.profile.location.info.latLng = {
       type: `manual`,

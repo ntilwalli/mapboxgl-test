@@ -68,8 +68,6 @@ export default function intent(sources) {
     selectorMouseDown$.switchMap(() => inputBlur$.skipUntil(selectorMouseUp$))
   ).do(x => console.log(`to elsewhere`, x))
 
-  const clear$ = DOM.select(`.appClear`).events(`click`)
-
   return {
     displayPicker$: O.merge(
       inputFocus$.mapTo(true),
@@ -82,7 +80,6 @@ export default function intent(sources) {
     changeMonth$,
     changeHour$,
     changeMinute$,
-    changeMode$,
-    clear$
+    changeMode$
   }
 }

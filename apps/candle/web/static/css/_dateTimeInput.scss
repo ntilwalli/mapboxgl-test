@@ -1,4 +1,33 @@
 .date-time-input-component {
+
+  // span {
+  //   //display: flex;
+  // }
+
+  .date-display-container {
+    //border: solid lightgray 1px;
+     padding-bottom: .5rem;
+  }
+
+  .no-date-selected {
+    font-style: italic;
+  }
+  
+  .date-selected{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: bold;
+
+    .clear-button {
+      font-size: 1.2rem;
+      &:hover {
+        cursor: default;
+        color: gray;
+      }
+    }
+  }
+
   .selector {
     display: flex;
     align-items: center;
@@ -78,6 +107,11 @@
 
     }
 
+    .today {
+      font-style: italic;
+      font-weight: bold;
+    }
+
     .selectable {
       color: black;
       cursor: pointer;
@@ -121,6 +155,12 @@
       &:hover {
         color: green;
         //text-decoration: underline;
+      }
+
+      &.disabled {
+        pointer-events: none;
+        //cursor: none;
+        color: rgba(0, 0, 0, 0.2);
       }
     }
 

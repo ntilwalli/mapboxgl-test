@@ -14,7 +14,7 @@ import {renderHeading} from '../helpers'
 //   ])
 // }
 
-function renderStartDateTime(info) {
+function renderStartDate(info) {
   const {state, components} = info
   const {startDate} = components
   const listing = state.listing
@@ -32,16 +32,30 @@ function renderStartDateTime(info) {
   // }
 }
 
+function renderEndDate(info) {
+  const {state, components} = info
+  const {endDate} = components
+  const listing = state.listing
+  const {profile} = listing
+  const section = `time`
+  const property = `end`
+  // const disabled = isDisabled(section, property, listing)
+  // if (!disabled) {
+    return div(`.start-date-time`, [
+      renderHeading(`End`, section, property, listing),
+      endDate
+    ])
+  // } else {
+  //   return null
+  // }
+}
+
 
 function renderPanel(info) {
-  //const {state, components} = info
-
-  //return div([`Time input`])
-
-
   return div(`.panel`, [
       div(`.panel-title`, [h4([`When?`])]),
-      renderStartDateTime(info)
+      renderStartDate(info),
+      renderEndDate(info)
     ])
 }
 
