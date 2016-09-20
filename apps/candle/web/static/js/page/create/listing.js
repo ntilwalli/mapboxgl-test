@@ -18,8 +18,7 @@ export function getEmptyListing() {
       },
       location: {
         mode: `venue`,
-        info: undefined,
-        vicinity: undefined
+        info: undefined
       },
       searchArea: undefined,
       // {
@@ -27,11 +26,17 @@ export function getEmptyListing() {
       //   region: undefined,
       //   radius: undefined
       // },
-      mapSettings: undefined
+      mapSettings: undefined,
       // {
       //   center: undefined,
       //   zoom: undefined,
       //   viewport: undefined
+      // },
+      time: undefined
+      // {
+      //   start: undefined,
+      //   end: undefined,
+      //   recurrence: undefined
       // }
     }
     // {
@@ -58,6 +63,15 @@ export function getValidators(step, listing) {
   if (step === "listing") {
     return {
       type: [required]
+    }
+  } else if (step === "time") {
+    if (type === `single`) {
+      return {
+        start: [required],
+        end: [optional]
+      }
+    } else {
+      throw new Error(`Invalid eventType for time step`)
     }
   } else if (step === `location`) {
     if (mode === `address`) {
@@ -184,4 +198,11 @@ export function validateLocation(listing) {
   const {location} = profile
   const validators = getValidators(`location`, listing)
   return validate(validators, location.info)
+}
+
+export function validateTime(listing) {
+  const {profile} = listing
+  const {time} = profile
+  const validators = getValidators(`time`, listing)
+  return validate(validators, time)
 }

@@ -1,7 +1,8 @@
-import xs from 'xstream'
-import combineObj from 'xs-combine-obj'
+import {Observable as O} from 'rxjs'
 import {div, input, span, table, thead, tfoot, tbody, td, tr, button} from '@cycle/dom'
 import moment from 'moment'
+import {between, notBetween, combineObj, spread} from '../../utils'
+import {getCurrentDate} from './utils'
 
 function daysInMonth(state) {
   return moment((new Date(state.year, state.month + 1)).toISOString()).subtract(1, 'days').date()
@@ -195,7 +196,7 @@ export default function view(state$, components) {
     if (currentTime && currentDate) {
       const {year, month, date} = currentDate
       const {hour, minute, mode} = currentTime
-      current = moment((new Date(year, month, date, mode === `P.M.` ? (hour === 12 ? hour : hour + 12) : (hour === 12 ? 0 : hour), minute)).toISOString())
+      current = moment((getCurrentDate(currentDate, currentTime)).toISOString())
     }
 
     return div(`.date-time-input-component`, [

@@ -1,7 +1,7 @@
-import xs from 'xstream'
-import combineObj from 'xs-combine-obj'
+import {Observable as O} from 'rxjs'
 import Immutable from 'immutable'
 import moment from 'moment'
+import {between, notBetween, combineObj, spread} from '../../utils'
 
 const AM = `A.M.`
 const PM = `P.M.`
@@ -56,11 +56,11 @@ function reducers(actions, inputs) {
     const currentTime = state.get(`currentTime`)
     const {hour, minute, mode} = currentTime
     if (hour === 11 && val === 1)
-      return state.set(`currentTime`, {...currentTime, hour: 12, mode: getReverseMode(mode)})
+      return state.set(`currentTime`, spread(currentTime, {hour: 12, mode: getReverseMode(mode)}))
     else if (hour === 12 && val === -1)
-      return state.set(`currentTime`, {...currentTime, hour: 11, mode: getReverseMode(mode)})
+      return state.set(`currentTime`, spread(currentTime, {hour: 11, mode: getReverseMode(mode)}))
     else
-      return state.set(`currentTime`, {...currentTime, hour: hour === 12 && val === 1 ? 1 : hour === 1 && val === -1 ? 12 : hour + val })
+      return state.set(`currentTime`, spread(currentTime, {hour: hour === 12 && val === 1 ? 1 : hour === 1 && val === -1 ? 12 : hour + val }))
   })
 
   const changeMinuteReducer$ = actions.changeMinute$.map(val => state => {
@@ -71,21 +71,21 @@ function reducers(actions, inputs) {
     else if (minute === 0 && hour === 12 && val === -1)
       return state.set(`currentTime`, {minute: 59, hour: 11, mode: getReverseMode(mode)})
     else if (minute === 59 && val === 1)
-        return state.set(`currentTime`, {...currentTime, minute: 0, hour: hour+1})
+        return state.set(`currentTime`, spread(currentTime, {minute: 0, hour: hour+1}))
     else if (minute === 0 && val === -1)
-        return state.set(`currentTime`, {...currentTime, minute: 59, hour: hour-1})
+        return state.set(`currentTime`, spread(currentTime, {minute: 59, hour: hour-1}))
     else
-      return state.set(`currentTime`, {...currentTime, minute: minute + val})
+      return state.set(`currentTime`, spread(currentTime, {minute: minute + val}))
   })
 
   const changeModeReducer$ = actions.changeMode$.map(val => state => {
     const currentTime = state.get(`currentTime`)
     const {hour, minute, mode} = currentTime
-    return state.set(`currentTime`, {...currentTime, mode: getReverseMode(mode)})
+    return state.set(`currentTime`, spread(currentTime, {mode: getReverseMode(mode)}))
   })
 
 
-  return xs.merge(
+  return O.merge(
     displayPickerReducer$,
     rangeStartReducer$,
     rangeEndReducer$,
@@ -97,46 +97,56 @@ function reducers(actions, inputs) {
   )
 }
 
+function hours24to12(h) {
+    return {
+        hour : (h + 11) % 12 + 1,
+        pm : h >= 12
+    }
+}
+
 export default function model(actions, inputs) {
   const reducer$ = reducers(actions, inputs)
-  const initialState$ = inputs.initialState$ || xs.of({})
-  const props$ = inputs.props$ || xs.of({})
+  const initialState$ = inputs.initialState$ || O.of({})
+  const props$ = inputs.props$ || O.of({defaultNow: true})
 
-  return combineObj({init$: initialState$, props$}).map(({init, props}) => {
-    const now = moment((new Date()).toISOString())
-    const currentDate = init.currentDate || props.defaultNow ? {
-      year: now.year(),
-      month: now.month(),
-      date: now.date()
-    } : undefined
+  return combineObj({init$: initialState$, props$})
+    .switchMap(({init, props}) => {
+      const now = moment((new Date()).toISOString()).add(1, 'hour').startOf('hour')
+      const currentDate = init.currentDate || props.defaultNow ? {
+        year: now.year(),
+        month: now.month(),
+        date: now.date()
+      } : undefined
 
-    const currentTime = init.currentTime || {
-      hour: 12,//now.hour(),
-      minute: 0,//now.minute()
-      mode: PM
-    }
 
-    const temp = moment((currentDate && new Date(currentDate.year, currentDate.month, currentDate.date) || new Date()).toISOString())
-    const initialState = {
-      displayPicker: false,
-      dateFormat: `MMDDYYYY`,
-      defaultToday: true,
-      month: temp.month(),
-      date: temp.date(),
-      year: temp.year(),
-      currentDate,
-      currentTime,
-      rangeStart: init.rangeStart || undefined,
-      rangeEnd: init.rangeEnd || undefined,
-      defaultRangeStart: init.rangeStart || undefined,
-      defaultRangeEnd: init.rangeEnd || undefined,
-      placeholder: init.placeholder || `Enter date here`
-    }
+      const out = hours24to12(now.hours())
+      let currentTime = init.currentTime || props.defaultNow ? {
+        hour: out.hour,
+        minute: now.minute(),
+        mode: out.pm ? PM : AM
+      } : {hour: 12, minute: 0, mode: PM}
 
-    return reducer$.fold((acc, reducer) => reducer(acc), Immutable.Map(initialState))
-  })
-  .flatten()
-  .map(x => x.toJS())
-  .debug(`from dateInput`)
+
+      const temp = moment((currentDate && new Date(currentDate.year, currentDate.month, currentDate.date) || new Date()).toISOString())
+      const initialState = {
+        displayPicker: false,
+        dateFormat: `MMDDYYYY`,
+        month: temp.month(),
+        date: temp.date(),
+        year: temp.year(),
+        currentDate,
+        currentTime,
+        rangeStart: init.rangeStart || undefined,
+        rangeEnd: init.rangeEnd || undefined,
+        defaultRangeStart: init.rangeStart || undefined,
+        defaultRangeEnd: init.rangeEnd || undefined,
+        placeholder: init.placeholder || `Enter date here`
+      }
+
+      return reducer$.startWith(Immutable.Map(initialState)).scan((acc, f) => f(acc))
+    })
+    .map(x => x.toJS())
+    .do(x => console.log(`from dateInput`, x))
+    .publishReplay(1).refCount()
 
 }

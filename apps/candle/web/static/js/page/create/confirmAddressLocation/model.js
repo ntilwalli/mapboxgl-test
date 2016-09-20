@@ -13,7 +13,7 @@ function reducers(actions, inputs) {
   })
 
   const markerMoveR = actions.markerMove$.map(latLng => state => {
-    console.log(`markerMoveReducer`, latLng)
+    //console.log(`markerMoveReducer`, latLng)
     const listing = state.get(`listing`)
     listing.profile.location.info.latLng = {
       type: `manual`,
@@ -52,7 +52,7 @@ export default function model(actions, inputs) {
       const listing = inputs.listing
       listing.profile.mapSettings = listing.profile.mapSettings || {
         center: listing.profile.location.info.latLng.data,
-        zoom: 15,
+        zoom: 17,
         tile: `mapbox.streets`
       }
 

@@ -9,17 +9,14 @@ import Meta from '../meta/main'
 import Description from '../description/main'
 import Location from '../location/main'
 import ConfirmAddressLocation from '../confirmAddressLocation/main'
+import Time from '../eventDateTime/main'
 
 import RedirectRestricted from '../../../redirectRestricted'
 import RedirectCreate from '../../../redirectCreate'
 
-// const ConfirmAddressLocation = () => ({
-//   DOM: O.of(div([`Confirm address location`]))
+// const Time = () => ({
+//   DOM: O.of(div([`Time`]))
 // })
-
-const Time = () => ({
-  DOM: O.of(div([`Time`]))
-})
 
 const routes = [
   {pattern: /^\/meta$/, value: {type: "component", data: Meta}},

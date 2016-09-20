@@ -1,6 +1,7 @@
 import {Observable as O} from 'rxjs'
 import {div} from '@cycle/dom'
 import isolate from '@cycle/isolate'
+import moment from 'moment'
 
 import intent from './intent'
 import model from './model'
@@ -8,25 +9,26 @@ import view from './view'
 
 import TextInput from '../textInput'
 
-import {noopListener, combineObj} from '../../utils'
+import {combineObj, spread} from '../../utils'
+import {getCurrentDate} from './utils'
 
-const hourInputProps = O.of({
-  placeholder: `hh`,
-  name: `hour`,
-  required: true,
-  key: `hour`
-})
+// const hourInputProps = O.of({
+//   placeholder: `hh`,
+//   name: `hour`,
+//   required: true,
+//   key: `hour`
+// })
 
-const minuteInputProps = O.of({
-  placeholder: `mm`,
-  name: `minute`,
-  required: true,
-  key: `minute`
-})
+// const minuteInputProps = O.of({
+//   placeholder: `mm`,
+//   name: `minute`,
+//   required: true,
+//   key: `minute`
+// })
 
-export default function main(sources, inputs) {
+function main(sources, inputs) {
 
-  const initialCurrent$ = (inputs.initialState$ || xs.of({}))
+  const initialCurrent$ = (inputs.initialState$ || O.of({}))
     .map(({current}) => current ? moment(current.toISOString()) : undefined)
     //.debug(`initialCurrent`)
     //.filter(x => x)
@@ -48,5 +50,16 @@ export default function main(sources, inputs) {
     DOM: vtree$,
     Global: actions.keepFocusOnInput$
       .map(ev => ({type: `preventDefault`, data: ev})),
+    result$: state$.filter(state => {
+      const {currentDate, currentTime} = state
+      return currentDate && currentTime
+    })
+    .map(state => {
+      const {currentDate, currentTime} = state
+      return getCurrentDate(currentDate, currentTime)
+    })
+    .publishReplay(1).refCount()
   }
 }
+
+export default (sources, inputs) => isolate(main)(sources, inputs)

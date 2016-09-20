@@ -1,4 +1,4 @@
-import xs from 'xstream'
+import {Observable as O} from 'rxjs'
 import {between, notBetween} from '../../utils'
 
 export default function intent(sources) {
@@ -10,7 +10,8 @@ export default function intent(sources) {
   const ESC_KEYCODE = 27
   const TAB_KEYCODE = 9
 
-  const input$ = DOM.select('.appInputable').events('input').remember()
+  const input$ = DOM.select('.appInputable').events('input')
+    .publishReplay(1).refCount()
   const keydown$ = DOM.select('.appInputable').events('keydown')
   const itemHover$ = DOM.select('.appSelectable').events('mouseenter')
   const itemClick$ = DOM.select('.appSelectable').events('click').map(ev => {
@@ -27,14 +28,15 @@ export default function intent(sources) {
   const nextMinute$ = DOM.select('.appIncrementMinute').events('click')
   const prevMinute$ = DOM.select('.appDecrementMinute').events('click')
 
-  const changeMonth$ = xs.merge(nextMonth$.mapTo(1), prevMonth$.mapTo(-1))
-  const changeHour$ = xs.merge(nextHour$.mapTo(1), prevHour$.mapTo(-1))
-  const changeMinute$ = xs.merge(nextMinute$.mapTo(1), prevMinute$.mapTo(-1))
+  const changeMonth$ = O.merge(nextMonth$.mapTo(1), prevMonth$.mapTo(-1))
+  const changeHour$ = O.merge(nextHour$.mapTo(1), prevHour$.mapTo(-1))
+  const changeMinute$ = O.merge(nextMinute$.mapTo(1), prevMinute$.mapTo(-1))
   const changeMode$ = DOM.select('.appChangeMode').events('click')
 
   const selectorMouseDown$ = DOM.select('.appSelector').events('mousedown')
   const selectorMouseUp$ = DOM.select('.appSelector').events('mouseup')
-  const inputFocus$ = DOM.select('.appInputable').events('focus').remember()
+  const inputFocus$ = DOM.select('.appInputable').events('focus')
+    .publishReplay(1).refCount()
   const inputBlur$ = DOM.select('.appInputable').events('blur')
     .filter(ev => ev.target !== document.activeElement) // <--- sketchy? :)
 
@@ -43,23 +45,23 @@ export default function intent(sources) {
   const escPressed$ = keydown$.filter(({keyCode}) => keyCode === ESC_KEYCODE)
   const clearField$ = input$.filter(ev => ev.target.value.length === 0)
 
-  const inputBlurToSelector$ = inputBlur$.compose(between(selectorMouseDown$, selectorMouseUp$))
-    .debug(`to selector`)
-  const inputBlurToElsewhere$ = inputBlur$.compose(notBetween(selectorMouseDown$, selectorMouseUp$))
-    .debug(`to elsewhere`)
+  const inputBlurToSelector$ = inputBlur$.let(between(selectorMouseDown$, selectorMouseUp$))
+    .do(x => console.log(`to selector`, x))
+  const inputBlurToElsewhere$ = inputBlur$.let(notBetween(selectorMouseDown$, selectorMouseUp$))
+    .do(x => console.log(`to elsewhere`, x))
 
 
   const selectorMouseClick$ = selectorMouseDown$
-    .map(down => selectorMouseUp$.filter(up => down.target === up.target))
-    .flatten()
+    .switchMap(down => selectorMouseUp$.filter(up => down.target === up.target))
 
   return {
-    displayPicker$: xs.merge(
+    displayPicker$: O.merge(
       inputFocus$.mapTo(true),
       inputBlurToSelector$.mapTo(true),
       inputBlurToElsewhere$.mapTo(false)
     ),
-    keepFocusOnInput$: inputBlurToSelector$.debug(`keep focus on input`),
+    keepFocusOnInput$: inputBlurToSelector$
+      .do(x => console.log(`keep focus on input`, x)),
     itemClick$,
     changeMonth$,
     changeHour$,
