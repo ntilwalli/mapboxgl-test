@@ -29,43 +29,20 @@ import {getDateFromStateInfo} from './utils'
 
 function main(sources, inputs) {
 
-  const initialCurrent$ = (inputs.initialState$ || O.of({}))
-    .map(({current}) => current ? moment(current.toISOString()) : undefined)
-    //.debug(`initialCurrent`)
-    //.filter(x => x)
-    .publishReplay(1).refCount()
-
-  const initialHour$ = initialCurrent$
-    .map(x => ({hour: x ? x.hour() : ``}))
-    .do(x => console.log(`initialHour`, x))
-
-  const initialMinute$ = initialCurrent$
-    .map(x => ({minute: x ? x.minute() : ``}))
-    .do(x => console.log(`initialMinute`, x))
-
   const actions = intent(sources)
   const state$ = model(actions, inputs)
   const vtree$ = view(state$)
 
   return {
     DOM: vtree$,
-    Global: actions.keepFocusOnInput$
-      .map(ev => ({type: `preventDefault`, data: ev}))
-      .do(x => console.log(`preventingDefault`, x)),
-    result$: state$.skip(1)
-      // .filter(state => {
-      //   const {currentDate, currentTime} = state
-      //   return currentDate && currentTime
-      // })
+    //Global: O.never(),
+    result$: state$
       .map(state => {
-        const {currentDate, currentTime} = state
-        if (currentDate && currentTime)
-          return getDateFromStateInfo(currentDate, currentTime)
-        else
-          return undefined
+        const {currentDate} = state
+        return currentDate
       })
-      .distinctUntilChanged(null, x => x ? x.toISOString() : x)
-      //.do(x => console.log(`dateInput changed`, x))
+      .distinctUntilChanged(null, x => x)
+      .do(x => console.log(`dateInput changed`, x))
       .publishReplay(1).refCount()
   }
 }

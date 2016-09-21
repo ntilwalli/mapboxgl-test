@@ -11,13 +11,13 @@ import Heading from '../../../library/heading/workflow/main'
 import Step from '../step/main'
 import StepContent from '../stepContent/standard'
 
-import DateTimeInput from '../../../library/dateTimeInput/main'
+import DateInput from '../../../library/dateInput/main'
 
 function contentComponent(sources, inputs) {
 
   const actions = intent(sources, inputs)
   const rangeEndProxy$ = createProxy()
-  const startDate = DateTimeInput(sources, {
+  const startDate = DateInput(sources, {
     props$: O.of({
       defaultNow: false//,
       //rangeStart: new Date()
@@ -31,7 +31,7 @@ function contentComponent(sources, inputs) {
   })
 
 
-  const endDate = DateTimeInput(sources, {
+  const endDate = DateInput(sources, {
     props$: O.of({
       defaultNow: false
     }),

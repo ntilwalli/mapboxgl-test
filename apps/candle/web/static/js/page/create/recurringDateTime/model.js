@@ -4,7 +4,7 @@ import {combineObj} from '../../../utils'
 import {validateTime as isValid} from '../listing'
 
 function reducers(actions, inputs) {
-  const startDateR = inputs.startDate$.skip(1).map(val => state => {
+  const startDateR = inputs.startDate$.map(val => state => {
     const listing = state.get(`listing`)
     listing.profile.time.start = {
       type: `datetime`,
@@ -13,7 +13,7 @@ function reducers(actions, inputs) {
     return state.set(`listing`, listing).set(`valid`, isValid(listing))
   })
 
-  const endDateR = inputs.endDate$.skip(1).map(val => state => {
+  const endDateR = inputs.endDate$.map(val => state => {
     const listing = state.get(`listing`)
     listing.profile.time.end = {
       type: `datetime`,

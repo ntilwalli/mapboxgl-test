@@ -52,17 +52,21 @@ function main(sources, inputs) {
     Global: actions.keepFocusOnInput$
       .map(ev => ({type: `preventDefault`, data: ev}))
       .do(x => console.log(`preventingDefault`, x)),
-    result$: state$.filter(state => {
-      const {currentDate, currentTime} = state
-      return currentDate && currentTime
-    })
-    .map(state => {
-      const {currentDate, currentTime} = state
-      return getDateFromStateInfo(currentDate, currentTime)
-    })
-    .distinctUntilChanged(null, x => x.toISOString())
-    .do(x => console.log(`dateInput changed`, x))
-    .publishReplay(1).refCount()
+    result$: state$
+      // .filter(state => {
+      //   const {currentDate, currentTime} = state
+      //   return currentDate && currentTime
+      // })
+      .map(state => {
+        const {currentDate, currentTime} = state
+        if (currentDate && currentTime)
+          return getDateFromStateInfo(currentDate, currentTime)
+        else
+          return undefined
+      })
+      .distinctUntilChanged(null, x => x ? x.toISOString() : x)
+      //.do(x => console.log(`dateInput changed`, x))
+      .publishReplay(1).refCount()
   }
 }
 

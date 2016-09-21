@@ -8,13 +8,16 @@
     "build-js": "rm -rf priv/static/js; mkdir -p priv/static/js; browserify -t babelify web/static/js/main.js > priv/static/js/main.js",
     "watch-js": "rm -rf priv/static/js; mkdir -p priv/static/js; watchify -t babelify web/static/js/main.js -o priv/static/js/main.js -dv",
     "copy-bootstrap": "mkdir -p priv/static/bootstrap; cp -r custom_deps/bootstrap/dist/ priv/static/bootstrap/",
-    "build-bootstrap": "grunt --gruntfile ~/dev/most/candle/custom_deps/bootstrap/Gruntfile.js dist && npm run copy-bootstrap",
+    "build-bootstrap": "grunt --gruntfile ~/dev/spotlight/apps/candle/custom_deps/bootstrap/Gruntfile.js dist && npm run copy-bootstrap",
     "watch-bootstrap": "npm run build-bootstrap && grunt --gruntfile ~/dev/most/candle/custom_deps/bootstrap/Gruntfile.js watch",
     "build-css": "rm -rf priv/static/css; mkdir -p priv/static/css; sass web/static/css/base.scss priv/static/css/base.css",
     "watch-css": "rm -rf priv/static/css; mkdir -p priv/static/css; sass --watch web/static/css:priv/static/css",
     "build": "npm run build-js & npm run build-css & npm run build-assets",
     "watch": "npm run watch-js & npm run watch-css & npm run watch-bootstrap & npm run watch-assets",
-    "test": "browserify -t babelify test/static/js/*.js | tap"
+    "test": "browserify -t babelify test/static/js/*.js | tap",
+    "test-build": "watchify -v -t babelify web/static/js/test.js -o priv/static/js/test.js",
+    "test-serve": "live-server --entry-file=test.html"
+
   },
   "dependencies": {
     "@cycle/dom": "file:///Users/ntilwalli/dev/cycle/cyclejs/dom",

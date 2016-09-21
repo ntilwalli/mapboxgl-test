@@ -2,10 +2,9 @@ import {Observable as O} from 'rxjs'
 import Immutable from 'immutable'
 import moment from 'moment'
 import {between, notBetween, combineObj, spread} from '../../utils'
-import {getMomentFromStateInfo, getDateFromStateInfo} from './utils'
+import {getMomentFromStateInfo, getDateFromStateInfo, AM, PM} from './utils'
 
-const AM = `A.M.`
-const PM = `P.M.`
+
 
 const getReverseMode = (mode) => mode === AM ? PM : AM
 
@@ -25,6 +24,14 @@ function getCurrentTime(d) {
   }
 }
 
+function getDefaultCurrentTime() {
+  return {
+    hour: 12,
+    minute: 0,
+    mode: PM
+  }
+}
+
 function getCurrentDate(d) {
   return {
     year: d.year(),
@@ -34,7 +41,7 @@ function getCurrentDate(d) {
 }
 
 function reducers(actions, inputs) {
-  const displayPickerReducer$ = O.merge(
+  const displayPickerR = O.merge(
     actions.displayPicker$,
     (inputs.close$ || O.never()).mapTo(false) 
   ).map(val => state => {
@@ -42,7 +49,11 @@ function reducers(actions, inputs) {
     return state.set(`displayPicker`, val)
   })
 
-  const dateReducer$ = (actions.date$ || O.never()).map(val => state => {
+  const clearR = actions.clear$.map(x => state => {
+    return state.set(`currentTime`, getDefaultCurrentTime()).set(`currentDate`, undefined)
+  })
+
+  const dateTimeR = (actions.date$ || O.never()).map(val => state => {
     //console.log(`Date reducer`, val)
     const locked = state.get(`locked`)
     if (!locked) {
@@ -68,12 +79,12 @@ function reducers(actions, inputs) {
   })
 
   const rangeStartReducer$ = inputs.rangeStart$.map(val => state => {
-    console.log(`Changing rangeStart`, val)
+    //console.log(`Changing rangeStart`, val)
     if (val) {
       const mVal = moment(val.toISOString())
       const defaultRangeStart = state.get(`defaultRangeStart`)
       if (defaultRangeStart) {
-        const rangeStart = (mVal < defaultRangeStart) ? mVal : defaultRangeStart
+        const rangeStart = (mVal >= defaultRangeStart) ? mVal : defaultRangeStart
         return state.set(`rangeStart`, rangeStart)
       } else {
         return state.set(`rangeStart`, mVal)
@@ -84,7 +95,7 @@ function reducers(actions, inputs) {
   })
 
   const rangeEndReducer$ = inputs.rangeEnd$.map(val => state => {
-    console.log(`Changing rangeEnd`, val)
+    //console.log(`Changing rangeEnd`, val)
     if (val) {
       const mVal = moment(val.toISOString())
       const defaultRangeEnd = state.get(`defaultRangeEnd`)
@@ -101,6 +112,7 @@ function reducers(actions, inputs) {
   const itemClickReducer$ = actions.itemClick$.map(d => currState => {
     const state = currState.set(`locked`, true)
     const rangeStart = currState.get(`rangeStart`)
+    const rangeEnd = currState.get(`rangeEnd`)
     const currentTime = currState.get(`currentTime`)
 
     const date = moment((new Date(d)).toISOString())
@@ -108,6 +120,11 @@ function reducers(actions, inputs) {
     const fullDate = getMomentFromStateInfo(newCurrentDate, currentTime)
     if (rangeStart && fullDate.isBefore(rangeStart)) {
       const newCurrentTime = getCurrentTime(rangeStart)
+      return state.set(`currentDate`, newCurrentDate).set(`currentTime`, newCurrentTime)
+    }
+
+    if (rangeEnd && fullDate.isAfter(rangeEnd)) {
+      const newCurrentTime = getCurrentTime(rangeEnd)
       return state.set(`currentDate`, newCurrentDate).set(`currentTime`, newCurrentTime)
     }
 
@@ -124,50 +141,71 @@ function reducers(actions, inputs) {
 
   const changeHourReducer$ = actions.changeHour$.map(val => currState => {
     const state = currState.set(`locked`, true)
-    const currentTime = state.get(`currentTime`)
-    const {hour, minute, mode} = currentTime
-    if (hour === 11 && val === 1)
-      return state.set(`currentTime`, spread(currentTime, {hour: 12, mode: getReverseMode(mode)}))
-    else if (hour === 12 && val === -1)
-      return state.set(`currentTime`, spread(currentTime, {hour: 11, mode: getReverseMode(mode)}))
-    else
-      return state.set(`currentTime`, spread(currentTime, {hour: hour === 12 && val === 1 ? 1 : hour === 1 && val === -1 ? 12 : hour + val }))
+
+    const currentDate = state.get(`currentDate`)
+    let currentTime = state.get(`currentTime`)
+    if (currentDate) {
+      const current = getMomentFromStateInfo(currentDate, currentTime).add(val, 'hour')
+      return state.set(`currentDate`, getCurrentDate(current)).set(`currentTime`, getCurrentTime(current))
+    } else {
+      const {hour, minute, mode} = currentTime
+      if (hour === 11 && val === 1)
+        return state.set(`currentTime`, spread(currentTime, {hour: 12, mode: getReverseMode(mode)}))
+      else if (hour === 12 && val === -1)
+        return state.set(`currentTime`, spread(currentTime, {hour: 11, mode: getReverseMode(mode)}))
+      else
+        return state.set(`currentTime`, spread(currentTime, {hour: hour === 12 && val === 1 ? 1 : hour === 1 && val === -1 ? 12 : hour + val }))
+    }
   })
 
   const changeMinuteReducer$ = actions.changeMinute$.map(val => currState => {
     const state = currState.set(`locked`, true)
+    const currentDate = state.get(`currentDate`)
     let currentTime = state.get(`currentTime`)
-
-    const {hour, minute, mode} = currentTime
-    if (minute === 59 && hour === 11 && val === 1)
-      return state.set(`currentTime`, {minute: 0, hour: 12, mode: getReverseMode(mode)})
-    else if (minute === 0 && hour === 12 && val === -1)
-      return state.set(`currentTime`, {minute: 59, hour: 11, mode: getReverseMode(mode)})
-    else if (minute === 59 && val === 1)
-        return state.set(`currentTime`, spread(currentTime, {minute: 0, hour: hour+1}))
-    else if (minute === 0 && val === -1)
-        return state.set(`currentTime`, spread(currentTime, {minute: 59, hour: hour-1}))
-    else
-      return state.set(`currentTime`, spread(currentTime, {minute: minute + val}))
+    if (currentDate) {
+      const current = getMomentFromStateInfo(currentDate, currentTime).add(val, 'minute')
+      return state.set(`currentDate`, getCurrentDate(current)).set(`currentTime`, getCurrentTime(current))
+    } else {
+      const {hour, minute, mode} = currentTime
+      if (minute === 59 && hour === 11 && val === 1)
+        return state.set(`currentTime`, {minute: 0, hour: 12, mode: getReverseMode(mode)})
+      else if (minute === 0 && hour === 12 && val === -1)
+        return state.set(`currentTime`, {minute: 59, hour: 11, mode: getReverseMode(mode)})
+      else if (minute === 59 && val === 1)
+          return state.set(`currentTime`, spread(currentTime, {minute: 0, hour: hour+1}))
+      else if (minute === 0 && val === -1)
+          return state.set(`currentTime`, spread(currentTime, {minute: 59, hour: hour-1}))
+      else
+        return state.set(`currentTime`, spread(currentTime, {minute: minute + val}))
+    }
   })
 
-  const changeModeReducer$ = actions.changeMode$.map(val => currState => {
+  const changeMeridiemReducer$ = actions.changeMeridiem$.map(val => currState => {
     const state = currState.set(`locked`, true)
-    const currentTime = state.get(`currentTime`)
-    const {hour, minute, mode} = currentTime
-    return state.set(`currentTime`, spread(currentTime, {mode: getReverseMode(mode)}))
+
+    const currentDate = state.get(`currentDate`)
+    let currentTime = state.get(`currentTime`)
+    if (currentDate) {
+      const current = getMomentFromStateInfo(currentDate, currentTime).add(val, 'hour')
+      return state.set(`currentDate`, getCurrentDate(current)).set(`currentTime`, getCurrentTime(current))
+    } else {
+      const {hour, minute, mode} = currentTime
+      return state.set(`currentTime`, spread(currentTime, {mode: getReverseMode(mode)}))
+    }
   })
 
 
   return O.merge(
-    displayPickerReducer$,
+    //displayPickerReducer$,
+    clearR,
+    dateTimeR,
     rangeStartReducer$,
     rangeEndReducer$,
     itemClickReducer$,
     changeMonthReducer$,
     changeHourReducer$,
     changeMinuteReducer$,
-    changeModeReducer$
+    changeMeridiemReducer$
   )
 }
 
@@ -183,16 +221,16 @@ export default function model(actions, inputs) {
   const initialState$ = inputs.initialState$ || O.of(undefined)
   const props$ = inputs.props$ || O.of({defaultNow: false})
 
-  return combineObj({initialState$, props$})
+  return combineObj({
+    initialState$: initialState$,
+      //.do(x => console.log(`A`)), 
+    props$: props$
+      //.do(x => console.log(`B`)),
+  })
     .switchMap(({initialState, props}) => {
-
-      if (initialState) {
-
-      }
 
       let now = moment((new Date()).toISOString())
       let locked = false
-      let initDate = initialState
       let currentDate, currentTime, current
 
       let rangeStart = props.rangeStart ? moment(props.rangeStart.toISOString()) : undefined
@@ -208,7 +246,7 @@ export default function model(actions, inputs) {
         }
 
         locked = true
-        current = moment(initDate.toISOString()).add(1, 'hour').startOf('hour')
+        current = moment(initialState.toISOString())
         currentDate = getCurrentDate(current)
         currentTime = getCurrentTime(current)
 
@@ -227,12 +265,12 @@ export default function model(actions, inputs) {
         currentTime = getCurrentTime(current)
       } else {
         currentDate = undefined
-        currentTime = {hour: 12, minute: 0, mode: PM}
+        currentTime = getDefaultCurrentTime()
       }
 
       let displayStart
       if (currentDate && currentTime) {
-        displayStart = moment(getCurrentDate(currentDate, currentTime).toISOString)
+        displayStart = getMomentFromStateInfo(currentDate, currentTime)
       } else if (rangeStart) {
         displayStart = rangeStart
       } else {
@@ -241,7 +279,7 @@ export default function model(actions, inputs) {
 
       const init = {
         locked,
-        displayPicker: false,
+        displayPicker: true,
         dateFormat: `MMDDYYYY`,
         month: displayStart.month(),
         date: displayStart.date(),

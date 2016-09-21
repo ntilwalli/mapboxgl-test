@@ -61,59 +61,6 @@ function isNextYearSelectable({year, month, rangeEnd}) {
   return true
 }
 
-function isPreviousHourSelectable({currentDate, currentTime, rangeStart}) {
-  if (currentDate && currentTime && rangeStart) {
-    return getMomentFromStateInfo(currentDate, currentTime).subtract(1, 'hour').isAfter(rangeStart)
-  }
-
-  return true
-}
-
-function isNextHourSelectable({currentDate, currentTime, rangeEnd}) {
-  if (currentDate && currentTime && rangeEnd) {
-    return getMomentFromStateInfo(currentDate, currentTime).add(1, 'hour').isSameOrBefore(rangeEnd)
-  }
-
-  return true
-}
-
-function isPreviousMinuteSelectable({currentDate, currentTime, rangeStart}) {
-  if (currentDate && currentTime && rangeStart) {
-    return getMomentFromStateInfo(currentDate, currentTime).subtract(1, 'minute').isAfter(rangeStart)
-  }
-
-  return true
-}
-
-function isNextMinuteSelectable({currentDate, currentTime, rangeEnd}) {
-  if (currentDate && currentTime && rangeEnd) {
-    return getMomentFromStateInfo(currentDate, currentTime).add(1, 'minute').isSameOrBefore(rangeEnd)
-  }
-
-  return true
-}
-
-function isPMSelectable({currentDate, currentTime, rangeEnd}) {
-  if (currentDate && currentTime && rangeEnd) {
-    return getMomentFromStateInfo(currentDate, currentTime).add(12, 'hour').isSameOrBefore(rangeEnd)
-  }
-
-  return true
-}
-
-function isAMSelectable({currentDate, currentTime, rangeStart}) {
-  if (currentDate && currentTime && rangeStart) {
-    return getMomentFromStateInfo(currentDate, currentTime).subtract(12, 'hour').isAfter(rangeStart)
-  }
-
-  return true
-}
-
-// function isPreviousHourSelectable({year, month, day, hour, minute}) {
-//   return moment((new Date(year, month, day, hour-1, minute)).toISOString()).endOf('hour').isAfter(new Date())
-// }
-
-
 function getCurrentMonthName({year, month, date}) {
   return moment((new Date(year, month, date)).toISOString()).format(`MMMM`)
 }
@@ -183,54 +130,16 @@ function renderCalendar(state) {
   ])
 }
 
-const INC_STYLE = `.fa.fa-angle-up.fa-2x`
-const DEC_STYLE = `.fa.fa-angle-down.fa-2x`
-
-function renderClock({state}) {
-  const prevHourSelectable = !isPreviousHourSelectable(state) ? `.disabled` : ``
-  const nextHourSelectable = !isNextHourSelectable(state) ? `.disabled` : ``
-  const prevMinuteSelectable = !isPreviousMinuteSelectable(state) ? `.disabled` : ``
-  const nextMinuteSelectable = !isNextMinuteSelectable(state) ? `.disabled` : ``
-  const amSelectable = !isAMSelectable(state) ? `.disabled` : ``
-  const pmSelectable = !isPMSelectable(state) ? `.disabled` : ``
-  const mode = state.currentTime.mode
-  return div(`.time-input-section`, [
-    span(`.hour-section`, [
-      div(`.appIncrementHour${INC_STYLE}.selectable${nextHourSelectable}`),
-      div([state.currentTime.hour]),
-      div(`.appDecrementHour${DEC_STYLE}.selectable${prevHourSelectable}`)
-    ]),
-    span(`.minute-section`, [
-      div([`:`]),
-    ]),
-    span(`.minute-section`, [
-      div(`.appIncrementMinute${INC_STYLE}.selectable${nextMinuteSelectable}`),
-      div([`${state.currentTime.minute < 10 ? '0' : ''}${state.currentTime.minute}`]),
-      div(`.appDecrementMinute${DEC_STYLE}.selectable${prevMinuteSelectable}`)
-    ]),
-    span(`.mode-section`, [
-      div(`.appIncrementMeridiem${INC_STYLE}.selectable${mode === AM ? pmSelectable : amSelectable}`),
-      div([state.currentTime.mode]),
-      div(`.appDecrementMeridiem${DEC_STYLE}.selectable${mode === AM ? pmSelectable : amSelectable}`)
-    ]),
-    //div([
-      // span([components.hour]),
-      // span([`:`]),
-      // span([components.minute])
-    //])
-  ])
-}
 
 const PREV_YEAR_STYLE = `.fa.fa-angle-double-left.fa-2x`
 const NEXT_YEAR_STYLE = `.fa.fa-angle-double-right.fa-2x`
 const PREV_MONTH_STYLE = `.fa.fa-angle-left.fa-2x`
 const NEXT_MONTH_STYLE = `.fa.fa-angle-right.fa-2x`
 
-function renderPicker(inputs) {
-  const {state} = inputs
+function renderPicker(state) {
   const prevMonthSelectable = !isPreviousMonthSelectable(state) ? `.disabled` : ``
   const nextMonthSelectable = !isNextMonthSelectable(state) ? `.disabled` : ``
-  return div(`.appSelector.selector`, [
+  return div(`.appSelector.selector.date-input-component`, [
     div(`.calendar`, [
       div(`.calendar-navigator`, [
         // button(`.appPrevYear${}`,[
@@ -256,41 +165,10 @@ function renderPicker(inputs) {
       div([
         renderCalendar(state)
       ])
-    ]),
-    div(`.clock`, [
-      //span({style: {display: `flex`, flex: `1 1 auto`, 'justify-content': `center`}}, [
-        renderClock(inputs)
-      //])
     ])
-
   ])
 }
 
 export default function view(state$, components) {
-  return combineObj({
-    state$//,
-    //components$: combineObj(components)
-  }).map(inputs => {
-    const {state} = inputs
-    const {placeholder, currentTime, currentDate} = state
-
-    let current = undefined
-    if (currentTime && currentDate) {
-      const {year, month, date} = currentDate
-      const {hour, minute, mode} = currentTime
-      current = getMomentFromStateInfo(currentDate, currentTime)
-    }
-
-    return div(`.date-time-input-component`, [
-      div(`.date-display-container`, [
-        !current ? span(`.no-date-selected`, [
-          span([`Not selected`]),
-        ]) : span(`.date-selected`, [
-          span([current.format("dddd, MMMM Do YYYY, h:mm a")]),
-          span(`.appClear.clear-button`, [`×`])
-        ])
-      ]),
-      state.displayPicker ? renderPicker(inputs) : null
-    ])
-  })
+  return state$.map(renderPicker)
 }

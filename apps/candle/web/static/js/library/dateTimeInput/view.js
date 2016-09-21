@@ -2,7 +2,7 @@ import {Observable as O} from 'rxjs'
 import {div, input, span, table, thead, tfoot, tbody, td, tr, button} from '@cycle/dom'
 import moment from 'moment'
 import {between, notBetween, combineObj, spread} from '../../utils'
-import {getMomentFromStateInfo, getDateFromStateInfo} from './utils'
+import {getMomentFromStateInfo, getDateFromStateInfo, AM, PM} from './utils'
 
 function daysInMonth(state) {
   return moment((new Date(state.year, state.month + 1)).toISOString()).subtract(1, 'days').date()
@@ -94,7 +94,7 @@ function isNextMinuteSelectable({currentDate, currentTime, rangeEnd}) {
 }
 
 function isPMSelectable({currentDate, currentTime, rangeEnd}) {
-  if (currentDate && currentTime && rangeStart) {
+  if (currentDate && currentTime && rangeEnd) {
     return getMomentFromStateInfo(currentDate, currentTime).add(12, 'hour').isSameOrBefore(rangeEnd)
   }
 
@@ -102,7 +102,7 @@ function isPMSelectable({currentDate, currentTime, rangeEnd}) {
 }
 
 function isAMSelectable({currentDate, currentTime, rangeStart}) {
-  if (currentDate && currentTime && rangeEnd) {
+  if (currentDate && currentTime && rangeStart) {
     return getMomentFromStateInfo(currentDate, currentTime).subtract(12, 'hour').isAfter(rangeStart)
   }
 
@@ -189,6 +189,11 @@ const DEC_STYLE = `.fa.fa-angle-down.fa-2x`
 function renderClock({state}) {
   const prevHourSelectable = !isPreviousHourSelectable(state) ? `.disabled` : ``
   const nextHourSelectable = !isNextHourSelectable(state) ? `.disabled` : ``
+  const prevMinuteSelectable = !isPreviousMinuteSelectable(state) ? `.disabled` : ``
+  const nextMinuteSelectable = !isNextMinuteSelectable(state) ? `.disabled` : ``
+  const amSelectable = !isAMSelectable(state) ? `.disabled` : ``
+  const pmSelectable = !isPMSelectable(state) ? `.disabled` : ``
+  const mode = state.currentTime.mode
   return div(`.time-input-section`, [
     span(`.hour-section`, [
       div(`.appIncrementHour${INC_STYLE}.selectable${nextHourSelectable}`),
@@ -199,14 +204,14 @@ function renderClock({state}) {
       div([`:`]),
     ]),
     span(`.minute-section`, [
-      div(`.appIncrementMinute${INC_STYLE}.selectable`),
+      div(`.appIncrementMinute${INC_STYLE}.selectable${nextMinuteSelectable}`),
       div([`${state.currentTime.minute < 10 ? '0' : ''}${state.currentTime.minute}`]),
-      div(`.appDecrementMinute${DEC_STYLE}.selectable`)
+      div(`.appDecrementMinute${DEC_STYLE}.selectable${prevMinuteSelectable}`)
     ]),
     span(`.mode-section`, [
-      div(`.appChangeMode${INC_STYLE}.selectable`),
+      div(`.appIncrementMeridiem${INC_STYLE}.selectable${mode === AM ? pmSelectable : amSelectable}`),
       div([state.currentTime.mode]),
-      div(`.appChangeMode${DEC_STYLE}.selectable`)
+      div(`.appDecrementMeridiem${DEC_STYLE}.selectable${mode === AM ? pmSelectable : amSelectable}`)
     ]),
     //div([
       // span([components.hour]),
@@ -277,24 +282,14 @@ export default function view(state$, components) {
     }
 
     return div(`.date-time-input-component`, [
-      input(`.appInputable.date-input`, {
-        props: {
-          type: `text`,
-          placeholder: placeholder || ``
-        },
-        hook: {
-          create: (emptyVNode, {elm}) => {
-            if (current) {
-              elm.value = current.format("dddd, MMMM Do YYYY, h:mm a")
-            }
-          },
-          update: (old, {elm}) => {
-            if (current) {
-              elm.value = current.format("dddd, MMMM Do YYYY, h:mm a")
-            }
-          }
-        }
-      }),
+      div(`.date-display-container`, [
+        !current ? span(`.no-date-selected`, [
+          span([`Not selected`]),
+        ]) : span(`.date-selected`, [
+          span([current.format("dddd, MMMM Do YYYY, h:mm a")]),
+          span(`.appClear.clear-button`, [`×`])
+        ])
+      ]),
       state.displayPicker ? renderPicker(inputs) : null
     ])
   })
