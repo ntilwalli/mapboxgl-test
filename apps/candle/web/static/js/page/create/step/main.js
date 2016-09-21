@@ -21,7 +21,7 @@ function intent(sources) {
         stepName: m[2]
       }
     })
-    .publishReplay(1).refCount()
+    //.publishReplay(1).refCount()
 
 
   const closeInstruction$ = O.merge(

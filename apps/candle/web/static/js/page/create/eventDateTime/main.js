@@ -15,14 +15,16 @@ import DateInput from '../../../library/dateInput/main'
 
 function contentComponent(sources, inputs) {
 
-  const actions = intent(sources)
+  const actions = intent(sources, inputs)
   const rangeEndProxy$ = createProxy()
   const startDate = DateInput(sources, {
     props$: O.of({
-      defaultNow: false,
-      rangeStart: new Date()
+      defaultNow: false//,
+      //rangeStart: new Date()
     }),
-    initialState$: actions.listing$.map(l => l.profile.time && l.profile.time.start),
+    initialState$: actions.listing$
+      .map(l => l.profile.time && l.profile.time.start)
+      .map(x => x && x.type === `datetime` ? x.data : undefined),
     rangeStart$: O.never(),
     //rangeEnd$: O.never()
     rangeEnd$: rangeEndProxy$
@@ -33,7 +35,9 @@ function contentComponent(sources, inputs) {
     props$: O.of({
       defaultNow: false
     }),
-    initialState$: actions.listing$.map(l => l.profile.time && l.profile.time.end),
+    initialState$: actions.listing$
+      .map(l => l.profile.time && l.profile.time.end)
+      .map(x => x && x.type === `datetime` ? x.data : undefined),
     //rangeStart$: O.never(),
     rangeStart$: startDate.result$,
     rangeEnd$: O.never()

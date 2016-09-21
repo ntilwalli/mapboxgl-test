@@ -209,9 +209,9 @@ function renderClock({state}) {
       div(`.appDecrementMinute${DEC_STYLE}.selectable${prevMinuteSelectable}`)
     ]),
     span(`.mode-section`, [
-      div(`.appChangeMode${INC_STYLE}.selectable${mode === AM ? pmSelectable : amSelectable}`),
+      div(`.appIncrementMeridiem${INC_STYLE}.selectable${mode === AM ? pmSelectable : amSelectable}`),
       div([state.currentTime.mode]),
-      div(`.appChangeMode${DEC_STYLE}.selectable${mode === AM ? pmSelectable : amSelectable}`)
+      div(`.appDecrementMeridiem${DEC_STYLE}.selectable${mode === AM ? pmSelectable : amSelectable}`)
     ]),
     //div([
       // span([components.hour]),

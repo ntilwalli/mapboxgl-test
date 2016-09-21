@@ -67,7 +67,9 @@ export default function main(sources, inputs) {
     .filter(x => !x)
     .map(() => RedirectRestricted(sources, inputs))
 
-  const route$ = isAuthorized$.switchMap(() => Router.define(routes))
+  const definedRoutes$ = Router.define(routes).publishReplay(1).refCount()
+
+  const route$ = isAuthorized$.switchMap(() => definedRoutes$)
     .map(x => {
       return x
     })
@@ -100,7 +102,7 @@ export default function main(sources, inputs) {
       const {type, data} = value.info
       if (type === `component`) {
         //return data(spread(sources, {Router: Router.path(path.substring(1))}), inputs)
-        return data(sources, inputs)
+        return data(sources, spread(inputs, {ParentRouter: Router}))
       } else if (type === `listingId`){
         const routeId = parseInt(match[1])
         const pushState = route.location.state

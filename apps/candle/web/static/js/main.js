@@ -29,6 +29,12 @@ import Presignup from './library/authorization/presignup/main'
 import routeFunction from './localDrivers/routeFunction/main'
 
 function main(sources) {
+
+  sources.Router.history$
+    .map(x => {
+      return x
+    })
+    .subscribe()
   // sources.HTTP.select().subscribe(
   //   x => {
   //     console.log(`All HTTP main root: `, x)
@@ -45,7 +51,7 @@ function main(sources) {
       }).publishReplay(1).refCount()
     })
 
-  const routedComponent = route(sources, services.outputs)
+  const routedComponent = route(sources, spread(services.outputs, {RootRouter: sources.Router}))
   const actions = intent(sources)
   const state$ = model(actions, spread(
     services.outputs, { 

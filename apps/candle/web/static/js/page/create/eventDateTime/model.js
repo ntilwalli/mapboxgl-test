@@ -6,13 +6,19 @@ import {validateTime as isValid} from '../listing'
 function reducers(actions, inputs) {
   const startDateR = inputs.startDate$.map(val => state => {
     const listing = state.get(`listing`)
-    listing.profile.time.start = val
+    listing.profile.time.start = {
+      type: `datetime`,
+      data: val
+    }
     return state.set(`listing`, listing).set(`valid`, isValid(listing))
   })
 
   const endDateR = inputs.endDate$.map(val => state => {
     const listing = state.get(`listing`)
-    listing.profile.time.end = val
+    listing.profile.time.end = {
+      type: `datetime`,
+      data: val
+    }
     return state.set(`listing`, listing).set(`valid`, isValid(listing))
   })
 
@@ -42,7 +48,7 @@ export default function model(actions, inputs) {
       return reducer$.startWith(Immutable.Map(initial)).scan((acc, mod) => mod(acc))
     })
     .map(x => x.toJS())
-    .do(x => console.log(`eventDateTime state...`, x))
+    //.do(x => console.log(`eventDateTime state...`, x))
     .publishReplay(1).refCount()
 
 }

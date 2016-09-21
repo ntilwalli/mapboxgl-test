@@ -1,9 +1,11 @@
 import {Observable as O} from 'rxjs'
 
-export default function intent(sources) {
+export default function intent(sources, inputs) {
   const {Router} = sources
 
-  const listing$ = Router.history$.take(1).map(x => x.state)
+  const listing$ = Router.history$
+    .take(1)
+    .map(x => x.state)
     .map(listing => {
       const time = listing.profile.time
       if (time) {
