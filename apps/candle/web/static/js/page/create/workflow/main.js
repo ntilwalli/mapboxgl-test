@@ -15,9 +15,9 @@ import Recurrence from '../recurringDateTime/main'
 import RedirectRestricted from '../../../redirectRestricted'
 import RedirectCreate from '../../../redirectCreate'
 
-// const Time = () => ({
-//   DOM: O.of(div([`Time`]))
-// })
+const BlahRecurrence = () => ({
+  DOM: O.of(div([`Time`]))
+})
 
 const routes = [
   {pattern: /^\/meta$/, value: {type: "component", data: Meta}},
@@ -26,6 +26,7 @@ const routes = [
   {pattern: /^\/confirmAddressLocation$/, value: {type: "component", data: ConfirmAddressLocation}},
   {pattern: /^\/time$/, value: {type: "component", data: Time}},
   {pattern: /^\/recurrence$/, value: {type: "component", data: Recurrence}},
+  //{pattern: /^\/recurrence$/, value: {type: "component", data: BlahRecurrence}},
   {pattern: /^\/?$/, value: {type: "component", data: Landing}},
   {pattern: /\/?.*/, value: {type: `error`, data: RedirectCreate}},
 ]

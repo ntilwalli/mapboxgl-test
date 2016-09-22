@@ -199,7 +199,7 @@ export default function main(sources, inputs) {
     DOM: vtree$
   })
 
-  // return spread(mergeSinks(heading, content), {
-  //   DOM: vtree$
-  // })
+  // return {
+  //   DOM: O.of(div([`Hello`]))//vtree$
+  // }
 }

@@ -1,6 +1,8 @@
 import {Observable as O, Subject, ReplaySubject} from 'rxjs'
 import {nav, hr, div, a, input, form, strong, span, button} from '@cycle/dom'
+import moment from 'moment'
 
+export function toMoment(c) { return moment(c.toISOString()) }
 export function spread(...arr) {
   return Object.assign({}, ...arr)
 }

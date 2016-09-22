@@ -231,7 +231,7 @@ export default function main(sources, inputs) {
     return {
       DOM: vtree$,
       HTTP: O.merge(
-        content.HTTP,
+        defaultNever(content, `HTTP`),
         toHTTP$.map(x => {
           return x
         })
@@ -253,30 +253,9 @@ export default function main(sources, inputs) {
         actions.fromHTTP$,
         toHTTP$.map(x => ({type: `saving`}))
       )
-
     }
-
   })
   .publishReplay(1).refCount()
-
-  const toHTTP$ = normalizeSink(component$, `HTTP`).map(x => {
-      return x
-    })
-
-  //toHTTP$.subscribe()
-
-  // return {
-  //   DOM: normalizeSink(component$, `DOM`),
-  //   MapDOM: normalizeSink(component$, `MapDOM`),
-  //   Router: normalizeSink(component$, `Router`),
-  //   Global: normalizeSink(component$, `Global`),
-  //   Storage: normalizeSink(component$, `Storage`),
-  //   HTTP: toHTTP$,
-  //   message$: normalizeSink(component$, `message$`),
-  //   listing$: normalizeSink(component$, `listing$`),
-  //   save$: normalizeSink(component$, `save$`),
-  //   saveStatus$: normalizeSink(component$, `saveStatus$`)
-  // }
 
   return {
     DOM: normalizeSink(component$, `DOM`),
@@ -284,7 +263,7 @@ export default function main(sources, inputs) {
     Router: normalizeSink(component$, `Router`),
     Global: normalizeSink(component$, `Global`),
     Storage: normalizeSink(component$, `Storage`),
-    HTTP: toHTTP$,
+    HTTP: normalizeSink(component$, `HTTP`),
     message$: normalizeSink(component$, `message$`),
     listing$: normalizeSink(component$, `listing$`),
     save$: normalizeSink(component$, `save$`),

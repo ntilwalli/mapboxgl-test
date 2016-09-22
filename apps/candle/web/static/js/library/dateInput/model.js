@@ -18,7 +18,7 @@ function reducers(actions, inputs) {
     return state.set(`currentTime`, getDefaultCurrentTime()).set(`currentDate`, undefined)
   })
 
-  const dateReducer$ = (actions.date$ || O.never()).map(val => state => {
+  const dateR = (actions.date$ || O.never()).map(val => state => {
     //console.log(`Date reducer`, val)
     const locked = state.get(`locked`)
     if (!locked) {

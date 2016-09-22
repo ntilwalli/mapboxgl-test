@@ -2,11 +2,12 @@ import {Observable as O} from 'rxjs'
 import view from './view'
 import intent from './intent'
 import model from './model'
+import getModal from './getModal'
 import {RRule} from 'rrule'
 
 import {div} from '@cycle/DOM'
 
-import {combineObj, spread, normalizeComponent, createProxy} from '../../../utils'
+import {combineObj, spread, normalizeComponent, normalizeSink, createProxy} from '../../../utils'
 
 import Heading from '../../../library/heading/workflow/main'
 import Step from '../step/main'
@@ -14,9 +15,8 @@ import StepContent from '../stepContent/standard'
 
 import RadioInput from '../../../library/radioInput'
 
+import DateTimeInput from '../../../library/dateTimeInput/main'
 import DateInput from '../../../library/dateInput/main'
-
-
 
 function contentComponent(sources, inputs) {
 
@@ -41,32 +41,60 @@ function contentComponent(sources, inputs) {
       .map(freq => ({selected: freq ? freq.toString() : undefined}))
   })
 
-
-
+  const hideModal$ = createProxy()
+  const startDate$ = createProxy()
 
   const state$ = model(actions, spread(inputs, {
     frequency$: frequencyInput.selected$,
+    startDate$,
+    hideModal$,
+
     listing$: actions.listing$
   }))
 
+    const modal$ = state$
+      .map(x => {
+        return x
+      })
+      .distinctUntilChanged(null, x => x.modal)
+      .map(x => {
+        return x
+      })
+      .map(state => getModal(sources, inputs, {modal: state.modal, listing: state.listing}))
+      .publishReplay(1).refCount()
+
+  hideModal$.attach(normalizeSink(modal$, `close$`))
+  startDate$.attach(normalizeSink(modal$, `done$`))
+
   const components = {
-    frequency$: frequencyInput.DOM
+    frequency$: frequencyInput.DOM,
+    modal$: modal$.switchMap(x => x.DOM)
   }
 
   const vtree$ = view(state$, components)
 
-
-
   return {
     DOM: vtree$,
-    HTTP: O.never(),
-    Global: O.never(),
     state$: state$
-    .do(x => console.log(`to state out`, x))
-    .map(x => {
-      return x
-    }).publishReplay(1).refCount()
+      .do(x => console.log(`to state out`, x))
+      .map(x => {
+        return x
+      }).publishReplay(1).refCount()
   }
+
+  // return {
+  //   DOM: O.of(div([`Hello`])),//vtree$,
+  //   // HTTP: O.never(),
+  //   // Global: O.never(),
+  //   state$: O.merge(O.of({
+  //     listing: {},
+  //     valid: false
+  //   }), O.never())//state$
+  //   // .do(x => console.log(`to state out`, x))
+  //   // .map(x => {
+  //   //   return x
+  //   // }).publishReplay(1).refCount()
+  // }
 }
 
 export default function main(sources, inputs) {
@@ -105,9 +133,15 @@ export default function main(sources, inputs) {
     content, 
     instruction, 
     props$: O.of({
-      panelClass: `create-event-time`
+      panelClass: `create-recurrence`
     })
   }))
 
+
+
   return workflowStep
+
+  // return {
+  //   DOM: workflowStep.DOM
+  // }
 }

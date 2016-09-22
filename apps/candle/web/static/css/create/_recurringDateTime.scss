@@ -1,0 +1,27 @@
+.start-date-section, .change-search-area-modal{
+  .date-display {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .date-selected{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: bold;
+  }
+
+  .change-start-date-button, .clear-button {
+    display: flex;
+    font-size: 1rem;
+    &:hover {
+      cursor: default;
+      color: gray;
+    }
+  }
+  
+  .no-date-selected {
+    font-style: italic;
+  }
+
+}

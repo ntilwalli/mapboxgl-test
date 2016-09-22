@@ -1,6 +1,4 @@
 import moment from 'moment'
-export const AM = `A.M.`
-export const PM = `P.M.`
 export function getDateFromStateInfo(currentDate) {
   if (currentDate) {
     const {year, month, date} = currentDate

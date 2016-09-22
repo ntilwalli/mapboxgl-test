@@ -9,10 +9,20 @@ function isValid(listing) {
   const {rrule, rdate, exdate, exrule} = listing.profile.time
   const {freq, dtstart, until} = rrule
 
-  return freq && dtstart
+  return !!(freq && dtstart)
 }
 
 function reducers(actions, inputs) {
+  const showModalR = actions.showModal$
+    .map(show => state => {
+      return state.set(`modal`, `startDate`)
+    })
+
+  const hideModalR = inputs.hideModal$
+    .map(show => state => {
+      return state.set(`modal`, `startDate`)
+    })
+
   const frequencyR = inputs.frequency$.skip(1).map(val => state => {
     console.log(`blah`)
     const listing = state.get(`listing`)
@@ -22,15 +32,15 @@ function reducers(actions, inputs) {
     return state.set(`listing`, listing).set(`valid`, valid)
   })
 
-  // const startDateR = inputs.startDate$.map(val => state => {
-  //   const listing = state.get(`listing`)
-  //   const rrule = state.get(`rrule`)
-  //   rrule.dtstart = val
-  //   const valid = checkValidity(state)
-  //   return state.set(`rrule`, rrule).set(`valid`, valid)
-  // })
+  const startDateR = inputs.startDate$.map(val => state => {
+    const listing = state.get(`listing`)
+    listing.profile.time.startDate = val
+    const valid = isValid(listing)
+    return state.set(`listing`, listing).set(`valid`, valid).set(`modal`, undefined)
+  })
 
-  // const endDateR = inputs.endDate$.skip(1).map(val => state => {
+
+  // const endDateTimeR = inputs.endDateTime$.skip(1).map(val => state => {
   //   const listing = state.get(`listing`)
   //   const rrule = state.get(`rrule`)
   //   rrule.until = val
@@ -47,9 +57,11 @@ function reducers(actions, inputs) {
   // })
 
   return O.merge(
-    frequencyR
-    // startDateR,
-    // endDateR,
+    showModalR,
+    hideModalR,
+    frequencyR,
+    startDateR//,
+    // endDateTimeR,
     // exclusionsR,
     // additionsR
   )
@@ -67,12 +79,13 @@ export default function model(actions, inputs) {
       const time = profile.time 
       if (!time) {
         listing.profile.time = {
+          startDate: undefined,
           rrule: {
             freq: undefined,
-            count: undefined,
             dtstart: undefined,
-            dtend: undefined,
+            interval: undefined,
             wkst: undefined,
+            count: undefined,
             until: undefined,
             bysetpos: undefined,
             bymonth: undefined,
@@ -93,7 +106,8 @@ export default function model(actions, inputs) {
       const initial = {
         listing: listing,
         errors: [],
-        valid: isValid(listing)
+        valid: isValid(listing),
+        modal: undefined
       }
 
       return reducer$.startWith(Immutable.Map(initial)).scan((acc, mod) => mod(acc))

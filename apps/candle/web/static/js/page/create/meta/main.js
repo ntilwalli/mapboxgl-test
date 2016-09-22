@@ -35,7 +35,7 @@ function contentComponent(sources, inputs) {
       displayValue: `Recurring`,
       value: `recurring`
     }, {
-      displayValue: `Custom grouping`,
+      displayValue: `Grouping`,
       value: `group`
     }],
     props$: listing$
