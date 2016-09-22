@@ -2,6 +2,7 @@ import {Observable as O} from 'rxjs'
 import view from './view'
 import intent from './intent'
 import model from './model'
+import {RRule} from 'rrule'
 
 import {div} from '@cycle/DOM'
 
@@ -11,52 +12,45 @@ import Heading from '../../../library/heading/workflow/main'
 import Step from '../step/main'
 import StepContent from '../stepContent/standard'
 
+import RadioInput from '../../../library/radioInput'
+
 import DateInput from '../../../library/dateInput/main'
+
+
 
 function contentComponent(sources, inputs) {
 
-  const actions = intent(sources, inputs)
-  const rangeEndProxy$ = createProxy()
-  const startDate = DateInput(sources, {
-    props$: O.of({
-      defaultNow: false//,
-      //rangeStart: new Date()
-    }),
-    initialState$: actions.listing$
-      .map(l => l.profile.time && l.profile.time.start)
-      .map(x => x && x.type === `datetime` ? x.data : undefined),
-    rangeStart$: O.never(),
-    //rangeEnd$: O.never()
-    rangeEnd$: rangeEndProxy$
+  const actions = intent(sources)
+
+  const frequencyInput = RadioInput(sources, {
+    styleClass: `.circle`,
+    options: [{
+      displayValue: `Weekly`,
+      value: RRule.WEEKLY.toString()
+    },{
+      displayValue: `Monthly`,
+      value: RRule.MONTHLY.toString()
+    }],
+    props$: actions.listing$
+      .map(listing => {
+        return listing && listing.profile && 
+               listing.profile.time && 
+               listing.profile.time.rrule && 
+               listing.profile.time.rrule.freq 
+      })
+      .map(freq => ({selected: freq ? freq.toString() : undefined}))
   })
 
 
-  const endDate = DateInput(sources, {
-    props$: O.of({
-      defaultNow: false
-    }),
-    initialState$: actions.listing$
-      .map(l => l.profile.time && l.profile.time.end)
-      .map(x => x && x.type === `datetime` ? x.data : undefined),
-    //rangeStart$: O.never(),
-    rangeStart$: startDate.result$,
-    rangeEnd$: O.never()
-  })
-
-  //actions.listing$.subscribe()
-
-  rangeEndProxy$.attach(endDate.result$)
 
 
   const state$ = model(actions, spread(inputs, {
-    listing$: actions.listing$,
-    startDate$: startDate.result$,
-    endDate$: endDate.result$
+    frequency$: frequencyInput.selected$,
+    listing$: actions.listing$
   }))
 
   const components = {
-    startDate$: startDate.DOM,
-    endDate$: endDate.DOM
+    frequency$: frequencyInput.DOM
   }
 
   const vtree$ = view(state$, components)
@@ -66,11 +60,12 @@ function contentComponent(sources, inputs) {
   return {
     DOM: vtree$,
     HTTP: O.never(),
-    Global: O.merge(startDate.Global, endDate.Global),
-    // O.merge(
-    //   startDate.Global
-    // ),
-    state$
+    Global: O.never(),
+    state$: state$
+    .do(x => console.log(`to state out`, x))
+    .map(x => {
+      return x
+    }).publishReplay(1).refCount()
   }
 }
 

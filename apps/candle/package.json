@@ -17,14 +17,12 @@
     "test": "browserify -t babelify test/static/js/*.js | tap",
     "test-build": "watchify -v -t babelify web/static/js/test.js -o priv/static/js/test.js",
     "test-serve": "live-server --entry-file=test.html"
-
   },
   "dependencies": {
     "@cycle/dom": "file:///Users/ntilwalli/dev/cycle/cyclejs/dom",
     "@cycle/history": "^4.0.0",
     "@cycle/http": "^11.0.1",
     "@cycle/isolate": "^1.4.0",
-    "@cycle/rxjs-adapter": "file:///Users/ntilwalli/dev/cycle/cyclejs/rxjs-adapter",
     "@cycle/rxjs-run": "^3.0.3",
     "@cycle/storage": "3.0.0-rc3",
     "@cycle/xstream-run": "^3.0.3",
@@ -39,6 +37,7 @@
     "phoenix": "file:../../deps/phoenix",
     "phoenix_html": "file:../../deps/phoenix_html",
     "query-string": "^4.2.2",
+    "rrule": "file:custom_deps/rrule",
     "rxjs": "^5.0.0-beta.12",
     "validator": "^5.2.0",
     "xregexp": "^3.1.1",

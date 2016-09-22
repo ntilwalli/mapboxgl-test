@@ -14,48 +14,49 @@ import {renderHeading} from '../helpers'
 //   ])
 // }
 
-function renderStartDate(info) {
-  const {state, components} = info
-  const {startDate} = components
-  const listing = state.listing
-  const {profile} = listing
-  const section = `time`
-  const property = `start`
-  // const disabled = isDisabled(section, property, listing)
-  // if (!disabled) {
-    return div(`.start-date-time`, [
-      renderHeading(`Start`, section, property, listing),
-      startDate
-    ])
-  // } else {
-  //   return null
-  // }
-}
+// function renderStartDate(info) {
+//   const {state, components} = info
+//   const {startDate} = components
+//   const listing = state.listing
+//   const {profile} = listing
+//   const section = `time`
+//   const property = `start`
+//   // const disabled = isDisabled(section, property, listing)
+//   // if (!disabled) {
+//     return div(`.start-date-time`, [
+//       renderHeading(`Start`, section, property, listing),
+//       startDate
+//     ])
+//   // } else {
+//   //   return null
+//   // }
+// }
 
-function renderEndDate(info) {
-  const {state, components} = info
-  const {endDate} = components
-  const listing = state.listing
-  const {profile} = listing
-  const section = `time`
-  const property = `end`
-  // const disabled = isDisabled(section, property, listing)
-  // if (!disabled) {
-    return div(`.start-date-time`, [
-      renderHeading(`End`, section, property, listing),
-      endDate
-    ])
-  // } else {
-  //   return null
-  // }
-}
+// function renderEndDate(info) {
+//   const {state, components} = info
+//   const {endDate} = components
+//   const listing = state.listing
+//   const {profile} = listing
+//   const section = `time`
+//   const property = `end`
+//   // const disabled = isDisabled(section, property, listing)
+//   // if (!disabled) {
+//     return div(`.start-date-time`, [
+//       renderHeading(`End`, section, property, listing),
+//       endDate
+//     ])
+//   // } else {
+//   //   return null
+//   // }
+// }
 
 
 function renderPanel(info) {
+  const {state, components} = info
+  const {frequency} = components
   return div(`.panel`, [
-      div(`.panel-title`, [h4([`When?`])]),
-      renderStartDate(info),
-      renderEndDate(info)
+      div(`.panel-title`, [h4([`Recurring how/when?`])]),
+      frequency
     ])
 }
 

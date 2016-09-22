@@ -36,7 +36,8 @@ export function getEmptyListing() {
       // {
       //   start: undefined,
       //   end: undefined,
-      //   recurrence: undefined
+      //   rrule: undefined
+      //   rruleSet: undefined
       // }
     }
     // {
@@ -50,8 +51,19 @@ const required = {type: `required`}
 const optional = {type: `optional`}
 const disabled = {type: `disabled`}
 function length(val) {
-  return {type: `length`, data: val}
+  return {
+    type: `length`, 
+    data: val
+  }
 }
+
+function tree(val) {
+  return {
+    type: `tree`,
+    data: val
+  }
+}
+
 
 export function getValidators(step, listing) {
   const {type, profile} = listing
@@ -168,6 +180,8 @@ export function validate(validators, obj) {
               return false
             }
             break
+          case `tree`:
+            return validate(v.data, prop)
           default:
             break
         }

@@ -10,6 +10,7 @@ import Description from '../description/main'
 import Location from '../location/main'
 import ConfirmAddressLocation from '../confirmAddressLocation/main'
 import Time from '../eventDateTime/main'
+import Recurrence from '../recurringDateTime/main'
 
 import RedirectRestricted from '../../../redirectRestricted'
 import RedirectCreate from '../../../redirectCreate'
@@ -24,6 +25,7 @@ const routes = [
   {pattern: /^\/location$/, value: {type: "component", data: Location}},
   {pattern: /^\/confirmAddressLocation$/, value: {type: "component", data: ConfirmAddressLocation}},
   {pattern: /^\/time$/, value: {type: "component", data: Time}},
+  {pattern: /^\/recurrence$/, value: {type: "component", data: Recurrence}},
   {pattern: /^\/?$/, value: {type: "component", data: Landing}},
   {pattern: /\/?.*/, value: {type: `error`, data: RedirectCreate}},
 ]

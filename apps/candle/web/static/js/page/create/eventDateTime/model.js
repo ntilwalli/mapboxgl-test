@@ -6,19 +6,20 @@ import {validateTime as isValid} from '../listing'
 function reducers(actions, inputs) {
   const startDateR = inputs.startDate$.skip(1).map(val => state => {
     const listing = state.get(`listing`)
-    listing.profile.time.start = {
+    listing.profile.time.start = val ? {
       type: `datetime`,
       data: val
-    }
+    } : undefined
+
     return state.set(`listing`, listing).set(`valid`, isValid(listing))
   })
 
   const endDateR = inputs.endDate$.skip(1).map(val => state => {
     const listing = state.get(`listing`)
-    listing.profile.time.end = {
+    listing.profile.time.end = val ? {
       type: `datetime`,
       data: val
-    }
+    } : undefined
     return state.set(`listing`, listing).set(`valid`, isValid(listing))
   })
 

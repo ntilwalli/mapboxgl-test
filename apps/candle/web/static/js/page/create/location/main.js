@@ -205,7 +205,11 @@ export default function main(sources, inputs) {
       if (location.mode === `address`) {
         return `confirmAddressLocation`
       } else {
-        return `time`
+        if (listing.type === `recurring`) {
+          return `recurrence`
+        } else {
+          return `time`
+        }
       }
     }
   })
