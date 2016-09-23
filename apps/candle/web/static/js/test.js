@@ -19,19 +19,19 @@ import {RRule, RRuleSet, rrulestr} from 'rrule'
 //  'Mon Apr 09 2012 10:30:00 GMT+0200 (CEST)',
 //  /* … */]
 
-import component from './library/timeInput/main'
+//import component from './library/timeInput/main'
 //import component from './library/dateInput/main'
+import component from './library/selectionCalendar/main'
 
 function app(sources) {
   const out = component(
     sources, {
       props$: O.of({
-        rangeStart: new Date()
-      }), 
-      rangeStart$: O.of(new Date()), 
-      rangeEnd$: O.never()
+        month: 0,
+        year: 2014,
+        selected: [ new Date(2014, 0, 3), new Date(2014, 0, 5)]
+      })
     })
-  out.result$.subscribe(x => console.log(x))
   return out
 }
 
