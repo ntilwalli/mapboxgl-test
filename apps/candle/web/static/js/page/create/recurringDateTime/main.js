@@ -10,6 +10,7 @@ import {div} from '@cycle/DOM'
 
 import {combineObj, spread, normalizeComponent, normalizeSink, createProxy} from '../../../utils'
 
+import {getMomentFromCurrentDate} from '../helpers'
 import Heading from '../../../library/heading/workflow/main'
 import Step from '../step/main'
 import StepContent from '../stepContent/standard'
@@ -43,12 +44,12 @@ function contentComponent(sources, inputs) {
 
   const hideModal$ = createProxy()
   const modalResult$ = createProxy()
-
+  const action$ = createProxy()
   const state$ = model(actions, spread(inputs, {
     frequency$: frequencyInput.selected$,
     modalResult$,
     hideModal$,
-
+    action$,
     listing$: actions.listing$
   }))
 
@@ -73,6 +74,10 @@ function contentComponent(sources, inputs) {
         year: displayYear,
         month: displayMonth
       })
+      const startDate = listing.profile.time.startDate
+      const until = listing.profile.time.until
+      const rangeStart = getMomentFromCurrentDate(startDate).startOf(`month`)
+      const rangeEnd = until ? getMomentFromCurrentDate(until).endOf(`month`) : undefined
 
       const startMoment = dMoment.startOf('month').toDate()
       const endMoment = dMoment.endOf('month').toDate()
@@ -82,6 +87,8 @@ function contentComponent(sources, inputs) {
         props$: O.of({
           year: state.displayYear,
           month: state.displayMonth,
+          rangeStart,
+          rangeEnd,
           selected: between
         })
       }))
@@ -93,7 +100,9 @@ function contentComponent(sources, inputs) {
         DOM: O.of(null)
       }
     }
-  })
+  }).publishReplay(1).refCount()
+
+  action$.attach(normalizeSink(selectionCalendar$, `action$`))
   // statSelectionCalendar(sources, {
   //   props$: state$.filter(state => {
 

@@ -55,7 +55,7 @@ function reducers(actions, inputs) {
     listing.profile.time.frequency = parseInt(val)
     const rrule = getRRule(listing)
     const valid = isValid(rrule)
-    listing.profile.time.rrule = getRRule(listing)
+    listing.profile.time.rrule = rrule
 
     let displayYear = state.get(`displayYear`)
     let displayMonth = state.get(`displayMonth`)
@@ -93,7 +93,7 @@ function reducers(actions, inputs) {
     const startDate = listing.profile.time.startDate
     const rrule = getRRule(listing)
     const valid = isValid(rrule)
-    listing.profile.time.rrule = getRRule(listing)
+    listing.profile.time.rrule = rrule
 
     let displayYear = state.get(`displayYear`)
     let displayMonth = state.get(`displayMonth`)
@@ -112,6 +112,22 @@ function reducers(actions, inputs) {
       .set(`displayYear`, displayYear)
       .set(`displayMonth`, displayMonth)
   })
+
+  const changeMonthR = inputs.action$.filter(x => x.type === `changeMonth`)
+    .map(msg => msg.data)
+    .map(val => state => {
+      let month = state.get(`displayMonth`)
+      let year = state.get(`displayYear`)
+      if (month === 0 && val === -1) {
+        month = 12; year = year - 1;
+      } else if (month === 11 && val === 1) {
+        month = 0; year = year + 1
+      } else {
+        month = month + val
+      }
+
+      return state.set(`displayMonth`, month).set(`displayYear`, year)
+    })
 
 
   // const endDateTimeR = inputs.endDateTime$.skip(1).map(val => state => {
@@ -134,7 +150,8 @@ function reducers(actions, inputs) {
     showModalR,
     hideModalR,
     frequencyR,
-    inputR//,
+    inputR,
+    changeMonthR,
     // endDateTimeR,
     // exclusionsR,
     // additionsR
@@ -181,12 +198,20 @@ export default function model(actions, inputs) {
         }
       }
 
+      const valid = isValid(getRRule(listing))
+      let displayYear
+      let displayMonth
+      if (valid) {
+        displayYear = !displayYear ? startDate.year : displayYear
+        displayMonth = !displayMonth ? startDate.month : displayMonth
+      }
+
       const initial = {
         listing: listing,
-        displayYear: undefined,
-        displayMonth: undefined,
+        displayYear,
+        displayMonth,
         errors: [],
-        valid: isValid(getRRule(listing)),
+        valid,
         modal: undefined
       }
 
