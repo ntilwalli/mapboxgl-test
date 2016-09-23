@@ -19,7 +19,6 @@ function main(sources, inputs) {
     DOM: vtree$,
     Global: O.never(),
     result$: state$
-
       .map(state => {
         const {currentTime} = state
         return currentTime

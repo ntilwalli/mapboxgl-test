@@ -42,7 +42,7 @@ function main(sources, inputs) {
         return currentDate
       })
       .distinctUntilChanged(null, x => x)
-      .do(x => console.log(`dateInput changed`, x))
+      //.do(x => console.log(`dateInput changed`, x))
       .publishReplay(1).refCount()
   }
 }

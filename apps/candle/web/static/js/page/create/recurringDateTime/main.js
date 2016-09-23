@@ -4,6 +4,7 @@ import intent from './intent'
 import model from './model'
 import getModal from './getModal'
 import {RRule} from 'rrule'
+import moment from 'moment'
 
 import {div} from '@cycle/DOM'
 
@@ -14,6 +15,8 @@ import Step from '../step/main'
 import StepContent from '../stepContent/standard'
 
 import RadioInput from '../../../library/radioInput'
+import SelectionCalendar from '../../../library/selectionCalendar/main'
+import RecurrenceCalendar from './recurrenceCalendar/main'
 
 function contentComponent(sources, inputs) {
 
@@ -49,22 +52,57 @@ function contentComponent(sources, inputs) {
     listing$: actions.listing$
   }))
 
-    const modal$ = state$
-      .map(x => {
-        return x
-      })
-      .distinctUntilChanged(null, x => x.modal)
-      .map(x => {
-        return x
-      })
-      .map(state => getModal(sources, inputs, {modal: state.modal, listing: state.listing}))
-      .publishReplay(1).refCount()
+  const modal$ = state$
+    .map(x => {
+      return x
+    })
+    .distinctUntilChanged(null, x => x.modal)
+    .map(x => {
+      return x
+    })
+    .map(state => getModal(sources, inputs, {modal: state.modal, listing: state.listing}))
+    .publishReplay(1).refCount()
 
   hideModal$.attach(normalizeSink(modal$, `close$`))
   modalResult$.attach(normalizeSink(modal$, `done$`))
 
+  const selectionCalendar$ = state$.map(state => {
+    const {listing, valid, displayYear, displayMonth} = state
+    if (valid) {
+      const dMoment = moment({
+        year: displayYear,
+        month: displayMonth
+      })
+
+      const startMoment = dMoment.startOf('month').toDate()
+      const endMoment = dMoment.endOf('month').toDate()
+      const theRule = new RRule(listing.profile.time.rrule)
+      const between = theRule.between(startMoment, endMoment)
+      const sc = RecurrenceCalendar(sources, spread(inputs, {
+        props$: O.of({
+          year: state.displayYear,
+          month: state.displayMonth,
+          selected: between
+        })
+      }))
+
+      return sc
+
+    } else {
+      return {
+        DOM: O.of(null)
+      }
+    }
+  })
+  // statSelectionCalendar(sources, {
+  //   props$: state$.filter(state => {
+
+  //   })
+  // })
+
   const components = {
     frequency$: frequencyInput.DOM,
+    selectionCalendar$: selectionCalendar$.switchMap(x => x.DOM),
     modal$: modal$.switchMap(x => x.DOM)
   }
 
@@ -73,7 +111,6 @@ function contentComponent(sources, inputs) {
   return {
     DOM: vtree$,
     state$: state$
-      .do(x => console.log(`to state out`, x))
       .map(x => {
         return x
       }).publishReplay(1).refCount()

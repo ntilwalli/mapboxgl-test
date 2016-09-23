@@ -100,6 +100,9 @@ function renderCalendar(state) {
           ]))
         )
       ]),
+
+      // .selectable
+      
       tbody(weeks.map(week => {
         return tr(`.week-${week}`, [0, 1, 2, 3, 4, 5, 6].map(day => {
           if (currDay === week*7+day && currDay >= firstDayOffset && currDay < lastDayOffset) {
@@ -113,7 +116,7 @@ function renderCalendar(state) {
               out = td([
                 div([
                   span(
-                    `.appSelectable${selected || '.selectable'}.day-${day}.calendar-day${isToday ? '.today' : ''}`,
+                    `.appSelectable${selected}.day-${day}.calendar-day${isToday ? '.today' : ''}`,
                     {attrs: {'data-date': new Date(year, month, dayNum)}},
                     [dayNum++]
                   )

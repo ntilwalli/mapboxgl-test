@@ -1,17 +1,44 @@
 import {Observable as O} from 'rxjs'
 import Immutable from 'immutable'
+import moment from 'moment'
 import {RRule, RRuleSet, rrulestr} from 'rrule'
 import {combineObj} from '../../../utils'
 //import {validateTime as isValid} from '../listing'
 
+function getMomentFromCurrentInfo(cd, ct) {
+  if (cd && ct) {
+    return moment({
+      year: cd.year,
+      month: cd.month,
+      day: cd.date,
+      hour: ct.hour === 12 ? 
+              ct.mode === `P.M` ? 
+                ct.hour 
+                : 0 
+              : ct.mode === `A.M.` ? 
+                  ct.hour 
+                  : ct.hour + 12
+    })
+  }
 
-function isValid(listing) {
-  const {rrule, rdate, exdate, exrule} = listing.profile.time
-  const {freq, dtstart, until} = rrule
-
-  return !!(freq && dtstart)
+  return undefined
 }
 
+function getRRule(listing) {
+  const {frequency, startDate, until, startTime, endTime} = listing.profile.time
+
+  if (frequency && startDate && startTime) {
+    return {
+      freq: frequency,
+      dtstart: getMomentFromCurrentInfo(startDate, startTime).toDate(),
+      until: until ? getMomentFromCurrentInfo(until, endTime || startTime).toDate() : undefined
+    }
+  }
+
+  return undefined
+}
+
+const isValid = rrule => !!rrule
 function reducers(actions, inputs) {
   const showModalR = actions.showModal$
     .map(val => state => {
@@ -24,12 +51,28 @@ function reducers(actions, inputs) {
     })
 
   const frequencyR = inputs.frequency$.skip(1).map(val => state => {
-    console.log(`blah`)
     const listing = state.get(`listing`)
-    const rrule = listing.profile.time.rrule
-    rrule.freq = parseInt(val)
-    const valid = isValid(listing)
-    return state.set(`listing`, listing).set(`valid`, valid)
+    listing.profile.time.frequency = parseInt(val)
+    const rrule = getRRule(listing)
+    const valid = isValid(rrule)
+    listing.profile.time.rrule = getRRule(listing)
+
+    let displayYear = state.get(`displayYear`)
+    let displayMonth = state.get(`displayMonth`)
+    if (valid) {
+      const startDate = listing.profile.time.startDate
+      displayYear = !displayYear ? startDate.year : displayYear
+      displayMonth = !displayMonth ? startDate.month : displayMonth
+    } else {
+      displayYear = undefined
+      displayMonth = undefined
+    }
+
+    return state
+      .set(`listing`, listing)
+      .set(`valid`, valid)
+      .set(`displayYear`, displayYear)
+      .set(`displayMonth`, displayMonth)
   })
 
   const inputR = inputs.modalResult$.map(val => state => {
@@ -46,9 +89,28 @@ function reducers(actions, inputs) {
       listing.profile.time.endTime = val
     else
       throw new Error(`invalid modal setting when given input`)
+    
+    const startDate = listing.profile.time.startDate
+    const rrule = getRRule(listing)
+    const valid = isValid(rrule)
+    listing.profile.time.rrule = getRRule(listing)
 
-    const valid = isValid(listing)
-    return state.set(`listing`, listing).set(`valid`, valid).set(`modal`, undefined)
+    let displayYear = state.get(`displayYear`)
+    let displayMonth = state.get(`displayMonth`)
+    if (valid) {
+      displayYear = !displayYear ? startDate.year : displayYear
+      displayMonth = !displayMonth ? startDate.month : displayMonth
+    } else {
+      displayYear = undefined
+      displayMonth = undefined
+    }
+
+    return state
+      .set(`listing`, listing)
+      .set(`valid`, valid)
+      .set(`modal`, undefined)
+      .set(`displayYear`, displayYear)
+      .set(`displayMonth`, displayMonth)
   })
 
 
@@ -91,6 +153,7 @@ export default function model(actions, inputs) {
       const time = profile.time 
       if (!time) {
         listing.profile.time = {
+          frequency: undefined,
           startDate: undefined,
           until: undefined,
           startTime: undefined,
@@ -120,8 +183,10 @@ export default function model(actions, inputs) {
 
       const initial = {
         listing: listing,
+        displayYear: undefined,
+        displayMonth: undefined,
         errors: [],
-        valid: isValid(listing),
+        valid: isValid(getRRule(listing)),
         modal: undefined
       }
 

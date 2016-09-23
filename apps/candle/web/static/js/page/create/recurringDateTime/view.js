@@ -103,6 +103,14 @@ function renderEndTime(info) {
     ])
 }
 
+function renderRecurrenceCalendar(info) {
+  const {state, components} = info
+  return state.valid ? div(`.recurrence-calendar`, [
+    renderHeading(`Recurrence calendar`),
+    components.selectionCalendar
+  ]) : null
+}
+
 function renderPanel(info) {
   const {state, components} = info
   const {frequency} = components
@@ -115,6 +123,7 @@ function renderPanel(info) {
         renderEndTime(info)
       ]),
       renderUntilDate(info),
+      renderRecurrenceCalendar(info),
       components.modal
     ])
 }
