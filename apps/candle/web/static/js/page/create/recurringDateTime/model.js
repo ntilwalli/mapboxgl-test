@@ -90,12 +90,13 @@ function reducers(actions, inputs) {
     else
       throw new Error(`invalid modal setting when given input`)
     
+    console.log(`Hello`)
     const startDate = listing.profile.time.startDate
     const rrule = getRRule(listing)
     const valid = isValid(rrule)
     listing.profile.time.rrule = rrule
 
-    let displayYear = state.get(`displayYear`)
+    let displayYear = state.get(`displayYear`) 
     let displayMonth = state.get(`displayMonth`)
     if (valid) {
       displayYear = !displayYear ? startDate.year : displayYear
@@ -198,7 +199,11 @@ export default function model(actions, inputs) {
         }
       }
 
-      const valid = isValid(getRRule(listing))
+      const startDate = listing.profile.time.startDate
+      const rrule = getRRule(listing)
+      const valid = isValid(rrule)
+      listing.profile.time.rrule = rrule
+
       let displayYear
       let displayMonth
       if (valid) {

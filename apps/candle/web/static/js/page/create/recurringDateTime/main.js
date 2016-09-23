@@ -36,8 +36,7 @@ function contentComponent(sources, inputs) {
       .map(listing => {
         return listing && listing.profile && 
                listing.profile.time && 
-               listing.profile.time.rrule && 
-               listing.profile.time.rrule.freq 
+               listing.profile.time.frequency
       })
       .map(freq => ({selected: freq ? freq.toString() : undefined}))
   })
@@ -146,7 +145,7 @@ export default function main(sources, inputs) {
     contentComponent,
     create: false,
     nextRequiresListingId: true,
-    next: `settings`,
+    next: `confirmListing`,
     previous: listing => {
       const profile = listing.profile
       const location = profile.location
