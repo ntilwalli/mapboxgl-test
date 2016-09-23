@@ -14,13 +14,13 @@ function isValid(listing) {
 
 function reducers(actions, inputs) {
   const showModalR = actions.showModal$
-    .map(show => state => {
-      return state.set(`modal`, `startDate`)
+    .map(val => state => {
+      return state.set(`modal`, val)
     })
 
   const hideModalR = inputs.hideModal$
     .map(show => state => {
-      return state.set(`modal`, `startDate`)
+      return state.set(`modal`, undefined)
     })
 
   const frequencyR = inputs.frequency$.skip(1).map(val => state => {
@@ -32,9 +32,21 @@ function reducers(actions, inputs) {
     return state.set(`listing`, listing).set(`valid`, valid)
   })
 
-  const startDateR = inputs.startDate$.map(val => state => {
+  const inputR = inputs.modalResult$.map(val => state => {
     const listing = state.get(`listing`)
-    listing.profile.time.startDate = val
+    const modal = state.get(`modal`)
+
+    if (modal === `startDate`)
+      listing.profile.time.startDate = val
+    else if (modal === `untilDate`)
+      listing.profile.time.until = val
+    else if (modal === `startTime`)
+      listing.profile.time.startTime = val
+    else if (modal === `endTime`)
+      listing.profile.time.endTime = val
+    else
+      throw new Error(`invalid modal setting when given input`)
+
     const valid = isValid(listing)
     return state.set(`listing`, listing).set(`valid`, valid).set(`modal`, undefined)
   })
@@ -60,7 +72,7 @@ function reducers(actions, inputs) {
     showModalR,
     hideModalR,
     frequencyR,
-    startDateR//,
+    inputR//,
     // endDateTimeR,
     // exclusionsR,
     // additionsR
@@ -80,6 +92,9 @@ export default function model(actions, inputs) {
       if (!time) {
         listing.profile.time = {
           startDate: undefined,
+          until: undefined,
+          startTime: undefined,
+          endTime: undefined,
           rrule: {
             freq: undefined,
             dtstart: undefined,

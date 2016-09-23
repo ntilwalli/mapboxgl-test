@@ -1,17 +1,22 @@
-.start-date-section, .change-search-area-modal{
+.start-date-section, .until-date-section, 
+.start-time-section, .end-time-section {
+  .time-display {
+    display: flex;
+    justify-content: space-between;
+  }
   .date-display {
     display: flex;
     justify-content: space-between;
   }
 
-  .date-selected{
+  .date-selected, .time-selected {
     display: flex;
     align-items: center;
     justify-content: space-between;
     font-weight: bold;
   }
 
-  .change-start-date-button, .clear-button {
+  .change-button, .clear-button {
     display: flex;
     font-size: 1rem;
     &:hover {
@@ -20,8 +25,83 @@
     }
   }
   
-  .no-date-selected {
+  .no-date-selected, .no-time-selected {
     font-style: italic;
   }
 
+}
+
+.choose-date-modal {
+  .date-display {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .date-selected {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: bold;
+  }
+
+  .clear-button {
+    display: flex;
+    font-size: 1rem;
+    &:hover {
+      cursor: default;
+      color: gray;
+    }
+  }
+  
+  .no-date-selected, .no-time-selected {
+    font-style: italic;
+  }
+
+}
+
+
+.choose-time-modal {
+  .time-display {
+    display: flex;
+    justify-content: center;
+  }
+
+  .time-selected {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: bold;
+  }
+
+  .clear-button {
+    display: flex;
+    font-size: 1rem;
+    &:hover {
+      cursor: default;
+      color: gray;
+    }
+  }
+  
+  .no-time-selected {
+    font-style: italic;
+  }
+
+}
+
+.time-input-container {
+  display: flex;
+  flex-wrap: wrap;
+
+  .start-time-section {
+    width: 50%;
+    padding-right: .5rem;
+  }
+  .end-time-section {
+    width: 50%;
+    padding-left: .5rem;
+  }
+
+  .panel-title {
+    margin-top: 1rem;
+  }
 }

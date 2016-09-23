@@ -1,7 +1,7 @@
 import {Observable as O} from 'rxjs'
 import {h, h3, h4, h5, nav, ul, li, div, a, i, span, button, input} from '@cycle/dom'
 import {combineObj} from '../../../utils'
-import {getMomentFromCurrentDate} from '../helpers'
+import {getMomentFromCurrentDate, getMomentFromCurrentTime} from '../helpers'
 
 
 // function renderHeading(val) {
@@ -52,11 +52,53 @@ function renderStartDate(info) {
   const {time} = state.listing.profile
   const {startDate} = time
   return div(`.start-date-section`, [
-      renderHeading(`Start`),
+      renderHeading(`Start date`),
       span(`.date-display`, [
         !startDate ? span(`.no-date-selected`, [`Not selected`]) : 
           span(`.date-selected`, [getMomentFromCurrentDate(startDate).format("dddd, MMMM Do YYYY")]),
-        span(`.appChangeStartDate.change-start-date-button`, [`change`])
+        span(`.appChangeStartDate.change-button`, [`change`])
+      ])
+    ])
+}
+
+function renderUntilDate(info) {
+  const {state, components} = info
+  const {time} = state.listing.profile
+  const {until} = time
+  return div(`.until-date-section`, [
+      renderHeading(`Recurs until (optional)`),
+      span(`.date-display`, [
+        !until ? span(`.no-date-selected`, [`Not selected`]) : 
+          span(`.date-selected`, [getMomentFromCurrentDate(until).format("dddd, MMMM Do YYYY")]),
+        span(`.appChangeUntilDate.change-button`, [`change`])
+      ])
+    ])
+}
+
+function renderStartTime(info) {
+  const {state, components} = info
+  const {time} = state.listing.profile
+  const {startTime} = time
+  return div(`.start-time-section`, [
+      renderHeading(`Start time`),
+      span(`.time-display`, [
+        !startTime ? span(`.no-time-selected`, [`Not selected`]) : 
+          span(`.time-selected`, [getMomentFromCurrentTime(startTime).format(`h:mm a`)]),
+        span(`.appChangeStartTime.change-button`, [`change`])
+      ])
+    ])
+}
+
+function renderEndTime(info) {
+  const {state, components} = info
+  const {time} = state.listing.profile
+  const {endTime} = time
+  return div(`.end-time-section`, [
+      renderHeading(`End time (optional)`),
+      span(`.time-display`, [
+        !endTime ? span(`.no-time-selected`, [`Not selected`]) : 
+          span(`.time-selected`, [getMomentFromCurrentTime(endTime).format(`h:mm a`)]),
+        span(`.appChangeEndTime.change-button`, [`change`])
       ])
     ])
 }
@@ -68,6 +110,11 @@ function renderPanel(info) {
       div(`.panel-title`, [h4([`Recurring how/when?`])]),
       renderFrequency(info),
       renderStartDate(info),
+      div(`.time-input-container`, [
+        renderStartTime(info),
+        renderEndTime(info)
+      ]),
+      renderUntilDate(info),
       components.modal
     ])
 }

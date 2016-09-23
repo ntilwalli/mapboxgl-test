@@ -15,9 +15,6 @@ import StepContent from '../stepContent/standard'
 
 import RadioInput from '../../../library/radioInput'
 
-import DateTimeInput from '../../../library/dateTimeInput/main'
-import DateInput from '../../../library/dateInput/main'
-
 function contentComponent(sources, inputs) {
 
   const actions = intent(sources)
@@ -42,11 +39,11 @@ function contentComponent(sources, inputs) {
   })
 
   const hideModal$ = createProxy()
-  const startDate$ = createProxy()
+  const modalResult$ = createProxy()
 
   const state$ = model(actions, spread(inputs, {
     frequency$: frequencyInput.selected$,
-    startDate$,
+    modalResult$,
     hideModal$,
 
     listing$: actions.listing$
@@ -64,7 +61,7 @@ function contentComponent(sources, inputs) {
       .publishReplay(1).refCount()
 
   hideModal$.attach(normalizeSink(modal$, `close$`))
-  startDate$.attach(normalizeSink(modal$, `done$`))
+  modalResult$.attach(normalizeSink(modal$, `done$`))
 
   const components = {
     frequency$: frequencyInput.DOM,

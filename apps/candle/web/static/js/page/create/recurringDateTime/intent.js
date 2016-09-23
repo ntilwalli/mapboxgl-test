@@ -48,11 +48,23 @@ export default function intent(sources, inputs) {
     })
     .publishReplay(1).refCount()
 
-    const showModal$ = DOM.select(`.appChangeStartDate`).events(`click`)
+    const showChangeStartDate$ = DOM.select(`.appChangeStartDate`).events(`click`)
+      .mapTo(`startDate`)
+    const showChangeUntilDate$ = DOM.select(`.appChangeUntilDate`).events(`click`)
+      .mapTo(`untilDate`)
 
-
+    const showChangeStartTime$ = DOM.select(`.appChangeStartTime`).events(`click`)
+      .mapTo(`startTime`)
+    const showChangeEndTime$ = DOM.select(`.appChangeEndTime`).events(`click`)
+      .mapTo(`endTime`)
+    
   return {
     listing$,
-    showModal$
+    showModal$: O.merge(
+      showChangeStartDate$,
+      showChangeUntilDate$,
+      showChangeStartTime$,
+      showChangeEndTime$
+    )
   }
 }

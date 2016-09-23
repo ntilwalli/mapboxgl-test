@@ -31,14 +31,12 @@ function reducers(actions, inputs) {
 }
 
 function model(actions, inputs) {
-  const {listing$} = inputs
-  return listing$
+  const {initialState$} = inputs
+  return initialState$
     .take(1)
-    .switchMap(listing => {
-      const time = listing.profile.time
-      const sd = time.startDate || undefined
+    .switchMap(val => {
       const initialState = {
-        currentDate: sd
+        currentDate: val
       }
 
       return reducers(actions, inputs)
@@ -46,7 +44,7 @@ function model(actions, inputs) {
         .scan((state, reducer) => reducer(state))
     })
     .map(x => x.toJS())
-    .do(x => console.log(`startDate state...`, x))
+    //.do(x => console.log(`chooseDate state...`, x))
     .map(x => {
       return x
     })
@@ -56,7 +54,7 @@ function model(actions, inputs) {
 function renderStartDateModalBody(info) {
   const {state, components} = info
   const {currentDate} = state
-  return  div(`.change-search-area-modal`, [
+  return  div(`.choose-date-modal`, [
     span(`.date-display`,  [
       !currentDate ? span(`.no-date-selected`, [`Not selected`]) :
                      span(`.date-display`, [
@@ -77,15 +75,14 @@ function view({state$, components}) {
 
 function main(sources, inputs) {
 
-  const {listing$} = inputs
+  const {initialState$} = inputs
   const actions = intent(sources, inputs)
 
   const dateInput = DateInput(sources, {
     props$: O.of({
       defaultNow: false
     }),
-    initialState$: inputs.listing$
-      .map(l => l.profile.time && l.profile.time.startDate)
+    initialState$: initialState$
       .map(x => x ? getDateFromCurrentDate(x) : x),
     rangeStart$: O.never(),
     rangeEnd$: O.never()
@@ -103,4 +100,4 @@ function main(sources, inputs) {
   return out
 }
 
-export default (sources, inputs) => isolate(sources, inputs)
+export default (sources, inputs) => isolate(main)(sources, inputs)

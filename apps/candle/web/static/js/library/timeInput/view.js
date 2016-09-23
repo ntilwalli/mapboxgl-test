@@ -55,6 +55,22 @@ function isAMSelectable({currentTime, rangeStart}) {
 const INC_STYLE = `.fa.fa-angle-up.fa-2x`
 const DEC_STYLE = `.fa.fa-angle-down.fa-2x`
 
+function getHour(ct) {
+  if (!ct) {
+    return `_`
+  } else {
+    return `${ct.hour}`
+  }
+}
+
+function getMinute(ct) {
+  if (!ct) {
+    return `__`
+  } else {
+    return `${ct.minute < 10 ? '0' : ''}${ct.minute}`
+  }
+}
+
 function renderClock(state) {
   const prevHourSelectable = !isPreviousHourSelectable(state) ? `.disabled` : ``
   const nextHourSelectable = !isNextHourSelectable(state) ? `.disabled` : ``
@@ -62,11 +78,11 @@ function renderClock(state) {
   const nextMinuteSelectable = !isNextMinuteSelectable(state) ? `.disabled` : ``
   const amSelectable = !isAMSelectable(state) ? `.disabled` : ``
   const pmSelectable = !isPMSelectable(state) ? `.disabled` : ``
-  const mode = state.currentTime.mode
+  const mode = state.currentTime ? state.currentTime.mode : undefined
   return div(`.time-input-component`, [
     span(`.hour-section`, [
       div(`.appIncrementHour${INC_STYLE}.selectable${nextHourSelectable}`),
-      div([state.currentTime.hour]),
+      div([getHour(state.currentTime)]),
       div(`.appDecrementHour${DEC_STYLE}.selectable${prevHourSelectable}`)
     ]),
     span(`.minute-section`, [
@@ -74,12 +90,12 @@ function renderClock(state) {
     ]),
     span(`.minute-section`, [
       div(`.appIncrementMinute${INC_STYLE}.selectable${nextMinuteSelectable}`),
-      div([`${state.currentTime.minute < 10 ? '0' : ''}${state.currentTime.minute}`]),
+      div([getMinute(state.currentTime)]),
       div(`.appDecrementMinute${DEC_STYLE}.selectable${prevMinuteSelectable}`)
     ]),
     span(`.mode-section`, [
       div(`.appIncrementMeridiem${INC_STYLE}.selectable${mode === AM ? pmSelectable : amSelectable}`),
-      div([state.currentTime.mode]),
+      div([state.currentTime ? state.currentTime.mode : `_.M.`]),
       div(`.appDecrementMeridiem${DEC_STYLE}.selectable${mode === AM ? pmSelectable : amSelectable}`)
     ])
   ])
