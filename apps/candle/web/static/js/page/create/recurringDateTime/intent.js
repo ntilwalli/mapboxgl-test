@@ -19,41 +19,6 @@ export default function intent(sources, inputs) {
   const listing$ = Router.history$
     .take(1)
     .map(x => x.state)
-    // .map(listing => {
-    //   const time = listing.profile.time
-    //   if (time) {
-    //     const {rrule, rdate, exrule, exdate} = time
-    //     if (rrule) {
-    //       let {dtstart, until} = rrule
-    //       listing.profile.time.rrule.dtstart = dtstart ? 
-    //         typeof dtstart === `string` ? 
-    //           new Date(dtstart) 
-    //           : dtstart 
-    //         : dtstart
-    //       listing.profile.time.rrule.until = until ? 
-    //         typeof until === `string` ? 
-    //           new Date(until) 
-    //           : until 
-    //         : until
-    //     }
-
-    //     if (exrule) {
-    //       let {dtstart, until} = exrule
-    //       listing.profile.time.exrule.dtstart = dtstart ? toMoment(typeof dtstart === `string` ? new Date(dtstart) : dtstart) : dtstart
-    //       listing.profile.time.exrule.until = until ? toMoment(typeof until === `string` ? new Date(until) : until) : until
-    //     }
-
-    //     if (Array.isArray(rdate)) {
-    //       listing.profile.time.rdate = convertToDates(rdate)
-    //     }
-
-    //     if (Array.isArray(exdate)) {
-    //       listing.profile.time.exdate = convertToDates(exdate)
-    //     }
-    //   }
-
-    //   return listing
-    // })
     .publishReplay(1).refCount()
 
     const showChangeStartDate$ = DOM.select(`.appChangeStartDate`).events(`click`)
