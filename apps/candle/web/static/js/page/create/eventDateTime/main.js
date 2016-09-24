@@ -80,7 +80,7 @@ export default function main(sources, inputs) {
     contentComponent,
     create: false,
     nextRequiresListingId: true,
-    next: `settings`,
+    next: `preview`,
     previous: listing => {
       const profile = listing.profile
       const location = profile.location

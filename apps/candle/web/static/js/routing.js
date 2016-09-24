@@ -1,11 +1,6 @@
 import {Observable as O} from 'rxjs'
 import {combineObj, normalizeComponentStream, spread} from './utils'
 
-import BasicFakeComponent from './fake/basic/main'
-import WithMapFakeComponent from './fake/withMap/main'
-import WithLoginFakeComponent from './fake/withLogin/main'
-import WithSignupFakeComponent from './fake/withSignup/main'
-import WithPresignupFakeComponent from './fake/withPresignup/main'
 import Home from './page/home/main'
 import Restricted from './restricted'
 import CreateListing from './page/create/main'

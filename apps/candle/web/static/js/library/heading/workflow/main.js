@@ -17,7 +17,7 @@ function intent(sources, inputs) {
     {pattern: `/confirmAddressLocation`, value: `Interim: Confirm address location`},
     {pattern: `/time`, value: `Step 4: Set event time`},
     {pattern: `/recurrence`, value: `Step 4: Set recurrence`},
-    {pattern: `/confirmListing`, value: `Step 5: Stage or post event`},
+    {pattern: `/preview`, value: `Step 5: Post, stage or customize`},
     {pattern: `*`, value: `Step default: Should not get here`}
   ]).map(x => {
     return x.value.info

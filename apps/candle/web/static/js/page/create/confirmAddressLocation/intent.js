@@ -1,6 +1,7 @@
 import {Observable as O} from 'rxjs'
 import {getCenterZoom} from '../../../util/map'
 import {combineObj} from '../../../utils'
+import {inflate} from '../listing'
 
 export default function intent(sources) {
   const {Router, MapDOM} = sources
@@ -21,7 +22,13 @@ export default function intent(sources) {
     // })
     .map(ev => ev.target._latlng)
 
-  const listing$ = Router.history$.take(1).map(x => x.state).publishReplay(1).refCount()
+  const listing$ = Router.history$
+    .take(1)
+    .map(x => x.state)
+    .map(x => {
+      return inflate(x)
+    })
+    .publishReplay(1).refCount()
 
 
   return {

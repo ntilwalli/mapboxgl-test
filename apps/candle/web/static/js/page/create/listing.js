@@ -1,3 +1,23 @@
+export function inflate(listing) {
+  const {type, profile} = listing
+  const {time} = profile
+  if (time) {
+    if (type === `recurring`) {
+      const {rrule} = time
+      const {dtstart, until} = rrule
+      rrule.dtstart = typeof dtstart === `string` ? new Date(dtstart) : dtstart
+      rrule.until = typeof until === `string` ? new Date(until) : dtstart
+    } else if (type === `single`) {
+      const {start, end} = time
+      time.start = typeof start === `string` ? new Date(start) : start
+      time.end = typeof end === `string` ? new Date(end) : end
+    }
+  }
+
+  return listing
+
+}
+
 export function getEmptyListing() {
   return {
     id: undefined,
@@ -121,12 +141,19 @@ export function getValidators(step, listing) {
       }
     }
   } else if (step === `description`) {
-    if (eventType === `show` || eventType === `gathering`) {
+    if (eventType === `show`) {
       return {
         title: [required],
         description: [required],
         shortDescription: [optional],
         categories: [length()]
+      }
+    } else if (eventType === `gathering`) {
+      return {
+        title: [required],
+        description: [required],
+        shortDescription: [optional],
+        categories: [optional]
       }
     } else {
       return {

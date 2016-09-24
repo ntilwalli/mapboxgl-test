@@ -1,6 +1,7 @@
 import {Observable as O} from 'rxjs'
 import {RRule, RRuleSet, rrulestr} from 'rrule'
 import {toMoment} from '../../../utils'
+import {inflate} from '../listing'
 
 function convertToDates(val) {
   const len = val.length
@@ -19,6 +20,9 @@ export default function intent(sources, inputs) {
   const listing$ = Router.history$
     .take(1)
     .map(x => x.state)
+    .map(x => {
+      return inflate(x)
+    })
     .publishReplay(1).refCount()
 
     const showChangeStartDate$ = DOM.select(`.appChangeStartDate`).events(`click`)

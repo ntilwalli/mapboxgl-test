@@ -1,9 +1,16 @@
 import {Observable as O} from 'rxjs'
+import {inflate} from '../listing'
 
 export default function intent(sources) {
   const {DOM, Router} = sources
 
-  const listing$ = Router.history$.take(1).map(x => x.state).publishReplay(1).refCount()
+  const listing$ = Router.history$
+    .take(1)
+    .map(x => x.state)
+    .map(x => {
+      return inflate(x)
+    })
+    .publishReplay(1).refCount()
 
   const description$ = DOM.select(`.appDescriptionInput`).events(`input`)
     .map(ev => ev.target.value)

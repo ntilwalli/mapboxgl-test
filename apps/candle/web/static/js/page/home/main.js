@@ -6,7 +6,6 @@ import model from './model'
 import view from './view'
 
 import Heading from '../../library/heading/standard/main'
-import WithMapFakeComponent from '../../fake/withMap/main'
 import UserLocationMap from './userLocationMap/main'
 
 import {combineObj, normalizeComponent} from '../../utils'

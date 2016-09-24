@@ -1,7 +1,7 @@
 import {Observable as O} from 'rxjs'
 import {div, span} from '@cycle/dom'
 import Immutable from 'immutable'
-import {combineObj, mergeSinks, normalizeComponent, spread, createProxy, processHTTP} from '../../../utils'
+import {combineObj, mergeSinks, normalizeSink, normalizeComponent, defaultNever, spread, createProxy, processHTTP} from '../../../utils'
 
 function processValid(response) {
   return response
@@ -137,12 +137,16 @@ export default function main(sources, inputs) {
 
   const saving$ = createProxy()
   const heading = headingGenerator(saving$)
-  const save$ = O.merge(content.save$, heading.save$)
-    .map(x => {
+  const save$ = O.merge(
+    defaultNever(content, `save$`), 
+    defaultNever(heading, `save$`)
+  ).map(x => {
       return x
     })
 
-  const toHTTP$ = save$.withLatestFrom(content.listing$, (_, listing) => {
+  const listing$ = defaultNever(content,`listing$`)
+
+  const toHTTP$ = save$.withLatestFrom(listing$, (_, listing) => {
     return {
       url: `/api/user`,
       method: `post`,
@@ -167,7 +171,7 @@ export default function main(sources, inputs) {
 
   saving$.attach(O.merge(
     saveStatus$,
-    content.saveStatus$
+    defaultNever(content, `saveStatus$`)
   ))
 
   const components = {
