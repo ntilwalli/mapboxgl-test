@@ -120,9 +120,9 @@ function reducers(actions, inputs) {
       let month = state.get(`displayMonth`)
       let year = state.get(`displayYear`)
       if (month === 0 && val === -1) {
-        month = 12; year = year - 1;
+        month = 11; year = year + val;
       } else if (month === 11 && val === 1) {
-        month = 0; year = year + 1
+        month = 0; year = year + val
       } else {
         month = month + val
       }

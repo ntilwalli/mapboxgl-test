@@ -6,7 +6,7 @@ export function inflate(listing) {
       const {rrule} = time
       const {dtstart, until} = rrule
       rrule.dtstart = typeof dtstart === `string` ? new Date(dtstart) : dtstart
-      rrule.until = typeof until === `string` ? new Date(until) : dtstart
+      rrule.until = typeof until === `string` ? new Date(until) : until
     } else if (type === `single`) {
       const {start, end} = time
       time.start = typeof start === `string` ? new Date(start) : start

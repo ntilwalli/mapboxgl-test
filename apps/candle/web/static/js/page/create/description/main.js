@@ -2,8 +2,8 @@ import {Observable as O} from 'rxjs'
 import {div} from '@cycle/dom'
 import {combineObj, spread, mergeSinks, normalizeComponent} from '../../../utils'
 
-import intent from './intent'
-import model from './model'
+import intent from './myintent'
+import model from './mymodel'
 import view from './view'
 
 import TextInput from '../../../library/textInput'
