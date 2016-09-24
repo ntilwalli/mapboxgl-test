@@ -43,7 +43,7 @@ defmodule Auth.Manager do
         "username" => username,
         "password" => password
       }}, _from, state) do
-
+   IO.puts("Got to login")
    out = Utils.login(
      %Credential{
         username: username, 

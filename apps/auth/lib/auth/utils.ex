@@ -58,7 +58,7 @@ defmodule Auth.Utils do
             end
           _ -> {:error, :password_required}
         end
-      val -> val
+      :error -> {:error, :invalid_username_password}
     end
   end
 
