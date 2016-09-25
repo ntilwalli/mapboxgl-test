@@ -35,6 +35,7 @@ function reducers(actions, inputs) {
 
     listing.profile.location.info = undefined
     listing.profile.location.mode = mode
+    listing.profile.mapSettings = undefined;
 
     return state.set(`listing`, listing).set(`valid`, isValid(listing))
   })

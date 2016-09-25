@@ -7,57 +7,21 @@ import {combineObj, createProxy, spread, normalizeComponent, normalizeSink, merg
 
 function intent(sources) {
   const {DOM, HTTP} = sources
-  const post$ = DOM.select(`.appPostButton`).events(`click`)
   const back$ = DOM.select(`.appBackButton`).events(`click`)
-  const {good$, bad$, ugly$} = processHTTP(sources, `postListing`)
-  const posted$ = good$.filter(x => x.type === `posted`)
-    .map(x => {
-      return x.data
-    })
-    .publish().refCount()
-  const notPosted$ = O.merge(
-    good$.filter(x => x.type !== `posted`)
-      .map(x => {
-        return x.data
-      }),
-    bad$,
-    ugly$
-  )
 
-
-  const fromHTTP$ = O.merge(
-    posted$,
-    bad$,
-    ugly$,
-  )
-
-  return {
-    post$, 
-    back$, 
-    posted$,
-    notPosted$
+  return { 
+    back$
   }
 }
 
 function reducers(actions, inputs) {
-  const postedR = actions.posted$.map(() => state => {
-    return state.set(`posting`, `success`)
-  }).publishReplay(1).refCount()
-
-  const notPostedR = actions.notPosted$.map(() => state => {
-    return state.set(`posting`, `fail`)
-  })
-
-  const postingR = inputs.posting$.map(() => state => {
-    return state.set(`posting`, true)
-  })
 
   const validR = inputs.contentState$.skip(1)
     .map(val => state => {
       return state.set(`contentState`, val)
     })
 
-  return O.merge(validR, postedR, notPostedR, postingR)
+  return O.merge(validR)
 }
 
 function model(actions, inputs) {
@@ -65,7 +29,6 @@ function model(actions, inputs) {
   return inputs.contentState$.take(1)
     .map(contentState => {
       return {
-        posting: false,
         waiting: false,
         contentState
       }
@@ -78,15 +41,6 @@ function model(actions, inputs) {
     .publishReplay(1).refCount()
 }
 
-function getPostingDisplay(info) {
-  const {posting} = state
-  const icon = posting === `true` ? span(`.spinner`, []) : posting === `posted` ? span(`.fa-check`, []) : null
-  const text = posting === `true` ? span(`.post-text`, [`Posting...`]) : posting === `posted` ? span('.post-text' + disabled, ['Posted!']) : span('.post-text' + disabled, ['Failed!!'])
-  return span(`.posting-display`, [
-    icon,
-    text 
-  ])
-}
 
 function view(state$, components) {
   return combineObj(components)
@@ -113,11 +67,6 @@ function view(state$, components) {
               button(`.appBackButton.back-button`, [
                 span(`.fa.fa-angle-left`),
                 span(`.back-text`, [`Back`])
-              ]),
-              button('.appPostButton.next-button' + disabled, [
-                !posting ? 
-                  span('.post-text' + disabled, ['Post'])
-                  : getPostingDisplay(info)
               ])
             ])
           ])
@@ -136,47 +85,12 @@ export default function main(sources, inputs) {
     }
 
     const actions = intent(sources)
-    const posting$ = createProxy()
 
     const state$ = model(actions, spread(inputs, {
-      contentState$: content.state$,
-      posting$
+      contentState$: content.state$
     }))
 
     const vtree$ = view(state$, components)
-    
-    const post$ = actions.post$
-      .withLatestFrom(state$, (_, state) => {
-        const {contentState} = state
-        const {listing} = contentState
-        return listing
-      }).publish().refCount()
-
-    const toHTTP$ = post$
-      .map(x => {
-        return {
-          url: `/api/user`,
-          method: `post`,
-          type: `json`,
-          send: {
-            route: `/listing/post`,
-            data: listing
-          },
-          category: `postListing`
-        }
-      })
-      .publish().refCount()
-
-    posting$.attach(toHTTP$)
-
-    const toConfirmed$ = actions.posted$
-      .withLatestFrom(state$, (_, state) => {
-        return {
-          pathname: `/create/postingSuccess`,
-          action: `PUSH`,
-          state: listing
-        }
-      })
 
     const toPreviousScreen$ = actions.back$
       .withLatestFrom(state$, (_, state) => {
@@ -224,13 +138,9 @@ export default function main(sources, inputs) {
     return {
       DOM: vtree$,
       HTTP: O.merge(
-        defaultNever(content, `HTTP`),
-        toHTTP$.map(x => {
-          return x
-        })
+        defaultNever(content, `HTTP`)
       ),
       Router: O.merge(
-        toConfirmed$,
         toPreviousScreen$,
         defaultNever(content, `Router`),
       ),

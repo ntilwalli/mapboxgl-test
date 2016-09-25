@@ -18,6 +18,8 @@ function render(state) {
     markerLatLng = info.data.latLng
   else if (mode === `address`)
     markerLatLng = info.latLng.data
+  else if (mode === `map`)
+    markerLatLng = info.latLng
 
   const center = toLatLngArray((mapSettings && mapSettings.center) || markerLatLng)
   const zoom = (mapSettings && mapSettings.zoom) || 15

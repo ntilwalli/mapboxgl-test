@@ -266,7 +266,7 @@ function renderVenue({state}) {
   const {data} = info
   const {name, address} = data
   return div(`.venue`, [
-    div(`.name`, [name]),
+    //div(`.name`, [name]),
     div(`.streetAddress`, [getStreetString(address)])
   ])
 }
@@ -278,7 +278,7 @@ function renderAddress({state}) {
   const {mode, info} = location
   const {street, aptSuiteBldg, city, stateAbbr, zipCode, description} = info
   return div(`.address`, [
-    description ? div(`.name`, [description]) : null,
+    //description ? div(`.name`, [description]) : null,
     div(`.streetAddress`, [
       span(`.street`, [street]),
       aptSuiteBldg ? span(`.aptSuiteBldg`, [aptSuiteBldg]) : null
@@ -292,7 +292,20 @@ function renderAddress({state}) {
 }
 
 function renderPoint({state}) {
+  const {listing} = state
+  const {type, profile} = listing
+  const {location} = profile
+  const {info} = location
+  const {latLng, description} = info
+  const {lat, lng} = latLng
   return null
+  //div(`.lat-lng-location`, [
+    //description ? div(`.name`, [description]) : null,
+    // div(`.lat-lng`, [
+    //   span(`.lat`, [lat]),
+    //   span(`.lng`, [lng])
+    // ])
+  //])
 }
 
 
@@ -306,6 +319,26 @@ function renderLocation(info) {
         renderAddress(info)
         : renderPoint(info)
   ])
+}
+
+function renderLocationName({state}) {
+  const {listing} = state
+  const {type, profile} = listing
+  const {location} = profile
+  const {mode, info} = location
+  let name
+  if (mode === `venue`) {
+    if (info.source === `Foursquare`) {
+      name = info.data.name
+    }
+  }
+  else if (mode === `address`)
+    name = info.description
+  else if (mode === `map`)
+    name = info.description
+
+  return name ? div(`.location-name`, [name]) : null
+
 }
 
 function renderCategories(info) {
@@ -350,6 +383,20 @@ function renderAdditionalInfo(info) {
   ])
 }
 
+function renderListingHeading(info) {
+  const {state} = info
+  const {listing} = state
+  const {type, profile} = listing
+  const {meta, location, time} = profile
+  const {title, shortDescription, description} = profile.description
+
+  return div(`.heading`, [
+    div(`.event-title`, [title]),
+    renderLocationName(info),
+    !shortDescription ? null : div(`.short-description`, [shortDescription])
+  ])
+}
+
 function renderRecurring(info) {
   const {state} = info
   const {listing} = state
@@ -361,10 +408,7 @@ function renderRecurring(info) {
 
   return div(`.listing-card`, [
     div(`.info-card`, [
-          div(`.heading`, [
-            div(`.event-title`, [title]),
-            !shortDescription ? null : div(`.short-description`, [shortDescription])
-          ]),
+          renderListingHeading(info),
           div(`.time`, [
             renderRecurrence(info)
           ]),
@@ -388,18 +432,12 @@ function renderSingle(info) {
 
   return div(`.listing-card`, [
       div(`.info-card`, [
-        div([
-          div([
-            div(`.card-heading`, [
-              div(`.event-title`, [title])
-            ]),
+            renderListingHeading(info),
             div(`.time`, [
               renderEventTime(info)
             ]),
             renderLocation(info),
             renderCategories(info)
-          ])
-        ])
       ]),
       div(`#listingCardMapAnchor`),
       renderAdditionalInfo(info)
@@ -411,13 +449,22 @@ function renderPanel(info) {
   const {listing} = state
   const {type} = listing
   return div(`.panel`, [
-    div(`listing-map`, [
-      type === `single`? 
-        renderSingle(info)
-        : type === `recurring` ? 
-          renderRecurring(info)
-          : renderGroup(info)
-    ]) 
+    div([
+      div(`.panel-title`, [h5([`Almost done...`])]),
+      div(`listing-preview`, [
+        type === `single`? 
+          renderSingle(info)
+          : type === `recurring` ? 
+            renderRecurring(info)
+            : renderGroup(info)
+      ])//,
+      // div(`.stage-or-customize`, [
+      //   div([
+      //     span()
+      //     button(`.stage-button`, [`Stage`]),
+      //   ])
+      // ])
+    ])
   ])
 
 
