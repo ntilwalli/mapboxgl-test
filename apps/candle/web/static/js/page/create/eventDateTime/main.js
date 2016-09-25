@@ -38,9 +38,10 @@ function contentComponent(sources, inputs) {
     initialState$: actions.listing$
       .map(l => l.profile.time && l.profile.time.end)
       .map(x => x && x.type === `datetime` ? x.data : undefined),
-    date$: startDate.result$.skip(1).map(x => {
-      return toMoment(x).add(2, `hours`).toDate()
-    }),
+    date$: O.never(),
+    // startDate.result$.skip(1).map(x => {
+    //   return toMoment(x).add(2, `hours`).toDate()
+    // }),
     rangeStart$: startDate.result$,
     rangeEnd$: O.never()
   })

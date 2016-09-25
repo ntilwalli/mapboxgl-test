@@ -142,3 +142,39 @@
   }
 
 }
+
+.stage-post-or-customize {
+  .action-container {
+    display: flex;
+    align-items: center;
+    margin-top: 1rem;
+    //border: black solid 1px;
+    
+    .action-description {
+      width: 80%;
+      padding: .3rem;
+    }
+
+    button {
+      background: none;
+      border: none;
+    }
+    .action-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      //background-color: red;
+      border: green solid 1px;
+
+      color: green;
+      border-radius: 3px;
+      height: 2rem;
+      width: 100px;
+
+      &:hover {
+        background-color: green;
+        color: white
+      }
+    }
+  }
+}

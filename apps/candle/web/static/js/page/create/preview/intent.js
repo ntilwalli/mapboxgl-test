@@ -12,14 +12,13 @@ export default function intent(sources) {
     })
     .publishReplay(1).refCount()
 
-  const description$ = DOM.select(`.appDescriptionInput`).events(`input`)
-    .map(ev => ev.target.value)
-  const shortDescription$ = DOM.select(`.appShortDescriptionInput`).events(`input`)
-    .map(ev => ev.target.value)
-  const categories$ = DOM.select(`.appCategoriesInput`).events(`input`)
-      .map(ev => ev.target.value)
+  const customize$ = DOM.select(`.appCustomizeButton`).events(`click`)
+  const stage$ = DOM.select(`.appStageButton`).events(`click`)
+  const post$ = DOM.select(`.appPostButton`).events(`input`)
   
+
+
   return {
-    description$, shortDescription$, categories$, listing$
+    customize$, stage$, post$, listing$
   }
 }

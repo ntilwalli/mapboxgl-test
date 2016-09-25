@@ -13,27 +13,15 @@ import Step from '../step/main'
 import StepContent from '../stepContent/stagePost'
 //import StepContent from '../stepContent/standard'
 
-const titleInputProps = O.of({
-  placeholder: `Event title`,
-  name: `title`,
-  required: true,
-  key: `title`
-})
 
 function contentComponent(sources, inputs) {
   const actions = intent(sources)
-  const titleInput = TextInput(sources, {
-    props$: titleInputProps, 
-    error$: O.never(),
-    initialText$: actions.listing$.map(x => x.profile && x.profile.description && x.profile.description.title)
-  })
   const state$ = model(actions, spread(inputs, {
-    title$: titleInput.value$,
     listing$: actions.listing$
   }))
 
   const components = {
-    titleInput$: titleInput.DOM
+    //titleInput$: titleInput.DOM
   }
 
   const vtree$ = view(state$, components)

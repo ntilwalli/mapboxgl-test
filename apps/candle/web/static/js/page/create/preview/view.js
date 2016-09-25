@@ -6,76 +6,6 @@ import {isDisabled} from '../listing'
 import {RRule} from 'rrule'
 import moment from 'moment'
 
-function renderTitle(info) {
-  const {state, components} = info
-  const {listing} = state
-  const {profile} = listing
-  const {titleInput} = components
-  const section = `description`
-  const property = `title`
-  const disabled = isDisabled(section, property, listing)
-  if (!disabled) {
-    return div(`.title`, [
-      renderHeading(`Title`, section, property, listing),
-      titleInput
-    ])
-  } else {
-    return null
-  }
-}
-
-function renderDescription(state) {
-  const {listing} = state
-  const {profile} = listing
-  const {description} = profile.description
-  const section = `description`
-  const property = `description`
-  const disabled = isDisabled(section, property, listing)
-  if (!disabled) {
-    return div(`.description`, [
-      renderHeading(`Description`, section, property, listing),
-      textarea(`.appDescriptionInput`, {props: {rows: 5}}, [description || ``])
-    ])
-  } else {
-    return null
-  }
-}
-
-function renderShortDescription(state) {
-  const {listing} = state
-  const {profile} = listing
-  const {shortDescription} = profile.description
-  const section = `description`
-  const property = `shortDescription`
-  const disabled = isDisabled(section, property, listing)
-  if (!disabled) {
-    return div(`.short-description`, [
-      renderHeading(`Short description`, section, property, listing),
-      textarea(`.appShortDescriptionInput`, {props: {rows: 2}}, [shortDescription || ``])
-    ])
-  } else {
-    return null
-  }
-}
-
-function renderCategories(state) {
-  const {listing} = state
-  const {profile} = listing
-  const {categories} = profile.description
-  const section = `description`
-  const property = `categories`
-  const disabled = isDisabled(section, property, listing)
-  if (!disabled) {
-    return div(`.categories`, [
-      renderHeading(`Categories`, section, property, listing),
-      input(
-        `.appCategoriesInput.form-control`, 
-        {props: {type: `text`, value: categories.join(`, `)}}) 
-      ])
-  } else {
-    return null
-  }
-}
 
 function getTimeString(ct) {
   const {hour, minute, mode} = ct
@@ -163,7 +93,7 @@ function renderRecurrence(info) {
   const {profile} = listing
   const {time} = profile
   const {rrule, startTime, endTime, until, frequency} = time
-  const blah = getRecurrenceUntilDateString(rrule)
+
   return div(`.recurrence-time.small-font`, [
     span(`.recurrence-frequency`, [
       getFrequencyString(frequency)
@@ -447,7 +377,9 @@ function renderSingle(info) {
 function renderPanel(info) {
   const {state} = info
   const {listing} = state
-  const {type} = listing
+  const {type, profile} = listing
+  const {meta} = profile
+  const {eventType} = meta
   return div(`.panel`, [
     div([
       div(`.panel-title`, [h5([`Almost done...`])]),
@@ -457,22 +389,36 @@ function renderPanel(info) {
           : type === `recurring` ? 
             renderRecurring(info)
             : renderGroup(info)
-      ])//,
-      // div(`.stage-or-customize`, [
-      //   div([
-      //     span()
-      //     button(`.stage-button`, [`Stage`]),
-      //   ])
-      // ])
+      ]),
+      div(`.stage-post-or-customize`, [
+        div(`.action-container`, [
+          span(`.action-description`, [`You may change the map tile of this listing among other customizations.  Would you like to customize this listing?`]),
+          div(`.action-button`, [
+            button(`.appCustomizeButton.customize-button`, `Customize`)
+          ])
+        ]),
+        eventType === `show` ? div(`.action-container`, [
+          span(`.action-description`, [`Staging a listing allows you to invite/confirm performers before going live.  Would you like to stage this listing?`]),
+          div(`.action-button`, [
+            button(`.appStageButton.stage-button`, `Stage`)
+          ])
+        ]) : null,
+        div(`.action-container`, [
+          span(`.action-description`, [`Posting this listing will allow you to distribute links to the associated event(s).  It also allows you to send out invitations and makes public events discoverable on search. Would you like to post this event?`]),
+          div(`.action-button`, [
+            button(`.appPostButton.post-button`, `Post`)
+          ])
+        ])
+      ])
     ])
   ])
 
 
 }
 
-export default function view(state$, components) {
-  return state$.withLatestFrom(combineObj(components), (state, components) => {
-    const info = {state, components}
+export default function view(state$) {
+  return state$.map(state => {
+    const info = {state}
     return state.waiting ? div(`.panel.modal`, [`Waiting`]) : renderPanel(info)
   })
 }
