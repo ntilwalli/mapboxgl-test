@@ -1,0 +1,128 @@
+.listing-card {
+  position: relative;
+  border:black solid 1px;
+  border-radius: 4px;
+  //padding: .5rem;
+
+  #listingCardMapAnchor {
+    height: 200px;
+    width: 100%;
+  }
+
+  .info-card {
+    position: absolute;
+    z-index: 1;
+    background-color: white;
+    margin: .5rem;
+    padding: .2rem;
+    width: 200px;
+  }
+
+  .additional-info {
+    margin: .6rem;
+  }
+
+  .created-by {
+    margin-top: .2rem;
+    //font-size: .9rem;
+    &:before {
+      font-weight: bold;
+      content: 'Created by ';
+    }
+  }
+
+  .description {
+    .content {
+        font-size: .9rem;
+    }
+    .title {
+      font-weight: bold;
+    }
+  }
+
+  .short-description {
+    font-size: .8rem;
+    font-style: italic;
+  }
+
+  .categories {
+    font-size: .6rem;
+    display: flex;
+    flex-wrap: wrap;
+    .category {
+      padding: .1rem;
+      background-color: lightgray;
+      margin-right: .1rem;
+      margin-bottom: .1rem;
+    }
+  }
+
+  .heading {
+    // display: flex;
+    // justify-content: space-between;
+  }
+
+  .time {
+    padding-top: .2rem;
+    font-size: .8rem;
+  }
+
+  .location {
+    padding-top: .2rem;
+    font-size: .9rem;
+  }
+
+  .event-title {
+    font-weight: bold;
+    font-size: 1rem;
+  }
+
+  .listing-type {
+    font-style: italic;
+    font-size: .8rem;
+    align-content: top;
+  }
+
+  .recurrence-day {
+    padding-right: .3rem;
+
+    &:after {
+      content: ','
+    }
+  }
+
+  .start-time {
+    padding-right: .2rem;
+  }
+
+  .end-time {
+    padding-left: .2rem;
+  }
+
+  .recurrence-frequency {
+    padding-right: .2rem;
+
+    &:after {
+      content: ','
+    }
+  }
+
+  .recurrence-start-date, .start-date {
+
+    // &:before {
+    //   content: 'Starts '
+    // }
+  }
+
+  .end-date {
+
+    // &:before {
+    //   content: 'Ends '
+    // }
+  }
+
+  // .recurrence-until-date {
+
+  // }
+
+}

@@ -61,6 +61,7 @@ export default function model(actions, inputs) {
       const listing = inputs.listing
       const profile = listing.profile
       const location = profile.location
+      //profile.mapSettings = profile.mapSettings || {}
       profile.searchArea = profile.searchArea || inputs.defaultSearchArea
       const initial = {
         waiting: false,

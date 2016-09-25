@@ -37,7 +37,15 @@ export default function main(sources, inputs) {
     create: false,
     nextRequiresListingId: true,
     previous: `location`,
-    next: `time`
+    next: listing => {
+      const profile = listing.profile
+      const location = profile.location
+      if (listing.type === `recurring`) {
+          return `recurrence`
+        } else {
+          return `time`
+        }
+      }
   })
 
   const content = StepContent(sources, spread(inputs, {

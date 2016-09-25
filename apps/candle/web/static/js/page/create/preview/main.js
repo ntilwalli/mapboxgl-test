@@ -5,6 +5,7 @@ import {combineObj, spread, mergeSinks, normalizeComponent} from '../../../utils
 import intent from './intent'
 import model from './model'
 import view from './view'
+import mapview from './mapView'
 
 import TextInput from '../../../library/textInput'
 import Heading from '../../../library/heading/workflow/main'
@@ -39,15 +40,14 @@ function contentComponent(sources, inputs) {
 
   return normalizeComponent({
     DOM: vtree$,
+    MapDOM: mapview(state$),
     state$
   })
 }
 
 export default function main(sources, inputs) {
   // {contentComponent, create, nextRequiresListingId, previous, next}
-
-
-
+  console.log(`Hey`)
   const stepProps = O.of({
     contentComponent,
     previous: (listing) => {

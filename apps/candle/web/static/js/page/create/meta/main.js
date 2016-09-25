@@ -34,10 +34,12 @@ function contentComponent(sources, inputs) {
     }, {
       displayValue: `Recurring`,
       value: `recurring`
-    }, {
-      displayValue: `Grouping`,
-      value: `group`
-    }],
+    }
+    // ,{
+    //   displayValue: `Grouping`,
+    //   value: `group`
+    // }
+    ],
     props$: listing$
       .map(listing => listing && listing.type)
       .map(selected => ({selected}))

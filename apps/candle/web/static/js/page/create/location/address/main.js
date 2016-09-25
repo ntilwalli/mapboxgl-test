@@ -11,6 +11,9 @@ import AutocompleteInput from '../../../../library/autocompleteInput'
 import ArcGISSuggest from '../../../../thirdParty/ArcGISSuggest'
 import ArcGISGetMagicKey from '../../../../thirdParty/ArcGISGetMagicKey'
 
+import ArcGISGeocode from '../../../../thirdParty/ArcGISGeocode'
+
+
 const addressItemConfigs = {
   default: {
     selectable: true,
@@ -51,6 +54,9 @@ function intent(sources) {
 
   const zipCode$ = DOM.select(`.appZipCodeInput`).events(`input`)
     .map(ev => ev.target.value)
+  
+  const description$ = sources.DOM.select(`.appDescription`).events(`input`)
+    .map(ev => ev.target.value)
 
   return {
     countryCode$,
@@ -58,6 +64,7 @@ function intent(sources) {
     city$,
     stateAbbr$,
     zipCode$,
+    description$
 
   }
 }
@@ -71,22 +78,28 @@ function reducers(actions, inputs) {
   const streetAddressR = inputs.streetAddress$.map(val => state => {
     //const street = extractStreetAddress(val)
     return state.set(`street`, val)
+      .set(`latLng`, undefined)
+      .set(`valid`, false)
   })
 
   const aptSuiteBldgR = actions.aptSuiteBldg$.map(val => state => {
     return state.set(`aptSuiteBldg`, val)
+            .set(`valid`, false)
   })
 
   const cityR = actions.city$.map(val => state => {
     return state.set(`city`, val)
+          .set(`valid`, false)
   })
 
   const stateAbbrR = actions.stateAbbr$.map(val => state => {
     return state.set(`stateAbbr`, val)
+          .set(`valid`, false)
   })
 
   const zipCodeR = actions.zipCode$.map(val => state => {
     return state.set(`zipCode`, val)
+          .set(`valid`, false)
   })
 
   const autocompleteR = inputs.autocomplete$.map(sa => state => {
@@ -96,15 +109,31 @@ function reducers(actions, inputs) {
     const pa = region.data.parsedAddress
     const street = extractStreetAddress(region.data.raw)
     const stateAbbr = getState(pa.state)
-    return state
+    const validStreet = street !== `error`
+    const out = state
       .set(`city`, pa.city)
       .set(`zipCode`, pa.zip)
       .set(`stateAbbr`, stateAbbr)
-      .set(`street`, street !== `error` ? street : undefined)
+      //.set(`street`, street !== `error` ? street : undefined)
       .set(`latLng`, {
         type: `auto`,
         data: sa.center
       })
+      .set(`valid`, true)
+      
+    if (validStreet) {
+      return out.set(`street`, street)
+    } else {
+      return out
+    }
+  })
+
+  const descriptionR = actions.description$.map(desc => state => {
+    return state.set(`description`, desc)
+  })
+
+  const latLngR = inputs.latLng$.map(val => state => {
+    return state.set(`latLng`, {type: `auto`, data: val}).set(`valid`, true)
   })
 
   return O.merge(
@@ -114,7 +143,9 @@ function reducers(actions, inputs) {
     cityR,
     stateAbbrR,
     zipCodeR,
-    autocompleteR
+    autocompleteR,
+    descriptionR,
+    latLngR
   )
 }
 
@@ -131,14 +162,17 @@ function model(actions, inputs) {
       const info = listing.profile.location.info
       const cc = searchArea.region.type === `somewhere` ? searchArea.region.data.country : undefined
       const initialState = {
-        countryCode: cc,
+        countryCode: info && info.countryCode || cc,
         street: info && info.street || undefined,
         aptSuiteBldg: info && info.aptSuiteBldg || undefined,
         city: info && info.city || undefined,
         stateAbbr: info && info.stateAbbr || undefined,
         zipCode: info && info.zipCode || undefined,
         latLng: info && info.latLng || undefined,
+        description: info && info.description || undefined
       }
+
+      initialState.valid = !!initialState.latLng
 
       return reducers(actions, inputs)
         .startWith(Immutable.Map(initialState))
@@ -200,6 +234,12 @@ function view({state$, components}) {
         div(`.content`, [
           input(`.appZipCodeInput.address-input`, {props: {type: `text`, value: state.zipCode || ``}})
         ])
+      ]),
+      div(`.description.sub-section`, [
+        div(`.heading`, [h5([`Description (optional)`])]),
+        div(`.content`, [
+          input(`.appDescription.address-input`, {props: {type: `text`, value: state.description || ``}})
+        ])
       ])
     ])
   })
@@ -214,9 +254,10 @@ export default function USAddress(sources, inputs) {
 
   const autocomplete$ = createProxy()
   const streetAddress$ = createProxy()
+  const latLng$ = createProxy()
 
   const actions = intent(sources)
-  const state$ = model(actions, {autocomplete$, streetAddress$, searchArea$, ...inputs})
+  const state$ = model(actions, {latLng$, autocomplete$, streetAddress$, searchArea$, ...inputs})
 
   const addressAutocompleteInput = AutocompleteInput(sources, {
     suggester: (sources, inputs) => ArcGISSuggest(sources, {
@@ -244,9 +285,28 @@ export default function USAddress(sources, inputs) {
 
   autocomplete$.attach(magicKeyConverter.result$)
 
+  const geocodeAddress$ = state$.filter(x => {
+    return x.countryCode && x.street && x.stateAbbr && x.city && x.zipCode && !x.valid
+  }).map(x => {
+    const {street, city, stateAbbr, zipCode} = x
+    return `${street}, ${city} ${stateAbbr}, ${zipCode}`
+  })
+
+  const geocoder = ArcGISGeocode(sources, {
+    props$: state$.filter(x => !!x.countryCode)
+      .map(x => ({countryCode: x.countryCode})),
+    address$: geocodeAddress$
+  })
+
+  latLng$.attach(geocoder.results$)
+
   return {
     DOM: view({state$, components: {streetAddress$: addressAutocompleteInput.DOM}}),
-    HTTP: O.merge(addressAutocompleteInput.HTTP, magicKeyConverter.HTTP),
+    HTTP: O.merge(
+      addressAutocompleteInput.HTTP, 
+      magicKeyConverter.HTTP,
+      geocoder.HTTP
+    ),
     result$: state$
   }
 }

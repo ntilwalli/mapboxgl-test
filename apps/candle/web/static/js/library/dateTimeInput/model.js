@@ -53,11 +53,11 @@ function reducers(actions, inputs) {
     return state.set(`currentTime`, getDefaultCurrentTime()).set(`currentDate`, undefined)
   })
 
-  const dateTimeR = (actions.date$ || O.never()).map(val => state => {
+  const dateTimeR = (inputs.date$ || O.never()).map(val => state => {
     //console.log(`Date reducer`, val)
     const locked = state.get(`locked`)
     if (!locked) {
-      now = moment(val.toISOString())
+      const now = moment(val.toISOString())
 
       const currentDate = {
         year: now.year(),
@@ -72,7 +72,12 @@ function reducers(actions, inputs) {
         mode: out.pm ? PM : AM
       }
 
-      return state.set(`currentDate`, currentDate).set(`currentTime`, currentTime)
+      return state
+        .set(`currentDate`, currentDate)
+        .set(`currentTime`, currentTime)
+        .set(`year`, currentDate.year)
+        .set(`month`, currentDate.month)
+
     } else {
       return state
     }

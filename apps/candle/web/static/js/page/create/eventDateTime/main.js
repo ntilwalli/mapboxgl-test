@@ -5,7 +5,7 @@ import model from './model'
 
 import {div} from '@cycle/DOM'
 
-import {combineObj, spread, normalizeComponent, createProxy} from '../../../utils'
+import {toMoment, combineObj, spread, normalizeComponent, createProxy} from '../../../utils'
 
 import Heading from '../../../library/heading/workflow/main'
 import Step from '../step/main'
@@ -38,7 +38,9 @@ function contentComponent(sources, inputs) {
     initialState$: actions.listing$
       .map(l => l.profile.time && l.profile.time.end)
       .map(x => x && x.type === `datetime` ? x.data : undefined),
-    //rangeStart$: O.never(),
+    date$: startDate.result$.skip(1).map(x => {
+      return toMoment(x).add(2, `hours`).toDate()
+    }),
     rangeStart$: startDate.result$,
     rangeEnd$: O.never()
   })

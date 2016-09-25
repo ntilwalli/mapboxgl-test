@@ -96,7 +96,7 @@ function getFrequencyString(f) {
 function getFirstRecurrence(rrule) {
   const rule = new RRule(rrule)
   const limitDay = toMoment(rrule.dtstart).add(1, `week`)
-  return toMoment(rule.before(limitDay.toDate(), true))
+  return toMoment(rule.before(limitDay.toDate()))
 }
 
 function getLastRecurrence(rrule) {
@@ -112,14 +112,9 @@ function getWeeklyRecurrenceDay(rrule) {
 
 function getRecurrenceStartDate(rrule) {
   const eventDate = getFirstRecurrence(rrule)
+  const today = moment()
   //return eventDate.format(getDateFormatString())
-  const description = eventDate.calendar()
-  const out = description.split(` `)
-    .filter(x => x === `Tomorrow` || x === `Today`)
-    .map(x => x.toLowerCase())
-
-  return out.length ? out[0] : description
-
+  return getDateDiffString(eventDate, today)
 }
 
 function isFirstRecurrenceInFuture(rrule) {
@@ -133,21 +128,22 @@ function hasUntilDate(rrule) {
   return !!rrule.until
 }
 
-function getDateDiffString(base, compare) {
+function getDateDiffString(base, compare, type = `begin`) {
+  const verbs = type === `begin` ? [`Begins`, `Began`] : [`Ends`, `Ended`] 
   const description = base.calendar()
-  const terms = description.split()
+  const terms = description.split(' ')//.slice(0, 0)
   if (base.diff(compare) > 0) {
     const out = terms
-      .filter(x => x === `Tomorrow` || x === `Today`)
+      //.filter(x => x === `Tomorrow` || x === `Today`)
 
     const text = out.length ? out[0] : description
-    return `Ends ${text}`
+    return `${verbs[0]} ${text}`
   } else {
     const out = terms
-      .filter(x => x === `Yesterday` || x === `Today`)
+      //.filter(x => x === `Yesterday` || x === `Today`)
 
     const text = out.length ? out[0] : description
-    return `Ended ${text}`
+    return `${verbs[1]} ${text}`
   }
 }
 
@@ -155,7 +151,7 @@ function getRecurrenceUntilDateString(rrule) {
   if (rrule.until) {
     const eventDate = toMoment(getLastRecurrence(rrule))
     const today = moment()
-    return getDateDiffString(eventDate, today)
+    return getDateDiffString(eventDate, today, `Ends`)
   }
 
   throw new Error(`Invalid until date`)
@@ -168,10 +164,10 @@ function renderRecurrence(info) {
   const {time} = profile
   const {rrule, startTime, endTime, until, frequency} = time
   const blah = getRecurrenceUntilDateString(rrule)
-  return div(`.recurrence-time`, [
-    // span(`.frequency`, [
-    //   getFrequencyString(frequency)
-    // ]),
+  return div(`.recurrence-time.small-font`, [
+    span(`.recurrence-frequency`, [
+      getFrequencyString(frequency)
+    ]),
     isWeekly(frequency) ? span(`.recurrence-day`, [
       getWeeklyRecurrenceDay(rrule)
     ]) : null,
@@ -208,11 +204,20 @@ function renderEventTime(info) {
   const {profile} = listing
   const {time} = profile
   const {start, end} = time
-  const startMoment = toMoment(start)
-  const endMoment = end ? toMoment(end) : undefined
+
+  if (start.type !== `datetime`) {
+    throw new Error(`Unsupported type for start time`)
+  }
+
+  if (end && end.type !== `datetime`) {
+    throw new Error(`Unsupported type for end time`)
+  }
+
+  const startMoment = toMoment(start.data)
+  const endMoment = end ? toMoment(end.data) : undefined
 
   return div(`event-time`, [
-    div(`.start-date`, [toMoment(start).format(getDateFormatString())]),
+    div(`.start-date`, [startMoment.format(getDateFormatString())]),
     div(`.start-time-container`, [
       span(`.start-title`, [`Starts:`]),
       span(`.start-time`, [startMoment.format(getTimeFormatString())])
@@ -224,31 +229,188 @@ function renderEventTime(info) {
   ])
 }
 
-function renderListingCard(info) {
+function renderGroup(info) {
   const {state} = info
   const {listing} = state
   const {type, profile} = listing
   const {meta, description, location, time} = profile
   const {title} = description
   const {frequency} = time
+  const {mode} = location
 
   return div(`.listing-card`, [
-    div(`.card-heading`, [
-      div(`.event-title`, [title]),
-      type === `recurring` ? div(`.listing-type`, [getFrequencyString(frequency)]) : null,
-    ]),
-    type === `group` ? null : div(`.listing-time`, [
-      type === `recurring` ? renderRecurrence(info) : renderEventTime(info)
+    div([
+      div([
+        div([
+          div([
+            div(`.card-heading`, [
+              div(`.event-title`, [title])
+            ])
+          ])
+        ])
+      ])
     ])
   ])
 }
 
+function getStreetString(address) {
+  const val = address.split(",")
+  return val.length ? val[0] : val
+}
+
+function renderVenue({state}) {
+  const {listing} = state
+  const {type, profile} = listing
+  const {location} = profile
+  const {mode, info} = location
+  const {data} = info
+  const {name, address} = data
+  return div(`.venue`, [
+    div(`.name`, [name]),
+    div(`.streetAddress`, [getStreetString(address)])
+  ])
+}
+
+function renderAddress({state}) {
+  const {listing} = state
+  const {type, profile} = listing
+  const {location} = profile
+  const {mode, info} = location
+  const {street} = info
+  return div(`.venue`, [
+    div(`.name`, [name]),
+    div(`.streetAddress`, [street])
+  ])
+}
+
+function renderPoint({state}) {
+  return null
+}
+
+
+function renderLocation(info) {
+  const {state} = info
+  const mode = state.listing.profile.location.mode
+  return div(`.location`, [
+    mode === `venue` ?
+      renderVenue(info)
+      : mode === `address` ?
+        renderAddress(info)
+        : renderPoint(info)
+  ])
+}
+
+function renderCategories(info) {
+  const {state} = info
+  const {listing} = state
+  const {profile} = listing
+  const {description} = profile
+  const {categories} = description
+  
+  if (categories && categories.length) {
+    return div(`.categories`, categories.map(x => div(`.category`, [x]))) 
+  }
+  
+  return null
+}
+
+function renderDescription(info) {
+  const {state} = info
+  const {listing} = state
+  const {profile} = listing
+  const {description} = profile.description
+  
+  if (description) {
+    return div(`.description`, [
+      div(`.title`, [`Description`]),
+      div(`.content`, [description])
+    ])
+  }
+
+  return null
+}
+
+function renderCreator(info) {
+  const {authorization} = info.state
+  return div(`.created-by`, [`@${authorization.username}`])
+}
+
+function renderAdditionalInfo(info) {
+  return div(`.additional-info`, [
+    renderDescription(info),
+    renderCreator(info)
+  ])
+}
+
+function renderRecurring(info) {
+  const {state} = info
+  const {listing} = state
+  const {type, profile} = listing
+  const {meta, location, time} = profile
+  const {title, shortDescription, description} = profile.description
+  const {frequency} = time
+  const {mode} = location
+
+  return div(`.listing-card`, [
+    div(`.info-card`, [
+          div(`.heading`, [
+            div(`.event-title`, [title]),
+            !shortDescription ? null : div(`.short-description`, [shortDescription])
+          ]),
+          div(`.time`, [
+            renderRecurrence(info)
+          ]),
+          renderLocation(info),
+          renderCategories(info)
+    ]),
+    div(`#listingCardMapAnchor`),
+    renderAdditionalInfo(info)
+  ])
+}
+
+
+function renderSingle(info) {
+  const {state} = info
+  const {listing} = state
+  const {type, profile} = listing
+  const {meta, description, location, time} = profile
+  const {title} = description
+  const {frequency} = time
+  const {mode} = location
+
+  return div(`.listing-card`, [
+      div(`.info-card`, [
+        div([
+          div([
+            div(`.card-heading`, [
+              div(`.event-title`, [title])
+            ]),
+            div(`.time`, [
+              renderEventTime(info)
+            ]),
+            renderLocation(info),
+            renderCategories(info)
+          ])
+        ])
+      ]),
+      div(`#listingCardMapAnchor`),
+      renderAdditionalInfo(info)
+    ])
+}
+
 function renderPanel(info) {
   const {state} = info
+  const {listing} = state
+  const {type} = listing
   return div(`.panel`, [
-          div(`.panel-title`, [h5([`Listing preview`])]),
-          renderListingCard(info)
-        ])
+    div(`listing-map`, [
+      type === `single`? 
+        renderSingle(info)
+        : type === `recurring` ? 
+          renderRecurring(info)
+          : renderGroup(info)
+    ]) 
+  ])
 
 
 }

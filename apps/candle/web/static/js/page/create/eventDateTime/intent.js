@@ -1,4 +1,5 @@
 import {Observable as O} from 'rxjs'
+import {inflate} from '../listing'
 
 export default function intent(sources, inputs) {
   const {Router} = sources

@@ -40,7 +40,7 @@ export default function Authorization(sources, inputs) {
           const {exp, sub} = JSON.parse(dPayload)
           const user = JSON.parse(sub)
           console.log("Authenticated:", user)
-          return m
+          return user
         } else {
           return undefined
         }

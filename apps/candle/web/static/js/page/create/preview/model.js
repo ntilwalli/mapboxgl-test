@@ -51,10 +51,15 @@ function reducers(actions, inputs) {
 
 export default function model(actions, inputs) {
   const reducer$ = reducers(actions, inputs)
-  return inputs.listing$.take(1)
-    .map(listing => {
+  return combineObj({
+    listing$: inputs.listing$.take(1),
+    authorization$: inputs.authorization$.take(1)
+  })
+    .map(info => {
+      const {listing, authorization} = info
       const valid = isValid(listing)
       return {
+        authorization,
         listing,
         valid
       }

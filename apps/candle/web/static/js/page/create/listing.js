@@ -28,7 +28,7 @@ export function getEmptyListing() {
     profile: {
       meta: {
         eventType: undefined,
-        visibility: undefined
+        visibility: `undefined`
       },
       description: {
         title: undefined,
@@ -114,7 +114,8 @@ export function getValidators(step, listing) {
         zipCode: [required],
         aptSuiteBldg: [optional],
         countryCode: [required],
-        latLng: [optional]
+        latLng: [required],
+        description: [optional]
       }
     } else if (mode === `map`) {
       return {

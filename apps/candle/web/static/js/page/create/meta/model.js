@@ -19,7 +19,8 @@ function reducers(actions, inputs) {
       profile.meta.eventType = undefined
     }
 
-    return setValidity(state.set(`listing`, listing))
+    listing.profile.time = undefined
+    return state.set(`listing`, listing).set(`valid`, isValid(listing))
   })
 
   const visibilityR = inputs.visibility$.map(val => state => {
@@ -28,7 +29,7 @@ function reducers(actions, inputs) {
     const {meta} = profile
     meta.visibility = val
 
-    return setValidity(state.set(`listing`, listing))
+    return state.set(`listing`, listing).set(`valid`, isValid(listing))
   })
 
   const eventTypeR = inputs.eventType$.map(val => state => {
@@ -37,7 +38,7 @@ function reducers(actions, inputs) {
     const {meta} = profile
     meta.eventType = val
 
-    return setValidity(state.set(`listing`, listing))
+    return state.set(`listing`, listing).set(`valid`, isValid(listing))
   })
 
   return O.merge(
