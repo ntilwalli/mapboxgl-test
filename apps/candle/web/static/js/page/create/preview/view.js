@@ -223,8 +223,8 @@ function renderEventTime(info) {
       span(`.start-time`, [startMoment.format(getTimeFormatString())])
     ]),
     end ? div(`.end-time-container`, [
-      div(`.end-title`, [`Ends:`]),
-      div(`.end-time`, [endMoment.format(getTimeFormatString())])
+      span(`.end-title`, [`Ends:`]),
+      span(`.end-time`, [endMoment.format(getTimeFormatString())])
     ]): null
   ])
 }
@@ -276,10 +276,18 @@ function renderAddress({state}) {
   const {type, profile} = listing
   const {location} = profile
   const {mode, info} = location
-  const {street} = info
-  return div(`.venue`, [
-    div(`.name`, [name]),
-    div(`.streetAddress`, [street])
+  const {street, aptSuiteBldg, city, stateAbbr, zipCode, description} = info
+  return div(`.address`, [
+    description ? div(`.name`, [description]) : null,
+    div(`.streetAddress`, [
+      span(`.street`, [street]),
+      aptSuiteBldg ? span(`.aptSuiteBldg`, [aptSuiteBldg]) : null
+    ]),
+    div(`.cityStateZip`, [
+      span(`.city`, [city]),
+      span(`.stateAbbr`, [stateAbbr]),
+      span(`.zip`, [zipCode])
+    ])
   ])
 }
 

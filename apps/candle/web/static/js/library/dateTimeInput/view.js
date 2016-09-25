@@ -31,7 +31,7 @@ function inValidRange(today, {year, month, rangeStart, rangeEnd}, dayNum) {
 
 function isPreviousMonthSelectable({year, month, rangeStart}) {
   if (rangeStart) {
-    return moment((new Date(year, month-1)).toISOString()).endOf('month').isAfter(rangeStart)
+    return moment((new Date(year, month-1)).toISOString()).endOf('month').isSameOrAfter(rangeStart)
   }
 
   return true
@@ -47,7 +47,7 @@ function isNextMonthSelectable({year, month, rangeEnd}) {
 
 function isPreviousYearSelectable({year, month, rangeStart}) {
   if (rangeStart) {
-    return moment((new Date(year-1, month)).toISOString()).endOf('month').isAfter(rangeStart)
+    return moment((new Date(year-1, month)).toISOString()).endOf('month').isSameOrAfter(rangeStart)
   }
 
   return true
@@ -63,7 +63,7 @@ function isNextYearSelectable({year, month, rangeEnd}) {
 
 function isPreviousHourSelectable({currentDate, currentTime, rangeStart}) {
   if (currentDate && currentTime && rangeStart) {
-    return getMomentFromStateInfo(currentDate, currentTime).subtract(1, 'hour').isAfter(rangeStart)
+    return getMomentFromStateInfo(currentDate, currentTime).subtract(1, 'hour').isSameOrAfter(rangeStart)
   }
 
   return true
@@ -79,7 +79,7 @@ function isNextHourSelectable({currentDate, currentTime, rangeEnd}) {
 
 function isPreviousMinuteSelectable({currentDate, currentTime, rangeStart}) {
   if (currentDate && currentTime && rangeStart) {
-    return getMomentFromStateInfo(currentDate, currentTime).subtract(1, 'minute').isAfter(rangeStart)
+    return getMomentFromStateInfo(currentDate, currentTime).subtract(1, 'minute').isSameOrAfter(rangeStart)
   }
 
   return true
@@ -103,7 +103,7 @@ function isPMSelectable({currentDate, currentTime, rangeEnd}) {
 
 function isAMSelectable({currentDate, currentTime, rangeStart}) {
   if (currentDate && currentTime && rangeStart) {
-    return getMomentFromStateInfo(currentDate, currentTime).subtract(12, 'hour').isAfter(rangeStart)
+    return getMomentFromStateInfo(currentDate, currentTime).subtract(12, 'hour').isSameOrAfter(rangeStart)
   }
 
   return true

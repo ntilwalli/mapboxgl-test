@@ -9,8 +9,13 @@ export function inflate(listing) {
       rrule.until = typeof until === `string` ? new Date(until) : until
     } else if (type === `single`) {
       const {start, end} = time
-      time.start = typeof start === `string` ? new Date(start) : start
-      time.end = typeof end === `string` ? new Date(end) : end
+      if (start && start.type === `datetime`) {
+        time.start.data = typeof start.data === `string` ? new Date(start.data) : start.data
+      }
+
+      if (end && end.type === `datetime`) {
+        time.end.data = typeof end.data === `string` ? new Date(end.data) : end.data
+      }
     }
   }
 

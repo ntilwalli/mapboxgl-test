@@ -107,22 +107,18 @@
     }
   }
 
-  .recurrence-start-date, .start-date {
+  .address {
 
-    // &:before {
-    //   content: 'Starts '
-    // }
+    .city {
+      padding-right: .1rem;
+      &:after {
+        content: ',';
+      }
+    }
+
+    .stateAbbr{
+      padding-right: .1rem;
+    }
   }
-
-  .end-date {
-
-    // &:before {
-    //   content: 'Ends '
-    // }
-  }
-
-  // .recurrence-until-date {
-
-  // }
 
 }
