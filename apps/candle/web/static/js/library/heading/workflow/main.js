@@ -58,13 +58,13 @@ function model(actions, inputs) {
 
   return combineObj({
     instruction$: actions.instruction$.take(1),
-    lastSaved$: actions.listing$.map(x => x && x.updatedAt).take(1)
+    listing$: actions.listing$.take(1)//.map(x => x && x.updatedAt).take(1)
   })
     .map(inputs => {
-      const {instruction, lastSaved} = inputs
+      const {instruction, listing} = inputs
       return {
         instruction,
-        lastSaved,
+        lastSaved: listing && listing.updated_at,
         error: undefined,
         isSaving: false
       }

@@ -22,8 +22,8 @@ defmodule Shared.Listing do
   end
 
   @allowed_fields [:id, :parent_id, :user_id, :profile, :type, :release, :visibility, :handle]
-  @required_fields_insert  [:user_id, :type, :profile, :release, :visibility]
-  @required_fields_update  [:id, :user_id, :type]
+  @required_fields_insert  [:user_id, :profile, :type, :visibility, :release]
+  @required_fields_update  [:profile, :type, :visibility, :release]
 
   def insert_changeset(model, params \\ :empty) do
     model

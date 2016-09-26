@@ -1,6 +1,14 @@
 export function inflate(listing) {
-  const {type, profile} = listing
+  const {updated_at, inserted_at, type, profile} = listing
   const {time} = profile
+  if (updated_at) {
+    listing.updated_at = typeof updated_at === `string` ? new Date(updated_at) : updated_at
+  }
+
+  if (inserted_at) {
+    listing.inserted_at = typeof inserted_at === `string` ? new Date(inserted_at) : inserted_at
+  }
+
   if (time) {
     if (type === `recurring`) {
       const {rrule} = time

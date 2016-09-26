@@ -36,19 +36,40 @@ defmodule User.Auth do
   #     {:reply, {:ok, %{type: "error", data: "blah"}}, state}
   # end
 
-  # def handle_call({:route, %{
-  #       "route" => "/listing/save", 
-  #       "data" => %{
-  #         "id" => id, "type" => type, "profile" => %{
-  #           "meta" => %{
-  #             "visibility" => visibility
-  #           }} = profile
-  #       } = listing
-  #     }} , _from, state)  when isNumber(id) do
+  def handle_call({:route, %{
+        "route" => "/listing/save", 
+        "data" => %{
+          "id" => id, "user_sequence_id" => user_sequence_id, "type" => type, "profile" => %{
+            "meta" => %{
+              "visibility" => visibility
+            }} = profile
+        } = listing
+      }} , _from, state) when is_number(id) do
+    %{user: user} = state
+    tmp = Ecto.build_assoc(user, :listings)
+    listing_w_user = Map.put(tmp, :id, id)
 
-  #   IO.puts("Update w/o parent")
-  #   {:reply, {:ok, %{type: "error", data: "blah"}}, state}  
-  # end
+    listing_params = %{
+      "type" => type,
+      "profile" => profile,
+      "visibility" => visibility,
+      "release" => "saved"
+    }
+
+    listing_changeset = Listing.update_changeset(listing_w_user, listing_params)
+    multi_query = Ecto.Multi.new
+      |> Multi.update(:listing, listing_changeset)
+
+    case Repo.transaction(multi_query) do
+      {:ok, %{listing: listing} = result} ->
+        {:reply, {:ok, %{type: "saved", data: enrich_user_sequence_id(listing, user_sequence_id)}}, state}
+      {:error, key_that_errored, %Ecto.Changeset{} = result } ->
+        IO.puts("Update not successful")
+        IO.inspect(result)
+        val = Map.fetch(result, key_that_errored)
+        {:reply, {:ok, %{type: "error", data: %{errors: errors_to_map(val.errors)}}}, state}
+    end
+  end
 
   def handle_call({:route, %{
         "route" => "/listing/save", 
@@ -61,13 +82,6 @@ defmodule User.Auth do
       }} , _from, state) do
 
     %{user: user} = state
-
-    # type = Map.fetch!(listing, "type")
-    # profile = Map.fetch!(listing, "profile")
-    # meta = Map.fetch!(profile, "meta")
-    # visibility = Map.get(Map.fetch!(profile, "meta"), "visibility")
-
-
     new_listing = Ecto.build_assoc(user, :listings)
     new_user_listing = Ecto.build_assoc(user, :user_listings)
 
@@ -90,7 +104,7 @@ defmodule User.Auth do
 
     listing_changeset = Listing.insert_changeset(new_listing, listing_params)
 
-    multiQuery = Ecto.Multi.new
+    multi_query = Ecto.Multi.new
       |> Multi.insert(:listing, listing_changeset)
       |> Multi.run(
         :user_listing, 
@@ -102,11 +116,11 @@ defmodule User.Auth do
         end
       )
 
-    case Repo.transaction(multiQuery) do
+    case Repo.transaction(multi_query) do
       {:ok, %{listing: listing, user_listing: user_listing} = result} ->
         #IO.puts("Insert successful")
         #IO.inspect(result)
-        {:reply, {:ok, %{type: "created", data: %{listing | user_sequence_id: user_listing.sequence_id}}}, state}
+        {:reply, {:ok, %{type: "created", data: enrich_user_sequence_id(listing, user_listing.sequence_id)}}, state}
       {:error, key_that_errored, %{
           listing: listing_result, 
           user_listing: user_listing_result
@@ -117,6 +131,10 @@ defmodule User.Auth do
         val = Map.fetch(result, key_that_errored)
         {:reply, {:ok, %{type: "error", data: %{errors: errors_to_map(val.errors)}}}, state}
     end
+  end
+
+  defp enrich_user_sequence_id(listing, user_sequence_id) do
+    %{listing | user_sequence_id: user_sequence_id}
   end
 
     
