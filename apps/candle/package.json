@@ -41,7 +41,6 @@
     "rrule": "file:custom_deps/rrule",
     "rxjs": "^5.0.0-beta.12",
     "validator": "^5.2.0",
-    "virtual-mapdom": "file:///Users/ntilwalli/dev/cycle/virtual-mapdom",
     "xregexp": "^3.1.1",
     "xs-combine-obj": "^1.1.1",
     "xstream": "^6.3.0"

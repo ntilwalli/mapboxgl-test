@@ -20,13 +20,13 @@ function main(sources, inputs) {
   }
   const vtree$ = view(inputs.props$, components)
 
-  // return spread(mergeSinks(heading), {
-  //   DOM: vtree$
-  // })
-
-  return normalizeComponent({
+  return spread(mergeSinks(heading), {
     DOM: vtree$
   })
+
+  // return normalizeComponent({
+  //   DOM: vtree$
+  // })
 }
 
 export default (sources, inputs) => main(sources, inputs)
