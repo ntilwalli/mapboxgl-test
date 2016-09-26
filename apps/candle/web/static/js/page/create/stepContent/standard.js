@@ -250,8 +250,12 @@ export default function main(sources, inputs) {
         }),
       save$: defaultNever(content, `save$`),
       saveStatus$: O.merge(
-        actions.fromHTTP$,
-        toHTTP$.map(x => ({type: `saving`}))
+        actions.fromHTTP$.map(x => {
+          return x
+        }),
+        toHTTP$.map(x => ({type: `saving`})).map(x => {
+          return x
+        })
       )
     }
   })

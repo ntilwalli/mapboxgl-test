@@ -1,37 +1,45 @@
 defmodule Shared.Listing do
   use Shared.Lib, :model
 
-  @derive {Poison.Encoder, except: [:__meta__, :user_listings, :child_listings, :global_handles, :user]}
+  @derive {Poison.Encoder, except: [:__meta__, :user_listings, :child_listings, :user, :sort_id]}
   @primary_key {:id, :id, autogenerate: true}
   schema "listings" do
+    field :sort_id, :id
     field :parent_id, :id
     field :profile, :map
     field :type, :string
+    field :handle, :string
+    field :release, :string
+    field :visibility, :string
+    field :user_sequence_id, :integer, virtual: true
+    field :child_sequence_id, :integer, virtual: true
 
     belongs_to :user, Shared.User
     has_one :user_listings, Shared.UserListing
     has_many :child_listings, Shared.ChildListing
-    has_one :global_handles, Shared.GlobalHandle
 
     timestamps
-
   end
 
-  @allowed_fields [:id, :parent_id, :user_id, :profile, :type]
-  @required_fields_insert  [:user_id, :type]
+  @allowed_fields [:id, :parent_id, :user_id, :profile, :type, :release, :visibility, :handle]
+  @required_fields_insert  [:user_id, :type, :profile, :release, :visibility]
   @required_fields_update  [:id, :user_id, :type]
 
   def insert_changeset(model, params \\ :empty) do
     model
     |> cast(params, @allowed_fields)
     |> validate_required(@required_fields_insert)
-    |> foreign_key_constraint(:user_id)
+    |> assoc_constraint(:user)
+    |> foreign_key_constraint(:release)
+    |> foreign_key_constraint(:visibility)
   end
 
   def update_changeset(model, params \\ :empty) do
     model
     |> cast(params, @allowed_fields)
     |> validate_required(@required_fields_update)
-    |> foreign_key_constraint(:user_id)
+    |> assoc_constraint(:user)
+    |> foreign_key_constraint(:release)
+    |> foreign_key_constraint(:visibility)
   end
 end

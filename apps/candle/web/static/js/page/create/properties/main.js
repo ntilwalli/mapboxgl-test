@@ -11,11 +11,18 @@ import Heading from '../../../library/heading/workflow/main'
 import Step from '../step/main'
 import StepContent from '../stepContent/standard'
 
-const titleInputProps = O.of({
-  placeholder: `Event title`,
-  name: `title`,
-  required: true,
-  key: `title`
+const userHandleInputProps = O.of({
+  placeholder: `Handle`,
+  name: `handle`,
+  required: false,
+  key: `handle`
+})
+
+const globalHandleInputProps = O.of({
+  placeholder: `Global handle`,
+  name: `globalHandle`,
+  required: false,
+  key: `globalHandle`
 })
 
 function contentComponent(sources, inputs) {

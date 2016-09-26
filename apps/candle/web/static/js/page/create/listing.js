@@ -27,13 +27,15 @@ export function getEmptyListing() {
   return {
     id: undefined,
     parentId: undefined,
+    user_sequence_id: undefined,
+    child_sequence_id: undefined,
     type: `single`,
     insertedAt: undefined,
     updatedAt: undefined,
     profile: {
       meta: {
         eventType: undefined,
-        visibility: `undefined`
+        visibility: `private`
       },
       description: {
         title: undefined,

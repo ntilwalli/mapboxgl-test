@@ -10,16 +10,12 @@ import Heading from '../../../library/heading/workflow/main'
 import Step from '../step/main'
 import StepContent from '../stepContent/standard'
 
-import {getEmptyListing} from '../listing'
-
 import {combineObj, spread, normalizeComponent, mergeSinks} from '../../../utils'
 
 function contentComponent(sources, inputs) {
-  const listing$ = sources.Router.history$
-    .map(route => route.state || getEmptyListing())
-    .publishReplay(1).refCount()
 
-  const profile$ = listing$
+  const actions = intent(sources)
+  const profile$ = actions.listing$
     .map(x => {
       return x
     })
@@ -40,7 +36,7 @@ function contentComponent(sources, inputs) {
     //   value: `group`
     // }
     ],
-    props$: listing$
+    props$: actions.listing$
       .map(listing => listing && listing.type)
       .map(selected => ({selected}))
   })
@@ -89,7 +85,6 @@ function contentComponent(sources, inputs) {
     ).map(selected => ({selected})),
   })
 
-  const actions = intent(sources)
   // skip 1 because RadioInput emits based on props which is already used initially to set up the local state
   const state$ = model(
     actions, spread(
@@ -97,7 +92,7 @@ function contentComponent(sources, inputs) {
       creationType$: creationTypeInput.selected$.skip(1),
       visibility$: visibilityInput.selected$.skip(1),
       eventType$: eventTypeInput.selected$.skip(1),
-      listing$
+      listing$: actions.listing$
     })
   )
 
@@ -133,10 +128,10 @@ export default function main(sources, inputs) {
     props$: stepProps
   }))
 
-  const headingGenerator = (saving$) => normalizeComponent(Heading(sources, spread(
+  const headingGenerator = (saving$) => Heading(sources, spread(
     inputs, {
       saving$
-    })))
+    }))
 
   const instruction = {
     DOM: O.of(div([`Hello`]))

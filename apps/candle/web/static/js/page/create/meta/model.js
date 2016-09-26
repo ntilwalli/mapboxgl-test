@@ -52,7 +52,7 @@ export default function model(actions, inputs) {
   const reducer$ = reducers(actions, inputs)
 
   return combineObj({
-      listing$: inputs.listing$
+      listing$: actions.listing$
     })
     .take(1)
     .map(inputs => {

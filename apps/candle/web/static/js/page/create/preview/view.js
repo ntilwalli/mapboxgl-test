@@ -397,7 +397,7 @@ function renderPanel(info) {
             button(`.appCustomizeButton.customize-button`, `Customize`)
           ])
         ]),
-        eventType === `show` ? div(`.action-container`, [
+        eventType === `show` || type === `recurring` || type === `group` ? div(`.action-container`, [
           span(`.action-description`, [`Staging a listing allows you to invite/confirm performers before going live.  Would you like to stage this listing?`]),
           div(`.action-button`, [
             button(`.appStageButton.stage-button`, `Stage`)

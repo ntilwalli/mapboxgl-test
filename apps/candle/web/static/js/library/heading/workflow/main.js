@@ -17,6 +17,7 @@ function intent(sources, inputs) {
     {pattern: `/confirmAddressLocation`, value: `Interim: Confirm address location`},
     {pattern: `/time`, value: `Step 4: Set event time`},
     {pattern: `/recurrence`, value: `Step 4: Set recurrence`},
+    {pattern: `/properties`, value: `Step 5: Properties and handle`},
     {pattern: `/preview`, value: `Step 5: Post, stage or customize`},
     {pattern: `*`, value: `Step default: Should not get here`}
   ]).map(x => {
@@ -34,11 +35,15 @@ function intent(sources, inputs) {
 function reducers(actions, inputs) {
   const savingR = inputs.saving$.map(val => state => {
     if (val.type === `saving`) {
-      return state.set(`isSaving`, true)
-    } else if (val.type === `saved` || val.type === `error`) {
-      return state.set(`lastSaved`, val.data.updated_at).set(`isSaving`, false)
+      return state.set(`isSaving`, true).set(`error`, undefined)
+    } else if (val.type === `saved`) {
+      return state.set(`lastSaved`, val.data.updated_at).set(`isSaving`, false).set(`error`, undefined)
     } else if (val.type === `created`) {
-      return state.set(`lastSaved`, val.data.inserted_at).set(`isSaving`, false)
+      return state.set(`lastSaved`, val.data.inserted_at).set(`isSaving`, false).set(`error`, undefined)
+    } else if (val.type === `error`) {
+      return state.set(`error`, val.data)
+    } else if (val.type === `problem`) {
+      return state.set(`error`, val.data)
     }
   })
 
@@ -60,6 +65,7 @@ function model(actions, inputs) {
       return {
         instruction,
         lastSaved,
+        error: undefined,
         isSaving: false
       }
     })
@@ -75,12 +81,16 @@ function renderInstruction(state) {
 }
 
 function renderSaveArea(state) {
-  const {lastSaved, isSaving} = state
-  console.log("Last saved", lastSaved)
+  const {lastSaved, isSaving, error} = state
+  if (error) {
+    console.error("Save listing error: ", error)
+  }
+  //console.log("Last saved", lastSaved)
+
   return div(`.listing-save-area`, [
-    div(`.hidden-sm-down.last-saved-status`, [
+    !error ? div(`.last-saved-status`, [
       isSaving ? span(`.spinner`) : div([lastSaved ? moment(lastSaved).fromNow() : `Not saved`])
-    ]),
+    ]) : div(`.error-save-status`, [`Error`]),
     button(`.appSaveListing.menu-link`, [`Save and Exit`])
   ])
 }

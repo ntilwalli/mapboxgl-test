@@ -16,8 +16,8 @@ import Preview from '../preview/main'
 import RedirectRestricted from '../../../redirectRestricted'
 import RedirectCreate from '../../../redirectCreate'
 
-const BlahRecurrence = () => ({
-  DOM: O.of(div([`Time`]))
+const Properties = () => ({
+  DOM: O.of(div([`Properties`]))
 })
 
 const routes = [
@@ -27,6 +27,7 @@ const routes = [
   {pattern: /^\/confirmAddressLocation$/, value: {type: "component", data: ConfirmAddressLocation}},
   {pattern: /^\/time$/, value: {type: "component", data: Time}},
   {pattern: /^\/recurrence$/, value: {type: "component", data: Recurrence}},
+  {pattern: /^\/properties$/, value: {type: "component", data: Properties}},
   {pattern: /^\/preview$/, value: {type: "component", data: Preview}},
   {pattern: /^\/?$/, value: {type: "component", data: Landing}},
   {pattern: /\/?.*/, value: {type: `error`, data: RedirectCreate}},

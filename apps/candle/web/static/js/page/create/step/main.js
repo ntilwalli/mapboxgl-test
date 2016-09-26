@@ -44,12 +44,23 @@ function intent(sources) {
     .filter(x => x.type === `saved`)
     //.map(x => x.data)
     .publish().refCount()
+  const error$ = good$
+    .filter(x => x.type === `error`)
+    //.map(x => x.data)
+    .publish().refCount()
+
+  const problem$ = O.merge(
+    bad$, ugly$
+  ).map(x => ({
+      type: `problem`,
+      data: x
+    }))
 
   const fromHTTP$ = O.merge(
     created$,
     saved$,
-    bad$,
-    ugly$,
+    error$,
+    problem$
   ).map(x => {
     return x
   })
@@ -165,8 +176,12 @@ export default function main(sources, inputs) {
   const saveStatus$ = O.merge(
     toHTTP$.mapTo({
       type: `saving`
-    }),
-    actions.fromHTTP$
+    }).map(x => {
+          return x
+        }),
+    actions.fromHTTP$.map(x => {
+          return x
+        })
   )
 
   saving$.attach(O.merge(
