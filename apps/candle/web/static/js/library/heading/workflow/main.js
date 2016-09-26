@@ -11,14 +11,14 @@ function intent(sources, inputs) {
   const save$ = DOM.select(`.appSaveListing`).events(`click`)
   const listing$ = Router.history$.map(x => x.state)
   const instruction$ = inputs.ParentRouter.define([
-    {pattern: `/meta`, value: `Step 1: Preliminary info`},
-    {pattern: `/description`, value: `Step 2: Add a title and description`},
-    {pattern: `/location`, value: `Step 3: Add a location`},
-    {pattern: `/confirmAddressLocation`, value: `Interim: Confirm address location`},
-    {pattern: `/time`, value: `Step 4: Set event time`},
-    {pattern: `/recurrence`, value: `Step 4: Set recurrence`},
-    {pattern: `/properties`, value: `Step 5: Properties and handle`},
-    {pattern: `/preview`, value: `Step 5: Post, stage or customize`},
+    {pattern: `/meta`, value: `Preliminary info`},
+    {pattern: `/description`, value: `Add a title and description`},
+    {pattern: `/location`, value: `Add a location`},
+    {pattern: `/confirmAddressLocation`, value: `Confirm address location`},
+    {pattern: `/time`, value: `Set event time`},
+    {pattern: `/recurrence`, value: `Set recurrence`},
+    {pattern: `/properties`, value: `Properties and handle`},
+    {pattern: `/preview`, value: `Post, stage or customize`},
     {pattern: `*`, value: `Step default: Should not get here`}
   ]).map(x => {
     return x.value.info

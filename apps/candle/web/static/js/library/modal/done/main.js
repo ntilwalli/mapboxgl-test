@@ -80,10 +80,7 @@ export default function main(sources, inputs) {
       }),//component.DOM),
     output$: holdOutput$,
     close$: actions.close$,
-    done$: actions.done$
-      .take(1)
-      .switchMap(() => {
-        return holdOutput$.take(1)
-      })
+    done$: actions.done$.withLatestFrom(holdOutput$, (_, output) => output)
+
   })
 }

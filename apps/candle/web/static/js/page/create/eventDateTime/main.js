@@ -95,8 +95,11 @@ export default function main(sources, inputs) {
     }
   })
 
+  const listing$ = createProxy()
+
   const content = StepContent(sources, spread(inputs, {
-    props$: stepProps
+    props$: stepProps,
+    listing$
   }))
 
   const headingGenerator = (saving$) => normalizeComponent(Heading(sources, spread(
@@ -116,6 +119,8 @@ export default function main(sources, inputs) {
       panelClass: `create-event-time`
     })
   }))
+
+  listing$.attach(workflowStep.listing$)
 
   return workflowStep
 }

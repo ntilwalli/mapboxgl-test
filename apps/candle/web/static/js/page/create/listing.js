@@ -27,6 +27,7 @@ export function inflate(listing) {
     }
   }
 
+  console.log(`inflated listing:`, listing)
   return listing
 
 }

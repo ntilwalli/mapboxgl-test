@@ -7,7 +7,7 @@ import Immutable from 'immutable'
 
 import {div, li, span} from '@cycle/DOM'
 
-import {noopListener, normalizeSink, normalizeSinkUndefined, normalizeComponent, spread, combineObj} from '../../../utils'
+import {createProxy, normalizeSink, normalizeSinkUndefined, normalizeComponent, spread, combineObj} from '../../../utils'
 
 import Heading from '../../../library/heading/workflow/main'
 import Step from '../step/main'
@@ -48,8 +48,11 @@ export default function main(sources, inputs) {
       }
   })
 
+  const listing$ = createProxy()
+
   const content = StepContent(sources, spread(inputs, {
-    props$: stepProps
+    props$: stepProps,
+    listing$
   }))
 
   const headingGenerator = (saving$) => normalizeComponent(Heading(sources, spread(
@@ -69,6 +72,8 @@ export default function main(sources, inputs) {
       panelClass: `create-location`
     })
   }))
+
+  listing$.attach(workflowStep.listing$)
 
   return workflowStep
 }

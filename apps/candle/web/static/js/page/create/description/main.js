@@ -1,6 +1,6 @@
 import {Observable as O} from 'rxjs'
 import {div} from '@cycle/dom'
-import {combineObj, spread, mergeSinks, normalizeComponent} from '../../../utils'
+import {createProxy, combineObj, spread, mergeSinks, normalizeComponent} from '../../../utils'
 
 import intent from './intent'
 import model from './model'
@@ -54,8 +54,11 @@ export default function main(sources, inputs) {
     next: `location`
   })
 
+  const listing$ = createProxy()
+
   const content = StepContent(sources, spread(inputs, {
-    props$: stepProps
+    props$: stepProps,
+    listing$
   }))
 
   const headingGenerator = (saving$) => normalizeComponent(Heading(sources, spread(
@@ -75,6 +78,8 @@ export default function main(sources, inputs) {
       panelClass: `create-description`
     })
   }))
+
+  listing$.attach(workflowStep.listing$)
 
   return workflowStep
 }

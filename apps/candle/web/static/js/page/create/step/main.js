@@ -2,6 +2,8 @@ import {Observable as O} from 'rxjs'
 import {div, span} from '@cycle/dom'
 import Immutable from 'immutable'
 import {combineObj, mergeSinks, normalizeSink, normalizeComponent, defaultNever, spread, createProxy, processHTTP} from '../../../utils'
+import deepEqual from 'deep-equal'
+import deepAssign from 'deep-assign'
 
 function processValid(response) {
   return response
@@ -71,7 +73,8 @@ function intent(sources) {
     openInstruction$,
     fromHTTP$,
     created$,
-    route$
+    route$, 
+    saved$
   }
 }
 
@@ -151,13 +154,35 @@ export default function main(sources, inputs) {
   const save$ = O.merge(
     defaultNever(content, `save$`), 
     defaultNever(heading, `save$`)
-  ).map(x => {
-      return x
+  ).publish().refCount()
+
+  const listing$ = content.listing$.publishReplay(1).refCount()
+
+  const autosave$ = save$
+    .startWith(undefined)
+    .switchMap(_ => {
+      return listing$
+        .skip(1)
+        .map(listing => {
+          const b = JSON.parse(JSON.stringify(listing))
+          return b
+        })
+        .distinctUntilChanged((x, y) => {
+          const out = deepEqual(x, y)
+          return out
+        })
+        .map(x => {
+          return x
+        })
+        .debounceTime(3000)
     })
 
-  const listing$ = defaultNever(content,`listing$`)
-
-  const toHTTP$ = save$.withLatestFrom(listing$, (_, listing) => {
+  const toHTTP$ = O.merge(
+    save$.map(x => {
+      return x
+    }).withLatestFrom(listing$, (_, listing) => listing),
+    autosave$
+  ).map(listing => {
     return {
       url: `/api/user`,
       method: `post`,
@@ -215,7 +240,8 @@ export default function main(sources, inputs) {
   }
   
   return spread(mergeSinks(heading, content, instruction, mergeableSinks), {
-    DOM: vtree$
+    DOM: vtree$,
+    listing$: actions.saved$.map(x => x.data)
   })
 
   // return {

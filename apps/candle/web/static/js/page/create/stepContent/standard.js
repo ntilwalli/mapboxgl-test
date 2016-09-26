@@ -10,12 +10,21 @@ function intent(sources) {
   const next$ = DOM.select(`.appNextButton`).events(`click`)
   const back$ = DOM.select(`.appBackButton`).events(`click`)
   const {good$, bad$, ugly$} = processHTTP(sources, `saveListingOnNext`)
+  
   const created$ = good$.filter(x => x.type === `created`)
     .map(x => {
       return x
     })
     .publish().refCount()
-  const saved$ = good$.filter(x => x.type === `saved`)
+  const saved$ = good$
+    .map(x => {
+      return x
+    })
+    .filter(x => x.type === `saved`)
+    .map(x => {
+      return x
+    })
+    .publish().refCount()
   const fromHTTP$ = O.merge(
     created$,
     saved$,
@@ -23,18 +32,25 @@ function intent(sources) {
     ugly$,
   )
 
+  const updatedListing$ = O.merge(created$, saved$).map(x => x.data)
+
   return {
-    next$, back$, fromHTTP$, created$
+    next$, back$, fromHTTP$, created$, updatedListing$
   }
 }
 
 function reducers(actions, inputs) {
+  const savedListingR = defaultNever(inputs, `listing$`).map(x => state => {
+    const cs = state.get(`contentState`)
+    cs.listing = x
+    return state.set(`contentState`, cs).set(`autosave`, false)
+  })
   const validR = inputs.contentState$.skip(1)
     .map(val => state => {
-      return state.set(`contentState`, val)
+      return state.set(`contentState`, val).set(`autosave`, true)
     })
 
-  return O.merge(validR)
+  return O.merge(validR, savedListingR)
 }
 
 function model(actions, inputs) {
@@ -43,7 +59,8 @@ function model(actions, inputs) {
     .map(contentState => {
       return {
         waiting: false,
-        contentState
+        contentState,
+        autosave: true
       }
     })
     .switchMap(initialState => {
@@ -55,7 +72,7 @@ function model(actions, inputs) {
 }
 
 function view(state$, components) {
-  return combineObj(components)
+  return combineObj(components).debounceTime(4)
     .withLatestFrom (state$, (components, state) => {
       const {contentState, waiting} = state
       const {valid} = contentState
@@ -74,7 +91,7 @@ function view(state$, components) {
           ])
           , div(`.controller-section`, [
             div(`.separator`),
-            div(`.button-section`, [
+            div(`.button-section.justify-space-between`, [
               button(`.appBackButton.back-button`, [
                 span(`.fa.fa-angle-left`),
                 span(`.back-text`, [`Back`])
@@ -144,10 +161,15 @@ export default function main(sources, inputs) {
           }
         }
       }).publish().refCount()
+    
+    const requestedSaveListing$ = decision$
+      .filter(x => x.type === `HTTP`)
+      .map(x => x.data)
+      .publish().refCount()
 
-    const toHTTP$ = decision$.filter(x => x.type === "HTTP")
+    const toHTTP$ = requestedSaveListing$
       .map(x => {
-        const listing = x.data
+        const listing = x
         return {
           url: `/api/user`,
           method: `post`,
@@ -244,6 +266,7 @@ export default function main(sources, inputs) {
       Storage: defaultNever(content, `Storage`),
       Global: defaultNever(content, `Global`),
       listing$: state$
+        .filter(x => x.autosave === true)
         .map(x => x.contentState.listing)
         .map(x => {
           return x

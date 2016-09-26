@@ -174,7 +174,8 @@ function contentComponent(sources, inputs) {
     .map(normalizeComponent)
     .publishReplay(1).refCount()
 
-  location$.attach(normalizeSink(inputComponent$, `result$`))
+  //location$.attach(normalizeSink(inputComponent$, `result$`))
+  location$.attach(inputComponent$.switchMap(x => x.result$.skip(1)))
 
   const vtree$ = view(state$, {
     radio: radioInput.DOM,
@@ -187,7 +188,9 @@ function contentComponent(sources, inputs) {
     HTTP: O.merge(normalizeSink(inputComponent$, `HTTP`), normalizeSink(modal$, `HTTP`)),
     Global: normalizeSink(inputComponent$, `Global`),
     MapDOM: O.merge(normalizeSink(modal$, `MapDOM`), normalizeSink(inputComponent$, `MapDOM`)),
-    state$
+    state$: state$.map(x => {
+      return x
+    })
   }
 
 }
@@ -214,8 +217,11 @@ export default function main(sources, inputs) {
     }
   })
 
+  const listing$ = createProxy()
+
   const content = StepContent(sources, spread(inputs, {
-    props$: stepProps
+    props$: stepProps,
+    listing$
   }))
 
   const headingGenerator = (saving$) => normalizeComponent(Heading(sources, spread(
@@ -235,6 +241,9 @@ export default function main(sources, inputs) {
       panelClass: `create-location`
     })
   }))
+
+  listing$.attach(workflowStep.listing$)
+
 
   return workflowStep
 }

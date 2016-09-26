@@ -63,7 +63,7 @@ function view(state$, components) {
           ])
           , div(`.controller-section`, [
             div(`.separator`),
-            div(`.button-section`, [
+            div(`.button-section.justify-center`, [
               button(`.appBackButton.back-button`, [
                 span(`.fa.fa-angle-left`),
                 span(`.back-text`, [`Back`])

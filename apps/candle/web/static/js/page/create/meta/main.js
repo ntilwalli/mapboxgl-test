@@ -10,7 +10,7 @@ import Heading from '../../../library/heading/workflow/main'
 import Step from '../step/main'
 import StepContent from '../stepContent/standard'
 
-import {combineObj, spread, normalizeComponent, mergeSinks} from '../../../utils'
+import {combineObj, spread, normalizeComponent, mergeSinks, createProxy} from '../../../utils'
 
 function contentComponent(sources, inputs) {
 
@@ -124,8 +124,12 @@ export default function main(sources, inputs) {
     next: `description`
   })
 
+
+  const listing$ = createProxy()
+
   const content = StepContent(sources, spread(inputs, {
-    props$: stepProps
+    props$: stepProps,
+    listing$
   }))
 
   const headingGenerator = (saving$) => Heading(sources, spread(
@@ -145,6 +149,8 @@ export default function main(sources, inputs) {
       panelClass: `create-meta`
     })
   }))
+
+  listing$.attach(workflowStep.listing$)
 
   return workflowStep
 }

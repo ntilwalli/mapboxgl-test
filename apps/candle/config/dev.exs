@@ -37,10 +37,10 @@ config :candle, Candle.Endpoint,
 config :phoenix, :stacktrace_depth, 20
 
 # Configure your database
-config :candle, Candle.Repo,
-  adapter: Ecto.Adapters.Postgres,
-  username: "postgres",
-  password: "postgres",
-  database: "candle_repo",
-  hostname: "localhost",
-  pool_size: 10
+# config :candle, Candle.Repo,
+#   adapter: Ecto.Adapters.Postgres,
+#   username: "postgres",
+#   password: "postgres",
+#   database: "candle_repo",
+#   hostname: "localhost",
+#   pool_size: 10

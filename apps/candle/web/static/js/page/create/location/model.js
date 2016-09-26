@@ -24,7 +24,7 @@ function reducers(actions, inputs) {
       .set(`valid`, isValid(listing))
   })
 
-  const locationR = inputs.location$.skip(1).map(loc => state => {
+  const locationR = inputs.location$.map(loc => state => {
     const listing = state.get(`listing`)
     listing.profile.location.info = loc
     return state.set(`listing`, listing).set(`valid`, isValid(listing))
@@ -73,7 +73,7 @@ export default function model(actions, inputs) {
         modal: ``
       }
 
-      return reducer$.startWith(Immutable.Map(initial)).scan((acc, f) => f(acc))
+      return reducer$.startWith(Immutable.Map(initial)).scan((acc, f) => f(acc))//.debounceTime(4)
     })
     .map(x => x.toJS())
     //.do(x => console.log(`location state...`, x))
