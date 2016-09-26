@@ -137,60 +137,75 @@ defmodule User.Auth do
     %{listing | user_sequence_id: user_sequence_id}
   end
 
-    
-    
-  #         Repo.
+  def handle_call({:route, %{
+        "route" => "/listing/post", 
+        "data" => %{
+          "id" => id, "user_sequence_id" => user_sequence_id, "type" => type, "profile" => %{
+            "meta" => %{
+              "visibility" => visibility
+            }} = profile
+        } = listing
+      }} , _from, state) when is_number(id) do
+    %{user: user} = state
+    tmp = Ecto.build_assoc(user, :listings)
+    listing_w_user = Map.put(tmp, :id, id)
 
-  #         IO.puts "Changeset:"
-  #         IO.inspect changeset
-  #         case Repo.insert(changeset) do
-  #           {:ok, val} -> 
-  #             IO.puts "insert ok"
-  #             IO.inspect val
-  #             {
-  #               :reply, 
-  #               {
-  #                 :ok, %{
-  #                   type: "created", 
-  #                   data: val
-  #                 }
-  #               }, 
-  #               state
-  #             }
-  #           {:error, val} -> 
-  #             IO.puts "insert error"
-  #             IO.inspect val
-  #             {:reply, {:ok, %{type: "error", data: %{errors: errors_to_map(val.errors)}}}, state}
-  #         end
-  #       val ->
-  #         IO.puts "Update existing listing"
-  #         params = %{
-  #           "id" => val,
-  #           #"parent_id" => parent_id,
-  #           "type" => type,
-  #           "profile" => profile,
-  #           "visibility" => visibility,
-  #           #"release" => "saved"
-  #           #"updated_at" => Timex.now
-  #         }
+    listing_params = %{
+      "type" => type,
+      "profile" => profile,
+      "visibility" => visibility,
+      "release" => "posted"
+    }
 
-  #         listing = Repo.get!(Listing, val)
-  #         changeset = Listing.update_changeset(listing, params)
-  #         IO.puts "Changeset:"
-  #         IO.inspect changeset
-  #         #{:reply, {:ok, %{type: "error", data: "Hello"}}, state}
-  #         case Repo.update(changeset) do
-  #           {:ok, val} -> 
-  #             IO.puts "update ok"
-  #             IO.inspect val
-  #             {:reply, {:ok, %{type: "saved", data: val}}, state}
-  #           {:error, val} -> 
-  #             IO.puts "update error"
-  #             IO.inspect val
-  #             {:reply, {:ok, %{type: "error", data: %{errors: errors_to_map(val.errors)}}}, state}
-  #         end
-  #   end
-  # end
+    listing_changeset = Listing.update_changeset(listing_w_user, listing_params)
+    multi_query = Ecto.Multi.new
+      |> Multi.update(:listing, listing_changeset)
+
+    case Repo.transaction(multi_query) do
+      {:ok, %{listing: listing} = result} ->
+        {:reply, {:ok, %{type: "success", data: enrich_user_sequence_id(listing, user_sequence_id)}}, state}
+      {:error, key_that_errored, %Ecto.Changeset{} = result } ->
+        IO.puts("Posting not successful")
+        IO.inspect(result)
+        val = Map.fetch(result, key_that_errored)
+        {:reply, {:ok, %{type: "error", data: %{errors: errors_to_map(val.errors)}}}, state}
+    end
+  end
+
+  def handle_call({:route, %{
+        "route" => "/listing/stage", 
+        "data" => %{
+          "id" => id, "user_sequence_id" => user_sequence_id, "type" => type, "profile" => %{
+            "meta" => %{
+              "visibility" => visibility
+            }} = profile
+        } = listing
+      }} , _from, state) when is_number(id) do
+    %{user: user} = state
+    tmp = Ecto.build_assoc(user, :listings)
+    listing_w_user = Map.put(tmp, :id, id)
+
+    listing_params = %{
+      "type" => type,
+      "profile" => profile,
+      "visibility" => visibility,
+      "release" => "staged"
+    }
+
+    listing_changeset = Listing.update_changeset(listing_w_user, listing_params)
+    multi_query = Ecto.Multi.new
+      |> Multi.update(:listing, listing_changeset)
+
+    case Repo.transaction(multi_query) do
+      {:ok, %{listing: listing} = result} ->
+        {:reply, {:ok, %{type: "success", data: enrich_user_sequence_id(listing, user_sequence_id)}}, state}
+      {:error, key_that_errored, %Ecto.Changeset{} = result } ->
+        IO.puts("Staging not successful")
+        IO.inspect(result)
+        val = Map.fetch(result, key_that_errored)
+        {:reply, {:ok, %{type: "error", data: %{errors: errors_to_map(val.errors)}}}, state}
+    end
+  end
 
   defp errors_to_map(errors) do
     Enum.into(errors, %{}, fn {k, {e, _}} -> {k, e} end)

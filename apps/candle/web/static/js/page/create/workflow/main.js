@@ -12,12 +12,21 @@ import ConfirmAddressLocation from '../confirmAddressLocation/main'
 import Time from '../eventDateTime/main'
 import Recurrence from '../recurringDateTime/main'
 import Preview from '../preview/main'
+import SuccessMessage from '../successMessage/main'
 
 import RedirectRestricted from '../../../redirectRestricted'
 import RedirectCreate from '../../../redirectCreate'
 
 const Properties = () => ({
   DOM: O.of(div([`Properties`]))
+})
+
+// const PostingSuccess = () => ({
+//   DOM: O.of(div([`Posting success`]))
+// })
+
+const StagingSuccess = () => ({
+  DOM: O.of(div([`Staging success`]))
 })
 
 const routes = [
@@ -29,6 +38,18 @@ const routes = [
   {pattern: /^\/recurrence$/, value: {type: "component", data: Recurrence}},
   {pattern: /^\/properties$/, value: {type: "component", data: Properties}},
   {pattern: /^\/preview$/, value: {type: "component", data: Preview}},
+  {
+    pattern: /^\/postSuccess$/, value: {
+      type: "component", 
+      data: (sources, inputs) => SuccessMessage(sources, spread(inputs, {props$: O.of(`posted`)}))
+    }
+  },
+  {
+    pattern: /^\/stageSuccess$/, value: {
+      type: "component", 
+      data: (sources, inputs) => SuccessMessage(sources, spread(inputs, {props$: O.of(`staged`)}))
+    }
+  },
   {pattern: /^\/?$/, value: {type: "component", data: Landing}},
   {pattern: /\/?.*/, value: {type: `error`, data: RedirectCreate}},
 ]
@@ -43,7 +64,8 @@ export default function main(sources, inputs) {
       const match = value.match
       const {type, data} = value.info
       //return data(sources, inputs)
-      return data(spread(sources, {Router: Router.path(path)}), spread(inputs, {ParentRouter: Router}))
+      let component = data
+      return component(spread(sources, {Router: Router.path(path)}), spread(inputs, {ParentRouter: Router}))
     })
     .publishReplay(1).refCount()
 

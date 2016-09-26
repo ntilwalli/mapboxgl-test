@@ -2,58 +2,30 @@ import {Observable as O} from 'rxjs'
 import {div, button, span} from '@cycle/dom'
 import Immutable from 'immutable'
 import isolate from '@cycle/isolate'
+import {inflate} from '../listing'
 import {combineObj, createProxy, spread, normalizeComponent, normalizeSink, mergeSinks, defaultNever, processHTTP} from '../../../utils'
 
 
 function intent(sources) {
-  const {DOM, HTTP} = sources
+  const {DOM, HTTP, Router} = sources
   const back$ = DOM.select(`.appBackButton`).events(`click`)
+  const listing$ = Router.history$
+    .take(1)
+    .map(x => x.state)
+    .map(x => {
+      return inflate(x)
+    })
 
   return { 
-    back$
+    back$,
+    listing$
   }
 }
 
-function reducers(actions, inputs) {
-
-  const validR = inputs.contentState$.skip(1)
-    .map(val => state => {
-      return state.set(`contentState`, val)
-    })
-
-  return O.merge(validR)
-}
-
-function model(actions, inputs) {
-  const reducer$ = reducers(actions, inputs)
-  return inputs.contentState$.take(1)
-    .map(contentState => {
-      return {
-        waiting: false,
-        contentState
-      }
-    })
-    .switchMap(initialState => {
-      return reducer$.startWith(Immutable.Map(initialState)).scan((acc, f) => f(acc))
-    })
-    .map(x => x.toJS())
-    //.do(x => console.log(`stepComponent state`, x))
-    .publishReplay(1).refCount()
-}
-
-
-function view(state$, components) {
+function view(components) {
   return combineObj(components)
-    .withLatestFrom (state$, (components, state) => ({state, components}))
-      .map(info => {
-      const {state, components} = info
-      const {contentState, posting, waiting} = state
+      .map(components => {
       const {content} = components
-
-      if (waiting) {
-        return div(`.panel.modal`, [`Waiting`])
-      } else {
-        const disabled = posting ? '.disabled' : ''
         return div(`.input-section`, [
           div(`.form-section`, [
             div(`.empty-section`),
@@ -71,7 +43,7 @@ function view(state$, components) {
             ])
           ])
         ])
-      }
+
     })
 }
 
@@ -86,17 +58,10 @@ export default function main(sources, inputs) {
 
     const actions = intent(sources)
 
-    const state$ = model(actions, spread(inputs, {
-      contentState$: content.state$
-    }))
-
-    const vtree$ = view(state$, components)
+    const vtree$ = view(components)
 
     const toPreviousScreen$ = actions.back$
-      .withLatestFrom(state$, (_, state) => {
-        const {contentState} = state
-        const {listing} = contentState
-
+      .withLatestFrom(actions.listing$, (_, listing) => {
         let previousScreen = previous
         if (typeof previous === 'function') {
           previousScreen = previous(listing)
@@ -147,10 +112,6 @@ export default function main(sources, inputs) {
       MapDOM: defaultNever(content, `MapDOM`),
       Storage: defaultNever(content, `Storage`),
       Global: defaultNever(content, `Global`),
-      listing$: state$
-        .map(x => {
-          return x.contentState.listing
-        }),
       save$: defaultNever(content, `save$`)
     }
   })

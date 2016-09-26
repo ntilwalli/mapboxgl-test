@@ -162,6 +162,7 @@ export default function main(sources, inputs) {
     .startWith(undefined)
     .switchMap(_ => {
       return listing$
+        .filter(x => x.id)
         .skip(1)
         .map(listing => {
           const b = JSON.parse(JSON.stringify(listing))

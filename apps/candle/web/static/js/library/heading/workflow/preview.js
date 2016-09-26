@@ -8,17 +8,17 @@ import Logo from '../logo'
 
 function intent(sources, inputs) {
   const {DOM, Router, Heartbeat} = sources
-  const save$ = DOM.select(`.appSaveListing`).events(`click`)
+  const save$ = DOM.select(`.appSaveListing`).events(`click`).publish().refCount()
   const listing$ = Router.history$.map(x => x.state)
   const instruction$ = inputs.ParentRouter.define([
-    {pattern: `/meta`, value: `Step 1: Preliminary info`},
-    {pattern: `/description`, value: `Step 2: Add a title and description`},
-    {pattern: `/location`, value: `Step 3: Add a location`},
-    {pattern: `/confirmAddressLocation`, value: `Step 3 (continued): Confirm address location`},
-    {pattern: `/time`, value: `Step 4: Set event time`},
-    {pattern: `/recurrence`, value: `Step 4: Set recurrence`},
-    {pattern: `/properties`, value: `Step: Properties and handle`},
-    {pattern: `/preview`, value: `Step 5: Post, stage or customize`},
+    {pattern: `/meta`, value: `Preliminary info`},
+    {pattern: `/description`, value: `Add a title and description`},
+    {pattern: `/location`, value: `Add a location`},
+    {pattern: `/confirmAddressLocation`, value: `Confirm address location`},
+    {pattern: `/time`, value: `Set event time`},
+    {pattern: `/recurrence`, value: `Set recurrence`},
+    {pattern: `/properties`, value: `Properties and handle`},
+    {pattern: `/preview`, value: `Post, stage or customize`},
     {pattern: `*`, value: `Step default: Should not get here`}
   ]).map(x => {
     return x.value.info
@@ -57,13 +57,12 @@ function model(actions, inputs) {
   const props$ = inputs.props$ || O.of({})
 
   return combineObj({
-    instruction$: actions.instruction$.take(1),
     listing$: actions.listing$.take(1)//.map(x => x && x.updatedAt).take(1)
   })
     .map(inputs => {
-      const {instruction, listing} = inputs
+      const {listing} = inputs
       return {
-        instruction,
+        instruction: `Post, stage or customize`,
         lastSaved: listing && listing.updated_at,
         error: undefined,
         isSaving: false
@@ -91,7 +90,7 @@ function renderSaveArea(state) {
     !error ? div(`.last-saved-status`, [
       isSaving ? span(`.spinner`) : div([lastSaved ? moment(lastSaved).fromNow() : `Not saved`])
     ]) : div(`.error-save-status`, [`Error`]),
-    button(`.appSaveListing.menu-link`, [`Save`])
+    button(`.appSaveListing.menu-link`, [`Save and Exit`])
   ])
 }
 
@@ -127,7 +126,7 @@ export default function main(sources, inputs) {
   const vtree$ = view(state$, components)
   return normalizeComponent({
     DOM: vtree$,
-    Router: logo.Router,
+    Router: O.merge(logo.Router, actions.save$.mapTo(`/`).delay(4)),
     message$: logo.message$,
     save$: actions.save$
   })
