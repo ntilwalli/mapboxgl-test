@@ -121,7 +121,7 @@ export default function GeoLocation(sources, inputs) {
   .switchMap(({user, home, override}) => {
     const initial = {
       prefer: override ? "override" : "user",
-      user: undefined, 
+      user: user,//undefined, 
       home: home || {
         position: {lat: 40.7128, lng: -74.0059},
         region: {

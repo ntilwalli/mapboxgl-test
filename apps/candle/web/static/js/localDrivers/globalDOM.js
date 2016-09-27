@@ -172,7 +172,6 @@ export default function makeGlobalDOMEventDriver() {
         return x
       })
       .do(() => cookie.empty())
-      //.tap(x => Object.keys(cookie.all()).forEach(key => cookie.set(key, ``, {expires: -1}))
 
     const cookieSet$ = cookie$
       .filter(x => x.type === `set` && x.data && x.data.key && x.data.value)
@@ -194,11 +193,8 @@ export default function makeGlobalDOMEventDriver() {
       .map(x => {
         return x
       })
-
-      //.observe(n => {})
-      //.then(() => console.log(`cookieSourceCompleted`), e => console.error(`cookieSource error: ${e}`))
-
-    //console.log(document.cookie)
+      .delay(1)  // Since this is a merging of multiple drivers, delay output to ensure all
+                 // subscribers are wired before initial emission.
 
     return runSA.remember(runSA.adapt(O.merge(
       makeResizeStream(),

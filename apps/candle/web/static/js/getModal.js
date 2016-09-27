@@ -93,11 +93,6 @@ export default function getModal(sources, inputs, modal) {
           .publishReplay(1).refCount()
         const Global= O.never().publish().refCount()
 
-        DOM.subscribe()
-        HTTP.subscribe()
-        MapDOM.subscribe()
-        Global.subscribe()
-
         return {
           DOM,
           HTTP,

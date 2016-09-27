@@ -13,7 +13,7 @@ use Mix.Config
 # which you typically run after static files are built.
 config :candle, Candle.Endpoint,
   http: [port: {:system, "PORT"}],
-  url: [host: "fathomless-chamber-60502.herokuapp.com", port: 80],
+  url: [host: "hitpost.herokuapp.com", port: 80],
   cache_static_manifest: "priv/static/manifest.json",
   secret_key_base: System.get_env("SECRET_KEY_BASE")
 

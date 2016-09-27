@@ -30,11 +30,11 @@ import routeFunction from './localDrivers/routeFunction/main'
 
 function main(sources) {
 
-  sources.Router.history$
-    .map(x => {
-      return x
-    })
-    .subscribe()
+  // sources.Router.history$
+  //   .map(x => {
+  //     return x
+  //   })
+  //   .subscribe()
   // sources.HTTP.select().subscribe(
   //   x => {
   //     console.log(`All HTTP main root: `, x)
@@ -80,20 +80,14 @@ function main(sources) {
   hideModal$.attach(normalizeSink(modal$, 'close$'))
 
   return {
-    DOM: view(state$, components),
+    DOM: view(components),
     MapDOM: O.merge(
       routedComponent.MapDOM,
       normalizeSink(modal$, `MapDOM`)
     ),
     Router: O.merge(
       routedComponent.Router,
-      normalizeSink(modal$, 'Router')//,
-      // state$.map(state => state.modal)
-      //   .distinctUntilChanged()
-      //   .filter(x => x === null)
-      //   .switchMap(() => sources.Router.history$.take(1).map(x => {
-      //     return x.pathname
-      //   }))
+      normalizeSink(modal$, 'Router')
     ),
     Global: O.merge(
       routedComponent.Global,

@@ -19,8 +19,14 @@ export default function main(sources, inputs) {
   const fromServicesMessage$ = O.merge(authorization.message$, passthrough.message$).publish().refCount()
 
   return {
-    HTTP: O.merge(authorization.HTTP, geolocation.HTTP),
-    Global: O.merge(authorization.Global, geolocation.Global),
+    HTTP: O.merge(
+      authorization.HTTP, 
+      geolocation.HTTP
+    ),
+    Global: O.merge(
+      authorization.Global, 
+      geolocation.Global
+    ),
     Storage: geolocation.Storage,
     outputs: {
       message$: fromServicesMessage$,
