@@ -1,6 +1,7 @@
 import {Observable as O} from 'rxjs'
 import Immutable from 'immutable'
 import {combineObj} from '../utils'
+import deepEqual from 'deep-equal'
 
 import FactualGeotagService from '../thirdParty/FactualGeotagService'
 
@@ -56,25 +57,48 @@ function intent(sources) {
     // })
     .publish().refCount()
 
-  const storagePosition$ = sources.Storage.local.getItem(`position`)
-  const storageRegion$ = sources.Storage.local.getItem(`region`)
-  const overrideRegion$ = sources.Storage.local.getItem(`overrideRegion`)
+  const storageUserVicinity$ = sources.Storage.local.getItem(`userVicinity`)
+    .map(x => {
+      return x && JSON.parse(x)
+    })
+  const storageHomeVicinity$ = sources.Storage.local.getItem(`homeVicinity`)
+      .map(x => x && JSON.parse(x))
+  const storageOverrideVicinity$ = sources.Storage.local.getItem(`overrideVicinity`)
+      .map(x => x && JSON.parse(x))
 
   return {
     position$,
-    error$,
-    storagePosition$,
-    storageRegion$,
-    overrideRegion$,
     region$,
+    error$,
+    storageUserVicinity$,
+    storageHomeVicinity$,
+    storageOverrideVicinity$,
     HTTP: regionService.HTTP
   }
 }
 
 function reducers(actions, inputs) {
-  const positionR = actions.position$.map(pos => state => state.set(`position`, pos).set(`isRegionSynced`, false))
-  const errorR = actions.error$.map(err => state => state.set(`error`, err).set(`position`, null).set(`region`, null))
-  const regionR = actions.region$.map(r => state => state.set(`region`, r).set(`isRegionSynced`, true))
+  const positionR = actions.position$
+    .map(pos => state => state.update(`user`, x => ({
+        region: x && x.region,
+        position: pos,
+        sync: false
+      })
+    ))
+
+  const regionR = actions.region$
+    .map(r => state => state.update(`user`, x => ({
+        region: r,
+        position: x && x.position,
+        sync: true
+      })
+    ))
+
+  const errorR = actions.error$
+    .map(err => state => {
+      return state.set(`error`, err)
+        .update(`user`, x => undefined)
+    })
 
   return O.merge(
     positionR,
@@ -89,19 +113,31 @@ export default function GeoLocation(sources, inputs) {
   const reducer$ = reducers(actions, inputs)
 
   const status$ = combineObj({
-    position$: actions.storagePosition$,
-    region$: actions.storageRegion$,
-    overrideRegion$: actions.overrideRegion$
+    user$: actions.storageUserVicinity$.take(1),
+    home$: actions.storageHomeVicinity$.take(1),
+    override$: actions.storageOverrideVicinity$.take(1)
   })
   .take(1)
-  .switchMap(({position, region, overrideRegion}) => {
+  .switchMap(({user, home, override}) => {
     const initial = {
-      position: position && Object.keys(position).length ? JSON.parse(position) : undefined,
-      region: region && Object.keys(position).length ? JSON.parse(region) : undefined,
-      isRegionSynced: undefined,
-      overrideRegion: overrideRegion && Object.keys(position).length ? JSON.parse(overrideRegion) : undefined,
+      prefer: override ? "override" : "user",
+      user: undefined, 
+      home: home || {
+        position: {lat: 40.7128, lng: -74.0059},
+        region: {
+          source: `manual`,
+          type: `somewhere`,
+          data: {
+            country: `US`,
+            locality: `New York`,
+            region: `NY`
+          }
+        }
+      },
+      override,
       error: undefined
     }
+
     return reducer$.startWith(Immutable.Map(initial)).scan((acc, f) => f(acc))
   })
   .map(x => x.toJS())
@@ -110,21 +146,54 @@ export default function GeoLocation(sources, inputs) {
   })
   .publishReplay(1).refCount()
 
+  const validUser$ = status$.map(x => x.user)
+        .filter(x => !!x)
+        .distinctUntilChanged(deepEqual)
+        .map(x => ({
+          action: `setItem`,
+          key: `userVicinity`,
+          value: JSON.stringify(x)
+        }))
+
+  const invalidUser$ = status$.map(x => x.user)
+      .filter(x => !x)
+      .distinctUntilChanged(deepEqual)
+      .map(x => ({
+        action: `removeItem`,
+        key: `userVicinity`,
+        value: JSON.stringify(x)
+      }))
+
+  const validHome$ = status$.map(x => x.home)
+      .filter(x => !!x)
+      .distinctUntilChanged(deepEqual)
+      .map(x => ({
+        action: `setItem`,
+        key: `homeVicinity`,
+        value: JSON.stringify(x)
+      }))
+
+  const validOverride$ = status$.map(x => x.override)
+        .filter(x => !!x)
+        .distinctUntilChanged(deepEqual)
+        .map(x => ({
+          action: `setItem`,
+          key: `overrideVicinity`,
+          value: JSON.stringify(x)
+        }))
+
+  const invalidOverride$ = status$.map(x => x.override)
+      .filter(x => !x)
+      .distinctUntilChanged(deepEqual)
+      .map(x => ({
+        action: `removeItem`,
+        key: `overrideVicinity`,
+        value: JSON.stringify(x)
+      }))
+
   const toStorage$ = O.merge(
-    actions.position$.map(x => ({
-      action: `setItem`,
-      key: `position`,
-      value: JSON.stringify(x)
-    })),
-    actions.region$.map(x => ({
-      action: `setItem`,
-      key: `region`,
-      value: JSON.stringify(x)
-    }))
+    validUser$, invalidUser$, validHome$, validOverride$, invalidOverride$
   )
-  .map(x => {
-    return x
-  })
 
   const geoMessage$ = inputs.message$
     .filter(x => x.type === GEOLOCATION_INDICATOR)

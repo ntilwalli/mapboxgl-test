@@ -45,10 +45,6 @@ export function targetIsOwner(ev) {
   return ev.target === ev.ownerTarget
 }
 
-export function toLatLngArray(center) {
-  return [center.lat, center.lng]
-}
-
 export function noop() {}
 
 export function renderTextPasswordField(type, name, cssClass, placeholder, value) {
@@ -268,6 +264,51 @@ export function processHTTP(sources, category) {
     ugly$: out$.filter(x => x.type === "ugly").map(x => x.data)
   }
 
+}
+
+export function getVicinityFromGeolocation(geolocation) {
+  const {prefer, user, home, override} = geolocation
+  let vicinity
+  if (prefer === `override` && override) {
+    vicinity = override
+  } else if (prefer === `user` && user && user.region) {
+    vicinity = user
+  } else {
+    vicinity = home
+  }
+
+  return vicinity
+}
+
+export function getNormalizedRegion(saRegion) {
+  const {source} = saRegion
+  if (source === `arcgis`) {
+    if (saRegion.type === `somewhere`) {
+
+      const data = saRegion.data
+      const {city, state, country, cityAbbr, stateAbbr, countryAbbr} = data
+      return {
+        type: "somewhere", 
+        data: {
+          country: countryAbbr || country,
+          region: stateAbbr || state,
+          locality: city
+        }
+      }
+    } else {
+      return {
+        saRegion
+      }
+    }
+  } else if (source === `factual` || source === `manual`) {
+      return saRegion
+  }
+}
+
+export function toLatLngArray(obj) {
+  if (obj.hasOwnProperty(`lat`) && obj.hasOwnProperty(`lng`)) return [obj.lat, obj.lng]
+
+  throw new Error(`Invalid latLng object given`)
 }
 
 // export function filterHTTP(sources, url) {

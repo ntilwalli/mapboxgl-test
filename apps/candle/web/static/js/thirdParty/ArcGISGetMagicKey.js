@@ -88,7 +88,7 @@ function ArcGISGetMagicKey(sources, inputs) {
         const country = match[3].trim()
         searchArea = {
           region: {
-            source: `ArcGIS`,
+            source: `arcgis`,
             type: `somewhere`,
             data: {
               parsedAddress: x.parsedAddress,
@@ -108,7 +108,7 @@ function ArcGISGetMagicKey(sources, inputs) {
         const country = match[2].trim()
         searchArea = {
           region: {
-            source: `ArcGIS`,
+            source: `arcgis`,
             type: `somewhere`,
             data: {
               parsedAddress: x.parsedAddress,
@@ -126,7 +126,7 @@ function ArcGISGetMagicKey(sources, inputs) {
       } else {
         searchArea = {
           region: {
-            source: `ArcGIS`,
+            source: `arcgis`,
             type: `somewhere`,
             data: {
               parsedAddress: x.parsedAddress,

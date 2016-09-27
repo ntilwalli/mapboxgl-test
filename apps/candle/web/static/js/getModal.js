@@ -51,17 +51,20 @@ export default function getModal(sources, inputs, modal) {
       const doneModal = DoneModal(sources, {
           component: (sources, inputs) => SearchArea(sources, {
             geolocation$: O.of({
-              position: {
-                lat: 40.7128, 
-                lng: -74.0059
-              },
-              region: {
-                type: `somewhere`,
-                data: {
-                  country: `US`,
-                  city: `New York`,
-                  state: `New York`,
-                  stateAbbr: `NY`
+              prefer: "user",
+                user: {position: {
+                  lat: 40.7128, 
+                  lng: -74.0059
+                },
+                region: {
+                  source: `arcgis`,
+                  type: `somewhere`,
+                  data: {
+                    country: `US`,
+                    city: `New York`,
+                    state: `New York`,
+                    stateAbbr: `NY`
+                  }
                 }
               }
             }),

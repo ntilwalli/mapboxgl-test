@@ -1,5 +1,6 @@
 import {USAStateNamesToAbbr, getState} from '../../../util/states'
 import {countryToAlpha2} from '../../../util/countryCodes'
+import {getVicinityFromGeolocation} from '../../../utils'
 
 
 export function getSearchAreaFromListing(listing) {
@@ -8,23 +9,18 @@ export function getSearchAreaFromListing(listing) {
 
 
 export function getSearchAreaFromGeolocation(location) {
-  const {position, region} = location
+  const vicinity = getVicinityFromGeolocation(location)
   return {
-    center: position,
-    region,
+    center: vicinity.position,
+    region: vicinity.region,
     radius: 50
   }
 }
 
-export function getSearchAreaFromMapLocation(location) {
-  location.radius = 50
-  return location
-}
-
-
 export function getSearchAreaString(searchArea) {
   const saRegion = searchArea.region
-  if (saRegion.source === `ArcGIS`) {
+  const {source} = saRegion
+  if (source === `arcgis`) {
     if (saRegion.type === `somewhere`) {
       const data = saRegion.data
       const {city, state, country, cityAbbr, stateAbbr, countryAbbr} = data
@@ -36,11 +32,13 @@ export function getSearchAreaString(searchArea) {
     } else {
       return `Nowhere`
     }
-  } else { // Factual
+  } else if (source === `factual` || source === `manual`) {
     const data = saRegion.data
     const {country, region, locality} = data
     const state = getState(region)|| region
     const city = locality
     return `${city}, ${state}`
   }
+
+  throw new Error(`Invalid region source`)
 }

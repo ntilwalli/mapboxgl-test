@@ -10,7 +10,7 @@ import AutocompleteInput from '../../../../library/autocompleteInput'
 import ArcGISSuggest from '../../../../thirdParty/ArcGISSuggest'
 import ArcGISGetMagicKey from '../../../../thirdParty/ArcGISGetMagicKey'
 import FactualGeotagService from '../../../../thirdParty/FactualGeotagService'
-import {getSearchAreaFromMapLocation, getSearchAreaString} from '../utils'
+import {getSearchAreaString} from '../utils'
 
 import VirtualDOM from 'virtual-dom'
 const VNode = VirtualDOM.VNode
@@ -43,9 +43,8 @@ function intent(sources, inputs) {
   const regionService = FactualGeotagService({props$: O.of({category: 'geotag from searchArea'}), latLng$: mapCenterZoom$.map(x => x.center), HTTP: sources.HTTP})
   const mapSearchArea$ = regionService.result$
     .withLatestFrom(mapCenterZoom$, (region, position) => {
-      return {region, center: position.center}
+      return {region, center: position.center, radius: 50}
     })
-    .map(getSearchAreaFromMapLocation)
     .publish().refCount()
 
   return {
@@ -58,14 +57,14 @@ function reducers(actions, inputs) {
   
   const searchAreaReducer$ = O.merge(
     actions.mapSearchArea$,
-    inputs.inputSearchArea$ || O.never()
+    inputs.inputSearchArea$
   )
-  .map(v => state => {
-    const sa = state.get(`searchArea`, state)
-    sa.center = v.center
-    sa.region = v.region
-    return state.set(`searchArea`, sa)
-  })
+    .map(v => state => {
+      const sa = state.get(`searchArea`, state)
+      sa.center = v.center
+      sa.region = v.region
+      return state.set(`searchArea`, sa)
+    })
 
   return O.merge(
     searchAreaReducer$
@@ -73,8 +72,8 @@ function reducers(actions, inputs) {
 }
 
 function model(actions, inputs) {
-  const {listing$} = inputs
-  return listing$
+
+  return inputs.listing$
     .take(1)
     .switchMap(listing => {
       const searchArea = listing.profile.searchArea

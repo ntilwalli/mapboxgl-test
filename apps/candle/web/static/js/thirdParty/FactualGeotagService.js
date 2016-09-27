@@ -49,7 +49,7 @@ function getFromHTTPStream (props$, HTTP) {
     .map(x => {
       if (x.country && x.locality && x.region) {
         return {
-          source: `Factual`,
+          source: `factual`,
           type: `somewhere`,
           data: {
             country: x.country.name,

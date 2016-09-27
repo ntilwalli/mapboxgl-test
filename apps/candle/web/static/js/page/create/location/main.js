@@ -47,45 +47,14 @@ const venueItemConfigs = {
   }
 }
 
-const validGeolocation = x => x
-const invalidGeolocation = x => !x
+const validGeolocation = x => x.user
+const invalidGeolocation = x => !x.user
 
 function getDefaultSearchArea(sources, inputs) {
 
-  const validGeolocation$ = inputs.geolocation$
-    .filter(validGeolocation)
+  return inputs.geolocation$
     .map(getSearchAreaFromGeolocation)
-
-  const invalidGeolocation$ = inputs.geolocation$
-    .filter(invalidGeolocation)
-
-  const fallbackNewYork$ = invalidGeolocation$
-    .filter(x => !validGeolocation(x))
-    .map(() => ({
-      region: {
-        state: `NY`,
-        stateAbbr: `NY`,
-        city: `New York`,
-        country: `US`
-      },
-      center: {
-        lat: 40.7128,
-        lng: -74.0059
-      },
-      radius: 50
-    }))
-    //.do(x => console.log(`fallbackNewYork$...`, x))
-
-  const defaultSearchArea$ = O.merge(
-    validGeolocation$,
-    fallbackNewYork$
-  )
-  .map(x => {
-    return x
-  })
-  .publishReplay(1).refCount()
-
-  return defaultSearchArea$
+    .publishReplay(1).refCount()
 
 }
 
@@ -93,9 +62,7 @@ function contentComponent(sources, inputs) {
 
   const actions = intent(sources)
 
-  const defaultSearchArea$ = getDefaultSearchArea(sources, spread(inputs, {
-    listing$: actions.listing$
-  }))
+  const defaultSearchArea$ = getDefaultSearchArea(sources, inputs)
 
 
   const radioInput = RadioInput(sources, {
@@ -123,7 +90,6 @@ function contentComponent(sources, inputs) {
   const searchAreaFromScreen$ = createProxy()
 
   const state$ = model(actions, spread(inputs, {
-    defaultSearchArea$: defaultSearchArea$,
     searchAreaFromScreen$: searchAreaFromScreen$,
     location$: location$,
     radio$: radioInput.selected$,

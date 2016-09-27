@@ -1,8 +1,11 @@
 import {Observable as O} from 'rxjs'
 import {div} from '@cycle/dom'
-import {combineObj, normalizeComponent, getCenterZoom} from '../../../utils'
+import {combineObj, normalizeComponent, 
+  getCenterZoom, getVicinityFromGeolocation, 
+  getNormalizedRegion, toLatLngArray} from '../../../utils'
 import Immutable from 'immutable'
 import VirtualDOM from 'virtual-dom'
+
 const VNode = VirtualDOM.VNode
 
 const MAP_ANCHOR_ID = `user-location-map`
@@ -21,8 +24,8 @@ function intent(sources) {
 
 function model(actions, inputs) {
   return combineObj({
-    authorization$: inputs.authorization$.take(1),
-    geolocation$: inputs.geolocation$.take(1)
+    authorization$: inputs.authorization$,
+    geolocation$: inputs.geolocation$
   })
   .map(inputs => {
     return inputs
@@ -36,13 +39,20 @@ function model(actions, inputs) {
 
 function view(state$) {
   return state$.map(state => {
-    const {geolocation} = state
-    const {position, region} = geolocation
-    const {country, locality} = region.data
-    const localState = region.data.region
+    const vicinity = getVicinityFromGeolocation(state.geolocation)
+    const normalizedRegion = getNormalizedRegion(vicinity.region)
+    let regionString
+    if (normalizedRegion.type === `somewhere`) {
+      const {locality} = normalizedRegion.data
+      const region = normalizedRegion.data.region
+      regionString = `${locality}, ${region}`
+    } else {
+      regionString = normalizedRegion.type
+    }
+
     return div(`.user-location-map-component`, [
       div(`.region-display`, [
-        `${locality}, ${localState}`
+        regionString
       ]),
       div(`#${MAP_ANCHOR_ID}`)
     ])
@@ -52,13 +62,19 @@ function view(state$) {
 function mapview(state$) {
   return state$.map(state => {
     const {geolocation} = state
-    const {position, region} = geolocation
+    const {user} = geolocation
+    const vicinity = getVicinityFromGeolocation(geolocation)
+    const normalizedRegion = getNormalizedRegion(vicinity.region)
+    const {position, region} = vicinity
     const anchorId = MAP_ANCHOR_ID
+
 
     const centerZoom = {
       center: [position.lat, position.lng],
       zoom: 15//vicinity.position.zoom
     }
+
+    const userPosition = user && user.position
 
     const properties = {
       attributes: {
@@ -74,7 +90,7 @@ function mapview(state$) {
 
     return new VNode(`map`, properties, [
       new VNode(`tileLayer`, { tile }),
-      new VNode('circleMarker', {latLng: centerZoom.center, radius: 6, attributes: {id: `someid`}})
+      userPosition ? new VNode('circleMarker', {latLng: toLatLngArray(userPosition), radius: 6, attributes: {id: `someid`}}) : null
     ])
   })
 }

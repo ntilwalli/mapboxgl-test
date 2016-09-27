@@ -3,6 +3,7 @@ import Immutable from 'immutable'
 import {combineObj} from '../../../utils'
 import {validateLocation as isValid} from '../listing'
 import getModal from './getModal'
+import {getSearchAreaFromGeolocation} from './utils'
 
 function reducers(actions, inputs) {
 
@@ -55,19 +56,18 @@ export default function model(actions, inputs) {
   return combineObj({
       authorization$: inputs.authorization$.take(1),
       geolocation$: inputs.geolocation$.take(1),
-      listing$: inputs.listing$.take(1),
-      defaultSearchArea$: inputs.defaultSearchArea$.take(1)
+      listing$: inputs.listing$.take(1)
     })
     .switchMap(inputs => {
+      const geolocation = inputs.geolocation
       const listing = inputs.listing
       const profile = listing.profile
       const location = profile.location
       //profile.mapSettings = profile.mapSettings || {}
-      profile.searchArea = profile.searchArea || inputs.defaultSearchArea
+      profile.searchArea = profile.searchArea || getSearchAreaFromGeolocation(geolocation)
       const initial = {
         waiting: false,
         authorization: inputs.authorization,
-        geolocation: inputs.geolocation,
         listing: listing,
         valid: isValid(listing),
         modal: ``

@@ -4,7 +4,7 @@ import {attrs, renderModal, combineObj} from '../../../utils'
 import {getSearchAreaFromListing, getSearchAreaString} from './utils'
 
 function renderSearchArea(info) {
-  const {geolocation, listing} = info.state
+  const {listing} = info.state
   const sa = getSearchAreaFromListing(listing)
 
   return div(`.search-area.sub-section`, [
