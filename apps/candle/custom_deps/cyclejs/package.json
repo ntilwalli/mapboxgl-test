@@ -1,0 +1,52 @@
+{
+  "private": true,
+  "license": "MIT",
+  "devDependencies": {
+    "add-stream": "^1.0.0",
+    "babel-cli": "^6.10.1",
+    "babel-core": "^6.13.2",
+    "babel-preset-es2015": "^6.13.2",
+    "babel-register": "^6.11.6",
+    "babelify": "^7.3.0",
+    "browserify": "^13.1.0",
+    "browserify-shim": "^3.8.12",
+    "commitizen": "^2.8.5",
+    "conventional-changelog": "^1.1.0",
+    "conventional-changelog-cli": "^1.2.0",
+    "cz-conventional-changelog": "^1.1.7",
+    "cz-customizable": "^4.0.0",
+    "git-travis": "^2.0.0",
+    "jase": "^1.2.0",
+    "markdox": "0.1.10",
+    "mocha": "3.0.2",
+    "power-assert": "^1.4.1",
+    "sinon": "1.17.5",
+    "tempfile": "^1.1.1",
+    "testem": "1.10.3",
+    "ts-node": "^1.2.2",
+    "tslint": "3.14.0",
+    "typescript": "1.8.10",
+    "typings": "^1.3.1",
+    "uglify-js": "2.7.0",
+    "validate-commit-msg": "^2.6.1"
+  },
+  "scripts": {
+    "internal-install-all": ".scripts/npm-x-for-all-packages.sh install",
+    "unused-internal-link-all": ".scripts/symlink-to-each-other.sh",
+    "setup": "npm install && npm run internal-install-all",
+    "test": ".scripts/npm-x-for-all-packages.sh run lib && .scripts/npm-x-for-all-packages.sh test",
+    "test-ci": "npm run setup && .scripts/npm-x-for-all-packages.sh run test-ci",
+    "commit": "git-cz",
+    "changelog": ".scripts/update-changelogs.js",
+    "check-release": ".scripts/pre-check-release.sh",
+    "release": ".scripts/release-whatever-needs-release.sh"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-customizable"
+    },
+    "cz-customizable": {
+      "config": "./.cz-config.js"
+    }
+  }
+}
