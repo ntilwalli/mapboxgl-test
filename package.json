@@ -10,13 +10,14 @@
     "copy-bootstrap": "mkdir -p apps/candle/priv/static/bootstrap; cp -r apps/candle/custom_deps/bootstrap/dist/ apps/candle/priv/static/bootstrap/",
     "build-bootstrap": "grunt --gruntfile ~/dev/spotlight/apps/candle/custom_deps/bootstrap/Gruntfile.js dist && npm run copy-bootstrap",
     "watch-bootstrap": "npm run build-bootstrap && grunt --gruntfile ~/dev/most/candle/custom_deps/bootstrap/Gruntfile.js watch",
-    "build-css": "rm -rf apps/candle/priv/static/css; mkdir -p apps/candle/priv/static/css; sass apps/candle/web/static/css/base.scss priv/static/css/base.css",
+    "build-css": "rm -rf apps/candle/priv/static/css; mkdir -p apps/candle/priv/static/css; sass apps/candle/web/static/css/base.scss apps/candle/priv/static/css/base.css",
     "watch-css": "rm -rf apps/candle/priv/static/css; mkdir -p apps/candle/priv/static/css; sass --watch apps/candle/web/static/css:apps/candle/priv/static/css",
     "build": "npm run build-js & npm run build-css & npm run build-assets",
     "watch": "npm run watch-js & npm run watch-css & npm run watch-bootstrap & npm run watch-assets",
     "test": "browserify -t babelify apps/candle/test/static/js/*.js | tap",
     "test-build": "watchify -v -t babelify apps/candle/web/static/js/test.js -o apps/candle/priv/static/js/test.js",
-    "test-serve": "live-server --entry-file=apps/candle/test.html"
+    "test-serve": "live-server --entry-file=apps/candle/test.html",
+    "deploy": "npm run build-js & npm run build-css & npm run build-assets & npm run copy-fonts-data & npm run copy-mapbox-data"
   },
   "dependencies": {
     "@cycle/dom": "file:apps/candle/custom_deps/cyclejs/dom",
