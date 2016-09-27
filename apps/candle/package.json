@@ -27,7 +27,7 @@
     "@cycle/storage": "3.0.0-rc3",
     "@cycle/xstream-run": "^3.0.3",
     "cookie_js": "^1.2.0",
-    "cycle-mapdom": "^3.0.2",
+    "cycle-mapdom": "^3.1.0",
     "cyclic-router": "^3.0.0",
     "deep-assign": "^2.0.0",
     "deep-equal": "^1.0.1",
@@ -43,7 +43,7 @@
     "validator": "^5.2.0",
     "xregexp": "^3.1.1",
     "xs-combine-obj": "^1.1.1",
-    "xstream": "^6.3.0"
+    "xstream": "^6.4.0"
   },
   "devDependencies": {
     "babel-cli": "^6.8.0",
