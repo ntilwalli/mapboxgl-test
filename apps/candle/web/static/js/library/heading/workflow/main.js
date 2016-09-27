@@ -44,6 +44,10 @@ function reducers(actions, inputs) {
       return state.set(`error`, val.data)
     } else if (val.type === `problem`) {
       return state.set(`error`, val.data)
+    } else {
+      console.error(val)
+      throw new Error(`Invalid saving$ emission...`)
+      //return state
     }
   })
 
