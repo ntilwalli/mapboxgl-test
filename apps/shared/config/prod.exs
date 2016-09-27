@@ -3,12 +3,9 @@ use Mix.Config
 # Configure your database
 config :shared, Shared.Repo,
   adapter: Ecto.Adapters.Postgres,
-  # username: "spotlight",
-  # password: "",
-  # database: "spotlight_repo",
-  # hostname: "localhost",
   url: System.get_env("DATABASE_URL"),
-  pool_size: 10,
+  pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10"),
   extensions: [
-    {Geo.PostGIS.Extension, library: Geo}
+    {Geo.PostGIS.Extension, library: Geo},
+    {Postgrex.Extensions.JSON, library: Poison}
   ]
