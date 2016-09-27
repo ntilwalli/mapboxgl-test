@@ -19,7 +19,7 @@
     "test-serve": "live-server --entry-file=apps/candle/test.html"
   },
   "dependencies": {
-    "@cycle/dom": "file:///Users/ntilwalli/dev/cycle/cyclejs/dom",
+    "@cycle/dom": "file:apps/candle/custom_deps/cyclejs/dom",
     "@cycle/history": "^4.0.0",
     "@cycle/http": "^11.0.1",
     "@cycle/isolate": "^1.4.0",
