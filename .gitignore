@@ -22,6 +22,5 @@ apps/candle/custom_deps/cyclejs
 apps/candle/custom_deps/rrule
 node_modules
 .sass-cache
-apps/candle/priv/static
 apps/candle/priv/gettext
 apps/candle/priv/repo
