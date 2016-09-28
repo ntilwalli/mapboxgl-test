@@ -63,13 +63,13 @@ export default function process(sources, message$) {
 
   const facebook$ = data$
     .filter(x => x.type === `facebook`)
-    .map(() => `http://127.0.0.1:4000/auth/facebook`)
+    .map(() => `/auth/facebook`)
   const twitter$ = data$
     .filter(x => x.type === `twitter`)
-    .map(() => `http://127.0.0.1:4000/auth/twitter`)
+    .map(() => `/auth/twitter`)
   const github$ = data$
     .filter(x => x.type === `github`)
-    .map(() => `http://127.0.0.1:4000/auth/github`)
+    .map(() => `/auth/github`)
 
   const toMessage$ = O.merge(
     actions.failedLogin$

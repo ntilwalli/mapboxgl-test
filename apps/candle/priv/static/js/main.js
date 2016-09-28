@@ -12732,17 +12732,17 @@ function process(sources, message$) {
   var facebook$ = data$.filter(function (x) {
     return x.type === 'facebook';
   }).map(function () {
-    return 'http://127.0.0.1:4000/auth/facebook';
+    return '/auth/facebook';
   });
   var twitter$ = data$.filter(function (x) {
     return x.type === 'twitter';
   }).map(function () {
-    return 'http://127.0.0.1:4000/auth/twitter';
+    return '/auth/twitter';
   });
   var github$ = data$.filter(function (x) {
     return x.type === 'github';
   }).map(function () {
-    return 'http://127.0.0.1:4000/auth/github';
+    return '/auth/github';
   });
 
   var toMessage$ = _rxjs.Observable.merge(actions.failedLogin$.map(function (x) {
@@ -15139,14 +15139,15 @@ var MainDOMSource = (function () {
         var domSource = this;
         var rootElement$;
         if (scope) {
-            var hadIsolated_mutable_1 = false;
             rootElement$ = this._rootElement$
-                .filter(function (rootElement) {
+                .fold(function shouldPass(state, val) {
                 var hasIsolated = !!domSource._isolateModule.getIsolatedElement(scope);
-                var shouldPass = hasIsolated && !hadIsolated_mutable_1;
-                hadIsolated_mutable_1 = hasIsolated;
-                return shouldPass;
-            });
+                var shouldPass = hasIsolated && !state.hadIsolated_mutable;
+                return { hadIsolated_mutable: hasIsolated, shouldPass: shouldPass, dom: val };
+            }, { hadIsolated_mutable: false, shouldPass: undefined, dom: undefined })
+                .drop(1)
+                .filter(function (x) { return x.shouldPass; })
+                .map(function (x) { return x.dom; });
         }
         else {
             rootElement$ = this._rootElement$.take(2);
