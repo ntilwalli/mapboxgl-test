@@ -1,7 +1,7 @@
 {
   "repository": {},
   "scripts": {
-    "copy-mapbox-data": "rm -rf apps/candle/priv/static/mapbox; mkdir -p apps/candle/priv/static/mapbox; cp -r node_modules/mapbox.js/theme/* apps/candle/priv/static/mapbox",
+    "copy-mapbox-data": "rm -rf apps/candle/priv/static/mapbox; mkdir -p apps/candle/priv/static/mapbox; cp -r node_modules/mapbox.js/theme/ apps/candle/priv/static/mapbox/",
     "build-assets": "cp -r apps/candle/web/static/assets/* apps/candle/priv/static",
     "watch-assets": "watch-run -i -p 'apps/candle/web/static/assets/**' npm run build-assets",
     "build-js": "rm -rf apps/candle/priv/static/js; mkdir -p apps/candle/priv/static/js; browserify -t babelify apps/candle/web/static/js/main.js > apps/candle/priv/static/js/main.js",
@@ -35,6 +35,7 @@
     "deep-equal": "^1.0.1",
     "history": "^3.0.0",
     "immutable": "^3.8.1",
+    "mapbox.js": "^2.3.0",
     "moment": "^2.13.0",
     "parse-address": "0.0.5",
     "phoenix": "file:deps/phoenix",
