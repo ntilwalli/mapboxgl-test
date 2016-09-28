@@ -5,6 +5,7 @@ import storageDriver from '@cycle/storage'
 import {createHistory} from 'history';
 import {makeHTTPDriver} from '@cycle/http'
 import makeGlobalDOMEventDriver from './localDrivers/globalDOM'
+import environmentDriver from './localDrivers/environment'
 import {makeMapDOMDriver} from 'cycle-mapdom'
 
 import {div, button, makeDOMDriver} from '@cycle/dom';
@@ -106,7 +107,8 @@ function main(sources) {
     ).map(x => {
       return x
     }),
-    Heartbeat: O.never()
+    Heartbeat: O.never(),
+    Environment: O.never()
   }
 }
 
@@ -120,5 +122,6 @@ Cycle.run(main, {
   HTTP: makeHTTPDriver(),
   Heartbeat: () => {
     return O.interval(60000).map(() => new Date()).publish().refCount()
-  }
+  },
+  Environment: environmentDriver
 })

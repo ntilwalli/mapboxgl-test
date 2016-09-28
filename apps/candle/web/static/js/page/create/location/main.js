@@ -131,7 +131,8 @@ function contentComponent(sources, inputs) {
         }))
       } else if (mode === `map`) {
         return MapInput(sources, spread(inputs, {
-          listing$: listing$
+          listing$: listing$,
+          searchArea$: searchAreaFromScreen$
             //.do(x => console.log(`MapInput got new listing`, x))
             .publish().refCount()
         }))

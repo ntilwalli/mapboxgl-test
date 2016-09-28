@@ -44,6 +44,13 @@ function intent(sources) {
 function reducers(actions, inputs) {
   const {searchArea$} = inputs
 
+  const searchAreaR = searchArea$.map(searchArea => state => {
+    const listing = state.get(`listing`)
+    listing.profile.searchArea = searchArea
+    listing.profile.location.info = undefined
+    return state.set(`listing`, listing)
+  })
+
   const mapClickR = actions.mapClick$.map(latLng => state => {
     const listing = state.get(`listing`)
     //const location = listing.profile.location
@@ -68,6 +75,7 @@ function reducers(actions, inputs) {
   })
 
   return O.merge(
+    searchAreaR, 
     mapClickR,
     locationDescriptionR
   )
@@ -129,13 +137,15 @@ function mapview(state$) {
       const listing = state.listing
       const {location, mapSettings, searchArea} = listing.profile
       const anchorId = `chooseMapLocationMapAnchor`
-      const centerZoom = location.info ? {center: toLatLngArray(location.info.latLng), zoom: 15} : {center: toLatLngArray(searchArea.center), zoom: 15}
+      const markerLoc = location.info ? toLatLngArray(location.info.latLng) : undefined
+      const centerZoom = markerLoc ? {center: markerLoc, zoom: 15} : {center: toLatLngArray(searchArea.center), zoom: 15}
+      //const centerZoom = {center: toLatLngArray(searchArea.center), zoom: 15}
       const properties = {attributes: {class: `chooseMapLocation`}, centerZoom, disablePanZoom: false, anchorId, mapOptions: {zoomControl: true}}
       const tile = mapSettings ? mapSettings.tile : `mapbox.streets`
 
       return new VNode(`map`, properties, [
         new VNode(`tileLayer`, { tile }),
-        location.info ? new VNode(`marker`, { latLng: centerZoom.center, attributes: {id: `latLngMarker`}}, [
+        markerLoc ? new VNode(`marker`, { latLng: markerLoc, attributes: {id: `latLngMarker`}}, [
                 // new VNode(`divIcon`, {
                 //   options: {
                 //     iconSize: 80,

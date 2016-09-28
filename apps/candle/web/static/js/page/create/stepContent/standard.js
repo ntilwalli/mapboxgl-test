@@ -6,7 +6,7 @@ import {combineObj, createProxy, spread, normalizeComponent, normalizeSink, merg
 
 
 function intent(sources) {
-  const {DOM, HTTP} = sources
+  const {DOM, HTTP, Environment} = sources
   const next$ = DOM.select(`.appNextButton`).events(`click`)
   const back$ = DOM.select(`.appBackButton`).events(`click`)
   const {good$, bad$, ugly$} = processHTTP(sources, `saveListingOnNext`)
@@ -35,7 +35,7 @@ function intent(sources) {
   const updatedListing$ = O.merge(created$, saved$).map(x => x.data)
 
   return {
-    next$, back$, fromHTTP$, created$, updatedListing$
+    next$, back$, fromHTTP$, created$, updatedListing$, environment$: Environment
   }
 }
 
@@ -55,9 +55,13 @@ function reducers(actions, inputs) {
 
 function model(actions, inputs) {
   const reducer$ = reducers(actions, inputs)
-  return inputs.contentState$.take(1)
-    .map(contentState => {
+  return combineObj({
+    contentState$: inputs.contentState$.take(1),
+    environment$: actions.environment$
+  }).map(info => {
+      const {contentState, environment} = info
       return {
+        environment,
         waiting: false,
         contentState,
         autosave: true
@@ -91,15 +95,19 @@ function view(state$, components) {
           ])
           , div(`.controller-section`, [
             div(`.separator`),
-            div(`.button-section.justify-space-between`, [
+            div(`.button-section`, [
               button(`.appBackButton.back-button`, [
-                span(`.fa.fa-angle-left`),
-                span(`.back-text`, [`Back`])
+                div(`.full.flex-center`, [ // Due to Safari 9.1.1 justify content bug...
+                  span(`.fa.fa-angle-left`),
+                  span(`.back-text.icon`, [`Back`])
+                ])
               ]),
               //button(`.appNextButton.next-button${state.listing  && state.listing.type ? '' : '.disabled'}`, [
               button('.appNextButton.next-button' + disabled, [
-                span('.next-text' + disabled, ['Next']),
-                span('.fa.fa-angle-right' + disabled)
+                div(`.full.flex-center`, [
+                  span('.next-text' + disabled, ['Next']),
+                  span('.fa.fa-angle-right' + disabled)
+                ])
               ])
             ])
           ])

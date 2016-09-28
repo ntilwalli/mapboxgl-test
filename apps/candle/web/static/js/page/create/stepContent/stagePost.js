@@ -37,8 +37,10 @@ function view(components) {
             div(`.separator`),
             div(`.button-section.justify-center`, [
               button(`.appBackButton.back-button`, [
-                span(`.fa.fa-angle-left`),
-                span(`.back-text`, [`Back`])
+                div(`.full.flex-center`, [
+                  span(`.fa.fa-angle-left`),
+                  span(`.back-text`, [`Back`])
+                ])
               ])
             ])
           ])
