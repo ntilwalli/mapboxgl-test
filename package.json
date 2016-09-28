@@ -2,22 +2,22 @@
   "repository": {},
   "scripts": {
     "copy-mapbox-data": "rm -rf apps/candle/priv/static/mapbox; mkdir -p apps/candle/priv/static/mapbox; cp -r node_modules/mapbox.js/theme/* apps/candle/priv/static/mapbox",
-    "copy-fonts-data": "rm -rf apps/candle/priv/static/fonts; mkdir -p apps/candle/priv/static/fonts; cp apps/candle/custom_deps/fonts/daniel/daniel.ttf apps/candle/priv/static/fonts; cp apps/candle/custom_deps/fonts/christopherhand.ttf apps/candle/priv/static/fonts; cp -r apps/candle/custom_deps/fonts/archer-book apps/candle/priv/static/fonts;",
-    "build-assets": "cp -r apps/candle/web/static/assets/* apps/candle/priv/static; npm run copy-mapbox-data; npm run copy-fonts-data;",
+    "build-assets": "cp -r apps/candle/web/static/assets/* apps/candle/priv/static",
     "watch-assets": "watch-run -i -p 'apps/candle/web/static/assets/**' npm run build-assets",
     "build-js": "rm -rf apps/candle/priv/static/js; mkdir -p apps/candle/priv/static/js; browserify -t babelify apps/candle/web/static/js/main.js > apps/candle/priv/static/js/main.js",
     "watch-js": "rm -rf apps/candle/priv/static/js; mkdir -p apps/candle/priv/static/js; watchify -t babelify apps/candle/web/static/js/main.js -o apps/candle/priv/static/js/main.js -dv",
     "copy-bootstrap": "mkdir -p apps/candle/priv/static/bootstrap; cp -r apps/candle/custom_deps/bootstrap/dist/ apps/candle/priv/static/bootstrap/",
     "build-bootstrap": "grunt --gruntfile ~/dev/spotlight/apps/candle/custom_deps/bootstrap/Gruntfile.js dist && npm run copy-bootstrap",
     "watch-bootstrap": "npm run build-bootstrap && grunt --gruntfile ~/dev/most/candle/custom_deps/bootstrap/Gruntfile.js watch",
-    "build-css": "rm -rf apps/candle/priv/static/css; mkdir -p apps/candle/priv/static/css; sass apps/candle/web/static/css/base.scss apps/candle/priv/static/css/base.css",
-    "watch-css": "rm -rf apps/candle/priv/static/css; mkdir -p apps/candle/priv/static/css; sass --watch apps/candle/web/static/css:apps/candle/priv/static/css",
-    "build": "npm run build-js & npm run build-css & npm run build-assets",
+    "copy-css": "rm -rf apps/candle/priv/static/css; mkdir -p apps/candle/priv/static/css; cp apps/candle/web/static/css/base.css apps/candle/priv/static/css",
+    "build-css": "sass apps/candle/web/static/css/base.scss apps/candle/web/static/css/base.css && npm run copy-css",
+    "watch-css": "sass --watch apps/candle/web/static/css:apps/candle/priv/static/css",
+    "build": "npm run build-js & npm run build-css & npm run build-assets & npm run copy-mapbox-data",
     "watch": "npm run watch-js & npm run watch-css & npm run watch-bootstrap & npm run watch-assets",
     "test": "browserify -t babelify apps/candle/test/static/js/*.js | tap",
     "test-build": "watchify -v -t babelify apps/candle/web/static/js/test.js -o apps/candle/priv/static/js/test.js",
     "test-serve": "live-server --entry-file=apps/candle/test.html",
-    "deploy": "npm run build-js & npm run build-css & npm run build-assets & npm run copy-fonts-data & npm run copy-mapbox-data"
+    "deploy": "rm -rf apps/candle/priv/static/* && npm run build-js & npm run build-css & npm run copy-bootstrap & npm run build-assets & npm run copy-mapbox-data"
   },
   "dependencies": {
     "@cycle/dom": "file:apps/candle/custom_deps/cyclejs/dom",

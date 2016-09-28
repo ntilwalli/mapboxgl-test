@@ -21,4 +21,5 @@ apps/candle/custom_deps/bootstrap
 apps/candle/custom_deps/cyclejs
 apps/candle/custom_deps/rrule
 node_modules
-
+.sass-cache
+apps/candle/priv

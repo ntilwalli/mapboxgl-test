@@ -25,7 +25,7 @@ defmodule Candle.Mixfile do
      applications: [
        :comeonin,
        :cowboy,
-       :ecto,
+       #:ecto,
        :logger,
        :oauth2,
        :oauth,
