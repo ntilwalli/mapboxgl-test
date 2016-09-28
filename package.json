@@ -17,7 +17,7 @@
     "test": "browserify -t babelify apps/candle/test/static/js/*.js | tap",
     "test-build": "watchify -v -t babelify apps/candle/web/static/js/test.js -o apps/candle/priv/static/js/test.js",
     "test-serve": "live-server --entry-file=apps/candle/test.html",
-    "deploy": "rm -rf apps/candle/priv/static/* && mkdir apps/candle/priv/static && npm run build-js & npm run copy-css & npm run copy-bootstrap & npm run build-assets & npm run copy-mapbox-data"
+    "deploy": "rm -rf apps/candle/priv/static/* && mkdir apps/candle/priv/static && npm run build-js && npm run copy-css && npm run copy-bootstrap && npm run build-assets && npm run copy-mapbox-data"
   },
   "dependencies": {
     "@cycle/dom": "file:apps/candle/custom_deps/cyclejs/dom",
