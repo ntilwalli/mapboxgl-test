@@ -3,12 +3,7 @@
   font-family: ArcherBook2;
   src: local("ArcherBook"), url("/fonts/archer-book/Archer-Book-Pro.otf") format("opentype"); }
 html, body, #app-main, .root-container {
-  /* Allows content to fill the viewport and go beyond the bottom */
-  height: 100%;
-  /* Allows you to scroll below the viewport; default value is visible */
-  overflow-y: scroll;
-  /* To smooth any scrolling behavior */
-  -webkit-overflow-scrolling: touch; }
+  height: 100%; }
 
 body {
   font-family: 'Lato', serif; }
@@ -86,9 +81,6 @@ nav {
   display: flex;
   align-items: center;
   justify-content: center; }
-
-.flex-fixed {
-  flex: 0 0 auto; }
 
 .full-height {
   height: 100%; }
@@ -308,14 +300,12 @@ button.link:hover {
 
 .custom-radios-container {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   margin-bottom: 1rem; }
   .custom-radios-container .custom-radio-input {
     display: flex;
     align-items: center;
-    margin-right: 1.5rem;
-    margin-bottom: .5rem; }
+    margin-right: 1.5rem; }
     .custom-radios-container .custom-radio-input .custom-radio-input-label {
       padding-left: .7rem;
       cursor: default; }
@@ -775,8 +765,6 @@ button.link:hover {
     width: 100%; }
   .create-panel div:not(:first-of-type) > .panel-title {
     margin-top: 1rem; }
-  .create-panel .categories {
-    padding-bottom: 2rem; }
   .create-panel .location-mode .content {
     padding-top: .4rem; }
   .create-panel .change-button {
@@ -837,7 +825,7 @@ button.link:hover {
       display: flex;
       flex: 1; }
       .create-panel .left-side .instruction-section.show {
-        position: fixed;
+        position: absolute;
         bottom: 80px;
         right: 10px;
         border-style: solid;
@@ -886,7 +874,6 @@ button.link:hover {
     margin-top: 10px; }
   .create-panel .form-section {
     position: relative;
-    margin-bottom: 4rem;
     display: flex;
     flex: 1;
     overflow-y: scroll; }
@@ -895,31 +882,25 @@ button.link:hover {
     .create-panel .form-section .content-section {
       flex: 1 1 520px; }
   .create-panel .input-section {
-    position: relative;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     flex: 1 1 600px; }
   @media (min-width: 768px) {
     .create-panel .controller-section {
-      position: absolute;
-      bottom: 0;
-      height: 4rem;
-      width: 100%;
-      margin: 0 0 24px;
-      padding: 0 30px; }
+      display: flex;
+      flex-direction: column;
+      flex: 0 0 70px;
+      margin: 0 30px 24px; }
       .create-panel .controller-section .separator {
         height: 1px;
-        padding-bottom: 25px;
+        margin-bottom: 25px;
         box-shadow: 0px -1px 0px rgba(0, 0, 0, 0.08); }
       .create-panel .controller-section .button-section {
         display: flex;
         flex: 1;
-        justify-content: space-between;
         line-height: 20px;
         font-size: 1rem; }
-        .create-panel .controller-section .button-section .back-button, .create-panel .controller-section .button-section .next-button {
-          display: flex; }
         .create-panel .controller-section .button-section .back-button {
           padding: 10px;
           border-radius: 1px; }
@@ -932,11 +913,6 @@ button.link:hover {
             padding-right: 10px; } }
   @media (max-width: 767px) {
     .create-panel .controller-section {
-      position: fixed;
-      z-index: 9999;
-      bottom: 0;
-      height: 4rem;
-      width: 100%;
       display: flex;
       flex-direction: column;
       flex: 0 0 70px; }
@@ -948,28 +924,20 @@ button.link:hover {
         align-items: center;
         flex: 1 1 auto; }
         .create-panel .controller-section .button-section .back-button, .create-panel .controller-section .button-section .next-button {
-          display: flex;
           height: 100%;
+          display: flex;
           align-items: center;
           justify-content: center;
           flex: 1; }
         .create-panel .controller-section .button-section .back-button {
-          display: flex;
           border-style: solid;
           border-width: 1px 0 0 0; }
           .create-panel .controller-section .button-section .back-button .back-text {
-            flex: 0 0 auto;
             padding-left: 10px; }
-        .create-panel .controller-section .button-section .next-button {
-          display: flex; }
-          .create-panel .controller-section .button-section .next-button .next-text {
-            flex: 0 0 auto;
-            padding-right: 10px; }
-        .create-panel .controller-section .button-section .full {
-          height: 100%;
-          width: 100%; } }
+        .create-panel .controller-section .button-section .next-button .next-text {
+          padding-right: 10px; } }
   .create-panel .content-section {
-    margin: 0 20px 70px;
+    margin: 0 20px;
     padding: 50px 0 20px; }
   .create-panel .controller-section {
     background-color: white; }

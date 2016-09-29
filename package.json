@@ -9,7 +9,7 @@
     "copy-bootstrap": "mkdir -p apps/candle/priv/static/bootstrap; cp -r apps/candle/custom_deps/bootstrap/dist/ apps/candle/priv/static/bootstrap/",
     "build-bootstrap": "grunt --gruntfile ~/dev/spotlight/apps/candle/custom_deps/bootstrap/Gruntfile.js dist && npm run copy-bootstrap",
     "watch-bootstrap": "npm run build-bootstrap && grunt --gruntfile ~/dev/most/candle/custom_deps/bootstrap/Gruntfile.js watch",
-    "copy-css": "rm -rf apps/candle/priv/static/css; mkdir -p apps/candle/priv/static/css; cp apps/candle/web/static/css/base.css apps/candle/priv/static/css",
+    "copy-css": "rm -rf apps/candle/priv/static/css; mkdir -p apps/candle/priv/static/css; cp apps/candle/web/static/css/base.* apps/candle/priv/static/css",
     "build-css": "sass apps/candle/web/static/css/base.scss apps/candle/web/static/css/base.css && npm run copy-css",
     "watch-css": "sass --watch apps/candle/web/static/css:apps/candle/priv/static/css",
     "build": "npm run build-js & npm run build-css & npm run build-assets & npm run copy-mapbox-data",
