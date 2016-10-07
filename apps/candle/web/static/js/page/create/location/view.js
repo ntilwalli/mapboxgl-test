@@ -1,6 +1,6 @@
 import {Observable as O} from 'rxjs'
 import {h, h3, h4, h5, h6, nav, ul, li, div, a, i, span, button, input} from '@cycle/dom'
-import {attrs, renderModal, combineObj} from '../../../utils'
+import {attrs, combineObj} from '../../../utils'
 import {getSearchAreaFromListing, getSearchAreaString} from './utils'
 
 function renderSearchArea(info) {

@@ -234,30 +234,7 @@ export default function main(sources, inputs) {
         }
       })
 
-    // const mergableSinks = {
-    //   HTTP: toHTTP$.map(x => {
-    //     return x
-    //   }),
-    //   Router: O.merge(
-    //     toNextScreen$, 
-    //     toPreviousScreen$
-    //   )
-    // }
-
-    // return spread(mergeSinks(mergableSinks, content), {
-    //   DOM: vtree$,//.do(x => console.log(`Got DOM`, x)),
-    //   listing$: state$
-    //     .map(x => x.contentState.listing)
-    //     .map(x => {
-    //       return x
-    //     }),
-    //   save$: defaultNever(content, `save$`),
-    //   saveStatus$: O.merge(
-    //     actions.fromHTTP$,
-    //     toHTTP$.map(x => ({type: `saving`}))
-    //   )
-    // })
-
+ 
     return {
       DOM: vtree$,
       HTTP: O.merge(
@@ -270,6 +247,7 @@ export default function main(sources, inputs) {
         toNextScreen$, 
         toPreviousScreen$
       ),
+      MapJSON: defaultNever(content, `MapJSON`),
       MapDOM: defaultNever(content, `MapDOM`),
       Storage: defaultNever(content, `Storage`),
       Global: defaultNever(content, `Global`),
@@ -294,6 +272,7 @@ export default function main(sources, inputs) {
 
   return {
     DOM: normalizeSink(component$, `DOM`),
+    MapJSON: normalizeSink(component$, `MapJSON`),
     MapDOM: normalizeSink(component$, `MapDOM`),
     Router: normalizeSink(component$, `Router`),
     Global: normalizeSink(component$, `Global`),

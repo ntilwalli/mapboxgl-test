@@ -1,6 +1,5 @@
 import xs from 'xstream'
 import {div, button} from '@cycle/dom'
-import {noopListener} from '../../utils'
 
 function intent(sources) {
   const home$ = sources.DOM.select(`.appHomeButton`).events(`click`)

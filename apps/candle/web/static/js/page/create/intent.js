@@ -1,5 +1,4 @@
 import {Observable as O} from 'rxjs'
-import {filterHTTP} from '../../utils'
 import {RETRIEVE_LISTING_URL} from './constant'
 import {getEmptyListing} from './listing'
 

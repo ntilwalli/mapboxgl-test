@@ -3,7 +3,7 @@ import {div, input, select, option, h5, li, span, button} from '@cycle/dom'
 import Immutable from 'immutable'
 import {combineObj, createProxy, spread} from '../../../../utils'
 import {countryToAlpha2} from '../../../../util/countryCodes'
-import {getCenterZoom} from '../../../../util/map'
+import {getCenterZoom, toLngLatArray} from '../../../../util/map'
 import {getState} from '../../../../util/states'
 
 import AutocompleteInput from '../../../../library/autocompleteInput'
@@ -32,18 +32,20 @@ const itemConfigs = {
 
 
 function intent(sources, inputs) {
-  const {DOM, MapDOM} = sources
-  const dragStart$ = MapDOM.chooseMap(`changeSearchAreaMapAnchor`).select(`.changeSearchArea`).events(`dragstart`)
-  const moveEnd$ = MapDOM.chooseMap(`changeSearchAreaMapAnchor`).select(`.changeSearchArea`).events(`moveend`)
-  const mapCenterZoom$ = dragStart$.switchMap(_ => {
-    return moveEnd$.take(1)
-  }).map(getCenterZoom)
+  const {DOM, MapJSON} = sources
+
+  const dragEnd$ = MapJSON.select(`changeSearchAreaMapAnchor`).events(`dragend`)
+    .observable
+
+  const mapCenter$ = dragEnd$.map(x => {
+    return x.target.getCenter()
+  })
     .publish().refCount()
 
-  const regionService = FactualGeotagService({props$: O.of({category: 'geotag from searchArea'}), latLng$: mapCenterZoom$.map(x => x.center), HTTP: sources.HTTP})
+  const regionService = FactualGeotagService({props$: O.of({category: 'geotag from searchArea'}), latLng$: mapCenter$, HTTP: sources.HTTP})
   const mapSearchArea$ = regionService.result$
-    .withLatestFrom(mapCenterZoom$, (region, position) => {
-      return {region, center: position.center, radius: 50}
+    .withLatestFrom(mapCenter$, (region, center) => {
+      return {region, center, radius: 50}
     })
     .publish().refCount()
 
@@ -111,31 +113,29 @@ function view({state$, components}) {
   })
 }
 
-function mapView(state$) {
+function mapview(state$) {
   return state$.map(state => {
     const searchArea = state.searchArea
     const anchorId = `changeSearchAreaMapAnchor`
 
-    const centerZoom = {
-      center: [searchArea.center.lat, searchArea.center.lng],
-      zoom: 12
-    }
-
-    const properties = {
-      attributes: {
-        class: `changeSearchArea`
+    const descriptor = {
+      controls: {},
+      map: {
+        container: anchorId, 
+        style: `mapbox://styles/mapbox/bright-v9`, //stylesheet location
+        center: toLngLatArray(searchArea.center), // starting position
+        zoom: 12, // starting zoom,
+        dragPan: true
       },
-      centerZoom,
-      disablePanZoom: false,
-      anchorId,
-      mapOptions: {zoomControl: true}
+      canvas: {
+        style: {
+          cursor: `grab`
+        }
+      }
     }
 
-    const tile = `mapbox.streets`
+    return descriptor
 
-    return new VNode(`map`, properties, [
-      new VNode(`tileLayer`, { tile })
-    ])
   })
 }
 
@@ -178,7 +178,7 @@ export default function main(sources, inputs) {
 
   const out = {
     DOM: view({state$, components: {autocomplete$: populatedPlaceInput.DOM}}),
-    MapDOM: mapView(state$),
+    MapJSON: mapview(state$),
     HTTP: O.merge(populatedPlaceInput.HTTP, magicKeyConverter.HTTP, actions.toHTTP$).publishReplay(1).refCount(),
     output$: state$.map(x => x.searchArea)
   }

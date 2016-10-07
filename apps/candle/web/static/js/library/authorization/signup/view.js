@@ -3,8 +3,7 @@ import {
   attrs,
   renderOrSeparator,
   renderExternalLink,
-  renderAlerts,
-  renderModal
+  renderAlerts
 } from '../../../utils'
 
 

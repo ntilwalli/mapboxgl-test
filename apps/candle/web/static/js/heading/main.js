@@ -1,7 +1,6 @@
 import xs from 'xstream'
 import {div, nav} from '@cycle/dom'
 import combineObj from '../combineObj'
-import {noopListener} from '../utils'
 
 export default function main(sources, inputs, props = {}) {
   const transformed$ = inputs.props$.map(components => {

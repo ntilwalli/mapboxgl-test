@@ -18,7 +18,7 @@ defmodule Shared.Mixfile do
   #
   # Type "mix help compile.app" for more information
   def application do
-    [applications: [:logger, :timex, :postgrex, :ecto],
+    [applications: [:logger, :timex, :postgrex, :ecto, :httpoison],
      mod: {Shared, []}]
   end
 
@@ -42,7 +42,9 @@ defmodule Shared.Mixfile do
       {:postgrex, "0.11.2"},
       {:ecto, "~> 2.0.0"},
       {:geo, "~> 1.1"},
-      {:poison, "~> 2.2"}
+      {:poison, "~> 2.2"},
+      {:httpoison, "~> 0.9.0"},
+      {:floki, "~> 0.10.1"}
     ]
   end
 end

@@ -1,8 +1,8 @@
 import {Observable as O} from 'rxjs'
 import {div} from '@cycle/dom'
 import {combineObj, normalizeComponent, 
-  getCenterZoom, getVicinityFromGeolocation, 
-  getNormalizedRegion, toLatLngArray} from '../../../utils'
+  getVicinityFromGeolocation, getNormalizedRegion} from '../../../utils'
+import {getCenterZoom, toLngLatArray, createFeatureCollection} from '../../../util/map'
 import Immutable from 'immutable'
 import VirtualDOM from 'virtual-dom'
 
@@ -12,14 +12,9 @@ const MAP_ANCHOR_ID = `user-location-map`
 const MAP_ROOT_CLASS = `location-map`
 
 function intent(sources) {
-  const {DOM, MapDOM} = sources
-  const mapMove$ = MapDOM.chooseMap(MAP_ANCHOR_ID).select(`.${MAP_ROOT_CLASS}`).events(`moveend`)
-     .map(getCenterZoom)
-     .publishReplay(1).refCount()
+  //const {DOM, MapDOM} = sources
 
-  return {
-    mapMove$
-  }
+  return {}
 }
 
 function model(actions, inputs) {
@@ -68,39 +63,59 @@ function mapview(state$) {
     const {position, region} = vicinity
     const anchorId = MAP_ANCHOR_ID
 
-
-    const centerZoom = {
-      center: [position.lat, position.lng],
-      zoom: 15//vicinity.position.zoom
-    }
-
     const userPosition = user && user.position
 
-    const properties = {
-      attributes: {
-        class: MAP_ROOT_CLASS
+    const descriptor = {
+      controls: {},
+      map: {
+        container: anchorId, 
+        style: `mapbox://styles/mapbox/bright-v9`, //stylesheet location
+        center: toLngLatArray(position), // starting position
+        zoom: 15, // starting zoom,
+        dragPan: true
       },
-      centerZoom,
-      disablePanZoom: false,
-      anchorId,
-      mapOptions: {zoomControl: true}
+      sources: userPosition ? {
+        userLocation: {
+          type: `geojson`,
+          data: createFeatureCollection(position)
+        }
+      }: undefined,
+      layers: userPosition ? {
+        userLocation: {
+          id: `userLocation`,
+          type: `circle`,
+          source: `userLocation`,
+          paint: {
+            "circle-color": "#AAAAAA",
+            "circle-radius": 15
+          }
+        }
+      } : undefined,
+      canvas: {
+        style: {
+          cursor: `grab`
+        }
+      }
     }
 
-    const tile = `mapbox.streets`
-
-    return new VNode(`map`, properties, [
-      new VNode(`tileLayer`, { tile }),
-      userPosition ? new VNode('circleMarker', {latLng: toLatLngArray(userPosition), radius: 6, attributes: {id: `someid`}}) : null
-    ])
+    return descriptor
   })
 }
 
 export default function main(sources, inputs) {
   const state$ = model({}, inputs)
   const vtree$ = view(state$)
-  const mapvtree$ = mapview(state$)
+  const mapDescriptor$ = mapview(state$)
+    .publishReplay(1).refCount()
+
+  // mapDescriptor$.map(x => {
+  //     return x
+  //   }).subscribe()
+
   return normalizeComponent({
     DOM: vtree$,
-    MapDOM: mapvtree$
+    MapJSON: mapDescriptor$.map(x => {
+      return x
+    })
   })
 }

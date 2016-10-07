@@ -3,24 +3,33 @@ import {Observable as O} from 'rxjs'
 import {div, input, select, option, h5, li, span} from '@cycle/dom'
 import Immutable from 'immutable'
 import VirtualDOM from 'virtual-dom'
-import {combineObj, createProxy, spread, toLatLngArray} from '../../../../utils'
-import {getCenterZoom} from '../../../../util/map'
+import {combineObj, createProxy, spread} from '../../../../utils'
+import {getCenterZoom, toLngLatArray, createFeatureCollection} from '../../../../util/map'
 import FactualGeotagService from '../../../../thirdParty/FactualGeotagService'
 
 const VNode = VirtualDOM.VNode
 
 function intent(sources) {
-    const {DOM, MapDOM, HTTP} = sources
+    const {DOM, MapJSON, HTTP} = sources
 
-  const mapClick$ = MapDOM.chooseMap(`chooseMapLocationMapAnchor`).select(`.chooseMapLocation`).events(`click`)
-     .map(ev => ev.latlng)
+  const mapClick$ = MapJSON.select(`chooseMapLocationMapAnchor`).events(`click`).observable
+     .map(ev => ev.lngLat)
 
-  // const mapMove$ = MapDOM.chooseMap(`chooseMapLocationMapAnchor`).select(`.chooseMapLocation`).events(`moveend`)
-  //   .do(() => {
-  //     console.log(`mapMove`)
-  //   })
-  //   .map(getCenterZoom)
-  //   .publishReplay(1).refCount()
+  const dragEnd$ = MapJSON.select(`chooseMapLocationMapAnchor`).events(`dragend`)
+    .observable
+    .map(ev => {
+      const t = ev.target
+      return {center: t.getCenter(), zoom: t.getZoom()}
+    })
+    .publishReplay().refCount()
+
+  const zoomEnd$ = MapJSON.select(`chooseMapLocationMapAnchor`).events(`zoomend`)
+    .observable
+    .map(ev => {
+      const t = ev.target
+      return {center: t.getCenter(), zoom: t.getZoom()}
+    })
+    .publishReplay().refCount()
 
   // const regionService = FactualGeotagService({
   //   props$: O.of({category: `region from map location`}), 
@@ -30,14 +39,24 @@ function intent(sources) {
   // const mapVicinity$ = regionService.result$
   //   .withLatestFrom(mapMove$, (region, position) => ({region, center: position.center}))
 
-  const locationDescription$ = sources.DOM.select(`.appLocationDescription`).events(`input`)
+  const locationDescription$ = DOM.select(`.appLocationDescription`).events(`input`)
     .map(ev => ev.target.value)
 
   return {
     //mapVicinity$,
     //toHTTP$: regionService.HTTP,
     mapClick$,
-    locationDescription$
+    locationDescription$,
+    dragEnd$,
+    zoomEnd$
+  }
+}
+
+function resetMapSettings(listing) {
+  const mapSettings = listing.profile.mapSettings
+  if (mapSettings) {
+    mapSettings.center = undefined
+    mapSettings.zoom = undefined
   }
 }
 
@@ -48,12 +67,15 @@ function reducers(actions, inputs) {
     const listing = state.get(`listing`)
     listing.profile.searchArea = searchArea
     listing.profile.location.info = undefined
+    listing.profile.mapSettings = undefined
     return state.set(`listing`, listing)
   })
 
   const mapClickR = actions.mapClick$.map(latLng => state => {
     const listing = state.get(`listing`)
     //const location = listing.profile.location
+    const mapSettings = listing.profile.mapSettings
+
     if (location.info) {
       listing.profile.location.info.latLng = latLng
     } else {
@@ -63,6 +85,17 @@ function reducers(actions, inputs) {
       }
     }
 
+    //resetMapSettings(listing)
+
+    return state.set(`listing`, JSON.parse(JSON.stringify(listing)))
+  })
+
+  const moveR = O.merge(actions.dragEnd$, actions.zoomEnd$).map(c => state => {
+    const listing = state.get(`listing`)
+    const mapSettings = listing.profile.mapSettings || {}
+    mapSettings.center = c.center
+    mapSettings.zoom = c.zoom
+    listing.profile.mapSettings = mapSettings
     return state.set(`listing`, JSON.parse(JSON.stringify(listing)))
   })
 
@@ -77,7 +110,8 @@ function reducers(actions, inputs) {
   return O.merge(
     searchAreaR, 
     mapClickR,
-    locationDescriptionR
+    locationDescriptionR,
+    moveR
   )
 }
 
@@ -137,26 +171,61 @@ function mapview(state$) {
       const listing = state.listing
       const {location, mapSettings, searchArea} = listing.profile
       const anchorId = `chooseMapLocationMapAnchor`
-      const markerLoc = location.info ? toLatLngArray(location.info.latLng) : undefined
-      const centerZoom = markerLoc ? {center: markerLoc, zoom: 15} : {center: toLatLngArray(searchArea.center), zoom: 15}
-      //const centerZoom = {center: toLatLngArray(searchArea.center), zoom: 15}
-      const properties = {attributes: {class: `chooseMapLocation`}, centerZoom, disablePanZoom: false, anchorId, mapOptions: {zoomControl: true}}
-      const tile = mapSettings ? mapSettings.tile : `mapbox.streets`
+      const markerLoc = location.info ? location.info.latLng : undefined
+      let center = mapSettings && mapSettings.center ? 
+        mapSettings.center : 
+        markerLoc ?
+          markerLoc :
+          searchArea.center
+      let zoom = mapSettings && mapSettings.zoom ? 
+        mapSettings.zoom : 
+        markerLoc ?
+          17 :
+          15
 
-      return new VNode(`map`, properties, [
-        new VNode(`tileLayer`, { tile }),
-        markerLoc ? new VNode(`marker`, { latLng: markerLoc, attributes: {id: `latLngMarker`}}, [
-                // new VNode(`divIcon`, {
-                //   options: {
-                //     iconSize: 80,
-                //     iconAnchor: [40, -10],
-                //     html: `${event.core.name}`
-                //   },
-                //   attributes: {id: divIconId}
-                // }, [], divIconId)
-              ],
-              `latLngMarker`) : null
-      ])
+      const centerZoom = {center: toLngLatArray(center), zoom}
+      const tile = mapSettings && mapSettings.tile ? mapSettings.tile : `mapbox://styles/mapbox/bright-v9`
+
+      const descriptor = {
+        controls: {},
+        map: {
+          container: anchorId, 
+          style: tile, //stylesheet location
+          center: centerZoom.center, // starting position
+          zoom: centerZoom.zoom, // starting zoom,
+          dragPan: true
+        },
+        sources: markerLoc ? {
+          marker: {
+            type: `geojson`,
+            data: createFeatureCollection(location.info.latLng, {
+              icon: `marker`
+            })
+          }
+        } : undefined,
+        layers: markerLoc ? {
+          marker: {
+            id: `marker`,
+            type: `symbol`,
+            source: `marker`,
+            layout: {
+                "icon-image": `{icon}-15`,
+                "icon-size": 1.5,
+                // "text-field": `{title}`,
+                "text-font": [`Open Sans Semibold`, `Arial Unicode MS Bold`],
+                "text-offset": [0, 0.6],
+                "text-anchor": `top`
+            }
+          }
+        } : undefined,
+        canvas: {
+          style: {
+            cursor: `grab`
+          }
+        }
+      }
+
+      return descriptor
     })
 }
 
@@ -173,7 +242,7 @@ export default function main(sources, inputs) {
 
   return {
     DOM: view(state$),
-    MapDOM: mapview(state$),
+    MapJSON: mapview(state$),
     HTTP: O.never(),//actions.toHTTP$,
     result$: state$.map(state => state.listing.profile.location.info).publishReplay(1).refCount()
   }

@@ -7,9 +7,10 @@ import {makeHTTPDriver} from '@cycle/http'
 import makeGlobalDOMEventDriver from './localDrivers/globalDOM'
 import environmentDriver from './localDrivers/environment'
 import {makeMapDOMDriver} from 'cycle-mapdom'
+import {makeMapJSONDriver} from 'cycle-mapboxgl'
 
-import {div, button, makeDOMDriver} from '@cycle/dom';
-import isolate from '@cycle/isolate'
+import {div, button, makeDOMDriver} from '@cycle/dom'
+import isolate from '@cycle/isolate' 
 
 import {normalizeSink, normalizeComponent, blankComponentUndefinedDOM, defaultNever, combineObj, createProxy, spread} from './utils'
 
@@ -81,7 +82,15 @@ function main(sources) {
   hideModal$.attach(normalizeSink(modal$, 'close$'))
 
   return {
-    DOM: view(components),
+    DOM: view(components).map(x => {
+      return x
+    }), 
+    MapJSON: O.merge(
+      routedComponent.MapJSON,
+      normalizeSink(modal$, `MapJSON`)
+    ).map(x => {
+      return x 
+    }),
     MapDOM: O.merge(
       routedComponent.MapDOM,
       normalizeSink(modal$, `MapDOM`)
@@ -114,6 +123,8 @@ function main(sources) {
 
 Cycle.run(main, {
   DOM: makeDOMDriver(`#app-main`),
+  MapJSON: makeMapJSONDriver(
+    `pk.eyJ1IjoibXJyZWRlYXJzIiwiYSI6ImNpbHJsZnJ3NzA4dHZ1bGtub2hnbGVnbHkifQ.ph2UH9MoZtkVB0_RNBOXwA`),
   MapDOM: makeMapDOMDriver(
     `pk.eyJ1IjoibXJyZWRlYXJzIiwiYSI6ImNpbHJsZnJ3NzA4dHZ1bGtub2hnbGVnbHkifQ.ph2UH9MoZtkVB0_RNBOXwA`),
   Router: makeRouterDriver(createHistory(), routeFunction, {capture: true}),

@@ -142,7 +142,7 @@ function reducers(actions, inputs) {
     // })
 
   const selectHighlightedR = actions.selectHighlighted$
-    .switchMap(() => O.of(true, false))
+    //.switchMap(() => O.of(true, false))
     .map(selected => function selectHighlightedReducer(state) {
       const suggestions = state.get('suggestions')
       const highlighted = state.get('highlighted')

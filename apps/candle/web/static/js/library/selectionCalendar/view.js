@@ -2,7 +2,7 @@ import {Observable as O} from 'rxjs'
 import {div, input, span, table, thead, tfoot, tbody, td, tr, button} from '@cycle/dom'
 import moment from 'moment'
 import {between, notBetween, combineObj, spread} from '../../utils'
-import {getMomentFromStateInfo, getDateFromStateInfo, AM, PM} from './utils'
+import {getMomentFromStateInfo} from './utils'
 
 function daysInMonth(state) {
   return moment((new Date(state.year, state.month + 1)).toISOString()).subtract(1, 'days').date()
@@ -13,55 +13,6 @@ function startDayForMonth(state) {
 }
 
 function inValidRange() { return true }
-
-// function inValidRange(today, {year, month, rangeStart, rangeEnd}, dayNum) {
-
-//   let rangeStartPass = true
-//   if (rangeStart) {
-//     const testDay = moment((new Date(year, month, dayNum)).toISOString()).endOf('day')
-//     rangeStartPass = rangeStart.isSameOrBefore(testDay)
-//   }
-
-//   let rangeEndPass = true
-//   if (rangeEnd) {
-//     const testDay = moment((new Date(year, month, dayNum)).toISOString()).startOf('day')
-//     rangeEndPass = rangeEnd.isSameOrAfter(testDay)
-//   }
-
-//   return rangeStartPass && rangeEndPass //&& today.isSameOrBefore(testDay)
-// }
-
-// function isPreviousMonthSelectable({year, month, rangeStart}) {
-//   if (rangeStart) {
-//     return moment((new Date(year, month-1)).toISOString()).endOf('month').isAfter(rangeStart)
-//   }
-
-//   return true
-// }
-
-// function isNextMonthSelectable({year, month, rangeEnd}) {
-//   if (rangeEnd) {
-//     return moment((new Date(year, month+1)).toISOString()).startOf('month').isSameOrBefore(rangeEnd)
-//   }
-
-//   return true
-// }
-
-// function isPreviousYearSelectable({year, month, rangeStart}) {
-//   if (rangeStart) {
-//     return moment((new Date(year-1, month)).toISOString()).endOf('month').isAfter(rangeStart)
-//   }
-
-//   return true
-// }
-
-// function isNextYearSelectable({year, month, rangeEnd}) {
-//   if (rangeEnd) {
-//     return moment((new Date(year+1, month)).toISOString()).startOf('month').isSameOrBefore(rangeEnd)
-//   }
-
-//   return true
-// }
 
 function getCurrentMonthName({year, month, date}) {
   return moment((new Date(year, month, date)).toISOString()).format(`MMMM`)

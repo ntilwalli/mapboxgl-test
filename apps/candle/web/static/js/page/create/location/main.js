@@ -150,10 +150,13 @@ function contentComponent(sources, inputs) {
     modal: normalizeSink(modal$, `DOM`)
   })
 
+
+
   return {
     DOM: vtree$,
     HTTP: O.merge(normalizeSink(inputComponent$, `HTTP`), normalizeSink(modal$, `HTTP`)),
     Global: normalizeSink(inputComponent$, `Global`),
+    MapJSON: O.merge(normalizeSink(modal$, `MapJSON`), normalizeSink(inputComponent$, `MapJSON`)),
     MapDOM: O.merge(normalizeSink(modal$, `MapDOM`), normalizeSink(inputComponent$, `MapDOM`)),
     state$: state$.map(x => {
       return x

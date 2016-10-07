@@ -27,7 +27,7 @@ export default function main(sources, inputs) {
 
   const out = {
     DOM: vtree$,
-    MapDOM: content.MapDOM,
+    MapJSON: content.MapJSON,
     HTTP: O.merge(heading.HTTP, content.HTTP),
     Router: O.merge(heading.Router, content.Router).map(x => {
       return x

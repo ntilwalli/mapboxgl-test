@@ -5,7 +5,7 @@ import {combineObj, spread, mergeSinks, normalizeComponent} from '../../../utils
 import intent from './intent'
 import model from './model'
 import view from './view'
-import mapview from './mapView'
+import mapview from './mapview'
 
 import TextInput from '../../../library/textInput'
 import Heading from '../../../library/heading/workflow/preview'
@@ -66,7 +66,7 @@ function contentComponent(sources, inputs) {
 
   return normalizeComponent({
     DOM: vtree$,
-    MapDOM: mapview(state$),
+    MapJSON: mapview(state$),
     HTTP: toHTTP$,
     Router: toRouter$
   })

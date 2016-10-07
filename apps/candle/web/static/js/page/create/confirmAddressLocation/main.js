@@ -1,6 +1,6 @@
 import {Observable as O} from 'rxjs'
 import view from './view'
-import mapView from './mapView'
+import mapview from './mapview'
 import intent from './intent'
 import model from './model'
 import Immutable from 'immutable'
@@ -20,11 +20,11 @@ function contentComponent(sources, inputs) {
     listing$: actions.listing$
   }))
   const vtree$ = view(state$)
-  const mapvtree$ = mapView(state$)
+  const mapvtree$ = mapview(state$)
 
   return {
     DOM: vtree$,
-    MapDOM: mapvtree$,
+    MapJSON: mapvtree$,
     HTTP: O.never(),
     state$
   }

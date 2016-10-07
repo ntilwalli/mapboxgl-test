@@ -2,7 +2,7 @@ import xs from 'xstream'
 import combineObj from '../../combineObj'
 import MarkerLayer from './MarkerLayer'
 import VirtualDOM from 'virtual-dom'
-import {noopListener, getCenterZoom} from '../../utils'
+import {getCenterZoom} from '../../util/map'
 
 const VNode = VirtualDOM.VNode
 

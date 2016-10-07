@@ -12,30 +12,35 @@ function reducers(actions, inputs) {
 
   })
 
-  const markerMoveR = actions.markerMove$.map(latLng => state => {
+  const markerMoveR = actions.markerMove$.map(lngLat => state => {
     const listing = state.get(`listing`)
     listing.profile.location.info.latLng = {
       type: `manual`,
-      data: latLng
+      data: lngLat
     }
   
     return state.set(`listing`, listing)
   })
 
-  const mapClickR = actions.mapClick$.map(latLng => state => {
+  const mapClickR = actions.mapClick$.map(lngLat => state => {
     const listing = state.get(`listing`)
     listing.profile.location.info.latLng = {
       type: `manual`,
-      data: latLng
+      data: lngLat
     }
 
     return state.set(`listing`, listing)
   })
 
+  const markerHoverR = actions.markerHover$.map(hover => state => {
+    return state.set(`hover`, hover)
+  })
+
   return O.merge(
     mapMoveR,
     markerMoveR,
-    mapClickR
+    mapClickR,
+    markerHoverR
   )
 }
 
@@ -52,12 +57,13 @@ export default function model(actions, inputs) {
       listing.profile.mapSettings = listing.profile.mapSettings || {
         center: listing.profile.location.info.latLng.data,
         zoom: 17,
-        tile: `mapbox.streets`
+        tile: undefined
       }
 
       return {
         listing,
-        valid: true
+        valid: true,
+        hover: false
       }
     })
     .switchMap(initialState => {

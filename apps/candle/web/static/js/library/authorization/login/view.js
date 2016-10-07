@@ -5,7 +5,6 @@ import {
   renderOrSeparator,
   renderExternalButton,
   renderAlerts,
-  renderModal,
   combineObj
 } from '../../../utils'
 

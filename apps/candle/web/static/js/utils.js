@@ -90,6 +90,7 @@ export function defaultUndefined(component, sinkName) {
 export function blankComponent() {
   return {
     DOM: O.never(),
+    MapJSON: O.never(),
     MapDOM: O.never(),
     Router: O.never(),
     Global: O.never(),
@@ -103,6 +104,7 @@ export function blankComponent() {
 export function blankComponentUndefinedDOM() {
   return {
     DOM: O.of(undefined),
+    MapJSON: O.never(),
     MapDOM: O.never(),
     Router: O.never(),
     Global: O.never(),
@@ -127,42 +129,44 @@ function mergeSelective(...sinks) {
 }
 
 export function mergeSinks(...components) {
-  const MapDOM = mergeSelective(...components.map(c => c.MapDOM).filter(x => !!x))
-  const HTTP = mergeSelective(...components.map(c => c.HTTP).filter(x => !!x))
-  const Router = mergeSelective(...components.map(c => c.Router).filter(x => !!x))
-  const Global = mergeSelective(...components.map(c => c.Global).filter(x => !!x))
-  const Storage = mergeSelective(...components.map(c => c.Storage).filter(x => !!x))
-  const Heartbeat = mergeSelective(...components.map(c => c.Heartbeat).filter(x => !!x))
-  const message$ = mergeSelective(...components.map(c => c.message$).filter(x => !!x))
+  const MapDOM = mergeSelective(...components.map(c => c.MapDOM).filter(x => !!x)).publish().refCount()
+  const MapJSON = mergeSelective(...components.map(c => c.MapJSON).filter(x => !!x)).publish().refCount()
+  const HTTP = mergeSelective(...components.map(c => c.HTTP).filter(x => !!x)).publish().refCount()
+  const Router = mergeSelective(...components.map(c => c.Router).filter(x => !!x)).publish().refCount()
+  const Global = mergeSelective(...components.map(c => c.Global).filter(x => !!x)).publish().refCount()
+  const Storage = mergeSelective(...components.map(c => c.Storage).filter(x => !!x)).publish().refCount()
+  const Heartbeat = mergeSelective(...components.map(c => c.Heartbeat).filter(x => !!x)).publish().refCount()
+  const message$ = mergeSelective(...components.map(c => c.message$).filter(x => !!x)).publish().refCount()
   return {
-    MapDOM, HTTP, Router, Global, Storage, Heartbeat, message$
+    MapDOM, MapJSON, HTTP, Router, Global, Storage, Heartbeat, message$
   }
 }
 
 export function normalizeComponent(component) {
-  return {
-    ...component,
-    DOM: defaultNever(component, `DOM`),
-    MapDOM: defaultNever(component, `MapDOM`),
-    Router: defaultNever(component, `Router`),
-    Global: defaultNever(component, `Global`),
-    Storage: defaultNever(component, `Storage`),
+  return spread(component, {
+    DOM: defaultNever(component, `DOM`).publish().refCount(),
+    MapJSON: defaultNever(component, 'MapJSON').publish().refCount(),
+    MapDOM: defaultNever(component, `MapDOM`).publish().refCount(),
+    Router: defaultNever(component, `Router`).publish().refCount(),
+    Global: defaultNever(component, `Global`).publish().refCount(),
+    Storage: defaultNever(component, `Storage`).publish().refCount(),
     HTTP: defaultNever(component, `HTTP`).publish().refCount(),
-    Heartbeat: defaultNever(component, `Heartbeat`),
-    message$: defaultNever(component, `message$`),
-  }
+    Heartbeat: defaultNever(component, `Heartbeat`).publish().refCount(),
+    message$: defaultNever(component, `message$`).publish().refCount(),
+  })
 }
 
 export function normalizeComponentStream(component$) {
   return {
-    DOM: normalizeSink(component$, `DOM`),
-    MapDOM: normalizeSink(component$, `MapDOM`),
-    Router: normalizeSink(component$, `Router`),
-    Global: normalizeSink(component$, `Global`),
-    Storage: normalizeSink(component$, `Storage`),
-    HTTP: normalizeSink(component$, `HTTP`),
-    Heartbeat: normalizeSink(component$, `Heartbeat`),
-    message$: normalizeSink(component$, `message$`),
+    DOM: normalizeSink(component$, `DOM`).publish().refCount(),
+    MapJSON: normalizeSink(component$, `MapJSON`).publish().refCount(),
+    MapDOM: normalizeSink(component$, `MapDOM`).publish().refCount(),
+    Router: normalizeSink(component$, `Router`).publish().refCount(),
+    Global: normalizeSink(component$, `Global`).publish().refCount(),
+    Storage: normalizeSink(component$, `Storage`).publish().refCount(),
+    HTTP: normalizeSink(component$, `HTTP`).publish().refCount(),
+    Heartbeat: normalizeSink(component$, `Heartbeat`).publish().refCount(),
+    message$: normalizeSink(component$, `message$`).publish().refCount(),
   }
 }
 
@@ -303,12 +307,6 @@ export function getNormalizedRegion(saRegion) {
   } else if (source === `factual` || source === `manual`) {
       return saRegion
   }
-}
-
-export function toLatLngArray(obj) {
-  if (obj.hasOwnProperty(`lat`) && obj.hasOwnProperty(`lng`)) return [obj.lat, obj.lng]
-
-  throw new Error(`Invalid latLng object given`)
 }
 
 // export function filterHTTP(sources, url) {

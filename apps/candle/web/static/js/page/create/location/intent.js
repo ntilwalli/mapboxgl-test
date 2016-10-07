@@ -2,7 +2,6 @@ import {Observable as O} from 'rxjs'
 import {getCenterZoom} from '../../../util/map'
 import {targetIsOwner, combineObj} from '../../../utils'
 import FactualGeotagService from '../../../thirdParty/FactualGeotagService'
-import {getSearchAreaFromMapLocation} from './utils'
 import {inflate} from '../listing'
 
 export default function intent(sources) {

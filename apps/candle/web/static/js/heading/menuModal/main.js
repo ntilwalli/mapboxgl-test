@@ -1,6 +1,6 @@
 import xs from 'xstream'
 import {div, span, input, i, ul, li, a} from '@cycle/dom'
-import {noopListener, attrs, renderExternalLink} from '../../utils'
+import {attrs, renderExternalLink} from '../../utils'
 
 function intent(sources) {
   const signup$ = sources.DOM.select(`.appSignUp`).events(`click`).mapTo(`signup`)

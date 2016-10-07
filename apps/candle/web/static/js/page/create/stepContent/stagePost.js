@@ -111,6 +111,7 @@ export default function main(sources, inputs) {
         toPreviousScreen$,
         defaultNever(content, `Router`),
       ),
+      MapJSON: defaultNever(content, `MapJSON`),
       MapDOM: defaultNever(content, `MapDOM`),
       Storage: defaultNever(content, `Storage`),
       Global: defaultNever(content, `Global`),
@@ -121,6 +122,7 @@ export default function main(sources, inputs) {
 
   return {
     DOM: normalizeSink(component$, `DOM`),
+    MapJSON: normalizeSink(component$, `MapJSON`),
     MapDOM: normalizeSink(component$, `MapDOM`),
     Router: normalizeSink(component$, `Router`),
     Global: normalizeSink(component$, `Global`),

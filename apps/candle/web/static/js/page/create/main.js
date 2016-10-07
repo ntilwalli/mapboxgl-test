@@ -120,6 +120,7 @@ export default function main(sources, inputs) {
 
   const state$ = model(actions, spread(inputs, {startWaiting$: toHTTP$}))
 
+
   return {
     DOM: normalizeSink(component$, `DOM`),
     HTTP: O.merge(
@@ -141,6 +142,7 @@ export default function main(sources, inputs) {
       return x
     }),
     Storage: normalizeSink(component$, `Storage`),
+    MapJSON: normalizeSink(component$, `MapJSON`),
     MapDOM: normalizeSink(component$, `MapDOM`),
     message$: normalizeSink(component$, `message$`),
   }

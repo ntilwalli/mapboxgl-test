@@ -1,6 +1,6 @@
 import xs from 'xstream'
 import Immutable from 'immutable'
-import {targetIsOwner, noopListener} from '../../utils'
+import {targetIsOwner} from '../../utils'
 
 export default function intent({DOM, HTTP, Router, Global}) {
   const openMenuModal$ = DOM.select(`.appOpenMenuModal`).events(`click`)
@@ -26,8 +26,6 @@ export default function intent({DOM, HTTP, Router, Global}) {
     })
 
   const searchConfigurationClicked$ = DOM.select(`.appSearchConfiguration`).events(`click`)
-
-  //searchConfigurationClicked$.debug().addListener(noopListener)
 
   return {
     openMenuModal$,

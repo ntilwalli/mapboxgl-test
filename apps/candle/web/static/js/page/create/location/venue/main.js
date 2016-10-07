@@ -3,7 +3,8 @@ import {Observable as O} from 'rxjs'
 import {div, input, select, option, h5, li, span} from '@cycle/dom'
 import Immutable from 'immutable'
 import VirtualDOM from 'virtual-dom'
-import {combineObj, createProxy, spread, toLatLngArray} from '../../../../utils'
+import {combineObj, createProxy, spread} from '../../../../utils'
+import {toLngLatArray, createFeatureCollection} from '../../../../util/map'
 
 import AutocompleteInput from '../../../../library/autocompleteInput'
 import FoursquareSuggestVenues from '../../../../thirdParty/FoursquareSuggestVenues'
@@ -93,50 +94,57 @@ function view(state$, components) {
 }
 
 function mapview(state$) {
-  return state$
-    .map(state => {
-      const {info, searchArea, mapSettings} = state
-      if (info) {
-        //return null
-        const anchorId = `addSelectVenueMapAnchor`
-        const centerZoom = {
-          center: toLatLngArray(info.data.latLng), 
-          zoom: 15
-        }
+  return state$.map(state => {
+    const {info, searchArea, mapSettings} = state
 
-        const properties = {
-          attributes: {
-            class: `selectVenueMap`
-          }, 
-          centerZoom, 
-          disablePanZoom: false, 
-          anchorId, 
-          mapOptions: {
-            zoomControl: true
+    if (info) {
+      const anchorId = `addSelectVenueMapAnchor`
+
+      const descriptor = {
+        controls: {},
+        map: {
+          container: anchorId, 
+          style: `mapbox://styles/mapbox/bright-v9`, //stylesheet location
+          center: toLngLatArray(info.data.latLng), // starting position
+          zoom: 15, // starting zoom,
+          dragPan: true
+        },
+        sources: {
+          venue: {
+            type: `geojson`,
+            data: createFeatureCollection(info.data.latLng, {
+              title: info.data.name,
+              icon: `marker`
+            })
+          }
+        },
+        layers: {
+          venue: {
+            id: `venue`,
+            type: `symbol`,
+            source: `venue`,
+            layout: {
+                "icon-image": `{icon}-15`,
+                "icon-size": 1.5,
+                // "text-field": `{title}`,
+                "text-font": [`Open Sans Semibold`, `Arial Unicode MS Bold`],
+                "text-offset": [0, 0.6],
+                "text-anchor": `top`
+            }
+          }
+        },
+        canvas: {
+          style: {
+            cursor: `grab`
           }
         }
-
-        const tile = mapSettings ? mapSettings.tile : `mapbox.streets`
-
-        return new VNode(`map`, properties, [
-          new VNode(`tileLayer`, { tile }),
-          info ? new VNode(`marker`, { latLng: centerZoom.center, attributes: {id: `latLngMarker`}}, [
-                  // new VNode(`divIcon`, {
-                  //   options: {
-                  //     iconSize: 80,
-                  //     iconAnchor: [40, -10],
-                  //     html: `${event.core.name}`
-                  //   },
-                  //   attributes: {id: divIconId}
-                  // }, [], divIconId)
-                ],
-                `latLngMarker`) : null
-        ])
-      } else {
-        return null
       }
-    })
-    .filter(x => !!x)
+
+      return descriptor
+    } else {
+      return undefined
+    }
+  }).filter(x => !!x)
 }
 
 export default function main(sources, inputs) {
@@ -165,11 +173,9 @@ export default function main(sources, inputs) {
 
   return {
     DOM: view(state$, {venue$: venueAutocompleteInput.DOM}),
-    MapDOM: mapview(state$),
+    MapJSON: mapview(state$),
     Global: venueAutocompleteInput.Global,
-    HTTP: venueAutocompleteInput.HTTP.map(x => {
-      return x
-    }),
+    HTTP: venueAutocompleteInput.HTTP,
     result$: state$.map(state => state.info).publishReplay(1).refCount()
   }
 }

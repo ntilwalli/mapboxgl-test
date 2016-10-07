@@ -1,5 +1,4 @@
-import {toLatLngArray} from '../../../utils'
-import {getOffsetCenter} from '../../../util/map'
+import {toLngLatArray, createFeatureCollection} from '../../../util/map'
 import VirtualDOM from 'virtual-dom'
 const VNode = VirtualDOM.VNode
 
@@ -11,7 +10,6 @@ function render(state) {
   const mapSettings = profile.mapSettings
   const info = location.info
   const anchorId = `listingCardMapAnchor`
-  const mapClass = `listingCardMap`
 
   let markerLatLng
   if (mode === `venue`)
@@ -21,34 +19,53 @@ function render(state) {
   else if (mode === `map`)
     markerLatLng = info.latLng
 
-  const center = toLatLngArray((mapSettings && mapSettings.center) || markerLatLng)
+  const center = (mapSettings && mapSettings.center) || markerLatLng
   const zoom = (mapSettings && mapSettings.zoom) || 15
 
-  const centerZoom = {center, zoom}
-  const properties = {attributes: {class: mapClass}, centerZoom, offset: [100, 0], disablePanZoom: true, anchorId, mapOptions: {zoomControl: false}}
-  const tile = mapSettings && mapSettings.tile || `mapbox.streets`
-
-  return new VNode(`map`, properties, [
-    new VNode(`tileLayer`, { tile }),
-      new VNode(`marker`, { 
-        latLng: toLatLngArray(markerLatLng), 
-        attributes: {id: `latLngMarker`},
-        options: {
-          draggable: true
+  const tile = mapSettings && mapSettings.tile ? mapSettings.tile : `mapbox://styles/mapbox/bright-v9`
+  const descriptor = {
+    controls: {},
+    map: {
+      container: anchorId, 
+      style: tile, //stylesheet location
+      center: toLngLatArray(center), // starting position
+      zoom, // starting zoom,
+      dragPan: false
+    },
+    sources: {
+      marker: {
+        type: `geojson`,
+        data: createFeatureCollection(center, {
+          icon: `marker`
+        })
+      }
+    },
+    layers: {
+      marker: {
+        id: `marker`,
+        type: `symbol`,
+        source: `marker`,
+        layout: {
+            "icon-image": `{icon}-15`,
+            "icon-size": 1.5,
+            // "text-field": `{title}`,
+            "text-font": [`Open Sans Semibold`, `Arial Unicode MS Bold`],
+            "text-offset": [0, 0.6],
+            "text-anchor": `top`
         }
-      }, [
-            // new VNode(`divIcon`, {
-            //   options: {
-            //     iconSize: 80,
-            //     iconAnchor: [40, -10],
-            //     html: `${event.core.name}`
-            //   },
-            //   attributes: {id: divIconId}
-            // }, [], divIconId)
-          ],
-          `latLngMarker`)
-  ])
+      }
+    },
+    canvas: {
+      style: {
+        cursor: `inherit`
+      }
+    },
+    options: {
+      offset: [100, 0]
+    }
+  }
 
+  return descriptor
 }
 
 export default function view(state$) {

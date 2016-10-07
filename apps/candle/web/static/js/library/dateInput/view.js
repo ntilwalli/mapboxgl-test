@@ -2,7 +2,7 @@ import {Observable as O} from 'rxjs'
 import {div, input, span, table, thead, tfoot, tbody, td, tr, button} from '@cycle/dom'
 import moment from 'moment'
 import {between, notBetween, combineObj, spread} from '../../utils'
-import {getMomentFromStateInfo, getDateFromStateInfo, AM, PM} from './utils'
+import {getMomentFromStateInfo, getDateFromStateInfo} from './utils'
 
 function daysInMonth(state) {
   return moment((new Date(state.year, state.month + 1)).toISOString()).subtract(1, 'days').date()
