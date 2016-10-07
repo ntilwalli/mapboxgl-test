@@ -70,7 +70,7 @@ const cjsOptions = {
 }
 
 export default {
-  entry: 'apps/candle/web/static/js/main.js',
+  entry: 'apps/candle/web/static/ts/main.js',
   format: 'cjs',
   plugins: [
     babel(babelOptions), 
