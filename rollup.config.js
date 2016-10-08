@@ -1,4 +1,5 @@
-import babel from 'rollup-plugin-babel';
+//import babel from 'rollup-plugin-babel';
+import typescript from 'rollup-plugin-typescript';
 import nodeResolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
 import builtins from 'rollup-plugin-node-builtins';
@@ -69,11 +70,15 @@ const cjsOptions = {
   }  // Default: undefined 
 }
 
+const typescriptOptions = {
+  typescript: require(`/usr/local/lib/node_modules/typescript`)
+}
+
 export default {
   entry: 'apps/candle/web/static/ts/main.js',
   format: 'cjs',
   plugins: [
-    babel(babelOptions), 
+    typescript(typescriptOptions), 
     nodeResolve(nodeOptions), 
     commonjs(cjsOptions), 
     builtins(), 

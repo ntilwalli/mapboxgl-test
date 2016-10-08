@@ -1,0 +1,36 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "module": "commonjs",
+        "rootDir": "apps/candle/web/static/ts",
+        "outDir": "apps/candle/priv/static/ts",
+        "inlineSourceMap": true,
+        "inlineSources": true
+        // "baseUrl": ".",
+        // "paths": {
+        //     "@cycle/storage": [
+        //         "customTypings/cycle-storage.d.ts"
+        //     ]
+        // },
+        //     "jsondiffpatch": [
+        //         "typingsLocal/jsondiffpatch.d.ts"
+        //     ]
+        // },
+        // "moduleResolution": "node",
+        //"declaration": true,
+        
+    },
+    "files": [
+        "customTypings/validator.d.ts",
+        "customTypings/cookie_js.d.ts",
+        "customTypings/parse-address.d.ts",
+        "customTypings/rrule.d.ts",
+        "customTypings/cycle-storage.d.ts",
+        "apps/candle/web/static/ts/main.ts"
+    ],
+    "exclude": [
+      "node_modules",
+      "lib",
+      "dist"
+    ]
+}
