@@ -1,6 +1,6 @@
 import {Observable as O} from 'rxjs'
 import moment = require('moment')
-import {combineObj} from '../utils'
+import {combineObj, clean} from '../utils'
 import Immutable = require('immutable')
 
 const suggestUrlPrefix = `http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/suggest`
@@ -76,7 +76,7 @@ function ArcGISSuggest (sources, inputs) {
     .filter(x => x.type === `success`)
     .map(x => {
       return x.data.map(result => ({
-        name: result.text,
+        name: clean(result.text),
         magicKey: result.magicKey,
         type: `default`
       }))

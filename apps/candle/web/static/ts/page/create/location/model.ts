@@ -36,7 +36,7 @@ function reducers(actions, inputs) {
       listing.profile.mapSettings.center = undefined
       listing.profile.mapSettings.zoom = undefined
     }
-    
+     
     return state.set(`listing`, listing).set(`valid`, isValid(listing))
   })
 

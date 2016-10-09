@@ -1215,7 +1215,9 @@ button.link:hover {
     font-size: .9rem; }
   .listing-card .event-title {
     font-weight: bold;
-    font-size: 1rem; }
+    font-size: 1rem;
+    text-overflow: ellipsis;
+    overflow: hidden; }
   .listing-card .listing-type {
     font-style: italic;
     font-size: .8rem;
@@ -1224,6 +1226,8 @@ button.link:hover {
     padding-right: .3rem; }
     .listing-card .recurrence-day:after {
       content: ","; }
+  .listing-card .start-title, .listing-card .end-title {
+    padding-right: .1rem; }
   .listing-card .start-time {
     padding-right: .2rem; }
   .listing-card .end-time {

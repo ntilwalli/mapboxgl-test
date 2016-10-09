@@ -308,31 +308,10 @@ export function getNormalizedRegion(saRegion) {
   }
 }
 
-// export function filterHTTP(sources, url) {
-//   const response$ = sources.HTTP.response$$.filter(res$ => res$.request.url === url).flatten().remember()
-//
-//   const good$ = response$
-//     .filter(x => x.status === 200)
-//     .map(x => x.body)
-//     .remember()
-//
-//   const bad$ = response$
-//     .filter(x => x.status !== 200)
-//     .remember()
-//
-//   const error$ = good$
-//     .filter(x => x.type === `error`)
-//     .map(x => x.data)
-//     .remember()
-//
-//   const success$ = good$
-//     .filter(x => x.type === `success`)
-//     .map(x => x.data)
-//     .remember()
-//
-//   return {
-//     bad$,
-//     error$,
-//     success$
-//   }
-// }
+
+export function clean (val) {
+  if (typeof val === 'string') {
+    return val.replace(/town of,?/i, '')
+  }
+}
+

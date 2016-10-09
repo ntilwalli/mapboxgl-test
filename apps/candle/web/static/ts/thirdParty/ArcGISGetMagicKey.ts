@@ -1,6 +1,6 @@
 import {Observable as O} from 'rxjs'
 import moment = require('moment')
-import {combineObj, spread} from '../utils'
+import {combineObj, spread, clean} from '../utils'
 import Immutable = require('immutable')
 import {parseLocation} from 'parse-address'
 import {countryToAlpha2} from '../util/countryCodes'
@@ -46,7 +46,7 @@ function ArcGISGetMagicKey(sources, inputs) {
             return {
               type: `success`,
               data: {
-                address: candidate.address,
+                address: clean(candidate.address),
                 parsedAddress,
                 latLng: {
                   lat: candidate.location.y,

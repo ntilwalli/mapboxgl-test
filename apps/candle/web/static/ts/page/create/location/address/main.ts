@@ -108,7 +108,7 @@ function reducers(actions, inputs) {
     const region = sa.region
     const pa = region.data.parsedAddress
     const street = extractStreetAddress(region.data.raw)
-    const stateAbbr = getState(pa.state)
+    const stateAbbr = region.data.stateAbbr//getState(pa.state)
     const validStreet = street !== `error`
     const out = state
       .set(`city`, pa.city)

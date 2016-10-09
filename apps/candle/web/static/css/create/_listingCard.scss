@@ -82,6 +82,9 @@
   .event-title {
     font-weight: bold;
     font-size: 1rem;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    //display: block;
   }
 
   .listing-type {
@@ -98,6 +101,9 @@
     }
   }
 
+  .start-title, .end-title {
+    padding-right: .1rem;
+  }
   .start-time {
     padding-right: .2rem;
   }
