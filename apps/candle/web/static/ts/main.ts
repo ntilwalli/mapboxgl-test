@@ -30,7 +30,7 @@ import Presignup from './library/authorization/presignup/main'
 import routeFunction from './localDrivers/routeFunction/main'
 
 function main(sources) {
-
+  console.log(`Hello start`) 
   // sources.Router.history$
   //   .map(x => {
   //     return x
@@ -81,8 +81,8 @@ function main(sources) {
   hideModal$.attach(normalizeSink(modal$, 'close$'))
 
   return {
-    DOM: view(components).map(x => {
-      return x
+    DOM: view(components).map(y => {
+      return y
     }), 
     MapJSON: O.merge(
       routedComponent.MapJSON,
