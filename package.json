@@ -43,8 +43,6 @@
     "phoenix": "file:deps/phoenix",
     "phoenix_html": "file:deps/phoenix_html",
     "query-string": "^4.2.2",
-    "rollup": "^0.36.1",
-    "rollup-plugin-commonjs": "file:custom_deps/rollup-plugin-commonjs",
     "rrule": "file:custom_deps/rrule",
     "rxjs": "^5.0.0-beta.12",
     "superagent": "file:custom_deps/superagent",
