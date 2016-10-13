@@ -1,4 +1,3 @@
-/// <reference types="core-js" />
 import { StreamAdapter } from '@cycle/base';
 import { Stream } from 'xstream';
 import { DOMSource, EventsFnOptions } from './DOMSource';

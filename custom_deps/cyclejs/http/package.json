@@ -4,7 +4,6 @@
   "description": "A Cycle.js Driver for making HTTP requests",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
-  "types": "lib/index.d.ts",
   "license": "MIT",
   "repository": "https://github.com/cyclejs/cyclejs/tree/master/packages/http",
   "dependencies": {
@@ -16,13 +15,14 @@
   },
   "devDependencies": {
     "@cycle/base": "*",
-    "@cycle/rxjs-run": "^3.0.3",
+    "@cycle/rxjs-run": "*",
     "@types/core-js": "^0.9.34",
+    "@types/node": "^6.0.45",
     "body-parser": "1.15.2",
     "cookie-parser": "1.4.3",
     "express": "4.14.0",
     "rx": "^4.1.0",
-    "rxjs": "^5.0.0-beta.12",
+    "rxjs": "^5.0.0-beta.5",
     "saucie": "^1.4.1",
     "xstream": "6.x.x"
   },
@@ -30,7 +30,7 @@
     "xstream": "global:xstream"
   },
   "scripts": {
-    "lint": "../node_modules/.bin/tslint -c tslint.json src/*.ts",
+    "lint": "../node_modules/.bin/tslint -c ../tslint.json src/**/*.ts",
     "test-node": "../node_modules/.bin/mocha test/node.js",
     "test-browser": "npm run start-test-support-server && ../node_modules/.bin/testem ci -l Chrome,Firefox && npm run stop-test-support-server",
     "start-test-support-server": "PORT=8070 node test/support/server.js & echo $! > test-support-server.pid",

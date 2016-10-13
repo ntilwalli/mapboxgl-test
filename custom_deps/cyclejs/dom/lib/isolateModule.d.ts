@@ -1,4 +1,3 @@
-/// <reference types="core-js" />
 import { VNode } from './interfaces';
 import { EventDelegator } from './EventDelegator';
 export declare class IsolateModule {

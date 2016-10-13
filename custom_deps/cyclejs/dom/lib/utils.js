@@ -8,10 +8,10 @@ function isElement(obj) {
 }
 exports.SCOPE_PREFIX = "$$CYCLEDOM$$-";
 function getElement(selectors) {
-    var domElement = (typeof selectors === "string" ?
+    var domElement = typeof selectors === 'string' ?
         document.querySelector(selectors) :
-        selectors);
-    if (typeof selectors === "string" && domElement === null) {
+        selectors;
+    if (typeof selectors === 'string' && domElement === null) {
         throw new Error("Cannot render into unknown element `" + selectors + "`");
     }
     else if (!isElement(domElement)) {

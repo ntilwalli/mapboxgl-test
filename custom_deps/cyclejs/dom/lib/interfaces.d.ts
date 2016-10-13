@@ -1,4 +1,3 @@
-/// <reference types="core-js" />
 export interface VNode {
     sel?: string;
     data?: VNodeData;

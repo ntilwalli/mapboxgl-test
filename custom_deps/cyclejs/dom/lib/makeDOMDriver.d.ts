@@ -1,4 +1,3 @@
-/// <reference types="core-js" />
 export interface DOMDriverOptions {
     modules?: Array<Object>;
     transposition?: boolean;

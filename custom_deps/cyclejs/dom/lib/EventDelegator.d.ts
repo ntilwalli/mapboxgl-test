@@ -1,4 +1,3 @@
-/// <reference types="core-js" />
 import { Stream } from 'xstream';
 import { IsolateModule } from './isolateModule';
 export interface CycleDOMEvent extends Event {
@@ -18,13 +17,13 @@ export declare class EventDelegator {
     private roof;
     private domListener;
     constructor(topElement: Element, eventType: string, useCapture: boolean, isolateModule: IsolateModule);
-    bubble(rawEvent: Event): void;
-    matchEventAgainstDestinations(el: Element, ev: CycleDOMEvent): void;
-    capture(ev: Event): void;
+    private bubble(rawEvent);
+    private matchEventAgainstDestinations(el, ev);
+    private capture(ev);
     addDestination(subject: Stream<Event>, namespace: Array<string>, destinationId: number): void;
     createDestinationId(): number;
     removeDestinationId(destinationId: number): void;
-    patchEvent(event: Event): CycleDOMEvent;
-    mutateEventCurrentTarget(event: CycleDOMEvent, currentTargetElement: Element): void;
+    private patchEvent(event);
+    private mutateEventCurrentTarget(event, currentTargetElement);
     updateTopElement(newTopElement: Element): void;
 }

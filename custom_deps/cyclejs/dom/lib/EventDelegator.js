@@ -15,7 +15,7 @@ function findDestinationId(arr, searchId) {
     var currentIndex;
     var currentElement;
     while (minIndex <= maxIndex) {
-        currentIndex = (minIndex + maxIndex) / 2 | 0;
+        currentIndex = (minIndex + maxIndex) / 2 | 0; // tslint:disable-line:no-bitwise
         currentElement = arr[currentIndex];
         var currentId = currentElement.destinationId;
         if (currentId < searchId) {

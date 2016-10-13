@@ -95,7 +95,7 @@ var IsolateModule = (function () {
             },
             destroy: function (vNode) {
                 self.cleanupVNode(vNode);
-            }
+            },
         };
     };
     return IsolateModule;

@@ -8,13 +8,12 @@ function isolateSource(httpSource, scope) {
 exports.isolateSource = isolateSource;
 function isolateSink(request$, scope) {
     return request$.map(function (req) {
-        if (typeof req === "string") {
+        if (typeof req === 'string') {
             return { url: req, _namespace: [scope] };
         }
-        var reqOptions = req;
-        reqOptions._namespace = reqOptions._namespace || [];
-        reqOptions._namespace.push(scope);
-        return reqOptions;
+        req._namespace = req._namespace || [];
+        req._namespace.push(scope);
+        return req;
     });
 }
 exports.isolateSink = isolateSink;

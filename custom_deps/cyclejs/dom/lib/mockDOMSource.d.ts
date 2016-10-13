@@ -1,4 +1,3 @@
-/// <reference types="core-js" />
 import { StreamAdapter } from '@cycle/base';
 import { DOMSource, EventsFnOptions } from './DOMSource';
 export declare type GenericStream = any;

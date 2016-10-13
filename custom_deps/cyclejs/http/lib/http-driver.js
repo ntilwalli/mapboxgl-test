@@ -123,7 +123,6 @@ function makeRequestInputToResponse$(runStreamAdapter) {
         var response$ = createResponse$(reqInput).remember();
         var reqOptions = softNormalizeRequestInput(reqInput);
         if (!reqOptions.lazy) {
-            /* tslint:disable:no-empty */
             response$.addListener({ next: function () { }, error: function () { }, complete: function () { } });
         }
         response$ = (runStreamAdapter) ?
@@ -141,9 +140,7 @@ function makeHTTPDriver() {
         var response$$ = request$
             .map(makeRequestInputToResponse$(runSA));
         var httpSource = new MainHTTPSource_1.MainHTTPSource(response$$, runSA, name, []);
-        /* tslint:disable:no-empty */
         response$$.addListener({ next: function () { }, error: function () { }, complete: function () { } });
-        /* tslint:enable:no-empty */
         return httpSource;
     }
     httpDriver.streamAdapter = xstream_adapter_1.default;

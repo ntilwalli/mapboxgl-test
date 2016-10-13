@@ -9,6 +9,7 @@ defmodule Shared.Mixfile do
      deps_path: "../../deps",
      lockfile: "../../mix.lock",
      elixir: "~> 1.3",
+     elixirc_paths: ["lib", "web"],
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      deps: deps]
@@ -44,7 +45,8 @@ defmodule Shared.Mixfile do
       {:geo, "~> 1.1"},
       {:poison, "~> 2.2"},
       {:httpoison, "~> 0.9.0"},
-      {:floki, "~> 0.10.1"}
+      {:floki, "~> 0.10.1"},
+      {:exquery, "~> 0.0.11"}
     ]
   end
 end

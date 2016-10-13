@@ -44,7 +44,7 @@ var SVG_TAG_NAMES = [
     'linearGradient', 'marker', 'mask', 'metadata', 'missingGlyph', 'mpath',
     'path', 'pattern', 'polygon', 'polyline', 'radialGradient', 'rect', 'script',
     'set', 'stop', 'style', 'switch', 'symbol', 'text', 'textPath', 'title',
-    'tref', 'tspan', 'use', 'view', 'vkern'
+    'tref', 'tspan', 'use', 'view', 'vkern',
 ];
 var svg = createTagFunction('svg');
 SVG_TAG_NAMES.forEach(function (tag) {
@@ -61,7 +61,7 @@ var TAG_NAMES = [
     'object', 'ol', 'optgroup', 'option', 'p', 'param', 'pre', 'progress', 'q',
     'rp', 'rt', 'ruby', 's', 'samp', 'script', 'section', 'select', 'small',
     'source', 'span', 'strong', 'style', 'sub', 'sup', 'table', 'tbody', 'td',
-    'textarea', 'tfoot', 'th', 'thead', 'title', 'tr', 'u', 'ul', 'video'
+    'textarea', 'tfoot', 'th', 'thead', 'title', 'tr', 'u', 'ul', 'video',
 ];
 var exported = { SVG_TAG_NAMES: SVG_TAG_NAMES, TAG_NAMES: TAG_NAMES, svg: svg, isSelector: isSelector, createTagFunction: createTagFunction };
 TAG_NAMES.forEach(function (n) {

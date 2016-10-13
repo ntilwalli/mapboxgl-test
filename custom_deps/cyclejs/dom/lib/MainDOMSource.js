@@ -173,7 +173,7 @@ var MainDOMSource = (function () {
                     else {
                         delegator.removeDestinationId(destinationId);
                     }
-                }
+                },
             });
             delegator.addDestination(subject, namespace, destinationId);
             return subject;

@@ -11,7 +11,7 @@ function fromEvent(element, eventName, useCapture) {
         },
         stop: function stop() {
             this.element.removeEventListener(eventName, this.next, useCapture);
-        }
+        },
     });
 }
 exports.fromEvent = fromEvent;

@@ -23,7 +23,7 @@ var VNodeWrapper = (function () {
         var elementClassName = className ?
             "." + className.split(" ").join(".") : "";
         return hyperscript_1.h("" + tagName.toLowerCase() + elementId + elementClassName, {}, [
-            vnode
+            vnode,
         ]);
     };
     return VNodeWrapper;
