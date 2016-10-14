@@ -45,9 +45,9 @@ export function getSearchAreaString(searchArea) {
   } else if (source === `manual`) {
     const data = saRegion.data
     const {country, region, locality} = data
-    const state = region // equivalent of state as per geolocation region default
-    const city = locality
-    return `${city}, ${state}`
+    // const state = region // equivalent of state as per geolocation region default
+    // const city = locality
+    return `${locality}, ${region}`
   } 
 
   throw new Error(`Invalid region source`)
