@@ -24,8 +24,8 @@
     "deploy": "rm -rf apps/candle/priv/static && mkdir apps/candle/priv/static && npm run build-js && npm run build-css && npm run copy-bootstrap && npm run build-assets && npm run copy-mapbox-data"
   },
   "dependencies": {
-    "@cycle/dom": "file:custom_deps/cyclejs/dom",
-    "@cycle/http": "file:custom_deps/cyclejs/http",
+    "@cycle/dom": "^13.0.0",
+    "@cycle/http": "^11.1.0",
     "@cycle/isolate": "^1.4.0",
     "@cycle/rxjs-run": "^3.0.3",
     "@cycle/storage": "3.0.0-rc3",
