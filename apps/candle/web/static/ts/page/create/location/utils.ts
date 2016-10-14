@@ -32,12 +32,6 @@ export function getSearchAreaString(searchArea) {
     } else {
       return `Nowhere`
     }
-  } else if (source === `manual`) {
-    const data = saRegion.data
-    const {country, region, locality} = data
-    const state = getState(region.data)|| region.data
-    const city = locality.data
-    return `${city}, ${state}`
   } else if (source === `factual`) {
     if (saRegion.type === `somewhere`) {
       const data = saRegion.data
@@ -48,7 +42,13 @@ export function getSearchAreaString(searchArea) {
     } else {
       return `Nowhere`
     }
-  }
+  } else if (source === `manual`) {
+    const data = saRegion.data
+    const {country, region, locality} = data
+    const state = region // equivalent of state as per geolocation region default
+    const city = locality
+    return `${city}, ${state}`
+  } 
 
   throw new Error(`Invalid region source`)
 }

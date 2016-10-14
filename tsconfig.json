@@ -5,7 +5,15 @@
         "rootDir": "apps/candle/web/static/ts",
         "outDir": "apps/candle/priv/static/ts",
         //"sourceRoot": "apps/candle/priv/static/ts",
-        "sourceMap": true
+        "sourceMap": true,
+        "lib": [
+          "dom",
+          "es5",
+          "scripthost",
+          "es2015.collection",
+          "es2015.promise",
+          "es2015.iterable"
+        ]
         // "baseUrl": ".",
         // "paths": {
         //     "@cycle/storage": [

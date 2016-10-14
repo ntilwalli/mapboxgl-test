@@ -78,21 +78,27 @@ function intent(sources) {
 }
 
 function reducers(actions, inputs) {
+  // const positionR = actions.position$
+  //   .map(pos => state => state.update(`user`, x => ({
+  //       region: x && x.region,
+  //       position: pos,
+  //       sync: false
+  //     })
+  //   ))
+
+  // const regionR = actions.region$
+  //   .map(r => state => state.update(`user`, x => ({
+  //       region: r,
+  //       position: x && x.position,
+  //       sync: true
+  //     })
+  //   ))
+
   const positionR = actions.position$
-    .map(pos => state => state.update(`user`, x => ({
-        region: x && x.region,
-        position: pos,
-        sync: false
-      })
-    ))
+    .map(pos => state => state.update(`user`, x => undefined))
 
   const regionR = actions.region$
-    .map(r => state => state.update(`user`, x => ({
-        region: r,
-        position: x && x.position,
-        sync: true
-      })
-    ))
+    .map(r => state => state.update(`user`, x => undefined))
 
   const errorR = actions.error$
     .map(err => state => {
