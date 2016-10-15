@@ -19,7 +19,9 @@ defmodule User.Mixfile do
   #
   # Type "mix help compile.app" for more information
   def application do
-    [applications: [:logger, :timex, :shared, :auth],
+    [applications: [:logger, 
+    # :timex, 
+    :shared, :auth],
      mod: {User, []}]
   end
 
@@ -38,8 +40,8 @@ defmodule User.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
-      {:timex, "~> 3.0"},
-      {:timex_ecto, "~> 3.0"},
+      # {:timex, "~> 3.0"},
+      # {:timex_ecto, "~> 3.1.0", path},
       {:shared, in_umbrella: true},
       {:auth, in_umbrella: true}
     ]
