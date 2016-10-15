@@ -249,7 +249,7 @@ function view({state$, components}) {
 export default function USAddress(sources, inputs) {
 
   const {listing$} = inputs
-  const searchArea$ = listing$.map(x => x.profile.searchArea).publishReplay(1).refCount()
+  const searchArea$ = listing$.map(x => x.profile.search_area).publishReplay(1).refCount()
   const center$ = searchArea$.map(v => v.center).publishReplay(1).refCount()
 
 

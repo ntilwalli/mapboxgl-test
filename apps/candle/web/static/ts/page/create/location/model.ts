@@ -17,9 +17,9 @@ function reducers(actions, inputs) {
       return state.set(`modal`, ``)
     })
 
-  const searchAreaFromScreenR = inputs.searchAreaFromScreen$.map(searchArea => state => {
+  const searchAreaFromScreenR = inputs.searchAreaFromScreen$.map(search_area => state => {
     const listing = state.get(`listing`)
-    listing.profile.searchArea = searchArea
+    listing.profile.search_area = search_area
     return state.set(`listing`, listing)
       .set(`modal`, ``)
       .set(`valid`, isValid(listing))
@@ -28,13 +28,13 @@ function reducers(actions, inputs) {
   const locationR = inputs.location$.map(loc => state => {
     const listing = state.get(`listing`)
     const location = listing.profile.location
-    const mapSettings = listing.profile.mapSettings
+    const map_settings = listing.profile.map_settings
     
     listing.profile.location.info = loc
 
-    if (location.mode !== `map` && listing.profile.mapSettings) {
-      listing.profile.mapSettings.center = undefined
-      listing.profile.mapSettings.zoom = undefined
+    if (location.mode !== `map` && listing.profile.map_settings) {
+      listing.profile.map_settings.center = undefined
+      listing.profile.map_settings.zoom = undefined
     }
      
     return state.set(`listing`, listing).set(`valid`, isValid(listing))
@@ -45,7 +45,7 @@ function reducers(actions, inputs) {
 
     listing.profile.location.info = undefined
     listing.profile.location.mode = mode
-    listing.profile.mapSettings = undefined;
+    listing.profile.map_settings = undefined;
 
     return state.set(`listing`, listing).set(`valid`, isValid(listing))
   })
@@ -72,8 +72,8 @@ export default function model(actions, inputs) {
       const listing = inputs.listing
       const profile = listing.profile
       const location = profile.location
-      //profile.mapSettings = profile.mapSettings || {}
-      profile.searchArea = profile.searchArea || getSearchAreaFromGeolocation(geolocation)
+      //profile.map_settings = profile.map_settings || {}
+      profile.search_area = profile.search_area || getSearchAreaFromGeolocation(geolocation)
       const initial = {
         waiting: false,
         authorization: inputs.authorization,

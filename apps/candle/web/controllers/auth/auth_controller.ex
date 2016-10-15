@@ -19,6 +19,7 @@ defmodule Candle.AuthController do
 
     user = Helpers.get_user(conn, current_user)
 
+
     partial = %Authorization{
       provider: auth.provider,
       uid: auth.uid,
@@ -27,6 +28,9 @@ defmodule Candle.AuthController do
       expires_at: auth.credentials.expires_at,
       profile: auth.info
     }
+
+    IO.puts "Testing auth"
+    IO.inspect partial
 
     case User.Router.route(User.Router, {user, {:oauth_login, partial}}) do
     #case Auth.Manager.oauth_login(Auth.Manager, partial) do

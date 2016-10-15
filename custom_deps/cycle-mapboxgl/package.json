@@ -33,7 +33,7 @@
     "@cycle/rxjs-adapter": "^3.0.3",
     "jsondiffpatch": "^0.2.4",
     "mapbox-gl": "^0.25.1",
-    "rxjs": "^5.0.0-beta.12"
+    "rxjs": "^5.0.0-rc.1"
   },
   "devDependencies": {
     "@cycle/dom": "^12.2.5",

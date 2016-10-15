@@ -80,7 +80,7 @@ function contentComponent(sources, inputs) {
     // }
     ],
     props$: O.merge(
-      profile$.map(profile => profile.meta && profile.meta.eventType),
+      profile$.map(profile => profile.meta && profile.meta.event_type),
       creationTypeInput.selected$.skip(1).filter(x => x === `group`).mapTo(undefined)
     ).map(selected => ({selected})),
   })

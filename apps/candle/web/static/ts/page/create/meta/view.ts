@@ -45,7 +45,7 @@ function renderEventType(info) {
   const {listing} = state
   const {eventTypeInput} = components
   const section = `meta`
-  const property = `eventType`
+  const property = `event_type`
   const disabled = isDisabled(section, property, listing)
   if (!disabled) {
     return div(`.event-type`, [

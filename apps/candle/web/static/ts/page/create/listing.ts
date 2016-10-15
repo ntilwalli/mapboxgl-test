@@ -39,30 +39,30 @@ export function getEmptyListing() {
     user_sequence_id: undefined,
     child_sequence_id: undefined,
     type: `single`,
-    insertedAt: undefined,
-    updatedAt: undefined,
+    inserted_at: undefined,
+    updated_at: undefined,
     profile: {
       meta: {
-        eventType: undefined,
+        event_type: undefined,
         visibility: `private`
       },
       description: {
         title: undefined,
         description: undefined,
-        shortDescription: undefined,
+        short_description: undefined,
         categories: []
       },
       location: {
         mode: `venue`,
         info: undefined
       },
-      searchArea: undefined,
+      search_area: undefined,
       // {
       //   center: undefined,
       //   region: undefined,
       //   radius: undefined
       // },
-      mapSettings: undefined,
+      map_settings: undefined,
       // {
       //   center: undefined,
       //   zoom: undefined,
@@ -105,7 +105,7 @@ export function getValidators(step, listing): any {
   const {type, profile} = listing
   const profileDescription = profile.description
   const profileMeta = profile.meta
-  const {visibility, eventType} = profileMeta
+  const {visibility, event_type} = profileMeta
   const {title, description, categories} = profileDescription
   const {mode} = profile.location
   if (step === "listing") {
@@ -119,7 +119,7 @@ export function getValidators(step, listing): any {
         end: [optional]
       }
     } else {
-      throw new Error(`Invalid eventType for time step`)
+      throw new Error(`Invalid event_type for time step`)
     }
   } else if (step === `location`) {
     if (mode === `address`) {
@@ -149,34 +149,34 @@ export function getValidators(step, listing): any {
     if (type !== `group`) {
       return {
         visibility: [required],
-        eventType: [required]
+        event_type: [required]
       }
     } else {
       return {
         visibility: [required],
-        eventType: [disabled]
+        event_type: [disabled]
       }
     }
   } else if (step === `description`) {
-    if (eventType === `show`) {
+    if (event_type === `show`) {
       return {
         title: [required],
         description: [required],
-        shortDescription: [optional],
+        short_description: [optional],
         categories: [length()]
       }
-    } else if (eventType === `gathering`) {
+    } else if (event_type === `gathering`) {
       return {
         title: [required],
         description: [required],
-        shortDescription: [optional],
+        short_description: [optional],
         categories: [optional]
       }
     } else {
       return {
         title: [required],
         description: [optional],
-        shortDescription: [disabled],
+        short_description: [disabled],
         categories: [disabled]
       }
     }

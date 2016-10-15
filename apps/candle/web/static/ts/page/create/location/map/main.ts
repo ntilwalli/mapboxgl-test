@@ -39,28 +39,27 @@ function intent(sources) {
 }
 
 function resetMapSettings(listing) {
-  const mapSettings = listing.profile.mapSettings
-  if (mapSettings) {
-    mapSettings.center = undefined
-    mapSettings.zoom = undefined
+  const map_settings = listing.profile.map_settings
+  if (map_settings) {
+    map_settings.center = undefined
+    map_settings.zoom = undefined
   }
 }
 
 function reducers(actions, inputs) {
   const {searchArea$} = inputs
 
-  const searchAreaR = searchArea$.map(searchArea => state => {
+  const searchAreaR = searchArea$.map(search_area => state => {
     const listing = state.get(`listing`)
-    listing.profile.searchArea = searchArea
+    listing.profile.search_area = search_area
     listing.profile.location.info = undefined
-    listing.profile.mapSettings = undefined
+    listing.profile.map_settings = undefined
     return state.set(`listing`, listing)
   })
 
   const mapClickR = actions.mapClick$.map(latLng => state => {
     const listing = state.get(`listing`)
     const location = listing.profile.location
-    const mapSettings = listing.profile.mapSettings
 
     if (location.info) {
       listing.profile.location.info.latLng = latLng
@@ -78,10 +77,10 @@ function reducers(actions, inputs) {
 
   const moveR = O.merge(actions.dragEnd$, actions.zoomEnd$).map((c: any) => state => {
     const listing = state.get(`listing`)
-    const mapSettings = listing.profile.mapSettings || {}
-    mapSettings.center = c.center
-    mapSettings.zoom = c.zoom
-    listing.profile.mapSettings = mapSettings
+    const map_settings = listing.profile.map_settings || {}
+    map_settings.center = c.center
+    map_settings.zoom = c.zoom
+    listing.profile.map_settings = map_settings
     return state.set(`listing`, JSON.parse(JSON.stringify(listing)))
   })
 
@@ -155,22 +154,22 @@ function mapview(state$) {
   return state$
     .map(state => {
       const listing = state.listing
-      const {location, mapSettings, searchArea} = listing.profile
+      const {location, map_settings, search_area} = listing.profile
       const anchorId = `chooseMapLocationMapAnchor`
       const markerLoc = location.info ? location.info.latLng : undefined
-      let center = mapSettings && mapSettings.center ? 
-        mapSettings.center : 
+      let center = map_settings && map_settings.center ? 
+        map_settings.center : 
         markerLoc ?
           markerLoc :
-          searchArea.center
-      let zoom = mapSettings && mapSettings.zoom ? 
-        mapSettings.zoom : 
+          search_area.center
+      let zoom = map_settings && map_settings.zoom ? 
+        map_settings.zoom : 
         markerLoc ?
           17 :
           15
 
       const centerZoom = {center: toLngLatArray(center), zoom}
-      const tile = mapSettings && mapSettings.tile ? mapSettings.tile : `mapbox://styles/mapbox/bright-v9`
+      const tile = map_settings && map_settings.tile ? map_settings.tile : `mapbox://styles/mapbox/bright-v9`
 
       const descriptor = {
         controls: {},

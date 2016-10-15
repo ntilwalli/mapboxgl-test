@@ -22,7 +22,9 @@ defmodule Auth.Mixfile do
       applications: [
         :logger,
         :comeonin, 
-        :shared
+        :shared,
+        :oauth2,
+        :oauth
       ],
       mod: {Auth, []}
     ]
@@ -44,11 +46,13 @@ defmodule Auth.Mixfile do
   defp deps do
     [
       {:shared, in_umbrella: true},
-      {:ueberauth, "~> 0.3.0"},
+      #{:ueberauth, "~> 0.3.0"},
       {:guardian, "~> 0.12.0"},
       {:guardian_db, "~> 0.7.0"},
       {:comeonin, "~> 2.4"},
-      {:poison, "~> 2.2"}
+      {:poison, "~> 2.2"},
+      {:oauth, github: "tim/erlang-oauth"},
+      {:oauth2, "== 0.6.0", override: true}
     ]
   end
 end

@@ -42,14 +42,14 @@ function renderDescription(state) {
 function renderShortDescription(state) {
   const {listing} = state
   const {profile} = listing
-  const {shortDescription} = profile.description
+  const {short_description} = profile.description
   const section = `description`
-  const property = `shortDescription`
+  const property = `short_description`
   const disabled = isDisabled(section, property, listing)
   if (!disabled) {
     return div(`.short-description`, [
       renderHeading(`Short description`, section, property, listing),
-      textarea(`.appShortDescriptionInput`, {props: {rows: 2}}, [shortDescription || ``])
+      textarea(`.appShortDescriptionInput`, {props: {rows: 2}}, [short_description || ``])
     ])
   } else {
     return null

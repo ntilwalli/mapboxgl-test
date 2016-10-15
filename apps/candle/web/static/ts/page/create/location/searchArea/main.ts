@@ -75,7 +75,7 @@ function model(actions, inputs) {
   return inputs.listing$
     .take(1)
     .switchMap(listing => {
-      const searchArea = JSON.parse(JSON.stringify(listing.profile.searchArea))
+      const searchArea = JSON.parse(JSON.stringify(listing.profile.search_area))
       const v = searchArea.region.type === `somewhere` ? searchArea : undefined
       const initialState = {
         searchArea: searchArea
@@ -143,7 +143,7 @@ export default function main(sources, inputs) {
 
   const inputSearchArea$ = createProxy()
   const center$ = O.merge(
-    listing$.take(1).map(v => v.profile.searchArea.center),
+    listing$.take(1).map(v => v.profile.search_area.center),
     actions.mapSearchArea$.map(v => v.center),
     inputSearchArea$.map(x => x.center)
   )

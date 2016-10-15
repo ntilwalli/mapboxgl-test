@@ -33,15 +33,19 @@ defmodule Auth.Utils do
     }, repo) do
     case get_existing_authorization(provider, uid, repo) do
       :error ->
-        # IO.puts "No existing auth"
+        IO.puts "No existing auth"
         case is_username_available(username, repo) do
           :ok ->
+            IO.puts "ok username"
             user_temp = %User{type: type, name: name, username: username, email: email}
             create_user_authorization(partial, user_temp, repo)
-          {:error, error} = val -> val
+          {:error, error} = val -> 
+            IO.puts "error"
+            IO.inspect val
+            val
         end
       {:ok, auth} ->
-        # IO.puts "Existing auth..."
+        IO.puts "Existing auth..."
         {:error, :authorization_already_exists}
     end
   end
@@ -65,11 +69,13 @@ defmodule Auth.Utils do
   def oauth_login(%Authorization{provider: provider, uid: uid} = temp, repo) do
     case get_existing_authorization(provider, uid, repo) do
       {:ok, authorization} ->
+        IO.puts "oauth_login ok"
+        IO.inspect authorization
         Authorization.changeset(
           authorization, 
           scrub(%{
-            token: temp.token, 
-            refresh_token: temp.refresh_token,
+            token: to_string(temp.token), 
+            refresh_token: to_string(temp.refresh_token),
             expires_at: temp.expires_at,
             profile: temp.profile
           })
@@ -108,19 +114,27 @@ defmodule Auth.Utils do
 
   defp create_authorization(user, %{provider: provider} = partial_auth, repo) do
     authorization = Ecto.build_assoc(user, :authorizations)
-    result = Authorization.changeset(
-      authorization,
-      scrub(
-        %{
-          provider: to_string(partial_auth.provider),
-          uid: partial_auth.uid,
-          token: partial_auth.token,
-          refresh_token: partial_auth.refresh_token,
+    IO.inspect authorization
+    IO.inspect partial_auth
+    IO.inspect partial_auth.token
+    input = %{
+          provider: to_string(provider),
+          uid: to_string(partial_auth.uid),
+          token: to_string(partial_auth.token),
+          refresh_token: to_string(partial_auth.refresh_token),
           expires_at: partial_auth.expires_at,
           profile: if (provider == :identity) do nil else partial_auth end
         }
-      )
-    ) |> repo.insert
+    IO.inspect input
+    IO.inspect scrub(input)
+    cs = Authorization.changeset(
+      authorization,
+      scrub(input)
+    )
+
+    IO.inspect cs
+
+    result = repo.insert(cs)
 
     case result do
       {:ok, the_auth} -> {:ok, the_auth}
@@ -129,18 +143,21 @@ defmodule Auth.Utils do
   end
 
   defp create_user_authorization(auth_temp, user_temp, repo) do
+
     case repo.transaction(
       fn -> 
+        IO.puts "in transaction"
         with {:ok, user} = create_user(user_temp, repo),
              {:ok, auth} = create_authorization(user, auth_temp, repo),
              do: {:ok, user}
       end
     ) do
       {:ok, response} ->
-        #IO.puts "Got valid transaction response"
+        IO.puts "Got valid transaction response"
         response
       {:error, reason} ->
-        #IO.puts "Got error transaction response"
+        IO.puts "Got error transaction response"
+        IO.inspect reason
         {:error, reason}
     end
   end

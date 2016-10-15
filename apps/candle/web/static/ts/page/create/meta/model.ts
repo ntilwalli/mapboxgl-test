@@ -16,7 +16,7 @@ function reducers(actions, inputs) {
     listing.type = val
     if (val === `group`) {
       const profile = listing.profile
-      profile.meta.eventType = undefined
+      profile.meta.event_type = undefined
     }
 
     listing.profile.time = undefined
@@ -36,7 +36,7 @@ function reducers(actions, inputs) {
     const listing = state.get(`listing`)
     const {profile} = listing
     const {meta} = profile
-    meta.eventType = val
+    meta.event_type = val
 
     return state.set(`listing`, listing).set(`valid`, isValid(listing))
   })

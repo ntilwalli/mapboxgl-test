@@ -4,7 +4,7 @@ import {getVicinityFromGeolocation} from '../../../utils'
 
 
 export function getSearchAreaFromListing(listing) {
-  return listing.profile.searchArea
+  return listing.profile.search_area
 }
 
 

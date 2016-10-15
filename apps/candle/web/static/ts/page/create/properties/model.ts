@@ -28,7 +28,7 @@ function reducers(actions, inputs) {
     const listing = state.get(`listing`)
     const {profile} = listing
     const {description} = profile
-    description.shortDescription = val
+    description.short_description = val
     return setValid(state.set(`listing`, listing))
   })
   //const categoriesR = inputs.categories$.map(val => state => {

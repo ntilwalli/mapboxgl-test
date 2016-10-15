@@ -16,8 +16,8 @@
     "copy-css": "rm -rf apps/candle/priv/static/css; mkdir -p apps/candle/priv/static/css; cp apps/candle/web/static/css/base.* apps/candle/priv/static/css",
     "build-css": "sass apps/candle/web/static/css/base.scss apps/candle/web/static/css/base.css && npm run copy-css",
     "watch-css": "sass --watch apps/candle/web/static/css:apps/candle/priv/static/css",
-    "build": "npm run build-webpack & npm run build-css & npm run build-assets & npm run copy-mapbox-data",
-    "watch": "npm run watch-webpack & npm run watch-css & npm run watch-bootstrap & npm run watch-assets",
+    "build": "npm run build-browserify & npm run build-css & npm run build-assets & npm run copy-mapbox-data",
+    "watch": "npm run watch-browserify & npm run watch-css & npm run watch-bootstrap & npm run watch-assets",
     "test": "browserify -t babelify apps/candle/test/static/ts/*.js | tap",
     "test-build": "watchify -v -t babelify apps/candle/web/static/ts/test.js -o apps/candle/priv/static/ts/test.js",
     "test-serve": "live-server --entry-file=apps/candle/test.html",
@@ -61,6 +61,7 @@
     "grunt": "^1.0.1",
     "grunt-cli": "^1.2.0",
     "ts-loader": "^0.9.1",
+    "tsify": "^2.0.2",
     "typescript": "^2.1.0-dev.20161007",
     "watch-run": "^1.2.4",
     "webpack": "^1.13.2"

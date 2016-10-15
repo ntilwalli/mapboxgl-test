@@ -62,7 +62,7 @@ function model(actions, inputs) {
 
   return combineObj({
     instruction$: actions.instruction$.take(1),
-    listing$: actions.listing$.take(1)//.map(x => x && x.updatedAt).take(1)
+    listing$: actions.listing$.take(1)//.map(x => x && x.updated_at).take(1)
   })
     .map((inputs: any) => {
       const {instruction, listing} = inputs

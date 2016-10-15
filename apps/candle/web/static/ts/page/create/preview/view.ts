@@ -318,12 +318,12 @@ function renderListingHeading(info) {
   const {listing} = state
   const {type, profile} = listing
   const {meta, location, time} = profile
-  const {title, shortDescription, description} = profile.description
+  const {title, short_description, description} = profile.description
 
   return div(`.heading`, [
     div(`.event-title`, [title]),
     renderLocationName(info),
-    !shortDescription ? null : div(`.short-description`, [shortDescription])
+    !short_description ? null : div(`.short-description`, [short_description])
   ])
 }
 
@@ -332,7 +332,7 @@ function renderRecurring(info) {
   const {listing} = state
   const {type, profile} = listing
   const {meta, location, time} = profile
-  const {title, shortDescription, description} = profile.description
+  const {title, short_description, description} = profile.description
   const {frequency} = time
   const {mode} = location
 
@@ -379,7 +379,7 @@ function renderPanel(info) {
   const {listing} = state
   const {type, profile} = listing
   const {meta} = profile
-  const {eventType} = meta
+  const {event_type} = meta
   return div(`.panel`, [
     div([
       div(`.panel-title`, [h5([`Almost done...`])]),
@@ -397,7 +397,7 @@ function renderPanel(info) {
             button(`.appCustomizeButton.customize-button`, `Customize`)
           ])
         ]),
-        eventType === `show` || type === `recurring` || type === `group` ? div(`.action-container`, [
+        event_type === `show` || type === `recurring` || type === `group` ? div(`.action-container`, [
           span(`.action-description`, [`Staging a listing allows you to invite/confirm performers before going live.  Would you like to stage this listing?`]),
           div(`.action-button`, [
             button(`.appStageButton.stage-button`, `Stage`)

@@ -6,12 +6,12 @@ function render(state) {
   const hover = state.hover
   const profile = listing.profile
   const location = profile.location
-  const mapSettings = profile.mapSettings
+  const map_settings = profile.map_settings
   const info = location.info
   const anchorId = `modifyLocationMapAnchor`
-  const center = toLngLatArray(mapSettings.center || info.latLng.data)
-  const zoom = mapSettings.zoom || 17
-  const tile = mapSettings && mapSettings.tile ? mapSettings.tile : `mapbox://styles/mapbox/bright-v9`
+  const center = toLngLatArray(map_settings.center || info.latLng.data)
+  const zoom = map_settings.zoom || 17
+  const tile = map_settings && map_settings.tile ? map_settings.tile : `mapbox://styles/mapbox/bright-v9`
   const descriptor = {
     controls: {},
     map: {

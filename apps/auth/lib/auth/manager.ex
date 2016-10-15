@@ -84,15 +84,15 @@ defmodule Auth.Manager do
       } = registration,
       %Authorization{} = auth
     }}, _from, state) do
-  #  IO.inspect registration
-  #  IO.inspect auth
+   IO.inspect registration
+   IO.inspect auth
    input = {%Registration{
       name: name, 
       username: username, 
       email: email, 
       type: type
     }, auth}
-  #  IO.inspect input
+   IO.inspect input
    {:reply,
      Utils.oauth_signup(input, Repo), 
      state

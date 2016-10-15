@@ -6,8 +6,8 @@ function reducers(actions, inputs) {
 
   const mapMoveR = actions.mapMove$.map(centerZoom => state => {
     const listing = state.get(`listing`)
-    listing.profile.mapSettings.center = centerZoom.center
-    listing.profile.mapSettings.zoom = centerZoom.zoom
+    listing.profile.map_settings.center = centerZoom.center
+    listing.profile.map_settings.zoom = centerZoom.zoom
     return state.set(`listing`, listing)
 
   })
@@ -54,7 +54,7 @@ export default function model(actions, inputs) {
     })
     .map((inputs: any) => {
       const listing = inputs.listing
-      listing.profile.mapSettings = listing.profile.mapSettings || {
+      listing.profile.map_settings = listing.profile.map_settings || {
         center: listing.profile.location.info.latLng.data,
         zoom: 17,
         tile: undefined

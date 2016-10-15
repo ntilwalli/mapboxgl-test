@@ -5,7 +5,7 @@ function render(state) {
   const profile = listing.profile
   const location = profile.location
   const mode = location.mode
-  const mapSettings = profile.mapSettings
+  const map_settings = profile.map_settings
   const info = location.info
   const anchorId = `listingCardMapAnchor`
 
@@ -17,10 +17,10 @@ function render(state) {
   else if (mode === `map`)
     markerLatLng = info.latLng
 
-  const center = (mapSettings && mapSettings.center) || markerLatLng
-  const zoom = (mapSettings && mapSettings.zoom) || 15
+  const center = (map_settings && map_settings.center) || markerLatLng
+  const zoom = (map_settings && map_settings.zoom) || 15
 
-  const tile = mapSettings && mapSettings.tile ? mapSettings.tile : `mapbox://styles/mapbox/bright-v9`
+  const tile = map_settings && map_settings.tile ? map_settings.tile : `mapbox://styles/mapbox/bright-v9`
   const descriptor = {
     controls: {},
     map: {

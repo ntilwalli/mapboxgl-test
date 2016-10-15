@@ -26,7 +26,7 @@ const venueItemConfigs = {
 }
 
 function reducers(inputs) {
-  const {selected$, searchArea$, mapSettings$} = inputs
+  const {selected$, searchArea$} = inputs
   const selectedR = selected$.map(val => state => {
     return state.set(`info`, val)
   })
@@ -48,8 +48,8 @@ function model(inputs) {
     .take(1)
     .map(listing => {
       const location = listing.profile.location
-      const mapSettings = listing.profile.mapSettings
-      const searchArea = listing.searchArea
+      const mapSettings = listing.profile.map_settings
+      const searchArea = listing.profile.search_area
       return {
         info: location.info,
         mapSettings,
@@ -92,7 +92,7 @@ function view(state$, components) {
 
 function mapview(state$) {
   return state$.map(state => {
-    const {info, searchArea, mapSettings} = state
+    const {info, search_area, map_settings} = state
 
     if (info) {
       const anchorId = `addSelectVenueMapAnchor`
@@ -149,7 +149,7 @@ export default function main(sources, inputs) {
   const {listing$, searchArea$} = inputs
 
   const centerZoom$ = O.merge(
-    listing$.take(1).map(x => x.profile.searchArea),
+    listing$.take(1).map(x => x.profile.search_area),
     searchArea$
   ).map((v: any) => ({center: v.center, zoom: 8}))
   //.do(x => console.log(`search area:`, x))
