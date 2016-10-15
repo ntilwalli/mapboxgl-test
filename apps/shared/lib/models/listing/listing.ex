@@ -1,12 +1,12 @@
 defmodule Shared.Listing do
   use Shared.Lib, :model
 
-  @derive {Poison.Encoder, except: [:__meta__, :user_listings, :child_listings, :user, :sort_id]}
+  @derive {Poison.Encoder, except: [:__meta__, :user_listings, :child_listings, :sort_id]}
   @primary_key {:id, :id, autogenerate: true}
   schema "listings" do
     field :sort_id, :id
     field :parent_id, :id
-    field :profile, :map
+    embeds_one :profile, Listing.Profile
     field :type, :string
     field :handle, :string
     field :release, :string
