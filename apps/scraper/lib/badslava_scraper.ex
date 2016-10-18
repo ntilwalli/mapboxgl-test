@@ -15,7 +15,7 @@ defmodule Badslava.Scraper do
     retrieved = for r <- retrieve_from_store(), do: decode_time(r)
     IO.puts "Retrieved #{Enum.count(retrieved)} stored listings..."
     IO.puts "Determining diff..."
-    {added, removed} = diff(converted, retrieved)
+    {add, remove, update} = diff(converted, retrieved)
     IO.puts "Adding #{Enum.count(added)}, removing #{Enum.count(removed)} listings..."
     IO.puts "Requesting listings update..."
     IO.puts "Storing latest badslava listings..."
@@ -32,11 +32,24 @@ defmodule Badslava.Scraper do
     old_mapset = MapSet.new(old_hash)
     added_hashes = MapSet.difference(new_mapset, old_mapset)
     removed_hashes = MapSet.difference(old_mapset, new_mapset)
+    same_hashes = MapSet.intersection(old_mapset, new_mapset)
 
-    added = MapSet.to_list(added_hashes) |> Enum.map(fn x -> new_map[x] end)
-    removed = MapSet.to_list(removed_hashes) |> Enum.map(fn x -> old_map[x] end)
-    {added, removed}
+    add = MapSet.to_list(added_hashes) |> Enum.map(fn x -> new_map[x] end)
+    remove = MapSet.to_list(removed_hashes) |> Enum.map(fn x -> old_map[x] end)
+    update = MapSet.to_list(same_hashes) 
+      |> Enum.filter(fn x => has_updates?(old_map[x], new_map[x]) end)
+      |> Enum.map(fn x => new_map[x])
+
+    {add, remove, update}
     # {nil, nil}
+  end
+
+  defp has_updates?(old, new) do
+    old.when.start_time != new.when.start_time
+      or old.notes != new.notes
+      or old.email != new.email
+      or old.email_name != new.email_name
+      or old.cost != new.cost
   end
 
   defp hash(listing) do

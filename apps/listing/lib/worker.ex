@@ -9,7 +9,11 @@ defmodule Listing.Worker do
     {:ok, []}
   end
 
-  def handle_call(msg, _, _) do
+  def handle_call({:bulk, add, remove, update}, _, _) do
+    
+  end
+
+  defp recursive_remove() do
     
   end
 end
