@@ -728,22 +728,22 @@ button.link:hover {
       border-style: solid;
       padding-left: 15px;
       border-width: 0 0 0 1px; }
-    .page-heading .create-workflow .listing-save-area {
+    .page-heading .create-workflow .session-save-area {
       display: flex;
       flex: 1 1 auto;
       align-items: center;
       justify-content: flex-end;
       padding-right: 15px;
       height: 100%; }
-      .page-heading .create-workflow .listing-save-area .last-saved-status {
+      .page-heading .create-workflow .session-save-area .last-saved-status {
         margin-right: 15px;
         color: gray; }
-      .page-heading .create-workflow .listing-save-area .error-save-status {
+      .page-heading .create-workflow .session-save-area .error-save-status {
         margin-right: 15px;
         color: red; }
-      .page-heading .create-workflow .listing-save-area .menu-link {
+      .page-heading .create-workflow .session-save-area .menu-link {
         color: blue; }
-      .page-heading .create-workflow .listing-save-area .menu-link:hover {
+      .page-heading .create-workflow .session-save-area .menu-link:hover {
         text-decoration: underline; }
 
 .user-location-map-component {
@@ -1215,7 +1215,9 @@ button.link:hover {
     font-size: .9rem; }
   .listing-card .event-title {
     font-weight: bold;
-    font-size: 1rem; }
+    font-size: 1rem;
+    text-overflow: ellipsis;
+    overflow: hidden; }
   .listing-card .listing-type {
     font-style: italic;
     font-size: .8rem;
@@ -1224,6 +1226,8 @@ button.link:hover {
     padding-right: .3rem; }
     .listing-card .recurrence-day:after {
       content: ","; }
+  .listing-card .start-title, .listing-card .end-title {
+    padding-right: .1rem; }
   .listing-card .start-time {
     padding-right: .2rem; }
   .listing-card .end-time {

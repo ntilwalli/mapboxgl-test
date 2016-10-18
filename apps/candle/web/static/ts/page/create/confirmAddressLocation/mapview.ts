@@ -9,7 +9,7 @@ function render(state) {
   const map_settings = profile.map_settings
   const info = location.info
   const anchorId = `modifyLocationMapAnchor`
-  const center = toLngLatArray(map_settings.center || info.latLng.data)
+  const center = toLngLatArray(map_settings.center || info.lngLat.data)
   const zoom = map_settings.zoom || 17
   const tile = map_settings && map_settings.tile ? map_settings.tile : `mapbox://styles/mapbox/bright-v9`
   const descriptor = {
@@ -24,7 +24,7 @@ function render(state) {
     sources: {
       marker: {
         type: `geojson`,
-        data: createFeatureCollection(location.info.latLng.data, {
+        data: createFeatureCollection(location.info.lngLat.data, {
           icon: `marker`
         })
       }

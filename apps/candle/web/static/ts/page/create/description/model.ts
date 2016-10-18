@@ -4,43 +4,43 @@ import {combineObj, spread, checkValidity} from '../../../utils'
 import {validateDescription as isValid} from '../listing'
 
 function setValid(state) {
-  const listing = state.get(`listing`)
+  const session = state.get(`session`)
 
-  return state.set(`valid`, isValid(listing))
+  return state.set(`valid`, isValid(session.listing))
 }
 
 function reducers(actions, inputs) {
   const titleR = inputs.title$.skip(1).map(checkValidity).map(val => state => {
-    const listing = state.get(`listing`)
+    const session = state.get(`session`)
+    const {listing} = session
     const {profile} = listing
-    const {description} = profile
-    description.title = val
-    return setValid(state.set(`listing`, listing))
+    profile.title = val
+    return setValid(state.set(`session`, session))
   })
   const descriptionR = actions.description$.map(val => state => {
-    const listing = state.get(`listing`)
+    const session = state.get(`session`)
+    const {listing} = session
     const {profile} = listing
-    const {description} = profile
-    description.description = val
-    return setValid(state.set(`listing`,listing))
+    profile.description = val
+    return setValid(state.set(`session`,session))
   })
   const shortDescriptionR = actions.shortDescription$.map(val => state => {
-    const listing = state.get(`listing`)
+    const session = state.get(`session`)
+    const {listing} = session
     const {profile} = listing
-    const {description} = profile
-    description.short_description = val
-    return setValid(state.set(`listing`, listing))
+    profile.short_description = val
+    return setValid(state.set(`session`, session))
   })
   //const categoriesR = inputs.categories$.map(val => state => {
   //       return setValid(state.set(`categories`, val))
   // })
   const categoriesR = actions.categories$.map(val => state => {
-    const listing = state.get(`listing`)
+    const session = state.get(`session`)
+    const {listing} = session
     const {profile} = listing
-    const {description} = profile
     const categories = val.split(/[\s,]+/).filter(x => x.length > 0)
-    description.categories = categories
-    return setValid(state.set(`listing`, listing))
+    profile.categories = categories
+    return setValid(state.set(`session`, session))
   })
 
 
@@ -51,11 +51,11 @@ function reducers(actions, inputs) {
 
 export default function model(actions, inputs) {
   const reducer$ = reducers(actions, inputs)
-  return inputs.listing$.take(1)
-    .map(listing => {
-      const valid = isValid(listing)
+  return inputs.session$.take(1)
+    .map(session => {
+      const valid = isValid(session.listing)
       return {
-        listing,
+        session,
         valid
       }
     })

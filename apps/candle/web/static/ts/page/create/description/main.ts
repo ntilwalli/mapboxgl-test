@@ -23,11 +23,16 @@ function contentComponent(sources, inputs) {
   const titleInput = TextInput(sources, {
     props$: titleInputProps, 
     error$: O.never(),
-    initialText$: actions.listing$.map(x => x.profile && x.profile.description && x.profile.description.title)
+    initialText$: actions.session$
+    .map(session => session.listing)
+    .map(listing => listing.profile && 
+      listing.profile.description && 
+      listing.profile.description.title
+    )
   })
   const state$ = model(actions, spread(inputs, {
     title$: titleInput.value$,
-    listing$: actions.listing$
+    session$: actions.session$
   }))
 
   const components = {
@@ -54,11 +59,11 @@ export default function main(sources, inputs) {
     next: `location`
   })
 
-  const listing$ = createProxy()
+  const session$ = createProxy()
 
   const content = StepContent(sources, spread(inputs, {
     props$: stepProps,
-    listing$
+    session$
   }))
 
   const headingGenerator = (saving$) => normalizeComponent(Heading(sources, spread(
@@ -79,7 +84,7 @@ export default function main(sources, inputs) {
     })
   }))
 
-  listing$.attach(workflowStep.listing$)
+  session$.attach(workflowStep.session$)
 
   return workflowStep
 }

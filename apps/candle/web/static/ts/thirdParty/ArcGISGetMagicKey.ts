@@ -48,7 +48,7 @@ function ArcGISGetMagicKey(sources, inputs) {
               data: {
                 address: clean(candidate.address),
                 parsedAddress,
-                latLng: {
+                lngLat: {
                   lat: candidate.location.y,
                   lng: candidate.location.x
                 }
@@ -101,7 +101,7 @@ function ArcGISGetMagicKey(sources, inputs) {
               countryAbbr: countryToAlpha2(country)
             }
           },
-          center: x.latLng
+          center: x.lngLat
         }
       } else if (match = x.address.match(/^(.*),(.*)$/)) {
         const state = match[1].trim()
@@ -121,7 +121,7 @@ function ArcGISGetMagicKey(sources, inputs) {
               countryAbbr: countryToAlpha2(country)
             }
           },
-          center: x.latLng
+          center: x.lngLat
         }
       } else {
         searchArea = {
@@ -136,7 +136,7 @@ function ArcGISGetMagicKey(sources, inputs) {
               country: undefined,
             }
           },
-          center: x.latLng
+          center: x.lngLat
         }
       }
 

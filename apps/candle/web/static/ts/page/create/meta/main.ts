@@ -10,15 +10,16 @@ import Heading from '../../../library/heading/workflow/main'
 import Step from '../step/main'
 import StepContent from '../stepContent/standard'
 
-import {combineObj, spread, normalizeComponent, mergeSinks, createProxy} from '../../../utils'
+import {combineObj, spread, normalizeComponent, mergeSinks, createProxy, traceStartStop} from '../../../utils'
 
 function contentComponent(sources, inputs) {
 
   const actions = intent(sources)
-  const profile$ = actions.listing$
-    .map(x => {
-      return x
-    })
+  const listing$ = actions.session$
+    .map(x => x.listing)
+    .publishReplay(1).refCount()
+  const profile$ = actions.session$
+    .map(x => x.listing)
     .map(listing => listing && listing.profile)
     .publishReplay(1).refCount()
 
@@ -36,7 +37,7 @@ function contentComponent(sources, inputs) {
     //   value: `group`
     // }
     ],
-    props$: actions.listing$
+    props$: listing$
       .map(listing => listing && listing.type)
       .map(selected => ({selected}))
   })
@@ -58,8 +59,9 @@ function contentComponent(sources, inputs) {
     //   value: `secret`
     // }
     ],
-    props$: profile$
-      .map(profile => ({selected: profile.meta && profile.meta.visibility}))
+    props$: listing$
+      .map(listing => listing && listing.visibility)
+      .map(selected => ({selected}))
   })
 
   const eventTypeInput = RadioInput(sources, {
@@ -80,7 +82,10 @@ function contentComponent(sources, inputs) {
     // }
     ],
     props$: O.merge(
-      profile$.map(profile => profile.meta && profile.meta.event_type),
+      profile$.map(profile => profile 
+        && profile.event_types 
+        && profile.event_types.length
+        && profile.event_types[0]),
       creationTypeInput.selected$.skip(1).filter(x => x === `group`).mapTo(undefined)
     ).map(selected => ({selected})),
   })
@@ -92,7 +97,7 @@ function contentComponent(sources, inputs) {
       creationType$: creationTypeInput.selected$.skip(1),
       visibility$: visibilityInput.selected$.skip(1),
       eventType$: eventTypeInput.selected$.skip(1),
-      listing$: actions.listing$
+      session$: actions.session$
     })
   )
 
@@ -102,12 +107,12 @@ function contentComponent(sources, inputs) {
     eventTypeInput$: eventTypeInput.DOM
   }
 
-  const vtree$ = view(state$, components)
+  const vtree$ = view(state$.letBind(traceStartStop(`toView`)), components)
 
   const content = {
     DOM: vtree$,
     HTTP: O.never(),
-    state$
+    state$: state$.letBind(traceStartStop(`out`))
   }
 
   return content
@@ -119,17 +124,17 @@ export default function main(sources, inputs) {
   const stepProps = O.of({
     contentComponent,
     create: false,
-    nextRequiresListingId: false,
+    nextRequiresSessionId: false,
     previous: undefined,
     next: `description`
   })
 
 
-  const listing$ = createProxy()
+  const session$ = createProxy()
 
   const content = StepContent(sources, spread(inputs, {
     props$: stepProps,
-    listing$
+    session$
   }))
 
   const headingGenerator = (saving$) => Heading(sources, spread(
@@ -150,7 +155,7 @@ export default function main(sources, inputs) {
     })
   }))
 
-  listing$.attach(workflowStep.listing$)
+  session$.attach(workflowStep.session$)
 
   return workflowStep
 }

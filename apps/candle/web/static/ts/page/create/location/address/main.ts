@@ -78,7 +78,7 @@ function reducers(actions, inputs) {
   const streetAddressR = inputs.streetAddress$.map(val => state => {
     //const street = extractStreetAddress(val)
     return state.set(`street`, val)
-      .set(`latLng`, undefined)
+      .set(`lngLat`, undefined)
       .set(`valid`, false)
   })
 
@@ -115,7 +115,7 @@ function reducers(actions, inputs) {
       .set(`zipCode`, pa.zip)
       .set(`stateAbbr`, stateAbbr)
       //.set(`street`, street !== `error` ? street : undefined)
-      .set(`latLng`, {
+      .set(`lngLat`, {
         type: `auto`,
         data: sa.center
       })
@@ -132,8 +132,8 @@ function reducers(actions, inputs) {
     return state.set(`description`, desc)
   })
 
-  const latLngR = inputs.latLng$.map(val => state => {
-    return state.set(`latLng`, {type: `auto`, data: val}).set(`valid`, true)
+  const lngLatR = inputs.lngLat$.map(val => state => {
+    return state.set(`lngLat`, {type: `auto`, data: val}).set(`valid`, true)
   })
 
   return O.merge(
@@ -145,7 +145,7 @@ function reducers(actions, inputs) {
     zipCodeR,
     autocompleteR,
     descriptionR,
-    latLngR
+    lngLatR
   )
 }
 
@@ -168,12 +168,12 @@ function model(actions, inputs) {
         city: info && info.city || undefined,
         stateAbbr: info && info.stateAbbr || undefined,
         zipCode: info && info.zipCode || undefined,
-        latLng: info && info.latLng || undefined,
+        lngLat: info && info.lngLat || undefined,
         description: info && info.description || undefined,
         valid: undefined
       }
 
-      initialState.valid = !!initialState.latLng
+      initialState.valid = !!initialState.lngLat
 
       return reducers(actions, inputs)
         .startWith(Immutable.Map(initialState))
@@ -255,10 +255,10 @@ export default function USAddress(sources, inputs) {
 
   const autocomplete$ = createProxy()
   const streetAddress$ = createProxy()
-  const latLng$ = createProxy()
+  const lngLat$ = createProxy()
 
   const actions = intent(sources)
-  const state$ = model(actions, spread(inputs, {latLng$, autocomplete$, streetAddress$, searchArea$}))
+  const state$ = model(actions, spread(inputs, {lngLat$, autocomplete$, streetAddress$, searchArea$}))
 
   const addressAutocompleteInput = AutocompleteInput(sources, {
     suggester: (sources, inputs) => ArcGISSuggest(sources, {
@@ -299,7 +299,7 @@ export default function USAddress(sources, inputs) {
     address$: geocodeAddress$
   })
 
-  latLng$.attach(geocoder.results$)
+  lngLat$.attach(geocoder.results$)
 
   return {
     DOM: view({state$, components: {streetAddress$: addressAutocompleteInput.DOM}}),

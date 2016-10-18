@@ -39,7 +39,7 @@ function intent(sources, inputs) {
   })
     .publish().refCount()
 
-  const regionService = FactualGeotagService({props$: O.of({category: 'geotag from searchArea'}), latLng$: mapCenter$, HTTP: sources.HTTP})
+  const regionService = FactualGeotagService({props$: O.of({category: 'geotag from searchArea'}), lngLat$: mapCenter$, HTTP: sources.HTTP})
   const mapSearchArea$ = regionService.result$
     .withLatestFrom(mapCenter$, (region, center) => {
       return {region, center, radius: 50}

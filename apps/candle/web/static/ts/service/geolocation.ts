@@ -40,7 +40,7 @@ function intent(sources) {
 
   const regionService = FactualGeotagService({
     props$: O.of({category: `region from main`}),
-    latLng$: position$,
+    lngLat$: position$,
     HTTP: sources.HTTP
   })
 

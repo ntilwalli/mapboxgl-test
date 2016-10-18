@@ -35,11 +35,11 @@ function renderMapDisplay(info) {
       location.info ? div(`.location-info-section`, [
         div(`.latitude-section`, [
           span(`.heading`, [`Latitude: `]),
-          span([`${location.info.latLng.lat}`])
+          span([`${location.info.lngLat.lat}`])
         ]),
         div(`.longitude-section`, [
           span(`.heading`, [`Longitude: `]),
-          span([`${location.info.latLng.lng}`])
+          span([`${location.info.lngLat.lng}`])
         ])
       ]) : div(`.location-info-section`, [`Click map to select location`]),
       div(`#addEventMapAnchor`),

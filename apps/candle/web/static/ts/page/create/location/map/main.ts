@@ -57,15 +57,15 @@ function reducers(actions, inputs) {
     return state.set(`listing`, listing)
   })
 
-  const mapClickR = actions.mapClick$.map(latLng => state => {
+  const mapClickR = actions.mapClick$.map(lngLat => state => {
     const listing = state.get(`listing`)
     const location = listing.profile.location
 
     if (location.info) {
-      listing.profile.location.info.latLng = latLng
+      listing.profile.location.info.lng = lngLat
     } else {
       listing.profile.location.info = {
-        latLng,
+        lngLat,
         description: undefined
       }
     }
@@ -106,9 +106,6 @@ function model(actions, inputs) {
   return listing$
     .take(1)
     .map(listing => {
-      // listing.profile.location.info = {
-      //   latLng: undefined
-      // }
       return {
         listing
       }
@@ -132,11 +129,11 @@ function view(state$) {
         location.info ? div(`.location-info-section`, [
           div(`.latitude-section`, [
             span(`.heading`, [`Latitude: `]),
-            span([`${location.info.latLng.lat}`])
+            span([`${location.info.lngLat.lat}`])
           ]),
           div(`.longitude-section`, [
             span(`.heading`, [`Longitude: `]),
-            span([`${location.info.latLng.lng}`])
+            span([`${location.info.lngLat.lng}`])
           ])
         ]) : div(`.location-info-section`, [`Click map to select location`]),
         div(`#chooseMapLocationMapAnchor`),
@@ -156,7 +153,7 @@ function mapview(state$) {
       const listing = state.listing
       const {location, map_settings, search_area} = listing.profile
       const anchorId = `chooseMapLocationMapAnchor`
-      const markerLoc = location.info ? location.info.latLng : undefined
+      const markerLoc = location.info ? location.info.lngLat : undefined
       let center = map_settings && map_settings.center ? 
         map_settings.center : 
         markerLoc ?
@@ -183,7 +180,7 @@ function mapview(state$) {
         sources: markerLoc ? {
           marker: {
             type: `geojson`,
-            data: createFeatureCollection(location.info.latLng, {
+            data: createFeatureCollection(location.info.lngLat, {
               icon: `marker`
             })
           }

@@ -6,45 +6,48 @@ import {isDisabled} from '../listing'
 
 function renderTitle(info) {
   const {state, components} = info
-  const {listing} = state
+  const {session} = state
+  const {listing} = session
   const {profile} = listing
   const {titleInput} = components
   const section = `description`
-  const property = `title`
-  const disabled = isDisabled(section, property, listing)
-  if (!disabled) {
+  const property = `profile/title`
+  // const disabled = isDisabled(section, property, listing)
+  // if (!disabled) {
     return div(`.title`, [
       renderHeading(`Title`, section, property, listing),
       titleInput
     ])
-  } else {
-    return null
-  }
+  // } else {
+  //   return null
+  // }
 }
 
 function renderDescription(state) {
-  const {listing} = state
+  const {session} = state
+  const {listing} = session
   const {profile} = listing
-  const {description} = profile.description
+  const {description} = profile
   const section = `description`
-  const property = `description`
-  const disabled = isDisabled(section, property, listing)
-  if (!disabled) {
+  const property = `profile/description`
+  // const disabled = isDisabled(section, property, listing)
+  // if (!disabled) {
     return div(`.description`, [
       renderHeading(`Description`, section, property, listing),
       textarea(`.appDescriptionInput`, {props: {rows: 5}}, [description || ``])
     ])
-  } else {
-    return null
-  }
+  // } else {
+  //   return null
+  // }
 }
 
 function renderShortDescription(state) {
-  const {listing} = state
+  const {session} = state
+  const {listing} = session
   const {profile} = listing
-  const {short_description} = profile.description
+  const {short_description} = profile
   const section = `description`
-  const property = `short_description`
+  const property = `profile/short_description`
   const disabled = isDisabled(section, property, listing)
   if (!disabled) {
     return div(`.short-description`, [
@@ -57,11 +60,12 @@ function renderShortDescription(state) {
 }
 
 function renderCategories(state) {
-  const {listing} = state
+  const {session} = state
+  const {listing} = session
   const {profile} = listing
-  const {categories} = profile.description
+  const {categories} = profile
   const section = `description`
-  const property = `categories`
+  const property = `profile/categories`
   const disabled = isDisabled(section, property, listing)
   if (!disabled) {
     return div(`.categories`, [

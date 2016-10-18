@@ -18,3 +18,7 @@ Shared.Repo.insert!(%Shared.ListingVisibilityType{ id: "private" })
 Shared.Repo.insert!(%Shared.ListingVisibilityType{ id: "hidden" })
 Shared.Repo.insert!(%Shared.ListingVisibilityType{ id: "public" })
 
+Shared.Repo.insert!(%Shared.ListingType{ id: "gathering" })
+Shared.Repo.insert!(%Shared.ListingType{ id: "show" })
+Shared.Repo.insert!(%Shared.ListingType{ id: "rendezvous" })
+

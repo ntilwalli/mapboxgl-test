@@ -4,12 +4,9 @@ import {inflate} from '../listing'
 export default function intent(sources) {
   const {DOM, Router} = sources
 
-  const listing$ = Router.history$
+  const session$ = Router.history$
     .take(1)
-    .map(x => x.state)
-    .map(x => {
-      return inflate(x)
-    })
+    .map(route => inflate(route.state))
     .publishReplay(1).refCount()
 
   const description$ = DOM.select(`.appDescriptionInput`).events(`input`)
@@ -20,6 +17,6 @@ export default function intent(sources) {
       .map(ev => ev.target.value)
   
   return {
-    description$, shortDescription$, categories$, listing$
+    description$, shortDescription$, categories$, session$
   }
 }

@@ -24,14 +24,14 @@ defmodule User.Registry do
     {:ok, pid} = User.Auth.Supervisor.start_user(user)
     ref = Process.monitor(pid)
     user_id = user.id
-    IO.puts "Old auth"
-    IO.inspect auth
+    # IO.puts "Old auth"
+    # IO.inspect auth
     auth = Map.put(auth, user_id, pid)
 
     auth_ref = Map.put(auth_ref, ref, user_id)
     new_state = %{%{state | auth: auth} | auth_ref: auth_ref}
-    IO.puts "New auth"
-    IO.inspect new_state.auth
+    # IO.puts "New auth"
+    # IO.inspect new_state.auth
     new_state
   end
 

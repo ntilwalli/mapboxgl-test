@@ -7,9 +7,10 @@ import {renderHeading} from '../helpers'
 
 function renderCreationType(info) {
   const {state, components} = info
-  const {listing} = state
+  const {session} = state
+  const {listing} = session
   const {creationTypeInput} = components
-  const section = `listing`
+  const section = `meta`
   const property = `type`
   const disabled = isDisabled(section, property, listing)
   if (!disabled) {
@@ -24,7 +25,8 @@ function renderCreationType(info) {
 
 function renderVisibility(info) {
   const {state, components} = info
-  const {listing} = state
+  const {session} = state
+  const {listing} = session
   const {visibilityInput} = components
   const section = `meta`
   const property = `visibility`
@@ -42,10 +44,11 @@ function renderVisibility(info) {
 
 function renderEventType(info) {
   const {state, components} = info
-  const {listing} = state
+  const {session} = state
+  const {listing} = session
   const {eventTypeInput} = components
   const section = `meta`
-  const property = `event_type`
+  const property = `profile/event_types`
   const disabled = isDisabled(section, property, listing)
   if (!disabled) {
     return div(`.event-type`, [

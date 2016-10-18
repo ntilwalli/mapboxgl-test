@@ -14,7 +14,7 @@ function reducers(actions, inputs) {
 
   const markerMoveR = actions.markerMove$.map(lngLat => state => {
     const listing = state.get(`listing`)
-    listing.profile.location.info.latLng = {
+    listing.profile.location.info.lngLat = {
       type: `manual`,
       data: lngLat
     }
@@ -24,7 +24,7 @@ function reducers(actions, inputs) {
 
   const mapClickR = actions.mapClick$.map(lngLat => state => {
     const listing = state.get(`listing`)
-    listing.profile.location.info.latLng = {
+    listing.profile.location.info.lngLat = {
       type: `manual`,
       data: lngLat
     }
@@ -55,7 +55,7 @@ export default function model(actions, inputs) {
     .map((inputs: any) => {
       const listing = inputs.listing
       listing.profile.map_settings = listing.profile.map_settings || {
-        center: listing.profile.location.info.latLng.data,
+        center: listing.profile.location.info.lngLat.data,
         zoom: 17,
         tile: undefined
       }

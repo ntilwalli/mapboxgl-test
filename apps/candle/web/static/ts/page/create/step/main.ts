@@ -33,7 +33,7 @@ function intent(sources) {
   )
 
   const openInstruction$ =  DOM.select(`.appOpenInstruction`).events(`click`)
-  const {good$, bad$, ugly$} = processHTTP(sources, `saveListing`)
+  const {good$, bad$, ugly$} = processHTTP(sources, `saveSession`)
   const created$ = good$
     .map(x => {
       return x
@@ -155,16 +155,16 @@ export default function main(sources, inputs) {
     defaultNever(heading, `save$`)
   ).publish().refCount()
 
-  const listing$ = content.listing$.publishReplay(1).refCount()
+  const session$ = content.session$.publishReplay(1).refCount()
 
   const autosave$ = save$
     .startWith(undefined)
     .switchMap(_ => {
-      return listing$
+      return session$
         .filter(x => x.id)
         .skip(1)
-        .map(listing => {
-          const b = JSON.parse(JSON.stringify(listing))
+        .map(session => {
+          const b = JSON.parse(JSON.stringify(session))
           return b
         })
         .distinctUntilChanged((x, y) => {
@@ -180,18 +180,18 @@ export default function main(sources, inputs) {
   const toHTTP$ = O.merge(
     save$.map(x => {
       return x
-    }).withLatestFrom(listing$, (_, listing) => listing),
+    }).withLatestFrom(session$, (_, session) => session),
     autosave$
-  ).map(listing => {
+  ).map(session => {
     return {
       url: `/api/user`,
       method: `post`,
       type: `json`,
       send: {
-        route: `/listing/save`,
-        data: listing
+        route: `/listing_session/save`,
+        data: session
       },
-      category: `saveListing`
+      category: `saveSession`
     }
   }).map(x => {
     return x
@@ -229,19 +229,19 @@ export default function main(sources, inputs) {
       }),
     Router: actions.created$.withLatestFrom(actions.route$, (created, route) => {
       const {data} = created
-      const listing = data
+      const session = data
       const {stepName} = route
       return {
-        pathname: `/create/${listing.id}/${stepName}`,
+        pathname: `/create/${session.id}/${stepName}`,
         action: `PUSH`,
-        state: listing
+        state: session
       }
     })
   }
   
   return spread(mergeSinks(heading, content, instruction, mergeableSinks), {
     DOM: vtree$,
-    listing$: actions.saved$.map(x => x.data)
+    session$: actions.saved$.map(x => x.data)
   })
 
   // return {

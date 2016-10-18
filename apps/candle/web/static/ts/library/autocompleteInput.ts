@@ -122,9 +122,6 @@ function reducers(actions) {
         }
       })
     })
-    // .finally(() => {
-    //   console.log(`autocomplete moveHighlightR terminating`)
-    // })
 
   const setHighlightR = actions.setHighlight$
     .map(highlighted => function (state, itemConfigs) {
@@ -137,12 +134,9 @@ function reducers(actions) {
         return state
       }
     })
-    // .finally(() => {
-    //   console.log(`autocomplete setHighlightR terminating`)
-    // })
+
 
   const selectHighlightedR = actions.selectHighlighted$
-    //.switchMap(() => O.of(true, false))
     .map(selected => function selectHighlightedReducer(state) {
       const suggestions = state.get('suggestions')
       const highlighted = state.get('highlighted')
@@ -156,17 +150,11 @@ function reducers(actions) {
         return state.set('selected', null)
       }
     })
-    // .finally(() => {
-    //   console.log(`autocomplete selectHighlightedR terminating`)
-    // })
 
   const hideR = actions.quitAutocomplete$
     .mapTo(function hideReducer(state) {
       return state.set('suggestions', [])
     })
-    // .finally(() => {
-    //   console.log(`autocomplete hideR terminating`)
-    // })
 
   return O.merge(
     moveHighlightR,
@@ -174,31 +162,14 @@ function reducers(actions) {
     selectHighlightedR,
     hideR
   )
-  // .finally(() => {
-  //   console.log(`autocomplete reducer$ terminating`)
-  // })
 }
 
 function model(actions, inputs, itemConfigs) {
   const {props$, suggestions$} = inputs
   const reducer$ = reducers(actions)
-  //suggestions$.subscribe()
-
-    // .mapTo([{
-    //   name: `Hello`,
-    //   address: [`56 Derby Court`, `IL`, `60523`].join(`, `),
-    //   venueId: `454`,
-    //   latLng: [70.876, -40.076],
-    //   source: `Foursquare`,
-    //   retrieved: (new Date()).getTime(),
-    //   type: `default`
-    // }])
-
   const state$ = O.merge(
     actions.wantsSuggestions$
       .switchMap(accepted => {
-        //console.log(`wants suggestions?`, accepted)
-        //return suggestions$.map(suggestions => accepted ? suggestions : [])
         return suggestions$.map(suggestions => accepted ? suggestions : [])
       })
       .map(suggestions => ({suggestions, highlighted: null, selected: null})),
@@ -211,12 +182,8 @@ function model(actions, inputs, itemConfigs) {
   .map(x => {
     return x
   })
-  // .finally(() => {
-  //   console.log(`autocomplete state$ terminating`)
-  // })
-  .publishReplay(1).refCount()
 
-  //state$.subscribe()
+  .publishReplay(1).refCount()
 
   return state$
 }

@@ -9,15 +9,15 @@ function render(state) {
   const info = location.info
   const anchorId = `listingCardMapAnchor`
 
-  let markerLatLng
+  let markerLngLat
   if (mode === `venue`)
-    markerLatLng = info.data.latLng
+    markerLngLat = info.data.lngLat
   else if (mode === `address`)
-    markerLatLng = info.latLng.data
+    markerLngLat = info.lngLat.data
   else if (mode === `map`)
-    markerLatLng = info.latLng
+    markerLngLat = info.lngLat
 
-  const center = (map_settings && map_settings.center) || markerLatLng
+  const center = (map_settings && map_settings.center) || markerLngLat
   const zoom = (map_settings && map_settings.zoom) || 15
 
   const tile = map_settings && map_settings.tile ? map_settings.tile : `mapbox://styles/mapbox/bright-v9`

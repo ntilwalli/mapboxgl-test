@@ -36,18 +36,8 @@ export default function intent(sources) {
      .map(ev => ev.lngLat)
 
   const mapMove$ = mapAccessor.events(`moveend`).observable
-    // .do(x => {
-    //   console.log(`mapMove`, x)
-    // })
     .map(getCenterZoom)
-    //.publish().refCount()
 
-  // const markerMove$ = MapJSON.select(`modifyLocationMapAnchor`).events(`dragstart`)
-  //   .switchMap(_ => MapJSON.select(`modifyLocationMapAnchor`).events(`dragend`))
-  //   // .do(x => {
-  //   //   console.log(`markerMove`, x)
-  //   // })
-  //   .map(ev => ev.target._latlng)
 
   const listing$ = Router.history$
     .take(1)

@@ -7,24 +7,12 @@ defmodule Shared.ListingManager do
   import Ecto.Query, only: [from: 2, first: 1]
   alias Ecto.Multi
 
-  def add(%{parent_id: parent_id} = listing, level, user) when is_number(parent_id) do
+  def add(%{"parent_id" => parent_id} = listing, level, user) when is_number(parent_id) do
     new_listing = Ecto.build_assoc(user, :listings)
-    # new_child_listing = Ecto.build_assoc(%Lis{id: parent_id}, :child_listings)
-    profile = extract_profile(listing)
-    type = extract_listing_type(listing)
-    visibility = extract_visibility(profile)
 
-    listing_params = %{
-      "type" => type,
-      "profile" => profile,
-      "visibility" => visibility,
-      "release" => level,
-      "parent_id" => parent_id
-    }
-
+    listing = Map.put(listing, "release",  level)
+    listing_changeset = Listing.changeset(new_listing, listing)
     sequence_id = get_next_child_sequence_id(parent_id)
-    listing_changeset = Listing.insert_changeset(new_listing, listing_params)
-
     multi_query = Ecto.Multi.new
       |> Multi.insert(:listing, listing_changeset)
       |> Multi.run(
@@ -58,20 +46,10 @@ defmodule Shared.ListingManager do
   def add(listing, level, user) do
     new_listing = Ecto.build_assoc(user, :listings)
     new_user_listing = Ecto.build_assoc(user, :user_listings)
-    profile = extract_profile(listing)
-    type = extract_listing_type(listing)
-    visibility = extract_visibility(profile)
-
-    listing_params = %{
-      "type" => type,
-      "profile" => profile,
-      "visibility" => visibility,
-      "release" => level
-    }
+    listing = Map.put(listing, "release",  level)
+    listing_changeset = Listing.changeset(new_listing, listing)
 
     sequence_id = get_next_user_sequence_id(user.id)
-    listing_changeset = Listing.insert_changeset(new_listing, listing_params)
-
     multi_query = Ecto.Multi.new
       |> Multi.insert(:listing, listing_changeset)
       |> Multi.run(
@@ -116,15 +94,15 @@ defmodule Shared.ListingManager do
     Repo.delete(listing)
   end
 
-  defp extract_listing_type(%{type: type}) do 
+  defp extract_listing_type(%{"type" => type}) do 
     type
   end
 
-  defp extract_profile(%{profile: profile}) do
+  defp extract_profile(%{"profile" => profile}) do
     profile
   end
 
-  defp extract_visibility(%{"meta" => %{"visibility" => visibility}}) do 
+  defp extract_visibility(%{"visibility" => visibility}) do 
     visibility
   end
 

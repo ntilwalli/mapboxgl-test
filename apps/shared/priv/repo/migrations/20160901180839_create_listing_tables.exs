@@ -2,23 +2,22 @@ defmodule Shared.Repo.Migrations.CreateListingTables do
   use Ecto.Migration
 
   def change do
-    create table(:listing_release_type, primary_key: false) do 
-      add :id, :string, primary_key: true
-    end
-
-    create table(:listing_visibility_type, primary_key: false) do
-      add :id, :string, primary_key: true
-    end
-
     create table(:listings, primary_key: false) do
       add :id, :bigserial, primary_key: true
       add :sort_id, :bigint, default: fragment("next_insta_id()")
       add :parent_id, :bigint
       add :user_id, references(:users, on_delete: :delete_all, type: :bigserial), null: false
-      add :profile, :map, null: false
       add :type, :string, null: false
-      add :release, references(:listing_release_type, type: :string), null: false
-      add :visibility, references(:listing_visibility_type, type: :string), null: false
+      add :title, :string
+      add :description, :string
+      add :short_description, :string
+      add :event_types, {:array, :string}
+      add :categories, {:array, :string}
+      add :location, :map, null: false
+      add :date_time, :map, null: false
+      add :release, :string, null: false
+      add :visibility, :string, null: false
+      add :source, :string
       add :handle, :string
       timestamps
     end

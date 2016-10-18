@@ -1,6 +1,6 @@
 import {Observable as O} from 'rxjs'
 import {RETRIEVE_LISTING_URL} from './constant'
-import {getEmptyListing} from './listing'
+import {getEmptySession} from './listing'
 
 export default function intent(sources) {
   const {HTTP, Storage} = sources
@@ -13,21 +13,37 @@ export default function intent(sources) {
     })
     .catch((err, orig$) => {
       return O.of({
-        type: `success`,
-        data: {
-          id: 12345
-        }
+        type: `ugly`,
+        data: err
       })
     })
+    .publish().refCount()
+
+  const good$ = fromHTTP$
     .filter(x => {
       return x.type === `success`
     })
     .map(x => {
-      const listing = getEmptyListing()
-      listing.id = x.data.id
-      return listing
+      return x.data
     })
-    //.do(x => console.log(`retrieved listing`, x))
+    .publishReplay(1).refCount()
+
+  const bad$ = fromHTTP$
+    .filter(x => {
+      return x.type === `error`
+    })
+    .map(x => {
+      return x.data
+    })
+    .publishReplay(1).refCount()
+
+  const ugly$ = fromHTTP$
+    .filter(x => {
+      return x.type === `ugly`
+    })
+    .map(x => {
+      return x.data
+    })
     .publishReplay(1).refCount()
 
   const storedState$ = Storage.local.getItem(`createListing`)
@@ -40,7 +56,9 @@ export default function intent(sources) {
     }).take(1)
 
   return {
-    fromHTTP$,
+    fromHTTP$: good$,
+    bad$,
+    ugly$,
     initialState$
   }
 }

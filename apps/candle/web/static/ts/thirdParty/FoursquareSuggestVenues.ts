@@ -78,8 +78,8 @@ function FoursquareSuggestVenues (sources, inputs) {
         name: result.name,
         address: [result.location.address, result.location.state, result.location.postalCode].join(`, `),
         venueId: result.id,
-        latLng: {lat: result.location.lat, lng: result.location.lng},
-        retrieved: (new Date()).getTime()
+        lngLat: {lat: result.location.lat, lng: result.location.lng},
+        raw: result
       }
     })))
 

@@ -236,6 +236,19 @@ export function notBetween(first, second) {
   )
 }
 
+export function traceStartStop(id = '') {
+  return source => source
+    .startWith(`start`)
+    .map(x => {
+      if (x === `start`) {
+        console.log(`starting ${id}`)
+      }
+      return x
+    })
+    .filter(x => x !== `start`)
+    .finally(x => console.log(`ending ${id}`))
+}
+
 export const checkValidity = x => x.valid ? x.value : null
 
 export function processHTTP(sources, category) {

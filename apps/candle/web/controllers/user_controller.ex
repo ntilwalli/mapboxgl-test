@@ -5,11 +5,10 @@ defmodule Candle.UserController do
   alias Candle.Auth.Helpers
 
   def route(conn, %{"route" => _, "data" => _} = params, current_user, _claims) do
-    IO.puts "Routed to user controller"
+    #IO.puts "Routed to user controller"
     user = Helpers.get_user(conn, current_user)
     case User.Router.route(User.Router, {user, params}) do
       {:ok, response} ->
-        IO.puts "Ok route"
         conn
         |> render("route.json", message: response)
       {:error, response} ->

@@ -102,14 +102,14 @@ function mapview(state$) {
         map: {
           container: anchorId, 
           style: `mapbox://styles/mapbox/bright-v9`, //stylesheet location
-          center: toLngLatArray(info.data.latLng), // starting position
+          center: toLngLatArray(info.data.lngLat), // starting position
           zoom: 15, // starting zoom,
           dragPan: true
         },
         sources: {
           venue: {
             type: `geojson`,
-            data: createFeatureCollection(info.data.latLng, {
+            data: createFeatureCollection(info.data.lngLat, {
               title: info.data.name,
               icon: `marker`
             })

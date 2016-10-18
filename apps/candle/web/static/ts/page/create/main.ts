@@ -136,6 +136,8 @@ export default function main(sources, inputs) {
             state: listing
           }
         })),
+      O.merge(actions.bad$, actions.ugly$)
+        .map(_ => `/create`),
       normalizeSink(component$, `Router`)
     ),
     Global: normalizeSink(component$, `Global`).map(x => {

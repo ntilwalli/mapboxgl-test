@@ -1,0 +1,57 @@
+defmodule Test.Listing do
+  use ExUnit.Case
+
+  alias Shared.Listing
+
+  test "listing changeset" do
+    listing = %{
+      "type" => "badslava",
+      "visibility" => "public",
+      "release" => "posted",
+      "location" => %{
+        "street" => "something",
+        "city" => "chicago",
+        "stateAbbr" => "IL",
+        "name" => "some venue name",
+        "lng_lat" => %{
+          "lng" => -74.0059,
+          "lat" => 40.7128
+        }
+      },
+      "date_time" => %{
+        "frequency" => "weekly",
+        "on" => "Monday",
+        "start_time" => ~T[08:00:00.00]
+      }
+    }
+
+    cs = Listing.changeset(%Listing{user_id: 1}, listing)
+    assert cs.valid? == true
+  end
+
+  test "invalid listing changeset" do
+    listing = %{
+      "type" => "venue",
+      "visibility" => "public",
+      "release" => "posted",
+      "location" => %{
+        "street" => "something",
+        "city" => "chicago",
+        "stateAbbr" => "IL",
+        "name" => "some venue name",
+        "lng_lat" => %{
+          "lng" => -74.0059,
+          "lat" => 40.7128
+        }
+      },
+      "date_time" => %{
+        "frequency" => "weekly",
+        "on" => "Monday",
+        "start_time" => ~T[08:00:00.00]
+      }
+    }
+
+    cs = Listing.changeset(%Listing{user_id: 1}, listing)
+    refute cs.valid? == true
+  end
+end

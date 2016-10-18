@@ -8,8 +8,8 @@ import Logo from '../logo'
 
 function intent(sources, inputs) {
   const {DOM, Router, Heartbeat} = sources
-  const save$ = DOM.select(`.appSaveListing`).events(`click`)
-  const listing$ = Router.history$.map(x => x.state)
+  const save$ = DOM.select(`.appSaveSession`).events(`click`)
+  const session$ = Router.history$.map(x => x.state)
   const instruction$ = inputs.ParentRouter.define([
     {pattern: `/meta`, value: `Step 1: Preliminary info`},
     {pattern: `/description`, value: `Step 2: Add a title and description`},
@@ -27,7 +27,7 @@ function intent(sources, inputs) {
   return {
     save$,
     instruction$,
-    listing$,
+    session$,
     Heartbeat
   }
 }
@@ -62,13 +62,13 @@ function model(actions, inputs) {
 
   return combineObj({
     instruction$: actions.instruction$.take(1),
-    listing$: actions.listing$.take(1)//.map(x => x && x.updated_at).take(1)
+    session$: actions.session$.take(1)//.map(x => x && x.updated_at).take(1)
   })
     .map((inputs: any) => {
-      const {instruction, listing} = inputs
+      const {instruction, session} = inputs
       return {
         instruction,
-        lastSaved: listing && listing.updated_at,
+        lastSaved: session && session.updated_at,
         error: undefined,
         isSaving: false
       }
@@ -87,15 +87,15 @@ function renderInstruction(state) {
 function renderSaveArea(state) {
   const {lastSaved, isSaving, error} = state
   if (error) {
-    console.error("Save listing error: ", error)
+    console.error("Save session error: ", error)
   }
   //console.log("Last saved", lastSaved)
 
-  return div(`.listing-save-area`, [
+  return div(`.session-save-area`, [
     !error ? div(`.last-saved-status`, [
       isSaving ? span(`.spinner`) : div([lastSaved ? moment(lastSaved).fromNow() : `Not saved`])
     ]) : div(`.error-save-status`, [`Error`]),
-    button(`.appSaveListing.menu-link`, [`Save`])
+    button(`.appSaveSession.menu-link`, [`Save`])
   ])
 }
 

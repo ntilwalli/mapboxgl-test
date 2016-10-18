@@ -1,13 +1,16 @@
 import {Observable as O} from 'rxjs'
-import {getEmptyListing} from '../listing'
+import {getEmptySession} from '../listing'
 import {inflate} from '../listing'
 export default function intent(sources) {
   const {Router} = sources
-  const listing$ = Router.history$
-    .map(route => route.state || getEmptyListing())
-    .map(x => inflate(x))
+  const session$ = Router.history$
+    .map(route => route.state || getEmptySession())
+    .map(x => {
+      return inflate(x)
+    })
     .publishReplay(1).refCount()
+
   return {
-    listing$
+    session$
   }
 }

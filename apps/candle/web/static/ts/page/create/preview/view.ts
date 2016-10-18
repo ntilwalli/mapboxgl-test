@@ -226,8 +226,8 @@ function renderPoint({state}) {
   const {type, profile} = listing
   const {location} = profile
   const {info} = location
-  const {latLng, description} = info
-  const {lat, lng} = latLng
+  const {lngLat, description} = info
+  const {lat, lng} = lngLat
   return null
   //div(`.lat-lng-location`, [
     //description ? div(`.name`, [description]) : null,

@@ -1,6 +1,8 @@
 defmodule Common.Region do
   use Shared.Lib, :model
 
+  @derive {Poison.Encoder, except: [:__meta__]}
+  @primary_key false
   embedded_schema do
     field :country, :string
     field :state, :string

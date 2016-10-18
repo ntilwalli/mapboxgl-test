@@ -1,44 +1,44 @@
 import {Observable as O} from 'rxjs'
 import Immutable = require('immutable')
-import {combineObj} from '../../../utils'
-import {getEmptyListing, validateMeta as isValid} from '../listing'
+import {combineObj, traceStartStop} from '../../../utils'
+import {validateMeta as isValid} from '../listing'
 
 
 function setValidity(state) {
-  const listing = state.get(`listing`)
+  const session = state.get(`session`)
+  const {listing} = session
   return state.set(`valid`, isValid(listing))
 }
 
 function reducers(actions, inputs) {
-
   const creationTypeR = inputs.creationType$.map(val => state => {
-    const listing = state.get(`listing`)
+    const session = state.get(`session`)
+    const {listing} = session
     listing.type = val
     if (val === `group`) {
       const profile = listing.profile
-      profile.meta.event_type = undefined
+      profile.event_types = undefined
     }
 
     listing.profile.time = undefined
-    return state.set(`listing`, listing).set(`valid`, isValid(listing))
+    return state.set(`session`, session).set(`valid`, isValid(listing))
   })
 
   const visibilityR = inputs.visibility$.map(val => state => {
-    const listing = state.get(`listing`)
-    const {profile} = listing
-    const {meta} = profile
-    meta.visibility = val
+    const session = state.get(`session`)
+    const {listing} = session
+    listing.visibility = val
 
-    return state.set(`listing`, listing).set(`valid`, isValid(listing))
+    return state.set(`session`, session).set(`valid`, isValid(listing))
   })
 
   const eventTypeR = inputs.eventType$.map(val => state => {
-    const listing = state.get(`listing`)
+    const session = state.get(`session`)
+    const {listing} = session
     const {profile} = listing
-    const {meta} = profile
-    meta.event_type = val
+    profile.event_types = [val]
 
-    return state.set(`listing`, listing).set(`valid`, isValid(listing))
+    return state.set(`session`, session).set(`valid`, isValid(listing))
   })
 
   return O.merge(
@@ -51,21 +51,21 @@ function reducers(actions, inputs) {
 export default function model(actions, inputs) {
   const reducer$ = reducers(actions, inputs)
 
-  return combineObj({
-      listing$: actions.listing$
+  return actions.session$
+    .map(x => {
+      return x
     })
-    .take(1)
-    .map((inputs: any) => {
-      const listing = inputs.listing
-      const valid = isValid(listing)
+    .map((session: any) => {
+      const valid = isValid(session.listing)
       return {
         waiting: false,
-        listing,
+        session,
         valid
       }
     })
     .switchMap(initialState => reducer$.startWith(Immutable.Map(initialState)).scan((acc, mod: Function) => mod(acc)))
     .map(x => (<any> x).toJS())
+    .letBind(traceStartStop(`state$`))
     .publishReplay(1).refCount()
 
 }

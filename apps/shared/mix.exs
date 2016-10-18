@@ -38,15 +38,14 @@ defmodule Shared.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
-      {:timex, "~> 3.0.2"},
+      {:timex, "~> 3.1"},
       {:timex_ecto, "~> 3.1.0", path: "../../custom_deps/timex_ecto"},
       {:postgrex, "0.12.1"},
       {:ecto, "~> 2.1.0-rc.2", override: true},
       {:geo, "~> 1.2", path: "../../custom_deps/geo"},
       {:poison, "~> 2.2"},
       {:httpoison, "~> 0.9.0"},
-      {:floki, "~> 0.10.1"},
-      {:exquery, "~> 0.0.11"}
+      {:floki, "~> 0.10.1"}
     ]
   end
 end

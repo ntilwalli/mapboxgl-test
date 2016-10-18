@@ -16,7 +16,7 @@ export function getCenterZoom(ev) {
 export function toLngLatArray(obj) {
   if (obj.hasOwnProperty(`lat`) && obj.hasOwnProperty(`lng`)) return [obj.lng, obj.lat]
 
-  throw new Error(`Invalid latLng object given`)
+  throw new Error(`Invalid lngLat object given`)
 }
 
 export function createFeatureCollection(lngLat, properties?) {

@@ -2,14 +2,14 @@ import {Observable as O} from 'rxjs'
 import {div, button, span} from '@cycle/dom'
 import Immutable = require('immutable')
 import isolate from '@cycle/isolate'
-import {combineObj, createProxy, spread, normalizeComponent, normalizeSink, mergeSinks, defaultNever, processHTTP} from '../../../utils'
+import {traceStartStop, combineObj, createProxy, spread, normalizeComponent, normalizeSink, mergeSinks, defaultNever, processHTTP} from '../../../utils'
 
 
 function intent(sources) {
   const {DOM, HTTP, Environment} = sources
   const next$ = DOM.select(`.appNextButton`).events(`click`)
   const back$ = DOM.select(`.appBackButton`).events(`click`)
-  const {good$, bad$, ugly$} = processHTTP(sources, `saveListingOnNext`)
+  const {good$, bad$, ugly$} = processHTTP(sources, `saveListingSessionOnNext`)
   
   const created$ = good$.filter(x => x.type === `created`)
     .map(x => {
@@ -32,44 +32,42 @@ function intent(sources) {
     ugly$,
   )
 
-  const updatedListing$ = O.merge(created$, saved$).map(x => (<any> x).data)
+  const updatedSession$ = O.merge(created$, saved$).map(x => (<any> x).data)
 
   return {
-    next$, back$, fromHTTP$, created$, updatedListing$, environment$: Environment
+    next$, back$, fromHTTP$, created$, updatedSession$, environment$: Environment
   }
 }
 
 function reducers(actions, inputs) {
-  const savedListingR = defaultNever(inputs, `listing$`).map(x => state => {
+  const savedSessionR = defaultNever(inputs, `listing$`).map(x => state => {
     const cs = state.get(`contentState`)
     cs.listing = x
     return state.set(`contentState`, cs).set(`autosave`, false)
   })
-  const validR = inputs.contentState$.skip(1)
+  const validR = inputs.contentState$
     .map(val => state => {
       return state.set(`contentState`, val).set(`autosave`, true)
     })
 
-  return O.merge(validR, savedListingR)
+  return O.merge(validR, savedSessionR)
 }
 
 function model(actions, inputs) {
   const reducer$ = reducers(actions, inputs)
-  return combineObj({
-    contentState$: inputs.contentState$.take(1),
-    environment$: actions.environment$
-  }).map((info: any) => {
-      const {contentState, environment} = info
+  return actions.environment$
+    .map((environment: any) => {
       return {
         environment,
         waiting: false,
-        contentState,
-        autosave: true
+        contentState: undefined,
+        autosave: false
       }
     })
     .switchMap(initialState => {
       return reducer$.startWith(Immutable.Map(initialState)).scan((acc, f: Function) => f(acc))
     })
+    .skip(1)
     .map(x => (<any> x).toJS())
     //.do(x => console.log(`stepComponent state`, x))
     .publishReplay(1).refCount()
@@ -102,7 +100,6 @@ function view(state$, components) {
                   span(`.back-text.icon`, [`Back`])
                 ])
               ]),
-              //button(`.appNextButton.next-button${state.listing  && state.listing.type ? '' : '.disabled'}`, [
               button('.appNextButton.next-button' + disabled, [
                 div(`.full.flex-center`, [
                   span('.next-text' + disabled, ['Next']),
@@ -119,7 +116,7 @@ function view(state$, components) {
 export default function main(sources, inputs) {
   const {props$} = inputs
   const component$ = props$.map(props => {
-    const {contentComponent, create, nextRequiresListingId, previous, next} = props
+    const {contentComponent, create, nextRequiresSessionId, previous, next} = props
     const content = contentComponent(sources, inputs)
     const components = {
       content$: content.DOM
@@ -135,29 +132,30 @@ export default function main(sources, inputs) {
     const decision$ = actions.next$
       .withLatestFrom(state$, (_, state) => {
         const {contentState} = state
-        const {listing} = contentState
+        const {session} = contentState
+        const {listing} = session
 
         let nextScreen = next
         if (typeof next === 'function') {
           nextScreen = next(listing)
         }
 
-        if (listing.id) {
+        if (session.id) {
           return {
             type: "Router",
             data: {
-              pathname: `/create/${listing.id}/${nextScreen}`,
+              pathname: `/create/${session.id}/${nextScreen}`,
               action: `PUSH`,
-              state: listing
+              state: session
             }
           }
-        } else if (!nextRequiresListingId) {
+        } else if (!nextRequiresSessionId) {
           const out = {
             type: "Router",
             data: {
               pathname: `/create/${nextScreen}`,
               action: `PUSH`,
-              state: listing
+              state: session
             }
           }
 
@@ -165,43 +163,42 @@ export default function main(sources, inputs) {
         } else {
           return {
             type: "HTTP",
-            data: listing
+            data: session
           }
         }
       }).publish().refCount()
     
-    const requestedSaveListing$ = decision$
+    const requestedSaveSession$ = decision$
       .filter(x => x.type === `HTTP`)
       .map(x => x.data)
       .publish().refCount()
 
-    const toHTTP$ = requestedSaveListing$
-      .map(x => {
-        const listing = x
+    const toHTTP$ = requestedSaveSession$
+      .map(session => {
         return {
           url: `/api/user`,
           method: `post`,
           type: `json`,
           send: {
-            route: `/listing/save`,
-            data: listing
+            route: `/listing_session/save`,
+            data: session
           },
-          category: `saveListingOnNext`
+          category: `saveListingSessionOnNext`
         }
       })
       .publish().refCount()
 
     const toNextScreen$ = O.merge(
       decision$.filter(x => x.type === "Router").map(x => x.data),
-      actions.created$.map(x => x.data).map(listing => {
+      actions.created$.map(x => x.data).map(session => {
         let nextScreen = next
         if (typeof next === 'function') {
-          nextScreen = next(listing)
+          nextScreen = next(session)
         }
         return {
-          pathname: `/create/${listing.id}/${nextScreen}`,
+          pathname: `/create/${session.id}/${nextScreen}`,
           action: `PUSH`,
-          state: listing
+          state: session
         }
       })
     )
@@ -210,26 +207,27 @@ export default function main(sources, inputs) {
     const toPreviousScreen$ = actions.back$
       .withLatestFrom(state$, (_, state) => {
         const {contentState} = state
-        const {listing} = contentState
+        const {session} = contentState
+        const {listing} = session
 
         let previousScreen = previous
         if (typeof previous === 'function') {
-          previousScreen = previous(listing)
+          previousScreen = previous(session)
         }
 
         if (listing.id) {
-          const pathname = previous ? `/create/${listing.id}/${previousScreen}` : `/create/${listing.id}`
+          const pathname = previous ? `/create/${session.id}/${previousScreen}` : `/create/${listing.id}`
           return {
             pathname,
             action: `PUSH`,
-            state: listing
+            state: session
           }
         } else {
           const pathname = previous ? `/create/${previousScreen}` : `/create`
           return {
             pathname,
             action: `PUSH`,
-            state: listing
+            state: session
           }
         }
       })
@@ -250,9 +248,9 @@ export default function main(sources, inputs) {
       MapJSON: defaultNever(content, `MapJSON`),
       Storage: defaultNever(content, `Storage`),
       Global: defaultNever(content, `Global`),
-      listing$: state$
-        .filter(x => x.autosave === true)
-        .map(x => x.contentState.listing)
+      session$: state$
+        .filter((x: any) => x.autosave === true)
+        .map(x => x.contentState.session)
         .map(x => {
           return x
         }),
@@ -277,7 +275,7 @@ export default function main(sources, inputs) {
     Storage: normalizeSink(component$, `Storage`),
     HTTP: normalizeSink(component$, `HTTP`),
     message$: normalizeSink(component$, `message$`),
-    listing$: normalizeSink(component$, `listing$`),
+    session$: normalizeSink(component$, `session$`),
     save$: normalizeSink(component$, `save$`),
     saveStatus$: normalizeSink(component$, `saveStatus$`)
   }

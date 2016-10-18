@@ -68,12 +68,12 @@ function getFromHTTPStream (props$, HTTP) {
 }
 
 
-export default function FactualGeotagService ({props$, latLng$, HTTP}) {
+export default function FactualGeotagService ({props$, lngLat$, HTTP}) {
   const sharedProps$ = props$.publishReplay(1).refCount()
   const fromHTTP$ = getFromHTTPStream(sharedProps$, HTTP)
     .publish().refCount()
-  const toHTTP$ = latLng$.withLatestFrom(sharedProps$, (latLng, props) => {
-    return toGeotagHTTPRequest(props, latLng)
+  const toHTTP$ = lngLat$.withLatestFrom(sharedProps$, (lngLat, props) => {
+    return toGeotagHTTPRequest(props, lngLat)
   }).publish().refCount()
 
   return {

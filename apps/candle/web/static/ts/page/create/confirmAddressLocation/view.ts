@@ -26,14 +26,6 @@ function renderMap(state) {
   return div(`.map.sub-section`, [
     div(`.location-info-section`, [
       renderAddress(state)
-      // div(`.latitude-section`, [
-      //   span(`.heading`, [`Latitude: `]),
-      //   span([`${location.info.latLng.data.lat}`])
-      // ]),
-      // div(`.longitude-section`, [
-      //   span(`.heading`, [`Longitude: `]),
-      //   span([`${location.info.latLng.data.lng}`])
-      // ])
     ]),
     div(`#modifyLocationMapAnchor`)
   ])
