@@ -18,17 +18,17 @@ defmodule Test.ListingManager do
     listing = %{
       "type" => "badslava",
       "visibility" => "public",
-      "location" => %{
+      "where" => %{
         "street" => "something",
         "city" => "chicago",
-        "stateAbbr" => "IL",
+        "state_abbr" => "IL",
         "name" => "some venue name",
         "lng_lat" => %{
           "lng" => -74.0059,
           "lat" => 40.7128
         }
       },
-      "date_time" => %{
+      "when" => %{
         "frequency" => "weekly",
         "on" => "Monday",
         "start_time" => ~T[08:00:00.00]
@@ -48,17 +48,17 @@ defmodule Test.ListingManager do
     parent_listing = %{
       "type" => "badslava",
       "visibility" => "public",
-      "location" => %{
+      "where" => %{
         "street" => "something",
         "city" => "chicago",
-        "stateAbbr" => "IL",
+        "state_abbr" => "IL",
         "name" => "some venue name",
         "lng_lat" => %{
           "lng" => -74.0059,
           "lat" => 40.7128
         }
       },
-      "date_time" => %{
+      "when" => %{
         "frequency" => "weekly",
         "on" => "Monday",
         "start_time" => ~T[08:00:00.00]
@@ -74,17 +74,17 @@ defmodule Test.ListingManager do
       "parent_id" => parent_id,
       "type" => "badslava",
       "visibility" => "public",
-      "location" => %{
+      "where" => %{
         "street" => "something",
         "city" => "chicago",
-        "stateAbbr" => "IL",
+        "state_abbr" => "IL",
         "name" => "some venue name",
         "lng_lat" => %{
           "lng" => -74.0059,
           "lat" => 40.7128
         }
       },
-      "date_time" => %{
+      "when" => %{
         "frequency" => "weekly",
         "on" => "Monday",
         "start_time" => ~T[08:00:00.00]

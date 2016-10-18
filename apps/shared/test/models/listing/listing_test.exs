@@ -8,17 +8,17 @@ defmodule Test.Listing do
       "type" => "badslava",
       "visibility" => "public",
       "release" => "posted",
-      "location" => %{
+      "where" => %{
         "street" => "something",
         "city" => "chicago",
-        "stateAbbr" => "IL",
+        "state_abbr" => "IL",
         "name" => "some venue name",
         "lng_lat" => %{
           "lng" => -74.0059,
           "lat" => 40.7128
         }
       },
-      "date_time" => %{
+      "when" => %{
         "frequency" => "weekly",
         "on" => "Monday",
         "start_time" => ~T[08:00:00.00]
@@ -34,17 +34,17 @@ defmodule Test.Listing do
       "type" => "venue",
       "visibility" => "public",
       "release" => "posted",
-      "location" => %{
+      "where" => %{
         "street" => "something",
         "city" => "chicago",
-        "stateAbbr" => "IL",
+        "state_abbr" => "IL",
         "name" => "some venue name",
         "lng_lat" => %{
           "lng" => -74.0059,
           "lat" => 40.7128
         }
       },
-      "date_time" => %{
+      "when" => %{
         "frequency" => "weekly",
         "on" => "Monday",
         "start_time" => ~T[08:00:00.00]

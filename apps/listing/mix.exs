@@ -1,14 +1,15 @@
-defmodule Auth.Mixfile do
+defmodule Listing.Mixfile do
   use Mix.Project
 
   def project do
-    [app: :auth,
+    [app: :listing,
      version: "0.1.0",
      build_path: "../../_build",
      config_path: "../../config/config.exs",
      deps_path: "../../deps",
      lockfile: "../../mix.lock",
      elixir: "~> 1.3",
+     elixirc_paths: ["web", "lib"],
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      deps: deps]
@@ -18,16 +19,11 @@ defmodule Auth.Mixfile do
   #
   # Type "mix help compile.app" for more information
   def application do
-    [
-      applications: [
+    [applications: [
         :logger,
-        :comeonin, 
-        :shared,
-        :oauth2,
-        :oauth
+        :shared
       ],
-      mod: {Auth, []}
-    ]
+     mod: {Listing, []}]
   end
 
   # Dependencies can be Hex packages:
@@ -45,14 +41,7 @@ defmodule Auth.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
-      {:shared, in_umbrella: true},
-      #{:ueberauth, "~> 0.3.0"},
-      {:guardian, "~> 0.12.0"},
-      {:guardian_db, "~> 0.7.0"},
-      {:comeonin, "~> 2.4"},
-      {:poison, "~> 2.2"},
-      {:oauth, github: "tim/erlang-oauth"},
-      {:oauth2, "== 0.6.0"},
+      {:shared, in_umbrella: true}
     ]
   end
 end

@@ -13,8 +13,8 @@ defmodule Shared.Repo.Migrations.CreateListingTables do
       add :short_description, :string
       add :event_types, {:array, :string}
       add :categories, {:array, :string}
-      add :location, :map, null: false
-      add :date_time, :map, null: false
+      add :where, :map, null: false
+      add :when, :map, null: false
       add :release, :string, null: false
       add :visibility, :string, null: false
       add :source, :string

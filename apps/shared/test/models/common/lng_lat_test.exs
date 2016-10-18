@@ -1,7 +1,7 @@
 defmodule LngLatTest do
   use ExUnit.Case
 
-  alias Common.LngLat
+  alias Shared.Model.LngLat
   test "Valid lng/lat vals generate valid changeset" do
     cs = LngLat.changeset(%LngLat{}, %{
       "lng" => -74.0059,
