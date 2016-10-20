@@ -16,7 +16,7 @@ defmodule Badslava.Scraper do
     IO.puts "Retrieved #{Enum.count(retrieved)} stored listings..."
     IO.puts "Determining diff..."
     {add, remove, update} = diff(converted, retrieved)
-    IO.puts "Adding #{Enum.count(added)}, removing #{Enum.count(removed)} listings..."
+    IO.puts "Adding #{Enum.count(add)}, removing #{Enum.count(remove)}, updating #{Enum.count(update)} listings..."
     IO.puts "Requesting listings update..."
     IO.puts "Storing latest badslava listings..."
     #store(Enum.map(badslava_listings, fn x -> encode_time(x) end))
@@ -37,8 +37,8 @@ defmodule Badslava.Scraper do
     add = MapSet.to_list(added_hashes) |> Enum.map(fn x -> new_map[x] end)
     remove = MapSet.to_list(removed_hashes) |> Enum.map(fn x -> old_map[x] end)
     update = MapSet.to_list(same_hashes) 
-      |> Enum.filter(fn x => has_updates?(old_map[x], new_map[x]) end)
-      |> Enum.map(fn x => new_map[x])
+      |> Enum.filter(fn x -> has_updates?(old_map[x], new_map[x]) end)
+      |> Enum.map(fn x -> new_map[x] end)
 
     {add, remove, update}
     # {nil, nil}
@@ -79,25 +79,25 @@ defmodule Badslava.Scraper do
   defp convert(listings) do
     converted = for l <- listings do
       %{
-        type: "badslava",
-        visibility: "public",
-        title: l.title,
-        event_types: ["show", "open-mic"],
-        categories: ["comedy"],
-        where: %{
-          name: l.venue_name,
-          street: l.street,
-          city: l.city,
-          state_abbr: l.state_abbr,
-          lng_lat: %{
-            lng: l.lng,
-            lat: l.lat
+        "type" => "recurring_badslava",
+        "visibility" => "public",
+        "title" => l.title,
+        "event_types" => ["show", "open-mic"],
+        "categories" => ["comedy"],
+        "where" => %{
+          "name" => l.venue_name,
+          "street" => l.street,
+          "city" => l.city,
+          "state_abbr" => l.state_abbr,
+          "lng_lat" => %{
+            "lng" => l.lng,
+            "lat" => l.lat
           }
         },
-        when: %{
-          frequency: l.frequency,
-          on: l.week_day,
-          start_time: l.start_time
+        "when" => %{
+          "frequency" => l.frequency,
+          "on" => l.week_day,
+          "start_time" => l.start_time
         } 
       }
     end

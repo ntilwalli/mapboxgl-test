@@ -1,11 +1,9 @@
-defmodule Shared.Manager.Timezone do
-  import Ecto.Query, only: [from: 2, first: 1]
+defmodule Shared.Manager.TimezoneManager do
+  import Ecto.Query, only: [from: 2]
   import Geo.PostGIS
 
   alias Shared.Repo
-  alias Geo.Point
   alias Shared.TzWorld
-  alias Shared.Model.LngLat
 
   def get({lng, lat} = coordinates) when is_number(lng) and is_number(lat) do
     point = %Geo.Point{coordinates: coordinates, srid: 4326}

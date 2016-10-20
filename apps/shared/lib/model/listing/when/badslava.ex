@@ -1,18 +1,19 @@
 defmodule Shared.Model.Listing.When.Badslava do
   use Shared.Lib, :model
-  import Timex
+  # import Timex
 
-  alias Timex.Ecto.Time
-  alias Timex.Ecto.Date
+  # alias Timex.Ecto.Time
+  # alias Timex.Ecto.Date
+  # alias Timex.Ecto.DateTime
 
   @derive {Poison.Encoder, except: [:__meta__]}
   @primary_key false
   embedded_schema do
     field :frequency, :string
     field :on, :string
-    field :start_time, Timex.Ecto.Time
-    field :duration, Timex.Ecto.Time
-    field :activates, Timex.Ecto.Date
+    field :start_time, :time
+    field :duration, :time
+    field :activates, :date
     field :deactivates, :date
     field :exdate, {:array, :date}
   end

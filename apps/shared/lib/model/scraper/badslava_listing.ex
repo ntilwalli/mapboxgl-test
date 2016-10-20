@@ -1,6 +1,6 @@
 defmodule Shared.Model.Scraper.BadslavaListing do
   use Shared.Lib, :model
-  import Timex.Ecto.Time
+  #import Timex.Ecto.Time
 
   @derive {Poison.Encoder, except: [:__meta__]}
   @primary_key false

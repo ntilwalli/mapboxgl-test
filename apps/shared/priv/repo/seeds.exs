@@ -11,6 +11,7 @@
 # and so on) as they will fail if something goes wrong.
 
 # Shared.Repo.insert!(%Shared.ListingReleaseType{ id: "saved" })
+Shared.Repo.insert!{%Shared.User{id: 0, type: "root"}}
 Shared.Repo.insert!(%Shared.ListingReleaseType{ id: "staged" })
 Shared.Repo.insert!(%Shared.ListingReleaseType{ id: "posted" })
 

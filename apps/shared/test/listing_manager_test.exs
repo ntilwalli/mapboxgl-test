@@ -1,23 +1,27 @@
-defmodule Test.ListingManager do
+defmodule Test.TestFoo do
   use ExUnit.Case
+  #use Timex
   #doctest Shared
 
-  alias Shared.Listing
+  alias Timex
   alias Shared.User
   alias Shared.Repo
-  alias Shared.ListingManager
+  alias Shared.Manager.ListingManager
 
   setup do
     Application.stop(:shared)
     :ok = Application.start(:shared)
   end
 
+  #@tag :pending
   test "add user (default) listing" do
-    IO.puts "Listing manager test"
-    user = Repo.get!(User, 1)
+    user = Repo.get!(User, 0)
+    time = ~T[08:00:00.00]
+    #val = Time.to_iso8601(time)
     listing = %{
-      "type" => "badslava",
+      "type" => "badslava_recurring",
       "visibility" => "public",
+      "release" => "posted",
       "where" => %{
         "street" => "something",
         "city" => "chicago",
@@ -31,23 +35,24 @@ defmodule Test.ListingManager do
       "when" => %{
         "frequency" => "weekly",
         "on" => "Monday",
-        "start_time" => ~T[08:00:00.00]
+        "start_time" => time
       }
     }
 
-    info = ListingManager.add(listing, "posted", user)
-    assert info.type == "created"
-    data = info.data
+    {status, data} = ListingManager.add(listing, user)
+    assert status == :ok
     ListingManager.delete(data.id)
-    data = Repo.get(Listing, data.id)
+    data = Repo.get(Shared.Listing, data.id)
     assert is_nil(data)
   end
 
+  #@tag :pending
   test "add child listing" do
-    user = Repo.get!(User, 1)
+    user = Repo.get!(User, 0)
     parent_listing = %{
-      "type" => "badslava",
+      "type" => "badslava_recurring",
       "visibility" => "public",
+      "release" => "posted",
       "where" => %{
         "street" => "something",
         "city" => "chicago",
@@ -65,15 +70,15 @@ defmodule Test.ListingManager do
       }
     }
 
-    parent_info = ListingManager.add(parent_listing, "posted", user)
-    assert Map.get(parent_info, :type) == "created"
-    parent_data = parent_info.data
+    {status, parent_data} = parent_info = ListingManager.add(parent_listing, user)
+    assert status == :ok
     parent_id = parent_data.id
 
     child_listing = %{
       "parent_id" => parent_id,
-      "type" => "badslava",
+      "type" => "badslava_single",
       "visibility" => "public",
+      "release" => "posted",
       "where" => %{
         "street" => "something",
         "city" => "chicago",
@@ -85,21 +90,18 @@ defmodule Test.ListingManager do
         }
       },
       "when" => %{
-        "frequency" => "weekly",
-        "on" => "Monday",
-        "start_time" => ~T[08:00:00.00]
+        "start" => Timex.now()
       }
     }
 
-    child_info = ListingManager.add(child_listing, "staged", user)
-    assert Map.get(child_info, :type) == "created"
-    child_data= Map.get(child_info, :data)
+    {child_status, child_data} = ListingManager.add(child_listing, user)
+    assert child_status == :ok
     assert child_data.parent_id === parent_id
     child_id = child_data.id
     ListingManager.delete(parent_id)
-    parent_deleted = Repo.get(Listing, parent_id)
+    parent_deleted = Repo.get(Shared.Listing, parent_id)
     assert is_nil(parent_deleted)
-    child_deleted = Repo.get(Listing, child_id)
+    child_deleted = Repo.get(Shared.Listing, child_id)
     assert is_nil(child_deleted)
   end
 end

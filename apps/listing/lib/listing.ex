@@ -9,12 +9,12 @@ defmodule Listing do
     # Define workers and child supervisors to be supervised
     children = [
       # Starts a worker by calling: Listing.Worker.start_link(arg1, arg2, arg3)
-      # worker(Listing.Worker, [arg1, arg2, arg3]),
+      #worker(Listing.Registry, [Listing.Registry]),
+      #supervisor(Listing.Worker.Supervisor, [])
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
     # for other strategies and supported options
-    opts = [strategy: :one_for_one, name: Listing.Supervisor]
-    Supervisor.start_link(children, opts)
+    Supervisor.start_link(children, strategy: :one_for_one)
   end
 end

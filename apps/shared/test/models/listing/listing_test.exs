@@ -5,7 +5,7 @@ defmodule Test.Listing do
 
   test "listing changeset" do
     listing = %{
-      "type" => "badslava",
+      "type" => "badslava_recurring",
       "visibility" => "public",
       "release" => "posted",
       "where" => %{
@@ -31,7 +31,7 @@ defmodule Test.Listing do
 
   test "invalid listing changeset" do
     listing = %{
-      "type" => "venue",
+      "type" => "blah",
       "visibility" => "public",
       "release" => "posted",
       "where" => %{

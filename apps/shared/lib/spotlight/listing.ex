@@ -49,11 +49,17 @@ defmodule Shared.Listing do
     model
     |> cast(params, @allowed_fields)
     |> validate_required(@required_fields)
-    |> validate_inclusion(:type, ["single", "recurring", "badslava"])
+    |> validate_inclusion(:type, ["single", "recurring", "badslava_single", "badslava_recurring"])
     |> validate_inclusion(:visibility, ["public", "private", "hidden"])
     |> assoc_constraint(:user)
     # |> inspect_changeset
-    |> cast_dynamic(:type, :where, %{"badslava" => Shared.Model.Listing.Where.Badslava}, required: true)
-    |> cast_dynamic(:type, :when, %{"badslava" => Shared.Model.Listing.When.Badslava}, required: true)
+    |> cast_dynamic(:type, :where, %{
+        "badslava_recurring" => Shared.Model.Listing.Where.Badslava,
+        "badslava_single" => Shared.Model.Listing.Where.Badslava
+      }, required: true)
+    |> cast_dynamic(:type, :when, %{
+        "badslava_recurring" => Shared.Model.Listing.When.Badslava,
+        "badslava_single" => Shared.Model.Listing.When.Once
+      }, required: true)
   end
 end

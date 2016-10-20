@@ -1,9 +1,9 @@
 defmodule Shared.Helpers do
   import Ecto
   import Ecto.Changeset
-
+  alias Timex.Ecto
   alias Ecto.Changeset
-  alias Shared.Manager.Timezone
+  alias Shared.Manager.TimezoneManager
 
   def cast_dynamic(changeset, flag_key, dynamic_key, processors, opts \\ :empty) 
     when is_atom(flag_key) and is_atom(dynamic_key) do
@@ -28,6 +28,7 @@ defmodule Shared.Helpers do
                   dynamic_cs = apply(module, :changeset, [struct(module), dynamic_val])
 
                   case dynamic_cs do
+                    #%{valid?: true} -> changeset |> put_change(dynamic_key, dynamic_cs)
                     %{valid?: true} -> changeset |> put_change(dynamic_key, dynamic_cs |> apply_changes |> flatten_struct)
                     _ ->  %{changeset |> put_change(dynamic_key, dynamic_cs) | valid?: false}
                   end
@@ -74,7 +75,7 @@ defmodule Shared.Helpers do
     #IO.inspect has_timezone
     case has_lat_lng and has_timezone do
       true -> 
-        case Timezone.get({changes.lng, changes.lat}) do
+        case TimezoneManager.get({changes.lng, changes.lat}) do
           nil -> %{changeset |> add_error(:add_timezone, "Timezone not found") | valid?: false}
           tz -> changeset |> put_change(:timezone, tz)
         end
@@ -92,13 +93,22 @@ defmodule Shared.Helpers do
     flatstruct = Map.to_list(somestruct) 
       |> Enum.map(fn x -> 
           case elem(x, 1) do
-            %{__struct__: _} = cs -> 
-              {elem(x, 0), Map.from_struct(cs)}
+            val when is_list(val) -> for v <- val, do: get_flattened_val(v)
+            %{__struct__: _} = val -> {elem(x, 0), get_flattened_val(val)}
             _ -> x
           end
         end) 
       |> Enum.into(%{})
     
     Map.from_struct(flatstruct)
+  end
+
+  defp get_flattened_val(cs) do
+    case cs do
+      %Date{} = dt -> Date.to_iso8601(dt)
+      %Time{} = dt -> Time.to_iso8601(dt)
+      %DateTime{} = dt -> DateTime.to_iso8601(dt)
+      _ -> Map.from_struct(cs)
+    end
   end
 end

@@ -39,7 +39,8 @@ defmodule Shared.Mixfile do
   defp deps do
     [
       {:timex, "~> 3.1"},
-      {:timex_ecto, "~> 3.1.0", path: "../../custom_deps/timex_ecto"},
+      #{:timex_ecto, "~> 3.1.0", path: "../../custom_deps/timex_ecto"},
+      #{:timex_ecto, "~> 3.0"},
       {:postgrex, "0.12.1"},
       {:ecto, "~> 2.1.0-rc.2", override: true},
       {:geo, "~> 1.2", path: "../../custom_deps/geo"},
