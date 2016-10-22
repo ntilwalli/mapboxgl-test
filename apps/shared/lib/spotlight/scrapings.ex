@@ -2,19 +2,25 @@ defmodule Shared.Scrapings do
   use Shared.Lib, :model
   import Shared.Helpers
 
-  @primary_key false
+  alias Shared.Model.Scraper.BadslavaListing
+
+  @primary_key false#{:listing_id, :id, autogenerate: false}
   schema "scrapings" do
-    field :listing, :map
+    field :data, :map
     field :source, :string
+    belongs_to :listing, Shared.Listing, primary_key: true
+    timestamps
   end
 
-  @required_fields [:source, :listing]
+  @allowed_fields [:source, :data, :listing_id]
+  @required_fields [:source, :data]
 
   def changeset(schema, params \\ :empty) do
     schema
-    |> cast(params, @required_fields)
+    |> cast(params, @allowed_fields)
     |> validate_required(@required_fields)
     |> validate_inclusion(:source, ["badslava"])
-    |> cast_dynamic(:source, :listing, %{"badslava" => Badslava.Listing}, required: true)
+    |> cast_dynamic(:source, :data, %{"badslava" => BadslavaListing}, required: true)
+    |> assoc_constraint(:listing)
   end
 end

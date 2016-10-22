@@ -1,14 +1,12 @@
 defmodule Listing.Worker.Supervisor do
   use Supervisor
 
-  @name Listing.Worker.Supervisor
-
-  def start_link() do
-    Supervisor.start_link(__MODULE__, :ok, name: @name)
+  def start_link(name) do
+    Supervisor.start_link(__MODULE__, :ok, name: name)
   end
 
-  def start_worker(listing) do
-    Supervisor.start_child(@name, [listing])
+  def start_worker(pid, listing, registry_name) do
+    Supervisor.start_child(pid, [listing, registry_name])
   end
 
   def stop_worker(pid, reason \\ :normal) do

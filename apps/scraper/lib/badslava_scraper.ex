@@ -1,108 +1,175 @@
-defmodule Badslava.Scraper do
+defmodule Scraper.BadslavaScraper do
+  require Logger
   import Ecto.Query, only: [from: 2]
   import Scraper.Helpers
   alias Scraper.Helpers
   alias Shared.Scrapings
   alias Shared.Repo
 
-  def run do
-    IO.puts "Retrieving latest Badslava listings..."
-    badslava_listings = retrieve_latest_listings()
-    IO.puts "Retrieved #{Enum.count(badslava_listings)} new listings..."
-    IO.puts "Converting listings to native format..."
-    converted = convert(badslava_listings)
-    IO.puts "Converted #{Enum.count(converted)} listings..."
-    retrieved = for r <- retrieve_from_store(), do: decode_time(r)
-    IO.puts "Retrieved #{Enum.count(retrieved)} stored listings..."
-    IO.puts "Determining diff..."
-    {add, remove, update} = diff(converted, retrieved)
-    IO.puts "Adding #{Enum.count(add)}, removing #{Enum.count(remove)}, updating #{Enum.count(update)} listings..."
-    IO.puts "Requesting listings update..."
+  def run(opts \\ []) do
+    Logger.info "Retrieving latest Badslava listings..."
+    scraped_listings = case Keyword.get(opts, :drop) do
+      nil -> retrieve_latest_listings()
+      false -> retrieve_latest_listings()
+      true -> retrieve_latest_listings() |> Enum.filter(fn _x -> 
+        val = :rand.uniform(100)
+        #IO.inspect val
+        should_pass = val/100 > 0.2
+        #IO.inspect should_pass
+        should_pass
+      end)
+    end
+    scraped_listings = case Keyword.get(opts, :update) do
+      nil -> scraped_listings
+      false -> scraped_listings
+      true -> scraped_listings |> Enum.map(fn x -> 
+        val = :rand.uniform(100)
+        #IO.inspect val
+        should_alter = val/100 > 0.5
+        #IO.inspect should_alter
+        case should_alter do
+          false -> x
+          true -> %{x | "start_time" => ~T[01:30:00]}
+        end
+      end)
+    end
+
+    Logger.info "Retrieved #{Enum.count(scraped_listings)} listings from Badslava..."
+    stored_listings = for l <- retrieve_from_store(), do: l
+    Logger.info "Retrieved #{Enum.count(stored_listings)} listings from store..."
+    Logger.info "Determining diff..."
+    {create, update, delete} = diffed_events = diff(scraped_listings, stored_listings)
+    Logger.info "Creating #{Enum.count(create)}, updating #{Enum.count(update)}, deleting #{Enum.count(delete)} listings..."
+    {created, updated, deleted} = transmitted = transmit(diffed_events)
+    #IO.inspect transmitted
     IO.puts "Storing latest badslava listings..."
-    #store(Enum.map(badslava_listings, fn x -> encode_time(x) end))
+    store(transmitted)
+    # IO.puts "Converting listings to native format..."
+    # converted = convert(badslava_listings)
+    # IO.puts "Converted #{Enum.count(converted)} listings..."
 
-  end
+    # IO.puts "Createing #{Enum.count(create)}, removing #{Enum.count(remove)}, updating #{Enum.count(update)} listings..."
+    # IO.puts "Requesting listings update..."
+    # IO.puts "Storing latest badslava listings..."
 
-  defp diff(new, old) do
-    new_hash = Enum.map(new, & hash(&1))
-    old_hash = Enum.map(old, & hash(&1))
-    new_map = Enum.zip(new_hash, new) |> Enum.into(%{})
-    old_map = Enum.zip(old_hash, old) |> Enum.into(%{})
-    new_mapset = MapSet.new(new_hash)
-    old_mapset = MapSet.new(old_hash)
-    added_hashes = MapSet.difference(new_mapset, old_mapset)
-    removed_hashes = MapSet.difference(old_mapset, new_mapset)
-    same_hashes = MapSet.intersection(old_mapset, new_mapset)
 
-    add = MapSet.to_list(added_hashes) |> Enum.map(fn x -> new_map[x] end)
-    remove = MapSet.to_list(removed_hashes) |> Enum.map(fn x -> old_map[x] end)
-    update = MapSet.to_list(same_hashes) 
-      |> Enum.filter(fn x -> has_updates?(old_map[x], new_map[x]) end)
-      |> Enum.map(fn x -> new_map[x] end)
-
-    {add, remove, update}
-    # {nil, nil}
-  end
-
-  defp has_updates?(old, new) do
-    old.when.start_time != new.when.start_time
-      or old.notes != new.notes
-      or old.email != new.email
-      or old.email_name != new.email_name
-      or old.cost != new.cost
-  end
-
-  defp hash(listing) do
-    "#{listing.title}/#{listing.where.name}/#{listing.when.frequency}/#{listing.when.on}/#{Time.to_iso8601(listing.when.start_time)}"
   end
 
   defp retrieve_from_store() do
     Repo.all(
       from s in Scrapings, 
       where: s.source == "badslava",
-      select: s.listing
-    )
+      select: {s.data, s.listing_id}
+    ) |> Enum.map(fn {data, id} -> {%{data | "start_time" => elem(Time.from_iso8601(data["start_time"]), 1)}, id} end)
   end
 
-  defp store(listings) do
-    Repo.delete_all(from s in Scrapings, where: true)
-    for l <- listings do
-      cs = Scrapings.changeset(%Scrapings{}, %{
-        "listing" => Map.from_struct(encode_time(l)),
-        "source" => "badslava"
-      })
-      
-      Repo.insert!(cs)
-    end
+
+  defp diff(new, old_tuples) do
+    old = Enum.map(old_tuples, fn x -> elem(x, 0) end)
+    old_ids = Enum.map(old_tuples, fn x -> elem(x, 1) end)
+    new_hash = Enum.map(new, & hash(&1))
+    old_hash = Enum.map(old, & hash(&1))
+    old_id_map = old_hash |> Enum.zip(old_ids) |> Enum.into(%{})
+    new_map = Enum.zip(new_hash, new) |> Enum.into(%{})
+    old_map = Enum.zip(old_hash, old) |> Enum.into(%{})
+    new_mapset = MapSet.new(new_hash)
+    old_mapset = MapSet.new(old_hash)
+    created_hashes = MapSet.difference(new_mapset, old_mapset)
+    removed_hashes = MapSet.difference(old_mapset, new_mapset)
+    same_hashes = MapSet.intersection(old_mapset, new_mapset)
+    create = MapSet.to_list(created_hashes) |> Enum.map(fn x -> new_map[x] end)
+    delete = MapSet.to_list(removed_hashes) |> Enum.map(fn x -> old_id_map[x] end)
+    update = MapSet.to_list(same_hashes) 
+      |> Enum.filter(fn x -> has_updates?(old_map[x], new_map[x]) end)
+      |> Enum.map(fn x -> {old_id_map[x], new_map[x]} end)
+
+    {create, update, delete}
+    # {nil, nil}
   end
 
-  defp convert(listings) do
-    converted = for l <- listings do
-      %{
-        "type" => "recurring_badslava",
-        "visibility" => "public",
-        "title" => l.title,
-        "event_types" => ["show", "open-mic"],
-        "categories" => ["comedy"],
-        "where" => %{
-          "name" => l.venue_name,
-          "street" => l.street,
-          "city" => l.city,
-          "state_abbr" => l.state_abbr,
-          "lng_lat" => %{
-            "lng" => l.lng,
-            "lat" => l.lat
-          }
-        },
-        "when" => %{
-          "frequency" => l.frequency,
-          "on" => l.week_day,
-          "start_time" => l.start_time
-        } 
-      }
-    end
-    
-    converted
+  defp has_updates?(old, new) do
+    old["start_time"] != new["start_time"]
+      or old["notes"] != new["notes"]
+      or old["email"] != new["email"]
+      or old["email_name"] != new["email_name"]
+      or old["cost"] != new["cost"]
+  end
+
+  defp hash(listing) do
+    start_time = listing["start_time"]
+    "#{listing["title"]}/#{listing["venue_name"]}/#{listing["frequency"]}/#{listing["week_day"]}/#{Time.to_iso8601(start_time)}"
+  end
+
+
+  defp transmit({create, update, delete} = _info) do
+    user = Shared.Repo.get(Shared.User, 0)
+    created = Enum.map(create, fn x -> 
+      {:ok, result} = 
+        info = Listing.Registry.create(Listing.Registry, convert(x), user) 
+        #IO.inspect info
+      {result.id, x}
+    end)
+    updated = Enum.map(update, fn x -> 
+      #IO.inspect x
+      {listing_id, data} = x
+      {:ok, result} = Listing.Registry.update(Listing.Registry, listing_id, convert(data), user) 
+      x
+    end)
+    deleted = Enum.map(delete, fn x ->
+      val = Shared.Repo.delete!(%Shared.Scrapings{listing_id: x}) 
+      :ok = Listing.Registry.delete(Listing.Registry, x, user) 
+      x
+    end)
+
+    {created, updated, deleted}
+  end
+
+  defp store({created, updated, deleted}) do
+    Logger.debug "Storing scraped data..."
+    Logger.debug "Storing new listings..."
+    created = Enum.map(created, fn x -> 
+      {l_id, data} = x
+      row_data = %{data: data, listing_id: l_id, source: "badslava"}
+      cs = Shared.Scrapings.changeset(%Shared.Scrapings{}, row_data)
+      info = Shared.Repo.insert!(cs) 
+      #IO.inspect info
+    end)
+    Logger.debug "Storing updated listings..."
+    updated = Enum.map(updated, fn x -> 
+      #IO.inspect x
+      {l_id, data} = x
+      row_data = %{data: data, source: "badslava"}
+      cs = Shared.Scrapings.changeset(%Shared.Scrapings{listing_id: l_id}, row_data)
+      #IO.inspect row_data
+      #IO.inspect cs
+      result = Shared.Repo.update!(cs) 
+    end)
+  end
+
+  defp convert(l) do
+    %{
+      "type" => "badslava_recurring",
+      "visibility" => "public",
+      "release" => "posted",
+      "title" => l["title"],
+      "event_types" => ["show", "open-mic"],
+      "categories" => ["comedy"],
+      "where" => %{
+        "name" => l["venue_name"],
+        "street" => l["street"],
+        "city" => l["city"],
+        "state_abbr" => l["state_abbr"],
+        "lng_lat" => %{
+          "lng" => l["lng"],
+          "lat" => l["lat"]
+        }
+      },
+      "when" => %{
+        "frequency" => String.downcase(l["frequency"]),
+        "on" => String.downcase(l["week_day"]),
+        "start_time" => l["start_time"]
+      } 
+    }
   end
 
   def retrieve_latest_listings do
@@ -165,27 +232,27 @@ defmodule Badslava.Scraper do
         end
 
 
-        out = %Shared.Model.Scraper.BadslavaListing{
-          week_day: week_day,
-          day: day,
-          month: month, 
-          year: year,
-          start_time: convert_to_time(time),
-          end_time: nil,
-          title: title,
-          venue_name: venue_name,
-          street: street,
-          city: city,
-          state_abbr: state_abbr,
-          frequency: frequency,
-          cost: cost,
-          phone: phone,
-          lng: lng,
-          lat: lat,
-          email: elem(email, 0),
-          email_name: elem(email, 1),
-          website: website,
-          notes: notes
+        out = #%Shared.Model.Scraper.BadslavaListing{
+          %{
+          "week_day" => week_day,
+          "day" => day,
+          "month" => month, 
+          "year" => year,
+          "start_time" => convert_to_time(time),
+          "title" => title,
+          "venue_name" => venue_name,
+          "street" => street,
+          "city" => city,
+          "state_abbr" => state_abbr,
+          "frequency" => frequency,
+          "cost" => cost,
+          "phone" => phone,
+          "lng" => lng,
+          "lat" => lat,
+          "email" => elem(email, 0),
+          "email_name" => elem(email, 1),
+          "website" => website,
+          "notes" => notes
         }
 
 

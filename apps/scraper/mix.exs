@@ -49,6 +49,7 @@ defmodule Scraper.Mixfile do
   defp deps do
     [
       {:shared, in_umbrella: true},
+      {:listing, in_umbrella: true},
       {:timex, "~> 3.1"},
       {:poison, "~> 2.2"},
       {:httpoison, "~> 0.9.0"},

@@ -7,10 +7,18 @@ defmodule Shared.Manager.TimezoneManager do
 
   def get({lng, lat} = coordinates) when is_number(lng) and is_number(lat) do
     point = %Geo.Point{coordinates: coordinates, srid: 4326}
-    query = from location in TzWorld,
+    query = from location in Shared.TzWorld,
       where: st_intersects(^point, location.geom),
       select: location.tzid
 
-    Repo.one(query)
+    case Shared.Repo.one(query) do
+      nil -> 
+        query = from l in Shared.TzWorld,
+          select: l.tzid,
+          order_by: [asc: st_distance(l.geom, ^point)],
+          limit: 1
+        Shared.Repo.one(query)
+      val -> val
+    end
   end
 end

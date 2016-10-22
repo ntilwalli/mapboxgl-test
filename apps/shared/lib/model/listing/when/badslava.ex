@@ -25,6 +25,6 @@ defmodule Shared.Model.Listing.When.Badslava do
     schema
     |> cast(params, @allowed_fields)
     |> validate_required(@required_fields)
-    |> validate_inclusion(:frequency, ["weekly", "monthly"])
+    |> validate_inclusion(:frequency, ["weekly", "monthly", "bi-weekly"])
   end
 end

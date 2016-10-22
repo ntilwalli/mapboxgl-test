@@ -1,20 +1,15 @@
 defmodule Test.Listing.Registry do
   require Logger
-  use ExUnit.Case, async: true
+  use ExUnit.Case
 
-  setup do
-    Listing.Worker.Supervisor.start_link
-    {:ok, registry} = Listing.Registry.start_link(Listing.Registry)
-    {:ok, registry: registry}
+  test "returns :error for invalid listing id" do
+    {status, _message} = Listing.Registry.lookup(Listing.Registry, 1)
+    assert status == :error
   end
 
-  #@tag :pending
-  test "returns :error for invalid listing id" , %{registry: registry} do
-    assert Listing.Registry.lookup(registry, 1) == :error
-  end
-
-  test "adds a listing to registry", %{registry: registry} do
-    parent_listing = %{
+  test "adds a listing to registry" do
+    user = Shared.Repo.get!(Shared.User, 0)
+    listing = %{
       "type" => "badslava_recurring",
       "visibility" => "public",
       "release" => "posted",
@@ -35,7 +30,9 @@ defmodule Test.Listing.Registry do
       }
     }
 
-    {:ok, listing} = Listing.Registry.add(registry, parent_listing)
+    {:ok, listing} = Listing.Registry.create(Listing.Registry, listing, user)
     assert !is_nil(listing.id)
+    _info = Listing.Registry.delete(Listing.Registry, listing.id, user)
+    assert :error == elem(Listing.Registry.lookup(Listing.Registry, Map.get(listing, :id)), 0)
   end
 end

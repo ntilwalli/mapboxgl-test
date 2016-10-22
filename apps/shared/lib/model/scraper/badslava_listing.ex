@@ -14,10 +14,10 @@ defmodule Shared.Model.Scraper.BadslavaListing do
     field :state_abbr, :string
     field :website, :string
     field :notes, :string 
-    field :start_time, :string 
-    field :end_time, :string
+    field :start_time, :time 
+    field :end_time, :time
     field :cost, :string
-    field :sign_up, :string
+    field :sign_up, :time
     field :sign_up_site, :string
     field :phone, :string
     field :email, :string
@@ -30,14 +30,14 @@ defmodule Shared.Model.Scraper.BadslavaListing do
   end
 
   @allowed_fields [
-    :name, :week_day, :frequency, :venue_name,
+    :title, :week_day, :frequency, :venue_name,
     :street, :city, :state_abbr, :website, :notes, :start_time,
     :end_time, :cost, :sign_up, :sign_up_site, :phone, :email,
     :email_name, :lat, :lng, :month, :day, :year
   ]
 
   @required_fields [
-    :name, :week_day, :frequency, :venue_name,
+    :title, :week_day, :frequency, :venue_name,
     :street, :city, :state_abbr, :start_time,
     :lat, :lng
 ]

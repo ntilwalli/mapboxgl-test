@@ -7,4 +7,9 @@ defmodule Test.TimezoneManager do
     tz = TimezoneManager.get(new_york)
     assert tz == "America/New_York"
   end
+  test "The Ahh Noo Mic location" do
+    new_york = {-73.9787077, 40.7294217}
+    tz = TimezoneManager.get(new_york)
+    assert tz == "America/New_York"
+  end
 end

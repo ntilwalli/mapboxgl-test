@@ -24,6 +24,13 @@ defmodule Shared.Manager.ListingManager do
     Repo.insert(listing_changeset)
   end
 
+  def update(listing_id, listing, user) do
+    u_listing = Ecto.build_assoc(user, :listings)
+    u_listing = Map.put(u_listing, :id, listing_id)
+    cs = Listing.changeset(u_listing, listing)
+    Repo.update(cs)
+  end
+
   def delete(%Listing{id: id}) do
     delete_w_id(id)
   end
