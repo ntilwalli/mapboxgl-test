@@ -1,16 +1,15 @@
-defmodule Shared.Model.Listing.When.Once do
+defmodule Shared.Model.Listing.Meta.Badslava.Cost do
   use Shared.Lib, :model
 
-  @derive {Poison.Encoder, exclude: [:__meta__]}
+  @derive {Poison.Encoder, except: [:__meta__]}
   @primary_key false
   embedded_schema do
-    field :start, :utc_datetime
-    field :end, :utc_datetime
+    field :type, :string
+    field :data, :map
   end
 
-  @allowed_fields [:start, :end]
-  @required_fields [:start]
-  
+  @allowed_fields [:type, :data]
+  @required_fields [:type]
   def changeset(schema, params \\ :empty) do
     schema
     |> cast(params, @allowed_fields)

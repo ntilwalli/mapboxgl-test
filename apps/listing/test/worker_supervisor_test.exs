@@ -12,13 +12,14 @@ defmodule Test.Listing.Worker.Supervisor do
   test "stuff", %{registry: registry, worker_supervisor: w_sup} do
 
     user = Shared.Repo.get!(Shared.User, 0)
-    time = ~T[08:00:00.00]
     #val = Time.to_iso8601(time)
     listing = %{
-      "type" => "badslava_recurring",
+      "type" => "recurring",
       "visibility" => "public",
       "release" => "posted",
+      "categories" => ["comedy", "open_mic"],
       "where" => %{
+        "type" => "badslava",
         "street" => "something",
         "city" => "chicago",
         "state_abbr" => "IL",
@@ -29,10 +30,57 @@ defmodule Test.Listing.Worker.Supervisor do
         }
       },
       "when" => %{
-        "frequency" => "weekly",
-        "on" => "Monday",
-        "start_time" => time
-      }
+        "rrule" => %{
+          "freq" => "weekly",
+        }
+      },
+      "meta" => %{
+        "type" => "badslava",
+        "sign_up" => %{
+          "start" => -15,
+          "styles" => ["list"],
+          "methods" => [%{
+            "type" => "email_with_upgrade", 
+            "data" => %{
+              "type" => "additional_stage_time",
+              "data" => 1
+            }
+            }, %{
+              "type" => "walk_in"
+            }]
+        },
+        "check_in" => %{
+          "start" => -10,
+        },
+        "cost" => %{
+          "type" => "free_plus_upgrade",
+          "data" => %{
+            "cost" => %{
+              "type" => "pay",
+              "data" => 2
+            },
+            "data" => %{
+              "type" => "additional_stage_time",
+              "data" => 1
+            }
+          }
+        },
+        "contact" => %{
+          "email" => "thing@t.com",
+          "email_name" => "Thing guys",
+          "website" => "http://something.com"
+        },
+        "stage_time" => [%{"type" => "max", "data" => 5}, %{"type" => "range", "data" => [3, 5]}],
+        "performer_limit" => %{
+          "type" => "limit_with_waitlist",
+          "data" => %{
+            "limit" => 25,
+            "waitlist" => 5
+          }
+        },
+        "host" => ["Sally Shah", "Rajiv Khanna"],
+        "note" => "Some note"
+      } 
     }
 
     {_status, listing} = Shared.Manager.ListingManager.add(listing, user)

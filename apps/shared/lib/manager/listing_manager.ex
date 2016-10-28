@@ -21,6 +21,7 @@ defmodule Shared.Manager.ListingManager do
   defp add_listing(listing, %{type: "root"} = user) do
     new_listing = Ecto.build_assoc(user, :listings)
     listing_changeset = Listing.changeset(new_listing, listing)
+    #IO.inspect listing_changeset
     Repo.insert(listing_changeset)
   end
 

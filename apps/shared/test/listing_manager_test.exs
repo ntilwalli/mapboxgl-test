@@ -1,9 +1,9 @@
-defmodule Test.TestFoo do
+defmodule Test.Shared.Manager.ListingManagerTest do
   use ExUnit.Case
   #use Timex
   #doctest Shared
 
-  alias Timex
+  #alias Timex
   alias Shared.User
   alias Shared.Repo
   alias Shared.Manager.ListingManager
@@ -19,10 +19,12 @@ defmodule Test.TestFoo do
     time = ~T[08:00:00.00]
     #val = Time.to_iso8601(time)
     listing = %{
-      "type" => "badslava_recurring",
+      "type" => "recurring",
       "visibility" => "public",
       "release" => "posted",
+      "categories" => ["comedy", "open_mic"],
       "where" => %{
+        "type" => "badslava",
         "street" => "something",
         "city" => "chicago",
         "state_abbr" => "IL",
@@ -33,13 +35,61 @@ defmodule Test.TestFoo do
         }
       },
       "when" => %{
-        "frequency" => "weekly",
-        "on" => "Monday",
-        "start_time" => time
-      }
+        "rrule" => %{
+          "freq" => "weekly",
+        }
+      },
+      "meta" => %{
+        "type" => "badslava",
+        "sign_up" => %{
+          "start" => -15,
+          "styles" => ["list"],
+          "methods" => [%{
+            "type" => "email_with_upgrade", 
+            "data" => %{
+              "type" => "additional_stage_time",
+              "data" => 1
+            }
+            }, %{
+              "type" => "walk_in"
+            }]
+        },
+        "check_in" => %{
+          "start" => -10,
+        },
+        "cost" => %{
+          "type" => "free_plus_upgrade",
+          "data" => %{
+            "cost" => %{
+              "type" => "pay",
+              "data" => 2
+            },
+            "data" => %{
+              "type" => "additional_stage_time",
+              "data" => 1
+            }
+          }
+        },
+        "contact" => %{
+          "email" => "thing@t.com",
+          "email_name" => "Thing guys",
+          "website" => "http://something.com"
+        },
+        "stage_time" => [%{"type" => "max", "data" => 5}, %{"type" => "range", "data" => [3, 5]}],
+        "performer_limit" => %{
+          "type" => "limit_with_waitlist",
+          "data" => %{
+            "limit" => 25,
+            "waitlist" => 5
+          }
+        },
+        "host" => ["Sally Shah", "Rajiv Khanna"],
+        "note" => "Some note"
+      } 
     }
 
-    {status, data} = ListingManager.add(listing, user)
+    {status, data} = foo = ListingManager.add(listing, user)
+    #IO.inspect foo
     assert status == :ok
     ListingManager.delete(data.id)
     data = Repo.get(Shared.Listing, data.id)
@@ -50,36 +100,86 @@ defmodule Test.TestFoo do
   test "add child listing" do
     user = Repo.get!(User, 0)
     parent_listing = %{
-      "type" => "badslava_recurring",
+      "type" => "recurring",
       "visibility" => "public",
       "release" => "posted",
       "where" => %{
-        "street" => "something",
-        "city" => "chicago",
-        "state_abbr" => "IL",
-        "name" => "some venue name",
+        "type" => "badslava",
+          "street" => "something",
+          "city" => "chicago",
+          "state_abbr" => "IL",
+          "name" => "some venue name",
         "lng_lat" => %{
           "lng" => -74.0059,
           "lat" => 40.7128
         }
       },
       "when" => %{
-        "frequency" => "weekly",
-        "on" => "Monday",
-        "start_time" => ~T[08:00:00.00]
+        "rrule" => %{
+          "freq" => "weekly",
+        }
+      },
+      "meta" => %{
+        "type" => "badslava",
+        "sign_up" => %{
+          "start" => -15,
+          "styles" => ["list"],
+          "methods" => [%{
+            "type" => "email_with_upgrade", 
+            "data" => %{
+              "type" => "additional_stage_time",
+              "data" => 1
+            }
+            }, %{
+              "type" => "walk_in"
+            }]
+        },
+        "check_in" => %{
+          "start" => -10,
+        },
+        "cost" => %{
+          "type" => "free_plus_upgrade",
+          "data" => %{
+            "cost" => %{
+              "type" => "pay",
+              "data" => 2
+            },
+            "data" => %{
+              "type" => "additional_stage_time",
+              "data" => 1
+            }
+          }
+        },
+        "contact" => %{
+          "email" => "thing@t.com",
+          "email_name" => "Thing guys",
+          "website" => "http://something.com"
+        },
+        "stage_time" => [%{"type" => "max", "data" => 5}, %{"type" => "range", "data" => [3, 5]}],
+        "performer_limit" => %{
+          "type" => "limit_with_waitlist",
+          "data" => %{
+            "limit" => 25,
+            "waitlist" => 5
+          }
+        },
+        "host" => ["Sally Shah", "Rajiv Khanna"],
+        "note" => "Some note"
       }
     }
 
     {status, parent_data} = parent_info = ListingManager.add(parent_listing, user)
+    #IO.inspect parent_info
     assert status == :ok
     parent_id = parent_data.id
 
     child_listing = %{
       "parent_id" => parent_id,
-      "type" => "badslava_single",
+      "type" => "single",
       "visibility" => "public",
       "release" => "posted",
       "where" => %{
+        "type" => "badslava",
         "street" => "something",
         "city" => "chicago",
         "state_abbr" => "IL",
@@ -90,7 +190,56 @@ defmodule Test.TestFoo do
         }
       },
       "when" => %{
-        "start" => Timex.now()
+        "start" => Calendar.DateTime.now! "America/New_York"
+      },
+      "meta" => %{
+        "type" => "badslava",
+        "sign_up" => %{
+          "start" => ~N[2016-11-12 19:45:00],
+          "styles" => ["list"],
+          "methods" => [%{
+            "type" => "email_with_upgrades", 
+            "data" => %{
+              "type" => "additional_stage_time",
+              "data" => 1
+            }
+            }, %{
+              "type" => "walk_in"
+            }]
+        },
+        "check_in" => %{
+          "end" => ~N[2016-11-12 19:45:00],
+        },
+        "cost" => %{
+          "type" => "free_plus_upgrades",
+          "data" => %{
+            "upgrades" => [%{
+              "type" => %{
+                "type" => "pay",
+                "data" => 2
+              },
+              "item" => %{
+                "type" => "additional_stage_time",
+                "data" => 1
+              }
+            }]
+          }
+        },
+        "contact" => %{
+          "email" => "thing@t.com",
+          "email_name" => "Thing guys",
+          "website" => "http://something.com"
+        },
+        "stage_time" => [%{"type" => "max", "data" => 5}, %{"type" => "range", "data" => [3, 5]}],
+        "performer_limit" => %{
+          "type" => "limit_with_waitlist",
+          "data" => %{
+            "limit" => 25,
+            "waitlist" => 5
+          }
+        },
+        "host" => ["Sally Shah", "Rajiv Khanna"],
+        "note" => "Some note"
       }
     }
 

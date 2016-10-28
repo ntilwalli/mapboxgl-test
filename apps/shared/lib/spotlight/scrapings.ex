@@ -20,7 +20,7 @@ defmodule Shared.Scrapings do
     |> cast(params, @allowed_fields)
     |> validate_required(@required_fields)
     |> validate_inclusion(:source, ["badslava"])
-    |> cast_dynamic(:source, :data, %{"badslava" => BadslavaListing}, required: true)
+    |> cast_dynamic(:data, %{"badslava" => BadslavaListing}, required: true)
     |> assoc_constraint(:listing)
   end
 end

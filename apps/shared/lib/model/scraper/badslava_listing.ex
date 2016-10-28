@@ -1,10 +1,10 @@
 defmodule Shared.Model.Scraper.BadslavaListing do
   use Shared.Lib, :model
-  #import Timex.Ecto.Time
 
   @derive {Poison.Encoder, except: [:__meta__]}
   @primary_key false
   embedded_schema do 
+    field :type, :string
     field :title, :string
     field :week_day, :string
     field :frequency, :string 
@@ -13,7 +13,7 @@ defmodule Shared.Model.Scraper.BadslavaListing do
     field :city, :string
     field :state_abbr, :string
     field :website, :string
-    field :notes, :string 
+    field :note, :string 
     field :start_time, :time 
     field :end_time, :time
     field :cost, :string
@@ -29,14 +29,14 @@ defmodule Shared.Model.Scraper.BadslavaListing do
     field :year, :string
   end
 
-  @allowed_fields [
+  @allowed_fields [ :type,
     :title, :week_day, :frequency, :venue_name,
-    :street, :city, :state_abbr, :website, :notes, :start_time,
+    :street, :city, :state_abbr, :website, :note, :start_time,
     :end_time, :cost, :sign_up, :sign_up_site, :phone, :email,
     :email_name, :lat, :lng, :month, :day, :year
   ]
 
-  @required_fields [
+  @required_fields [ :type,
     :title, :week_day, :frequency, :venue_name,
     :street, :city, :state_abbr, :start_time,
     :lat, :lng

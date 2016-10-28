@@ -28,7 +28,7 @@ defmodule Listing.GenerateRecurring do
 
   defp work() do
     Logger.info "Refreshing recurrences..."
-    # results = Repo.all(from l in ListingTable, where: l.type == "badslava_recurring")
+    #results = Repo.all(from l in ListingTable, where: l.type == "badslava")
     # generate_expected = generate_listings()
     # results |> Enum.map(fn r ->
     #   parent_id = r.id

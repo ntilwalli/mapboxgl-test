@@ -2,6 +2,8 @@ defmodule Scraper.BadslavaScraper do
   require Logger
   import Ecto.Query, only: [from: 2]
   import Scraper.Helpers
+  import Scraper.BadslavaScraper.Helpers
+  use Timex
   alias Scraper.Helpers
   alias Shared.Scrapings
   alias Shared.Repo
@@ -41,18 +43,10 @@ defmodule Scraper.BadslavaScraper do
     {create, update, delete} = diffed_events = diff(scraped_listings, stored_listings)
     Logger.info "Creating #{Enum.count(create)}, updating #{Enum.count(update)}, deleting #{Enum.count(delete)} listings..."
     {created, updated, deleted} = transmitted = transmit(diffed_events)
-    #IO.inspect transmitted
-    IO.puts "Storing latest badslava listings..."
-    store(transmitted)
-    # IO.puts "Converting listings to native format..."
-    # converted = convert(badslava_listings)
-    # IO.puts "Converted #{Enum.count(converted)} listings..."
-
-    # IO.puts "Createing #{Enum.count(create)}, removing #{Enum.count(remove)}, updating #{Enum.count(update)} listings..."
-    # IO.puts "Requesting listings update..."
+    #transmit(diffed_events)
+    # IO.inspect transmitted
     # IO.puts "Storing latest badslava listings..."
-
-
+    store(transmitted)
   end
 
   defp retrieve_from_store() do
@@ -89,7 +83,7 @@ defmodule Scraper.BadslavaScraper do
 
   defp has_updates?(old, new) do
     old["start_time"] != new["start_time"]
-      or old["notes"] != new["notes"]
+      or old["note"] != new["note"]
       or old["email"] != new["email"]
       or old["email_name"] != new["email_name"]
       or old["cost"] != new["cost"]
@@ -103,10 +97,20 @@ defmodule Scraper.BadslavaScraper do
 
   defp transmit({create, update, delete} = _info) do
     user = Shared.Repo.get(Shared.User, 0)
+    # created = Enum.map(create, fn x -> 
+    #   convert(x)
+    #   # {:ok, result} = 
+    #   #   info = Listing.Registry.create(Listing.Registry, convert(x), user) 
+    #   #   #IO.inspect info
+    #   # {result.id, x}
+    # end)
+    
     created = Enum.map(create, fn x -> 
-      {:ok, result} = 
-        info = Listing.Registry.create(Listing.Registry, convert(x), user) 
-        #IO.inspect info
+      converted = convert(x)
+      IO.inspect converted
+      {:ok, result} = info = Listing.Registry.create(Listing.Registry, converted, user) 
+      #IO.inspect result
+
       {result.id, x}
     end)
     updated = Enum.map(update, fn x -> 
@@ -147,29 +151,32 @@ defmodule Scraper.BadslavaScraper do
   end
 
   defp convert(l) do
-    %{
-      "type" => "badslava_recurring",
-      "visibility" => "public",
-      "release" => "posted",
-      "title" => l["title"],
-      "event_types" => ["show", "open-mic"],
-      "categories" => ["comedy"],
-      "where" => %{
-        "name" => l["venue_name"],
-        "street" => l["street"],
-        "city" => l["city"],
-        "state_abbr" => l["state_abbr"],
-        "lng_lat" => %{
-          "lng" => l["lng"],
-          "lat" => l["lat"]
+    #IO.inspect l
+    {when_info, categories, meta} = extract_meta(l)
+    #IO.inspect categories
+    out = %{
+      type: "recurring",
+      visibility: "public",
+      release: "posted",
+      title: l["title"],
+      event_types: ["show", "open_mic"],
+      categories: categories,
+      where: %{
+        type: "badslava",
+        name: l["venue_name"],
+        street: l["street"],
+        city: l["city"],
+        state_abbr: l["state_abbr"],
+        lng_lat: %{
+          lng: l["lng"],
+          lat: l["lat"]
         }
       },
-      "when" => %{
-        "frequency" => String.downcase(l["frequency"]),
-        "on" => String.downcase(l["week_day"]),
-        "start_time" => l["start_time"]
-      } 
+      when: when_info,
+      meta: meta
     }
+    #IO.inspect out
+    out
   end
 
   def retrieve_latest_listings do
@@ -178,7 +185,6 @@ defmodule Scraper.BadslavaScraper do
     days = extract_days(html)
     dayTables = Enum.zip(days, Floki.find(html, "font + table"))
     generate_badslava_listings(venue_lnglat, days, dayTables)
-
   end
 
   def generate_badslava_listings(venue_lnglat, _days, dayTables) do
@@ -212,10 +218,10 @@ defmodule Scraper.BadslavaScraper do
           val -> val 
         end 
 
-        notes = case alert_match do
+        note = case alert_match do
           [{_, [_, {"onclick", alert}], _}] -> 
-            captures = Regex.named_captures(~r/^alert\('(?<notes>.*)'\).*$/, alert)
-            Map.get(captures, "notes")
+            captures = Regex.named_captures(~r/^alert\('(?<note>.*)'\).*$/, alert)
+            Map.get(captures, "note")
           [] -> nil
         end
 
@@ -231,14 +237,27 @@ defmodule Scraper.BadslavaScraper do
           [] -> nil
         end
 
+        n_year = "20#{year}"
+        n_month = case String.length(month) do
+          1 -> "0#{month}"
+          _ -> month
+        end
 
-        out = #%Shared.Model.Scraper.BadslavaListing{
-          %{
+        n_day = case String.length(day) do
+          1 -> "0#{day}"
+          _ -> day
+        end
+        
+        date_string = "#{n_year}-#{n_month}-#{n_day}"
+        {:ok, date_val} = Date.from_iso8601(date_string)
+
+        time_val = convert_to_time(time)
+
+        out = %{
+          "type" => "badslava",
           "week_day" => week_day,
-          "day" => day,
-          "month" => month, 
-          "year" => year,
-          "start_time" => convert_to_time(time),
+          "date" => date_val,
+          "start_time" => time_val,
           "title" => title,
           "venue_name" => venue_name,
           "street" => street,
@@ -252,11 +271,9 @@ defmodule Scraper.BadslavaScraper do
           "email" => elem(email, 0),
           "email_name" => elem(email, 1),
           "website" => website,
-          "notes" => notes
+          "note" => note
         }
 
-
-        #out = %{out | notes: notes, email: email} #website: website}
         #IO.inspect out
         out
       end)
@@ -309,5 +326,19 @@ defmodule Scraper.BadslavaScraper do
     Floki.find(html, "font")
       |> Enum.filter(fn({_, _, [val]}) -> Regex.match?(dayExtractor, val) end)
       |> Enum.map(fn({_, _, [val]}) -> Regex.named_captures(dayExtractor, val) end)
+  end
+
+
+
+  def convert_to_time(val) do
+    captures = Regex.named_captures(~r/^(?<hour>\d\d?):(?<minute>\d\d)(?<meridiem>[a|p]m)$/, val)
+
+    meridiem = captures["meridiem"]
+    hour = Timex.Time.to_24hour_clock(String.to_integer(captures["hour"]), String.to_atom(meridiem))
+    minute = String.to_integer(captures["minute"])
+    case Time.new(hour, minute, 0) do
+      {:ok, val} -> val
+      _ -> raise ArgumentError, message: "Invalid argument #{val}"
+    end
   end
 end

@@ -5,6 +5,7 @@ defmodule ScraperTest do
   # test "badslava listing changeset" do
   #   data = #%Shared.Model.Scraper.BadslavaListing{
   #     %{
+  #       type: "badslava",
   #       city: "New York", 
   #       cost: "Paid", 
   #       day: "24", 
@@ -37,6 +38,6 @@ defmodule ScraperTest do
   # end
 
   test "run" do
-    Scraper.BadslavaScraper.run drop: true, update: true
+    Scraper.BadslavaScraper.run# drop: true, update: true
   end
 end

@@ -6,6 +6,7 @@ defmodule Test.Badslava do
   test "Valid badslava location generates valid changeset" do
     bs = %Badslava{}
     cs = Badslava.changeset(bs, %{
+      "type" => "badslava",
       "street" => "something",
       "city" => "chicago",
       "state_abbr" => "IL",
@@ -25,10 +26,6 @@ defmodule Test.Badslava do
       "street" => "something",
       "city" => "chicago",
       "state_abbr" => "IL",
-      "lng_lat" => %{
-        "lng" => -74.0059,
-        "lat" => 40.7128
-      }
     })
 
     refute cs.valid? == true

@@ -1,11 +1,10 @@
 defmodule Shared.Helpers do
   import Ecto
   import Ecto.Changeset
-  alias Timex.Ecto
   alias Ecto.Changeset
   alias Shared.Manager.TimezoneManager
 
-  def cast_dynamic(changeset, flag_key, dynamic_key, processors, opts \\ :empty) 
+  def cast_dynamic_parent_flag(changeset, flag_key, dynamic_key, processors, opts \\ :empty) 
     when is_atom(flag_key) and is_atom(dynamic_key) do
     case changeset do
       %{valid?: true, changes: changes, data: data} ->
@@ -34,6 +33,74 @@ defmodule Shared.Helpers do
                   end
               end
           end 
+      _ -> changeset
+    end
+  end
+
+  def cast_dynamic_func(changeset, dynamic_key, processor_fn, opts \\ :empty) when is_atom(dynamic_key) do
+    case changeset do
+      %{valid?: true, changes: changes, data: data} ->
+        case Map.fetch(changes, dynamic_key) do
+          :error -> 
+            case Keyword.fetch(opts, :required) do
+              :error -> changeset
+              {:ok, false} -> changeset
+              {:ok, true} -> %{changeset |> add_error(dynamic_key, "is required") | valid?: false}
+              _ -> raise ArgumentError, message: "Invalid value given to required option"
+            end
+          {:ok, dynamic_val} ->
+            #O.inspect dynamic_val
+            case processor_fn.(changeset, dynamic_val) do
+              nil -> 
+                %{changeset |> add_error(dynamic_key, "Could not find match processor_fn") | valid?: false}
+              module -> 
+                dynamic_cs = apply(module, :changeset, [struct(module), dynamic_val])
+                case dynamic_cs do
+                  #%{valid?: true} -> changeset |> put_change(dynamic_key, dynamic_cs)
+                  %{valid?: true} -> changeset |> put_change(dynamic_key, dynamic_cs |> apply_changes |> flatten_struct)
+                  _ ->  %{changeset |> put_change(dynamic_key, dynamic_cs) | valid?: false}
+                end
+            end
+        end
+      _ -> changeset
+    end
+  end
+
+  def cast_dynamic(changeset, dynamic_key, processors, opts \\ :empty) 
+    when is_atom(dynamic_key) do
+    case changeset do
+      %{valid?: true, changes: changes, data: data} ->
+        case Map.fetch(changes, dynamic_key) do
+          :error -> 
+            case Keyword.fetch(opts, :required) do
+              :error -> changeset
+              {:ok, false} -> changeset
+              {:ok, true} -> %{changeset |> add_error(dynamic_key, "is required") | valid?: false}
+              _ -> raise ArgumentError, message: "Invalid value given to required option"
+            end
+          {:ok, dynamic_val} ->
+            flag = cond do
+              val = Map.get(dynamic_val, :type) -> val
+              val = Map.get(dynamic_val, "type") -> val
+              true -> :error
+            end
+            
+            case flag do
+              :error -> %{changeset |> add_error(dynamic_key, "value requires :type field") | valid?: false}
+              _ ->
+                case Map.get(processors, flag) do
+                  nil -> 
+                    %{changeset |> add_error(dynamic_key, "Could not find match for \"#{flag}\" in cast_dynamic processors") | valid?: false}
+                  module -> 
+                    dynamic_cs = apply(module, :changeset, [struct(module), dynamic_val])
+                    case dynamic_cs do
+                      #%{valid?: true} -> changeset |> put_change(dynamic_key, dynamic_cs)
+                      %{valid?: true} -> changeset |> put_change(dynamic_key, dynamic_cs |> apply_changes |> flatten_struct)
+                      _ ->  %{changeset |> put_change(dynamic_key, dynamic_cs) | valid?: false}
+                    end
+                end
+            end
+        end
       _ -> changeset
     end
   end
@@ -93,7 +160,9 @@ defmodule Shared.Helpers do
     flatstruct = Map.to_list(somestruct) 
       |> Enum.map(fn x -> 
           case elem(x, 1) do
-            val when is_list(val) -> for v <- val, do: get_flattened_val(v)
+            val when is_list(val) -> 
+              out = for v <- val, do: get_flattened_val(v)
+              {elem(x, 0), out}
             %{__struct__: _} = val -> {elem(x, 0), get_flattened_val(val)}
             _ -> x
           end
@@ -103,12 +172,17 @@ defmodule Shared.Helpers do
     Map.from_struct(flatstruct)
   end
 
-  defp get_flattened_val(cs) do
+  defp get_flattened_val(%{__struct__: _} = cs) do
     case cs do
       %Date{} = dt -> Date.to_iso8601(dt)
       %Time{} = dt -> Time.to_iso8601(dt)
       %DateTime{} = dt -> DateTime.to_iso8601(dt)
+      %NaiveDateTime{} = dt -> NaiveDateTime.to_iso8601(dt)
       _ -> Map.from_struct(cs)
     end
+  end
+
+  defp get_flattened_val(cs) do
+    cs
   end
 end
