@@ -5,7 +5,7 @@ defmodule Shared.Model.Scraper.BadslavaListing do
   @primary_key false
   embedded_schema do 
     field :type, :string
-    field :title, :string
+    field :name, :string
     field :week_day, :string
     field :frequency, :string 
     field :venue_name, :string 
@@ -30,14 +30,14 @@ defmodule Shared.Model.Scraper.BadslavaListing do
   end
 
   @allowed_fields [ :type,
-    :title, :week_day, :frequency, :venue_name,
+    :name, :week_day, :frequency, :venue_name,
     :street, :city, :state_abbr, :website, :note, :start_time,
     :end_time, :cost, :sign_up, :sign_up_site, :phone, :email,
     :email_name, :lat, :lng, :month, :day, :year
   ]
 
   @required_fields [ :type,
-    :title, :week_day, :frequency, :venue_name,
+    :name, :week_day, :frequency, :venue_name,
     :street, :city, :state_abbr, :start_time,
     :lat, :lng
 ]

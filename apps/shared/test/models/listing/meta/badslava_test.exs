@@ -1,14 +1,15 @@
  defmodule Test.Listing.Meta.Badslava do 
   use ExUnit.Case
 
-  alias Shared.Model.Listing.Meta.Badslava, as: BadslavaEvent
+  alias Shared.Model.Listing.Meta.Badslava
+  #Shared.Model.Listing.Meta.Badslava
 
   #@tag :pending
   test "meta badslava changeset" do
     bs = %{
       "type" => "badslava",
       "sign_up" => %{
-        "start" => ~N[2016-11-12 19:45:00],
+        "start" => -15,
         "styles" => ["list"],
         "methods" => [%{
           "type" => "email_with_upgrades", 
@@ -21,7 +22,7 @@
           }]
       },
       "check_in" => %{
-        "end" => ~N[2016-11-12 19:45:00],
+        "end" => -15,
       },
       "cost" => %{
         "type" => "free_plus_upgrades",
@@ -55,7 +56,7 @@
       "note" => "Some note"
     }
 
-    cs = BadslavaEvent.changeset(%BadslavaEvent{}, bs)
+    cs = Badslava.changeset(%Badslava{}, bs)
     assert cs.valid? == true
   end
 

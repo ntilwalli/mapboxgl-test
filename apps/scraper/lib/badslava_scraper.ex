@@ -91,7 +91,7 @@ defmodule Scraper.BadslavaScraper do
 
   defp hash(listing) do
     start_time = listing["start_time"]
-    "#{listing["title"]}/#{listing["venue_name"]}/#{listing["frequency"]}/#{listing["week_day"]}/#{Time.to_iso8601(start_time)}"
+    "#{listing["name"]}/#{listing["venue_name"]}/#{listing["frequency"]}/#{listing["week_day"]}/#{Time.to_iso8601(start_time)}"
   end
 
 
@@ -158,7 +158,7 @@ defmodule Scraper.BadslavaScraper do
       type: "recurring",
       visibility: "public",
       release: "posted",
-      title: l["title"],
+      name: l["name"],
       event_types: ["show", "open_mic"],
       categories: categories,
       where: %{
@@ -194,7 +194,7 @@ defmodule Scraper.BadslavaScraper do
 
         Enum.map(bodies_tail, fn({_, _, [{_, _, [
           {_, _, [time]},
-          {_, _, [title]},
+          {_, _, [name]},
           {_, _, [venue_name]},
           {_, _, [street]},
           {_, _, [city]},
@@ -258,7 +258,7 @@ defmodule Scraper.BadslavaScraper do
           "week_day" => week_day,
           "date" => date_val,
           "start_time" => time_val,
-          "title" => title,
+          "name" => name,
           "venue_name" => venue_name,
           "street" => street,
           "city" => city,

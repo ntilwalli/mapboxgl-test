@@ -195,7 +195,7 @@ defmodule Test.Shared.Manager.ListingManagerTest do
       "meta" => %{
         "type" => "badslava",
         "sign_up" => %{
-          "start" => ~N[2016-11-12 19:45:00],
+          "start" => -15,
           "styles" => ["list"],
           "methods" => [%{
             "type" => "email_with_upgrades", 
@@ -208,7 +208,7 @@ defmodule Test.Shared.Manager.ListingManagerTest do
             }]
         },
         "check_in" => %{
-          "end" => ~N[2016-11-12 19:45:00],
+          "end" => -15,
         },
         "cost" => %{
           "type" => "free_plus_upgrades",

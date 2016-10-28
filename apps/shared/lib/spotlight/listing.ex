@@ -8,7 +8,7 @@ defmodule Shared.Listing do
   # alias When.Recurring
   # alias When.Once
 
-  @derive {Poison.Encoder, except: [:__meta__, :user_listings, :child_listings, :sort_id]}
+  @derive {Poison.Encoder, except: [:__meta__, :user_listings, :source, :child_listings, :sort_id]}
   @primary_key {:id, :id, autogenerate: true}
   schema "listings" do
     field :sort_id, :id
@@ -17,7 +17,7 @@ defmodule Shared.Listing do
     field :handle, :string
     field :release, :string
     field :visibility, :string
-    field :title, :string
+    field :name, :string
     field :event_types, {:array, :string}
     field :categories, {:array, :string}
     field :where, :map
@@ -36,7 +36,7 @@ defmodule Shared.Listing do
 
   @allowed_fields [
     :id, :parent_id, :user_id, :type, :release, :visibility, :handle, :source,
-    :title, :event_types, :categories,
+    :name, :event_types, :categories,
     :when, :where, :meta
   ]
   
@@ -51,38 +51,39 @@ defmodule Shared.Listing do
     |> validate_inclusion(:type, ["single", "recurring"])
     |> validate_inclusion(:visibility, ["public", "private", "hidden"])
     |> cast_dynamic_parent_flag(:type, :when, %{"recurring" => Shared.Model.Recurring, "single" => Shared.Model.Listing.When.Once})
-    |> cast_dynamic_func(:meta, fn cs, dynamic_val -> 
-        # IO.inspect dynamic_val
-        changes = cs.changes
-        # type = changes["type"]
-        # IO.inspect changes
+    # |> cast_dynamic_func(:meta, fn cs, dynamic_val -> 
+      #   # IO.inspect dynamic_val
+      #   changes = cs.changes
+      #   # type = changes["type"]
+      #   # IO.inspect changes
 
-        type = cond do
-          val = Map.get(changes, :type) -> val
-          val = Map.get(changes, "type") -> val
-          true -> :error
-        end
+      #   type = cond do
+      #     val = Map.get(changes, :type) -> val
+      #     val = Map.get(changes, "type") -> val
+      #     true -> :error
+      #   end
 
-        dynamic_type = cond do
-          val = Map.get(dynamic_val, :type) -> val
-          val = Map.get(dynamic_val, "type") -> val
-          true -> :error
-        end
+      #   dynamic_type = cond do
+      #     val = Map.get(dynamic_val, :type) -> val
+      #     val = Map.get(dynamic_val, "type") -> val
+      #     true -> :error
+      #   end
 
-        case type do
-          "recurring" ->
-            case dynamic_type do
-              "badslava" -> Shared.Model.Listing.Meta.Badslava.Template
-              _ -> nil
-            end
-          "single" -> 
-            case dynamic_type do
-              "badslava" -> Shared.Model.Listing.Meta.Badslava
-              _ -> nil
-            end
-          _ -> nil
-        end
-      end)
+      #   case type do
+      #     "recurring" ->
+      #       case dynamic_type do
+      #         "badslava" -> Shared.Model.Listing.Meta.Badslava.Template
+      #         _ -> nil
+      #       end
+      #     "single" -> 
+      #       case dynamic_type do
+      #         "badslava" -> Shared.Model.Listing.Meta.Badslava
+      #         _ -> nil
+      #       end
+      #     _ -> nil
+      #   end
+      # end)
+    |> cast_dynamic(:meta, %{"badslava" => Shared.Model.Listing.Meta.Badslava})
     |> cast_dynamic(:where, %{"badslava" => Shared.Model.Listing.Where.Badslava})
     |> assoc_constraint(:user)
 

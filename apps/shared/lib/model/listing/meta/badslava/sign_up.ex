@@ -4,8 +4,8 @@ defmodule Shared.Model.Listing.Meta.Badslava.SignUp do
   @derive {Poison.Encoder, except: [:__meta__]}
   @primary_key false
   embedded_schema do
-    field :start, :naive_datetime
-    field :end, :naive_datetime
+    field :start, :integer
+    field :end, :integer
     field :methods, {:array, :map}
     field :styles, {:array, :string}
   end

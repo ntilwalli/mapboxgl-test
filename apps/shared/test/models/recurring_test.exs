@@ -32,6 +32,7 @@ defmodule Test.Listing.GenerateRecurring do
     #IO.inspect recurrable
     assert recurrable.rrule.freq == "weekly"
     out = Recurring.between(recurrable, ~N[2016-10-21 00:00:00], ~N[2016-11-21 00:00:00], tz)
+    IO.inspect out
   end
 
   test "monthly" do
