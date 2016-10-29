@@ -161,7 +161,7 @@ defmodule Scraper.BadslavaScraper do
       name: l["name"],
       event_types: ["show", "open_mic"],
       categories: categories,
-      where: %{
+      donde: %{
         type: "badslava",
         name: l["venue_name"],
         street: l["street"],
@@ -172,7 +172,7 @@ defmodule Scraper.BadslavaScraper do
           lat: l["lat"]
         }
       },
-      when: when_info,
+      cuando: when_info,
       meta: meta
     }
     #IO.inspect out

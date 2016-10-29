@@ -8,7 +8,7 @@ defmodule Test.Listing do
       "type" => "recurring",
       "visibility" => "public",
       "release" => "posted",
-      "where" => %{
+      "donde" => %{
         "type" => "badslava",
         "street" => "something",
         "city" => "chicago",
@@ -19,7 +19,7 @@ defmodule Test.Listing do
           "lat" => 40.7128
         }
       },
-      "when" => %{
+      "cuando" => %{
         "rrule" => %{
           "freq" => "weekly",
         }
@@ -27,7 +27,7 @@ defmodule Test.Listing do
       "meta" => %{
         "type" => "badslava",
         "sign_up" => %{
-          "start" => -15,
+          "begins" => -15,
           "styles" => ["list"],
           "methods" => [%{
             "type" => "email_with_upgrade", 
@@ -40,7 +40,7 @@ defmodule Test.Listing do
             }]
         },
         "check_in" => %{
-          "start" => -10,
+          "begins" => -10,
         },
         "cost" => %{
           "type" => "free_plus_upgrade",
@@ -83,7 +83,7 @@ defmodule Test.Listing do
       "type" => "blah",
       "visibility" => "public",
       "release" => "posted",
-      "where" => %{
+      "donde" => %{
         "type" => "badslava",
 
           "street" => "something",
@@ -96,7 +96,7 @@ defmodule Test.Listing do
           "lat" => 40.7128
         }
       },
-      "when" => %{
+      "cuando" => %{
         "rrule" => %{
           "freq" => "weekly",
         }
@@ -104,12 +104,12 @@ defmodule Test.Listing do
       "meta" => %{
         "type" => "badslava",
         "sign_up" => %{
-          "start" => ~T[19:45:00],
+          "begins" => ~T[19:45:00],
           "types" => ["bucket"],
           "website" => "http://something.com"
         },
         "check_in" => %{
-          "start" => ~T[19:45:00],
+          "ends" => ~T[19:45:00],
         },
         "cost" => %{
           "cover" => 5,

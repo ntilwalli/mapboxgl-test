@@ -20,8 +20,8 @@ defmodule Shared.Listing do
     field :name, :string
     field :event_types, {:array, :string}
     field :categories, {:array, :string}
-    field :where, :map
-    field :when, :map
+    field :cuando, :map
+    field :donde, :map
     field :meta, :map
     field :source, :string
     field :user_sequence_id, :id, virtual: true
@@ -30,6 +30,7 @@ defmodule Shared.Listing do
     belongs_to :user, Shared.User
     has_one :user_listings, Shared.UserListing
     has_many :child_listings, Shared.ChildListing
+    has_one :single_listing_search, Shared.SingleListingSearch
 
     timestamps
   end
@@ -37,11 +38,11 @@ defmodule Shared.Listing do
   @allowed_fields [
     :id, :parent_id, :user_id, :type, :release, :visibility, :handle, :source,
     :name, :event_types, :categories,
-    :when, :where, :meta
+    :cuando, :donde, :meta
   ]
   
   @required_fields [
-    :user_id, :type, :visibility, :release, :when, :where, :meta
+    :user_id, :type, :visibility, :release, :cuando, :donde, :meta, :event_types, :categories
   ]
 
   def changeset(model, params \\ :empty) do
@@ -50,7 +51,7 @@ defmodule Shared.Listing do
     |> validate_required(@required_fields)
     |> validate_inclusion(:type, ["single", "recurring"])
     |> validate_inclusion(:visibility, ["public", "private", "hidden"])
-    |> cast_dynamic_parent_flag(:type, :when, %{"recurring" => Shared.Model.Recurring, "single" => Shared.Model.Listing.When.Once})
+    |> cast_dynamic_parent_flag(:type, :cuando, %{"recurring" => Shared.Model.Recurring, "single" => Shared.Model.Listing.Cuando.Once})
     # |> cast_dynamic_func(:meta, fn cs, dynamic_val -> 
       #   # IO.inspect dynamic_val
       #   changes = cs.changes
@@ -84,15 +85,15 @@ defmodule Shared.Listing do
       #   end
       # end)
     |> cast_dynamic(:meta, %{"badslava" => Shared.Model.Listing.Meta.Badslava})
-    |> cast_dynamic(:where, %{"badslava" => Shared.Model.Listing.Where.Badslava})
+    |> cast_dynamic(:donde, %{"badslava" => Shared.Model.Listing.Donde.Badslava})
     |> assoc_constraint(:user)
 
     # |> inspect_changeset
-    # |> cast_dynamic(:type, :where, %{
+    # |> cast_dynamic(:type, :donde, %{
     #     "badslava_recurring" => Shared.Model.Listing.Where.Badslava,
     #     "badslava_single" => Shared.Model.Listing.Where.Badslava
     #   }, required: true)
-    # |> cast_dynamic(:type, :when, %{
+    # |> cast_dynamic(:type, :cuando, %{
     #     "badslava_recurring" => Shared.Model.Listing.When.Recurring,
     #     "badslava_single" => Shared.Model.Listing.When.Once
     #   }, required: true)

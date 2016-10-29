@@ -1,7 +1,7 @@
-defmodule Test.Badslava do
+defmodule Test.Listing.Donde.Badslava do
   use ExUnit.Case
 
-  alias Shared.Model.Listing.Where.Badslava
+  alias Shared.Model.Listing.Donde.Badslava
 
   test "Valid badslava location generates valid changeset" do
     bs = %Badslava{}

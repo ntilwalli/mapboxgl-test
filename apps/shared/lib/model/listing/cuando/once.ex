@@ -1,15 +1,15 @@
-defmodule Shared.Model.Listing.When.Once do
+defmodule Shared.Model.Listing.Cuando.Once do
   use Shared.Lib, :model
 
   @derive {Poison.Encoder, exclude: [:__meta__]}
   @primary_key false
   embedded_schema do
-    field :start, :utc_datetime
-    field :end, :utc_datetime
+    field :begins, :utc_datetime
+    field :ends, :utc_datetime
   end
 
-  @allowed_fields [:start, :end]
-  @required_fields [:start]
+  @allowed_fields [:begins, :ends]
+  @required_fields [:begins]
   
   def changeset(schema, params \\ :empty) do
     schema

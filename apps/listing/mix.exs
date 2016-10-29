@@ -41,8 +41,7 @@ defmodule AppListing.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
-      {:shared, in_umbrella: true},
-      {:timex, "~> 3.1"}
+      {:shared, in_umbrella: true}
     ]
   end
 end

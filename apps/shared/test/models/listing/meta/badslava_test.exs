@@ -9,7 +9,7 @@
     bs = %{
       "type" => "badslava",
       "sign_up" => %{
-        "start" => -15,
+        "begins" => -15,
         "styles" => ["list"],
         "methods" => [%{
           "type" => "email_with_upgrades", 
@@ -22,7 +22,7 @@
           }]
       },
       "check_in" => %{
-        "end" => -15,
+        "ends" => -15,
       },
       "cost" => %{
         "type" => "free_plus_upgrades",

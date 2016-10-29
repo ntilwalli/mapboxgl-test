@@ -1,4 +1,4 @@
-defmodule Shared.Model.Listing.Where.Badslava do
+defmodule Shared.Model.Listing.Donde.Badslava do
   use Shared.Lib, :model
   import Shared.Helpers
 

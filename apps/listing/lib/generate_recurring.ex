@@ -2,26 +2,29 @@ defmodule Listing.GenerateRecurring do
   require Logger
   use GenServer
   import Ecto.Query, only: [from: 2]
+  import Ecto.Query.API, only: [fragment: 1]
   import Ecto.Changeset, only: [apply_changes: 1]
+  import Shared.Model.Decoders
 
   alias Shared.Repo
   alias Shared.Listing, as: ListingTable
   alias Shared.Model.Recurring, as: WhenRecurring
   #alias Shared.Model.Listing.When.Once, as: WhenOnce
-  alias Shared.Model.Listing.Where.Badslava, as: WhereBadslava
+  alias Shared.Model.Listing.Donde.Badslava, as: WhereBadslava
 
-  def start_link(opts \\ []) do
-    GenServer.start_link(__MODULE__, :ok, opts)
+  def start_link(registry_name, opts \\ []) do
+    GenServer.start_link(__MODULE__, {:ok, registry_name}, opts)
   end
 
-  def init(:ok) do
+  def init({:ok, registry_name}) do
     Logger.info "Starting recurrence worker..."
+    work(registry_name)
     schedule_work()
-    {:ok, []}
+    {:ok, registry_name}
   end
 
-  def handle_info(:work, state) do
-    work()
+  def handle_info(:work, registry_name = state) do
+    work(registry_name)
     schedule_work()
     {:noreply, state}
   end
@@ -30,45 +33,85 @@ defmodule Listing.GenerateRecurring do
     Process.send_after(self(), :work, 5 * 1000)
   end
 
-  defp work() do
+  defp work(registry_name) do
     Logger.info "Refreshing recurrences..."
-
+    user = Shared.Repo.get!(Shared.User, 0)
     results = Repo.all(from l in ListingTable, where: l.type == "recurring")
-    # Convert where to Shared.Model.Recurring
+
     results
-    |> Enum.map(fn x -> {x.when, x.where, x.name} end)
-    |> Enum.map(fn {when_info, where_info, name} -> 
-        when_cs = WhenRecurring.changeset(%WhenRecurring{}, when_info)
-        where_cs = WhereBadslava.changeset(%WhereBadslava{}, where_info)
-        tz = apply_changes(where_cs).lng_lat.timezone
-        {apply_changes(when_cs), tz, name}
+    |> Enum.map(fn listing -> 
+        recurrable = decode_cuando(listing.type, listing.cuando)
+        donde = decode_donde(listing.donde)
+        tz = donde.lng_lat.timezone
+        {recurrable, tz, listing}
       end)
-    |> Enum.map(fn {recurrable, tz, name} ->
+    |> Enum.map(fn {recurrable, tz, listing} ->
         start_datetime = Calendar.DateTime.to_naive(Calendar.DateTime.now!(tz))
-        #start_datetime = recurrable.rrule.dtstart
         end_datetime = Calendar.NaiveDateTime.add!(start_datetime, 90*24*60*60)
-        case recurrable.rrule.dtstart do
-          nil -> 
-            IO.inspect name
-          _ -> nil
-        end
-        # IO.inspect recurrable.rrule.dtstart
-        # IO.inspect start_datetime
-        # IO.inspect end_datetime
-        recurrences = WhenRecurring.between(recurrable, start_datetime, end_datetime, tz) |> Enum.map(fn x -> 
-          {:ok, x_out} = Calendar.DateTime.from_naive(x, tz) 
-          x_out
+        recurrences_utc = WhenRecurring.between(recurrable, start_datetime, end_datetime, tz) |> Enum.map(fn x -> 
+          {:ok, with_tz} = Calendar.DateTime.from_naive(x, tz)
+          {:ok, with_utc} = Calendar.DateTime.shift_zone(with_tz, "Etc/UTC") 
+          with_utc
         end)
-        # IO.inspect recurrences
+        {recurrences_utc, listing}
       end)
-    
-    # generate_expected = generate_listings()
-    # results |> Enum.map(fn r ->
-    #   parent_id = r.id
-    #   results = Repo.all(from l in ListingTable, where: l.parent_id == ^parent_id, l.type == "single")
-    #   start_dts = results |> Enum.map(fn child ->
-    #     WhenOnce.changeset(%WhenOnce{}, child.when)
-    #   end)
-    # end)
+    |> Enum.map(fn {recurrences_utc, listing} -> 
+        listing_id = listing.id
+        q =
+          from l in ListingTable, 
+          where: l.type == "single" and 
+            l.parent_id == ^listing_id and 
+            fragment("(?->>'begins')::timestamptz AT TIME ZONE ? > now() AT TIME ZONE ?", l.cuando, ^"UTC", ^"UTC"),
+          select: l.cuando
+
+        children_cuando = Repo.all(q)
+
+        donde = decode_donde(listing.donde)
+        timezone = donde.lng_lat.timezone
+        children_date_time_utc = for r <- children_cuando, do: decode_cuando("single", r).begins
+        recurrences_8601 = for r <- recurrences_utc, do: Calendar.DateTime.Format.iso8601_basic(r)
+        children_date_time_8601 = for r <- children_date_time_utc, do: Calendar.DateTime.Format.iso8601_basic(r)
+        calculated = MapSet.new(recurrences_8601)
+        already_existing = MapSet.new(children_date_time_8601)
+        to_be_added = MapSet.difference(calculated, already_existing) |> Enum.to_list
+        if Enum.count(to_be_added) > 0 do
+          IO.puts "recurrences_8601"
+          IO.inspect recurrences_8601
+          IO.puts "children_date_time_8601"
+          IO.inspect children_date_time_8601
+          IO.puts "to_be_added"
+          IO.inspect to_be_added
+        end
+        results = to_be_added |> Enum.map(fn x -> 
+            {:ok, pid} = Listing.Registry.lookup(registry_name, listing.id)
+            {:ok, dt}= Calendar.DateTime.Parse.rfc3339_utc(x)
+            single = generate_single(listing, dt)
+            {:ok, listing} = out = Listing.Worker.add_child(pid, single, user)
+            out
+          end)
+      end)
+  end
+
+  defp generate_single(template, dt_tz) do
+    begins = dt_tz
+    cuando = decode_cuando(template.type, template.cuando)
+    single_cuando = case cuando.duration do
+      nil -> %{begins: begins}
+      val -> %{begins: begins, ends: Calendar.DateTime.add!(begins, val*60)}
+    end
+
+    out = %{
+      parent_id: template.id,
+      type: "single",
+      visibility: template.visibility,
+      release: template.release,
+      name: template.name,
+      event_types: template.event_types,
+      categories: template.categories,
+      donde: template.donde,
+      cuando: single_cuando,
+      meta: template.meta,
+      source: template.source
+    }
   end
 end

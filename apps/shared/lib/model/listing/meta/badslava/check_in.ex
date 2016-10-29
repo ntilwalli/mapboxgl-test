@@ -4,12 +4,12 @@ defmodule Shared.Model.Listing.Meta.Badslava.CheckIn do
   @derive {Poison.Encoder, except: [:__meta__]}
   @primary_key false
   embedded_schema do
-    field :start, :integer
-    field :end, :integer
+    field :begins, :integer
+    field :ends, :integer
     field :methods, {:array, :map}
   end
 
-  @allowed_fields [:start, :end, :methods]
+  @allowed_fields [:begins, :ends, :methods]
   @required_fields []
   def changeset(schema, params \\ :empty) do
     schema

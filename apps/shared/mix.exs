@@ -15,33 +15,15 @@ defmodule Shared.Mixfile do
      deps: deps]
   end
 
-  # Configuration for the OTP application
-  #
-  # Type "mix help compile.app" for more information
   def application do
-    [applications: [:logger, :timex, :postgrex, :ecto, :httpoison, :calendar],
+    [applications: [:logger, :postgrex, :ecto, :httpoison, :calendar],
      mod: {Shared, []}]
   end
 
-  # Dependencies can be Hex packages:
-  #
-  #   {:mydep, "~> 0.3.0"}
-  #
-  # Or git/path repositories:
-  #
-  #   {:mydep, git: "https://github.com/elixir-lang/mydep.git", tag: "0.1.0"}
-  #
-  # To depend on another app inside the umbrella:
-  #
-  #   {:myapp, in_umbrella: true}
-  #
-  # Type "mix help deps" for more examples and options
   defp deps do
     [
-      {:timex, "~> 3.1"},
-      {:timex_ecto, "~> 3.1.0", path: "../../custom_deps/timex_ecto"},
       {:calendar, "~> 0.16.1"},
-      #{:timex_ecto, "~> 3.0"},
+      #{:calecto, "~> 0.16.0"},
       {:postgrex, "0.12.1"},
       {:ecto, "~> 2.1.0-rc.3", override: true},
       {:geo, "~> 1.2", path: "../../custom_deps/geo"},

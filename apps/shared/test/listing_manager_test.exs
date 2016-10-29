@@ -23,7 +23,7 @@ defmodule Test.Shared.Manager.ListingManagerTest do
       "visibility" => "public",
       "release" => "posted",
       "categories" => ["comedy", "open_mic"],
-      "where" => %{
+      "donde" => %{
         "type" => "badslava",
         "street" => "something",
         "city" => "chicago",
@@ -34,7 +34,7 @@ defmodule Test.Shared.Manager.ListingManagerTest do
           "lat" => 40.7128
         }
       },
-      "when" => %{
+      "cuando" => %{
         "rrule" => %{
           "freq" => "weekly",
         }
@@ -42,7 +42,7 @@ defmodule Test.Shared.Manager.ListingManagerTest do
       "meta" => %{
         "type" => "badslava",
         "sign_up" => %{
-          "start" => -15,
+          "begins" => -15,
           "styles" => ["list"],
           "methods" => [%{
             "type" => "email_with_upgrade", 
@@ -55,7 +55,7 @@ defmodule Test.Shared.Manager.ListingManagerTest do
             }]
         },
         "check_in" => %{
-          "start" => -10,
+          "begins" => -10,
         },
         "cost" => %{
           "type" => "free_plus_upgrade",
@@ -103,7 +103,7 @@ defmodule Test.Shared.Manager.ListingManagerTest do
       "type" => "recurring",
       "visibility" => "public",
       "release" => "posted",
-      "where" => %{
+      "donde" => %{
         "type" => "badslava",
           "street" => "something",
           "city" => "chicago",
@@ -114,7 +114,7 @@ defmodule Test.Shared.Manager.ListingManagerTest do
           "lat" => 40.7128
         }
       },
-      "when" => %{
+      "cuando" => %{
         "rrule" => %{
           "freq" => "weekly",
         }
@@ -122,7 +122,7 @@ defmodule Test.Shared.Manager.ListingManagerTest do
       "meta" => %{
         "type" => "badslava",
         "sign_up" => %{
-          "start" => -15,
+          "begins" => -15,
           "styles" => ["list"],
           "methods" => [%{
             "type" => "email_with_upgrade", 
@@ -135,7 +135,7 @@ defmodule Test.Shared.Manager.ListingManagerTest do
             }]
         },
         "check_in" => %{
-          "start" => -10,
+          "begins" => -10,
         },
         "cost" => %{
           "type" => "free_plus_upgrade",
@@ -178,7 +178,7 @@ defmodule Test.Shared.Manager.ListingManagerTest do
       "type" => "single",
       "visibility" => "public",
       "release" => "posted",
-      "where" => %{
+      "donde" => %{
         "type" => "badslava",
         "street" => "something",
         "city" => "chicago",
@@ -189,8 +189,8 @@ defmodule Test.Shared.Manager.ListingManagerTest do
           "lat" => 40.7128
         }
       },
-      "when" => %{
-        "start" => Calendar.DateTime.now! "America/New_York"
+      "cuando" => %{
+        "begins" => Calendar.DateTime.now! "America/New_York"
       },
       "meta" => %{
         "type" => "badslava",
@@ -208,7 +208,7 @@ defmodule Test.Shared.Manager.ListingManagerTest do
             }]
         },
         "check_in" => %{
-          "end" => -15,
+          "begins" => -15,
         },
         "cost" => %{
           "type" => "free_plus_upgrades",

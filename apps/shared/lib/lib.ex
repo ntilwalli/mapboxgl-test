@@ -18,6 +18,7 @@ defmodule Shared.Lib do
   def model do
     quote do
       use Ecto.Schema
+      #use Calecto.Schema, usec: true #not yet compat with Ecto 2.1
 
       import Ecto
       import Ecto.Changeset

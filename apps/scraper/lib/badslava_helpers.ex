@@ -103,7 +103,7 @@ defmodule Scraper.BadslavaScraper.Helpers do
           [] -> nil
           [{:ok, val}] -> 
             #IO.puts "\n\n\n\nnegA"
-            out = Map.put(out, :start, day_diff({week_day, start_time}, {week_day, val}))
+            out = Map.put(out, :begins, day_diff({week_day, start_time}, {week_day, val}))
         end
 
         options = get_sign_up_end_regexes |> extract_time(note)
@@ -113,22 +113,22 @@ defmodule Scraper.BadslavaScraper.Helpers do
           [{:ok, val}] -> 
             diff_amt = day_diff({week_day, start_time}, {week_day, val})
             #IO.puts "\n\n\n\nA"
-            out = Map.put(out, :end, diff_amt)
+            out = Map.put(out, :ends, diff_amt)
         end
 
         cond do
           Regex.match?(~r/by Tuesday noon/i, note) -> 
             #IO.puts "\n\n\n\nB"
-            out = Map.put(out, :end, day_diff({week_day, start_time}, {:tuesday, ~T[12:00:00]}))
+            out = Map.put(out, :ends, day_diff({week_day, start_time}, {:tuesday, ~T[12:00:00]}))
           Regex.match?(~r/before Thursday/i, note) -> 
             #IO.puts "\n\n\n\nC"
-            out = Map.put(out, :end, day_diff({week_day, start_time}, {:thursday, ~T[00:00:00]}))
+            out = Map.put(out, :ends, day_diff({week_day, start_time}, {:thursday, ~T[00:00:00]}))
           Regex.match?(~r/(?<!confirmation )on Monday/i, note) ->
             #IO.puts "\n\n\n\nD"
-            out = Map.put(out, :start, day_diff({week_day, start_time}, {:monday, ~T[00:00:00]}))
+            out = Map.put(out, :begins, day_diff({week_day, start_time}, {:monday, ~T[00:00:00]}))
           Regex.match?(~r/on Wednesday to sign(-| )?up/, note) ->
             #IO.puts "\n\n\n\nE"
-            out = Map.put(out, :start, day_diff({week_day, start_time}, {:wednesday, ~T[00:00:00]}))
+            out = Map.put(out, :begins, day_diff({week_day, start_time}, {:wednesday, ~T[00:00:00]}))
           match_map = Regex.named_captures(~r/(?<hour>\d):?(?<minute>\d\d)? ?(?<meridiem>(?:a\.?|p\.?)m\.?)? .* (?<day>.*day) before/i, note) ->
             #IO.inspect week_day
             #IO.inspect start_time
@@ -140,7 +140,7 @@ defmodule Scraper.BadslavaScraper.Helpers do
             #IO.puts "\n\n\n\nF"
             out = Map.put(
               out,
-              :end,
+              :ends,
               day_diff(
                 {week_day, start_time},  
                 {match_day, match_time}
@@ -189,7 +189,7 @@ defmodule Scraper.BadslavaScraper.Helpers do
         #IO.inspect options
         case options do
           [] -> nil
-          [{:ok, val}] -> Map.put(%{}, :end, day_diff({week_day, start_time}, {week_day, val}))
+          [{:ok, val}] -> Map.put(%{}, :ends, day_diff({week_day, start_time}, {week_day, val}))
         end
     end
   end
