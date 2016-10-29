@@ -93,13 +93,11 @@ defmodule Listing.Worker do
               categories = listing.categories
               cat_results = Enum.map(categories, fn x -> 
                   cat_row = %SLCategories{category: x, listing_id: listing_id}
-                  #IO.inspect cat_row
                   Repo.insert(cat_row)
                 end)
               event_types = listing.event_types
               type_results = Enum.map(event_types, fn x -> 
                   type_row = %SLTypes{type: x, listing_id: listing_id}
-                  #IO.inspect type_row
                   Repo.insert(type_row)
                 end)
             end) do

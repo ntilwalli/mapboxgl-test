@@ -74,14 +74,14 @@ defmodule Listing.GenerateRecurring do
         calculated = MapSet.new(recurrences_8601)
         already_existing = MapSet.new(children_date_time_8601)
         to_be_added = MapSet.difference(calculated, already_existing) |> Enum.to_list
-        if Enum.count(to_be_added) > 0 do
-          IO.puts "recurrences_8601"
-          IO.inspect recurrences_8601
-          IO.puts "children_date_time_8601"
-          IO.inspect children_date_time_8601
-          IO.puts "to_be_added"
-          IO.inspect to_be_added
-        end
+        # if Enum.count(to_be_added) > 0 do
+        #   IO.puts "recurrences_8601"
+        #   IO.inspect recurrences_8601
+        #   IO.puts "children_date_time_8601"
+        #   IO.inspect children_date_time_8601
+        #   IO.puts "to_be_added"
+        #   IO.inspect to_be_added
+        # end
         results = to_be_added |> Enum.map(fn x -> 
             {:ok, pid} = Listing.Registry.lookup(registry_name, listing.id)
             {:ok, dt}= Calendar.DateTime.Parse.rfc3339_utc(x)
