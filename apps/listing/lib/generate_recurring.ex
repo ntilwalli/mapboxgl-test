@@ -34,7 +34,7 @@ defmodule Listing.GenerateRecurring do
   end
 
   defp work(registry_name) do
-    Logger.info "Refreshing recurrences..."
+    #Logger.info "Refreshing recurrences..."
     user = Shared.Repo.get!(Shared.User, 0)
     results = Repo.all(from l in ListingTable, where: l.type == "recurring")
 

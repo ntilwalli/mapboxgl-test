@@ -29,7 +29,6 @@
     "@cycle/isolate": "^1.4.0",
     "@cycle/rxjs-run": "^3.0.3",
     "@cycle/storage": "3.0.0-rc3",
-    "@cycle/xstream-run": "^3.0.3",
     "browserify": "^13.1.0",
     "cookie_js": "^1.2.0",
     "cycle-mapboxgl": "file:custom_deps/cycle-mapboxgl",
@@ -49,7 +48,7 @@
     "validator": "^5.2.0",
     "xregexp": "^3.1.1",
     "xs-combine-obj": "^1.1.1",
-    "xstream": "^6.4.0"
+    "xstream": "^7.0.0"
   },
   "devDependencies": {
     "@types/deep-equal": "0.0.30",
@@ -62,7 +61,7 @@
     "grunt-cli": "^1.2.0",
     "ts-loader": "^0.9.1",
     "tsify": "^2.0.2",
-    "typescript": "^2.1.0-dev.20161007",
+    "typescript": "^2.0.6",
     "watch-run": "^1.2.4",
     "webpack": "^1.13.2"
   }

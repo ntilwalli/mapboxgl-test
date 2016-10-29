@@ -2,7 +2,7 @@ function isString(pattern) {
   return typeof pattern === "string" || pattern instanceof String
 }
 
-export default function main(path, routes) {
+export default function main(path, routes): any {
   let matched = false
   for (let i = 0; i < routes.length; i++) {
     const {pattern, value} = routes[i]

@@ -131,7 +131,7 @@ defmodule Listing.Worker do
   # end
 
   def handle_info(:timeout, state) do
-    Logger.info "Shutting down idle process for #{state.listing.id}"
+    #Logger.info "Shutting down idle process for #{state.listing.id}"
     {:stop, :normal, state}
   end
 
