@@ -4,12 +4,13 @@ import {combineObj, normalizeComponentStream, spread} from './utils'
 import Home from './page/home/main'
 import Restricted from './restricted'
 import CreateListing from './page/create/main'
+import OpenMic from './page/openMic/main'
 //import CreateListing from './createListing/main'
 
 const routes = [
   {pattern: /\/create/, value: CreateListing},
 	{pattern: /\/restricted/, value: Restricted},
-  {pattern: /.*/, value: Home}
+  {pattern: /.*/, value: OpenMic}
 ]
 
 // const routes = {

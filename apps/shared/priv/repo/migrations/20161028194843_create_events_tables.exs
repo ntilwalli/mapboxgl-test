@@ -20,16 +20,16 @@ defmodule Shared.Repo.Migrations.CreateEventsTables do
 
     create index(:single_listing_categories, [:category])
 
-    create table(:single_listing_types, primary_key: false) do
+    create table(:single_listing_event_types, primary_key: false) do
       add :type, :string, null: false
       add :listing_id, references(:listings, on_delete: :delete_all, type: :bigserial)
     end
 
-    create index(:single_listing_types, [:type])
+    create index(:single_listing_event_types, [:type])
   end
 
   def down do
-    drop table(:single_listing_types)
+    drop table(:single_listing_event_types)
     drop table(:single_listing_categories)
     execute("DROP INDEX single_listing_search_geom_gix;")
     drop table(:single_listing_search)

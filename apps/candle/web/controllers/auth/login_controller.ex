@@ -10,7 +10,8 @@ defmodule Candle.LoginController do
     } = params, current_user, _claims) do
     
     user = Helpers.get_user(conn, current_user)
-    case User.Router.route(User.Router, {user, {:login, params}}) do
+    pid = User.Registry.lookup(User.Registry, user)
+    case User.Anon.login(pid, params) do
     #case Auth.Manager.login(Auth.Manager, params) do
       {:error, error} ->
         conn

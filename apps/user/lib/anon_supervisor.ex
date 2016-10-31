@@ -1,14 +1,12 @@
 defmodule User.Anon.Supervisor do
   use Supervisor
 
-  @name User.Anon.Supervisor
-
-  def start_link(opts \\ []) do
-    Supervisor.start_link(__MODULE__, :ok, [name: @name])
+  def start_link(name) do
+    Supervisor.start_link(__MODULE__, :ok, name: name)
   end
 
-  def start_user(anonymous_id) do
-    Supervisor.start_child(@name, [])
+  def start_user(server, anonymous_id) do
+    Supervisor.start_child(server, [anonymous_id])
   end
 
   def init(:ok) do 

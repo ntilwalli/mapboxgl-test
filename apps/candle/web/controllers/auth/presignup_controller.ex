@@ -19,7 +19,8 @@ defmodule Candle.PresignupController do
         |> render(message: %{type: "redirect", data: "/?modal=signup"})
       _ ->
         user = Helpers.get_user(conn, current_user)
-        case User.Router.route(User.Router, {user, {:oauth_signup, {params, partial}}}) do
+        pid = User.Registry.lookup(User.Registry, user)
+        case User.Anon.oauth_signup(pid, {params, partial}) do
         #case Auth.Manager.oauth_signup(Auth.Manager, {params, partial}) do
           {:error, error} ->
             conn

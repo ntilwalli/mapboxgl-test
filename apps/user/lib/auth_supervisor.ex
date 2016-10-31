@@ -1,14 +1,12 @@
 defmodule User.Auth.Supervisor do
   use Supervisor
 
-  @name User.Auth.Supervisor
-
-  def start_link(opts \\ []) do
-    Supervisor.start_link(__MODULE__, :ok, [name: @name])
+  def start_link(name) do
+    Supervisor.start_link(__MODULE__, :ok, name: name)
   end
 
-  def start_user(user) do
-    Supervisor.start_child(@name, [[user: user], []])
+  def start_user(server, user) do
+    Supervisor.start_child(server, [user])
   end
 
   def init(:ok) do 

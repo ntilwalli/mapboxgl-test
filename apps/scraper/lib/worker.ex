@@ -6,14 +6,14 @@ defmodule Scraper.Worker do
   end
 
   def init(:ok) do
-    work()
+    #work()
     schedule_work()
     {:ok, []}
   end
 
   def handle_info(:work, state) do
     #IO.puts "Processing"
-    work()
+    #work()
     schedule_work()
     {:noreply, state}
   end

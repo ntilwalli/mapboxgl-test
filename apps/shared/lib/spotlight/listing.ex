@@ -8,7 +8,12 @@ defmodule Shared.Listing do
   # alias When.Recurring
   # alias When.Once
 
-  @derive {Poison.Encoder, except: [:__meta__, :user_listings, :source, :child_listings, :sort_id]}
+  @derive {Poison.Encoder, except: [
+    :__meta__, :sort_id, :source, :user, :user_listings, 
+    :child_listings, :single_listing_search, :single_listing_categories, 
+    :single_listing_event_types, :inserted_at, :updated_at
+  ]}
+
   @primary_key {:id, :id, autogenerate: true}
   schema "listings" do
     field :sort_id, :id
@@ -31,6 +36,8 @@ defmodule Shared.Listing do
     has_one :user_listings, Shared.UserListing
     has_many :child_listings, Shared.ChildListing
     has_one :single_listing_search, Shared.SingleListingSearch
+    has_many :single_listing_categories, Shared.SingleListingCategories
+    has_many :single_listing_event_types, Shared.SingleListingEventTypes
 
     timestamps
   end

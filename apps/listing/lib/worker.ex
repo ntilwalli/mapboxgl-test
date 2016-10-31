@@ -8,7 +8,7 @@ defmodule Listing.Worker do
   alias Shared.Listing, as: ListingTable
   alias Shared.SingleListingSearch, as: SLSearch
   alias Shared.SingleListingCategories, as: SLCategories
-  alias Shared.SingleListingTypes, as: SLTypes
+  alias Shared.SingleListingEventTypes, as: SLEventTypes
 
 
   def start_link(listing, registry_name) do
@@ -97,7 +97,7 @@ defmodule Listing.Worker do
                 end)
               event_types = listing.event_types
               type_results = Enum.map(event_types, fn x -> 
-                  type_row = %SLTypes{type: x, listing_id: listing_id}
+                  type_row = %SLEventTypes{type: x, listing_id: listing_id}
                   Repo.insert(type_row)
                 end)
             end) do
