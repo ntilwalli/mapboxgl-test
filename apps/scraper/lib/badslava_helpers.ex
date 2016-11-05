@@ -56,11 +56,12 @@ defmodule Scraper.BadslavaScraper.Helpers do
       #IO.inspect host_info, label: "host_info"
     end
 
-    extracted = {when_info, sign_up_info, check_in_info, cost_info, stage_time_info, performer_limit_info, categories, contact_info, host_info}
+    _extracted = {when_info, sign_up_info, check_in_info, cost_info, stage_time_info, performer_limit_info, categories, contact_info, host_info}
 
     meta_info = %{
       type: "badslava",
       sign_up: sign_up_info,
+      stage_time: stage_time_info,
       check_in: check_in_info,
       cost: cost_info,
       contact: contact_info,
@@ -400,7 +401,7 @@ defmodule Scraper.BadslavaScraper.Helpers do
                 %{
                   type: "cover_or_purchase_time", 
                   data: %{
-                    cover: cover, 
+                    cover: cover.cover, 
                     upgrades: [%{
                       type: %{type: "pay_with_max", data: [1, 10]},
                       item: %{type: "stage_time", data: 1}
@@ -413,7 +414,7 @@ defmodule Scraper.BadslavaScraper.Helpers do
                 %{
                   type: "cover_plus_upgrades", 
                   data: %{
-                    cover: cover, 
+                    cover: cover.cover, 
                     upgrades: [%{
                       type: %{type: "purchase", data: 1},
                       item: %{type: "additional_stage_time", data: 2}
@@ -426,9 +427,9 @@ defmodule Scraper.BadslavaScraper.Helpers do
             cond do 
               Regex.match?(~r/\$\d mic \+ 1 purchased/i, note) -> true
                %{
-                  type: "purchase_minimum_plus_upgrades", 
+                  type: "minimum_purchase_plus_upgrades", 
                   data: %{
-                    minimum_purchase: qty, 
+                    minimum_purchase: qty.minimum_purchase, 
                     upgrades: [%{
                       type: %{type: "pay", data: 5},
                       item: %{type: "priority_order"}
@@ -487,6 +488,7 @@ defmodule Scraper.BadslavaScraper.Helpers do
 
   defp extract_stage_time_info(listing) do
     note_string = listing["note"]
+
     case note_string do
       nil -> nil
       note -> 
@@ -512,6 +514,8 @@ defmodule Scraper.BadslavaScraper.Helpers do
                 [%{type: "range", data: [convert_num_val(first)/1, convert_num_val(second)/1]}]
             end
 
+            # IO.inspect note_string
+            # IO.inspect stage_time
             stage_time
         end
     end
@@ -519,7 +523,7 @@ defmodule Scraper.BadslavaScraper.Helpers do
 
   defp get_stage_time_regexes do
     [
-      ~r/(?<first>one|two|three|four|five|six|seven|eight|nine|10|1|2|3|4|5|6|7|8|9|10|\d\.\d) ?-? ?(?<second>one|two|three|four|five|six|seven|eight|nine|10|1|2|3|4|5|6|7|8|9|10|\d\.\d)? ?min(?:utes)?/i,
+      ~r/(?<first>one|two|three|four|five|six|seven|eight|nine|10|1|2|3|4|5|6|7|8|9|10|\d\.\d) ?-? ?(?<second>one|two|three|four|five|six|seven|eight|nine|10|1|2|3|4|5|6|7|8|9|10|\d\.\d)? ?min(?:s|utes)?/i,
     ]
   end
 

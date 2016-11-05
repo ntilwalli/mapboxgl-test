@@ -1,0 +1,87 @@
+.one-day-grid {
+  width: 100%;
+  .result {
+    display: flex;
+    flex-wrap: wrap;
+    border-width: 0 0 1px;
+    border-style: solid;
+    border-color: black;
+
+    .left, .right {
+      width: 50%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    // .left {
+    //   justify-content: flex-start;
+    // }
+
+    // .right {
+    //   justify-content: flex-start;
+    // }
+
+  }
+
+  // .result-name, .result-begins, .result-began, .result-ends, .result-ended, .result-donde {
+  //   display: flex;
+  //   justify-content
+  // }
+
+  .result-cost, .result-status, .result-stage-time, .result-sign-up-begins, .result-sign-up-methods {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .result:hover {
+    background-color: lightgray;
+  }
+
+  .round-one::before {
+    content: 'Round 1:'
+  }
+  .round-two::before {
+    content: 'Round 2:'
+  }
+
+  .time {
+    margin-left: 0.5rem;
+  }
+  .begins::before {
+    content: 'Begins:'
+  }
+
+  .began::before {
+    content: 'Began:'
+  }
+
+  .ends::before {
+    content: 'Ends:'
+  }
+
+  .ended::before {
+    content: 'Ended:'
+  }
+
+  .past {
+    color: gray;
+    font-style: italic;
+  }
+  .recent-past {
+    color: #A00000;
+    font-style: italic;
+  }
+  // .future {
+
+  // }
+  .near-future {
+    color: orange;
+  }
+  .in-progress {
+    color: green;
+  }
+}
+
+// .one-day-grid:first-child {
+//     border-top: 1px solid black;
+// }

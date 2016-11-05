@@ -35,7 +35,8 @@ defmodule Candle.Mixfile do
        :gettext,
        :shared,
        :auth,
-       :user
+       :user,
+        :listing,
     ]]
   end
 

@@ -5,7 +5,7 @@ defmodule User.Anon do
   import Ecto.Query.API, only: [fragment: 1]
   import Shared.Macro.GeoGeography
   alias Shared.Repo
-  alias Shared.Model.Search.Query
+  alias Shared.Model.Search.Query, as: SearchQuery
   
   def start_link(anonymous_id) do
     GenServer.start_link(__MODULE__, {:ok, anonymous_id}, [])
@@ -68,7 +68,7 @@ defmodule User.Anon do
     end
   end
 
-  def handle_call({:search, %Query{} = query} , _from, state) do
+  def handle_call({:search, %SearchQuery{} = query} , _from, state) do
     listings = User.Helpers.search(query)
 
     {:reply, {:ok, listings}, state}

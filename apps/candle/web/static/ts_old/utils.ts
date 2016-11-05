@@ -84,7 +84,7 @@ export function renderAlerts(state) {
 
 export function defaultNever(component, sinkName) {
   const out = component[sinkName] || O.never()
-  return out.publish().refCount()
+  return out
 }
 
 export function defaultUndefined(component, sinkName) {
@@ -146,13 +146,13 @@ export function mergeSinks(...components) {
 export function normalizeComponent(component) {
   return spread(component, {
     DOM: defaultNever(component, `DOM`).publish().refCount(),
-    // MapJSON: defaultNever(component, 'MapJSON').publish().refCount(),
-    // Router: defaultNever(component, `Router`).publish().refCount(),
+    MapJSON: defaultNever(component, 'MapJSON').publish().refCount(),
+    Router: defaultNever(component, `Router`).publish().refCount(),
     Global: defaultNever(component, `Global`).publish().refCount(),
     Storage: defaultNever(component, `Storage`).publish().refCount(),
-    HTTP: defaultNever(component, `HTTP`).publish().refCount()//,
-    // Heartbeat: defaultNever(component, `Heartbeat`).publish().refCount(),
-    // message$: defaultNever(component, `message$`).publish().refCount(),
+    HTTP: defaultNever(component, `HTTP`).publish().refCount(),
+    Heartbeat: defaultNever(component, `Heartbeat`).publish().refCount(),
+    message$: defaultNever(component, `message$`).publish().refCount(),
   })
 }
 

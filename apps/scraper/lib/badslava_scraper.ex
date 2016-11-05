@@ -107,7 +107,7 @@ defmodule Scraper.BadslavaScraper do
     
     created = Enum.map(create, fn x -> 
       converted = convert(x)
-      IO.inspect converted
+      #IO.inspect converted
       {:ok, result} = info = Listing.Registry.create(Listing.Registry, converted, user) 
       #IO.inspect result
 

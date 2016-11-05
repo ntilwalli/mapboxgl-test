@@ -1,0 +1,19 @@
+.one-day-calendar {
+  display: flex;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+}
+
+.retrieving-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+
+  .loader-container {
+    display: flex;
+  }
+}
+
+@import '_grid';

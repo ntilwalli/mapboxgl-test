@@ -8,6 +8,7 @@ defmodule User.Auth do
   
   import Ecto.Query, only: [from: 2, first: 1]
   alias Ecto.Multi
+  alias Shared.Model.Search.Query, as: SearchQuery
 
   def start_link(user) do
     GenServer.start_link(__MODULE__, {:ok, user}, [])
@@ -31,8 +32,9 @@ defmodule User.Auth do
     {:stop, :normal, :ok, nil}
   end
 
-  def handle_call({:search, query} , _from, state) do
-    {:reply, {:ok, []}, state}
+  def handle_call({:search, %SearchQuery{} = query} , _from, state) do
+    listings = User.Helpers.search(query)
+    {:reply, {:ok, listings}, state}
   end
 
 

@@ -3,10 +3,10 @@ defmodule User.Helpers do
   import Ecto.Query.API, only: [fragment: 1]
   import Shared.Macro.GeoGeography
   alias Shared.Repo
-  alias Shared.Model.Search.Query
+  alias Shared.Model.Search.Query, as: SearchQuery
 
-  def search(%Query{} = query) do
-    %Query{begins: begins, ends: ends, center: %{lng: lng, lat: lat}, radius: radius} = query
+  def search(%SearchQuery{} = query) do
+    %SearchQuery{begins: begins, ends: ends, center: %{lng: lng, lat: lat}, radius: radius} = query
     point = %Geo.Point{coordinates: {lng, lat}, srid: 4326}
     query = from s in Shared.SingleListingSearch,
         preload: :listing,
@@ -17,7 +17,7 @@ defmodule User.Helpers do
         select: {st_distance_geog(s.geom, ^point), s}
 
     results = Repo.all(query)
-    listings = for {_, sls} <- results, do: sls.listing
+    listings = for {distance, sls} <- results, do: %{distance: distance, listing: sls.listing}
     listings
   end
 end

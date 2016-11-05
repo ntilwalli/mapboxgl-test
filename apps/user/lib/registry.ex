@@ -96,13 +96,13 @@ defmodule User.Registry do
       nil -> 
         # Logger.debug "Generating new UUID..."
         uuid = to_string(Ecto.UUID.autogenerate())
-        {:ok, pid} = User.Anon.Supervisor.start_user(uuid)
+        {:ok, pid} = User.Anon.Supervisor.start_user(anon_supervisor, uuid)
         ref = Process.monitor(pid)
         # IO.puts "Adding anon process..."
         # IO.inspect pid
         anon = Map.put(anon, uuid, pid)
         anon_ref = Map.put(anon_ref, ref, uuid)
-        {:reply, uuid, %{%{state | anon: anon} | anon_ref: anon_ref}}
+        {:reply, uuid, %{state | anon: anon, anon_ref: anon_ref}}
       a_id ->
         # IO.puts "Using existing anonymous_id: #{a_id}"
         case Map.get(anon, a_id) do
@@ -113,7 +113,7 @@ defmodule User.Registry do
             # IO.inspect pid
             anon = Map.put(anon, a_id, pid)
             anon_ref = Map.put(anon_ref, ref, a_id)
-            {:reply, a_id, %{%{state | anon: anon} | anon_ref: anon_ref}}
+            {:reply, a_id, %{state | anon: anon, anon_ref: anon_ref}}
           pid -> 
             #   IO.puts "Existing anonymous PID"
             #   IO.inspect pid
