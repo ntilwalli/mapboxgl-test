@@ -1,4 +1,5 @@
 .one-day-grid {
+  padding-top: 3rem;
   width: 100%;
   .result {
     display: flex;
@@ -28,7 +29,9 @@
   //   justify-content
   // }
 
-  .result-cost, .result-status, .result-stage-time, .result-sign-up-begins, .result-sign-up-methods {
+  .result-cost, .result-status, .result-stage-time, 
+  .result-sign-up-begins, .result-sign-up-methods,
+  .result-performer-limit {
     display: flex;
     justify-content: flex-end;
   }

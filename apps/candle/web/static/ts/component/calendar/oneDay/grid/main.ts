@@ -19,7 +19,7 @@ function main(sources, inputs) {
   const actions = intent(sources)
   const state$ = model(actions, inputs)
 
-  const vtree$ = view(state$)
+  const vtree$ = view(state$) 
 
   return {
     DOM: vtree$

@@ -5,8 +5,8 @@ defmodule Shared.Repo.Migrations.CreateListingTables do
     create table(:listings, primary_key: false) do
       add :id, :bigserial, primary_key: true
       add :sort_id, :bigint, default: fragment("next_insta_id()")
-      add :parent_id, :bigint
-      add :user_id, references(:users, on_delete: :delete_all, type: :bigserial), null: false
+      add :parent_id, references(:listings, on_delete: :delete_all, type: :bigint)
+      add :user_id, references(:users, on_delete: :delete_all), null: false
       add :type, :string, null: false
       add :name, :string
       add :event_types, {:array, :string}, null: false

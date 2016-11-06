@@ -6,7 +6,7 @@ defmodule Shared.Repo.Migrations.CreateEventsTables do
     create table(:single_listing_search, primary_key: false) do
       add :begins, :utc_datetime, null: false
       add :geom, :geometry, null: false
-      add :listing_id, references(:listings, type: :bigserial), primary_key: true
+      add :listing_id, references(:listings, on_delete: :delete_all, type: :bigserial), primary_key: true
     end
 
     create index(:single_listing_search, :begins)

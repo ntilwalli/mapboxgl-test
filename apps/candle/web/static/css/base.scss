@@ -22,9 +22,21 @@ html, body {
   font-family: 'Fixedsys Excelsior 3.01';//'Akkurat Regular';//"Corona4Typewriter";
 }
 
+button, input {
+  font-family: 'Fixedsys Excelsior 3.01';
+}
+
 #app-main {
   height: 100%;
   width: 100%;
+}
+
+.no-scroll {
+  overflow: hidden;
+}
+
+.disabled {
+  color: lightgray;
 }
 
 @import 'component/_index';

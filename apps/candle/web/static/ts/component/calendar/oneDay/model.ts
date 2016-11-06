@@ -1,6 +1,7 @@
 import {Observable as O} from 'rxjs'
 import Immutable = require('immutable')
 import {combineObj} from '../../../utils'
+import {getDefaultFilters} from './helpers'
 import moment = require('moment')
 
 const log = console.log.bind(console)
@@ -15,11 +16,12 @@ const geoToLngLat = x => {
 
 function reducers(actions, inputs) {
   const retrieveR = inputs.retrieve$.map(_ => state => {
+    //console.log(`Retrieval status updated...`)
     return state.set(`retrieving`, true)
   })
 
   const resultsR = actions.results$.map(results => state => {
-    //console.log(`Received new search results...`)
+    //console.log(`Search results updated...`)
     return state.set(`results`, results).set(`retrieving`, false)
   })
 
@@ -28,8 +30,8 @@ function reducers(actions, inputs) {
     .switchMap(preferences => {
       return actions.geolocation$.take(1).map(geolocation => ({preferences, geolocation}))
     })
-    //.do(x => console.log(`userPositionR:`, x))
     .map(({preferences, geolocation}) => state => {
+      //console.log(`userPosition updated...`)
       if (geolocation.type === "position") {
         return state.set(`searchPosition`, {type: "user", data: geoToLngLat(geolocation)})
       } else {
@@ -42,16 +44,45 @@ function reducers(actions, inputs) {
   const homePositionR = inputs.preferences$
     .filter(onlyHomeLocation)
     .map(preferences => state => {
+      //console.log(`homePosition updated...`)
       return state.searchPosition = {type: "home", data: preferences.homeLocation.position}
     })
 
   const overridePositionR = inputs.preferences$
     .filter(onlyOverrideLocation)
     .map(preferences => state => {
+      //console.log(`overridePosition updated...`)
       return state.searchPosition = {type: "override", data: preferences.overrideLocation.position}
     })
 
-  return O.merge(retrieveR, resultsR, userPositionR, homePositionR, overridePositionR)
+  const changeDateR = actions.changeDate$
+    .map(val => state => {
+      //console.log(`changeDate...`)
+      return state.update(`searchDateTime`, x => {
+        return x.clone().add(val, 'days')
+      }).set(`results`, [])
+    })
+  
+  const showFiltersR = actions.showFilters$.map(_ => state => {
+    //console.log(`show filters...`)
+    return state.set(`showFilters`, true)
+  })
+
+  const hideFiltersR = inputs.hideFilters$.map(_ => state => {
+    return state.set(`showFilters`, false)
+  })
+
+  const updateFiltersR = inputs.updateFilters$.map(val => state => {
+    //console.log(`update filters:`, val)
+    return state.set(`showFilters`, false).set(`filters`, val)
+  })
+
+  return O.merge(
+    retrieveR, resultsR, userPositionR, 
+    homePositionR, overridePositionR,
+    changeDateR, showFiltersR, hideFiltersR,
+    updateFiltersR
+  )
 }
 
 function getInitialSearchPosition(preferences) {
@@ -84,13 +115,15 @@ export default function model(actions, inputs) {
     })
     .switchMap((info: any) => {
       const {preferences, cached} = info
-      //console.log(`Use cached: `, useCached(cached))
+      //console.log(`Cached:`, cached)
       return reducer$
         .startWith(Immutable.Map({
           results: useCached(cached) ? cached.results : undefined,
           searchDateTime: moment(),
           searchPosition: getInitialSearchPosition(preferences),
-          retrieving: false
+          retrieving: false,
+          showFilters: false,
+          filters: (cached && cached.filters) || getDefaultFilters()
         }))
         .scan((acc, f: Function) => f(acc))
     })

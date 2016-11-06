@@ -15,65 +15,124 @@ html, body {
   height: 100%;
   font-family: 'Fixedsys Excelsior 3.01'; }
 
+button, input {
+  font-family: 'Fixedsys Excelsior 3.01'; }
+
 #app-main {
   height: 100%;
   width: 100%; }
 
+.no-scroll {
+  overflow: hidden; }
+
+.disabled {
+  color: lightgray; }
+
 .one-day-calendar {
-  display: flex;
-  justify-content: center;
   height: 100%;
   width: 100%; }
-
-.retrieving-panel {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%; }
-  .retrieving-panel .loader-container {
-    display: flex; }
-
-.one-day-grid {
-  width: 100%; }
-  .one-day-grid .result {
+  .one-day-calendar .retrieving-panel {
     display: flex;
-    flex-wrap: wrap;
-    border-width: 0 0 1px;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%; }
+    .one-day-calendar .retrieving-panel .loader-container {
+      display: flex; }
+  .one-day-calendar .controller {
+    position: fixed;
+    background-color: white;
+    border-color: black;
     border-style: solid;
-    border-color: black; }
-    .one-day-grid .result .left, .one-day-grid .result .right {
-      width: 50%;
-      display: flex;
-      flex-direction: column; }
-  .one-day-grid .result-cost, .one-day-grid .result-status, .one-day-grid .result-stage-time, .one-day-grid .result-sign-up-begins, .one-day-grid .result-sign-up-methods {
+    border-width: 0 0 1px;
+    height: 3rem;
+    width: 100%;
     display: flex;
-    justify-content: flex-end; }
-  .one-day-grid .result:hover {
-    background-color: lightgray; }
-  .one-day-grid .round-one::before {
-    content: "Round 1:"; }
-  .one-day-grid .round-two::before {
-    content: "Round 2:"; }
-  .one-day-grid .time {
-    margin-left: 0.5rem; }
-  .one-day-grid .begins::before {
-    content: "Begins:"; }
-  .one-day-grid .began::before {
-    content: "Began:"; }
-  .one-day-grid .ends::before {
-    content: "Ends:"; }
-  .one-day-grid .ended::before {
-    content: "Ended:"; }
-  .one-day-grid .past {
-    color: gray;
-    font-style: italic; }
-  .one-day-grid .recent-past {
-    color: #A00000;
-    font-style: italic; }
-  .one-day-grid .near-future {
-    color: orange; }
-  .one-day-grid .in-progress {
-    color: green; }
+    justify-content: space-between;
+    align-items: center; }
+    .one-day-calendar .controller button {
+      border: none;
+      background-color: transparent; }
+    .one-day-calendar .controller button:focus {
+      outline: none; }
+    .one-day-calendar .controller .date-controller {
+      display: flex; }
+      .one-day-calendar .controller .date-controller .date-display {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 9.5rem; }
+      .one-day-calendar .controller .date-controller .past {
+        font-style: italic;
+        color: gray; }
+      .one-day-calendar .controller .date-controller .add-day:hover {
+        color: orange; }
+      .one-day-calendar .controller .date-controller .subtract-day:hover {
+        color: orange; }
+    .one-day-calendar .controller .show-filters:hover {
+      color: orange; }
+  .one-day-calendar .one-day-grid {
+    padding-top: 3rem;
+    width: 100%; }
+    .one-day-calendar .one-day-grid .result {
+      display: flex;
+      flex-wrap: wrap;
+      border-width: 0 0 1px;
+      border-style: solid;
+      border-color: black; }
+      .one-day-calendar .one-day-grid .result .left, .one-day-calendar .one-day-grid .result .right {
+        width: 50%;
+        display: flex;
+        flex-direction: column; }
+    .one-day-calendar .one-day-grid .result-cost, .one-day-calendar .one-day-grid .result-status, .one-day-calendar .one-day-grid .result-stage-time,
+    .one-day-calendar .one-day-grid .result-sign-up-begins, .one-day-calendar .one-day-grid .result-sign-up-methods,
+    .one-day-calendar .one-day-grid .result-performer-limit {
+      display: flex;
+      justify-content: flex-end; }
+    .one-day-calendar .one-day-grid .result:hover {
+      background-color: lightgray; }
+    .one-day-calendar .one-day-grid .round-one::before {
+      content: "Round 1:"; }
+    .one-day-calendar .one-day-grid .round-two::before {
+      content: "Round 2:"; }
+    .one-day-calendar .one-day-grid .time {
+      margin-left: 0.5rem; }
+    .one-day-calendar .one-day-grid .begins::before {
+      content: "Begins:"; }
+    .one-day-calendar .one-day-grid .began::before {
+      content: "Began:"; }
+    .one-day-calendar .one-day-grid .ends::before {
+      content: "Ends:"; }
+    .one-day-calendar .one-day-grid .ended::before {
+      content: "Ended:"; }
+    .one-day-calendar .one-day-grid .past {
+      color: gray;
+      font-style: italic; }
+    .one-day-calendar .one-day-grid .recent-past {
+      color: #A00000;
+      font-style: italic; }
+    .one-day-calendar .one-day-grid .near-future {
+      color: orange; }
+    .one-day-calendar .one-day-grid .in-progress {
+      color: green; }
+  .one-day-calendar .filters-dialog .switch-section {
+    padding-bottom: 1rem; }
+    .one-day-calendar .filters-dialog .switch-section .choice-row {
+      display: flex;
+      justify-content: space-between;
+      flex-flow: row wrap;
+      margin-bottom: .5rem; }
+    .one-day-calendar .filters-dialog .switch-section .title {
+      margin-left: .5rem;
+      margin-right: 2rem; }
+    .one-day-calendar .filters-dialog .switch-section .content {
+      display: flex;
+      justify-content: flex-start;
+      flex-flow: row wrap;
+      margin: .5rem 2rem; }
+  .one-day-calendar .filters-dialog .stage-time-input {
+    width: 1.5rem;
+    margin-right: 1rem; }
 
 .loader {
   font-size: 10px;
@@ -131,5 +190,60 @@ html, body {
   100% {
     -webkit-transform: rotate(360deg);
     transform: rotate(360deg); } }
+.modal-component {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  z-index: 1000; }
+  .modal-component .modal-backdrop {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); }
+  @media (max-width: 767px) {
+    .modal-component .modal-dialog {
+      height: 100%;
+      width: 100%;
+      background-color: white; } }
+  @media (min-width: 768px) {
+    .modal-component .modal-dialog {
+      display: flex;
+      width: 25rem;
+      height: 25rem;
+      background-color: white; } }
+  .modal-component .modal-header {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-content: center; }
+    .modal-component .modal-header .modal-title {
+      display: flex;
+      flex: 1 1 auto;
+      justify-content: center;
+      align-items: center;
+      height: 2.5rem; }
+    .modal-component .modal-header .close {
+      position: absolute;
+      top: 0;
+      right: 0;
+      padding: 0 .5rem; }
+    .modal-component .modal-header .close:hover {
+      color: lightgray;
+      cursor: default; }
+  .modal-component .modal-body {
+    margin: 1rem; }
+  .modal-component .modal-footer {
+    display: flex;
+    justify-content: center; }
+  .modal-component .modal-content {
+    width: 100%;
+    height: 100%; }
+
+.smart-text-input .text-input {
+  width: 1rem; }
 
 /*# sourceMappingURL=base.css.map */

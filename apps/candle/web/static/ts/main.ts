@@ -12,13 +12,22 @@ import {normalizeComponent, spread} from './utils'
 
 import Preferences from  './component/preferences/main'
 import OneDayCalendar from './component/calendar/oneDay/main'
+import SmartTextInput from './library/smartTextInput'
 
 function main(sources) {
   
   const preferences$ = Preferences(sources)
   const inputs = {preferences$}
-  const oneDayCalendar = OneDayCalendar(sources, inputs)
-  return oneDayCalendar
+  const out = OneDayCalendar(sources, inputs)
+  // const out = SmartTextInput(sources, {props$: O.of(23), parser: x => {
+  //   const val = parseInt(x); 
+  //   if (isNaN(val)) {
+  //     return {value: x, errors: [`Must be a number`]}
+  //   } else {
+  //     return {value: val, errors: []}
+  //   }
+  // }})
+  return normalizeComponent(out)
 
   // return normalizeComponent({
   //   DOM: O.of(div([`Hello`]))

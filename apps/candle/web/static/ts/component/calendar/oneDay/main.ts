@@ -9,31 +9,66 @@ import intent from './intent'
 import model from './model'
 import view from './view'
 import Grid from './grid/main'
+import DoneModal from '../../../library/doneModal'
+import Filters from './filters'
 
 const log = console.log.bind(console)
+const shouldRefreshSearch = (x, y) => {
+  console.log(x, y)
+  const x_dt = x.searchDateTime
+  const y_dt = y.searchDateTime
+  return x_dt.isSame(y_dt)
+}
 
 function main(sources, inputs) {
   const actions = intent(sources)
   const retrieve$ = createProxy()
+  const hideFilters$ = createProxy()
+  const updateFilters$ = createProxy()
 
-  const state$ = model(actions, spread({retrieve$}, inputs))
+  const state$ = model(actions, spread({retrieve$, hideFilters$, updateFilters$}, inputs))
   const grid = Grid(sources, {
-    props$: state$
-      .pluck(`results`).distinctUntilChanged(null, x => x)
+    props$: state$.map(x => {
+        return {results: x.results, filters: x.filters}
+      })
+      .distinctUntilChanged(null, x => x),
   })
 
+  const filtersModal$ = state$.pluck(`showFilters`)
+    .map(val => {
+      if (val) {
+        return DoneModal(sources, {
+          props$: O.of({title: `Filters`}),
+          initialState$: state$.pluck(`filters`).take(1),
+          content: Filters
+        })
+      } else {
+        return {
+          DOM: O.of(null),
+          close$: O.never(),
+          done$: O.never()
+        }
+      }
+    })
+    .publishReplay(1).refCount()
+
+
+  hideFilters$.attach(filtersModal$.switchMap(x => x.close$))
+  updateFilters$.attach(filtersModal$.switchMap(x => x.done$))
+
   const components = {
-    grid$: grid.DOM
+    grid$: grid.DOM,
+    filters$: filtersModal$.switchMap(x => x.DOM)
   }
   const vtree$ = view(state$, components).publishReplay(1).refCount()
 
   const toHTTP$ = state$
-    .filter((state: any) => state.searchPosition && state.searchPosition)
+    .filter((state: any) => state.searchDateTime && state.searchPosition)
     .map((state: any) => ({
       searchDateTime: state.searchDateTime,
       searchPosition: state.searchPosition
     }))
-    .distinctUntilChanged(deepEqual, x => x)
+    .distinctUntilChanged(deepEqual)
     .map((info: any) => {
       const {searchDateTime, searchPosition} = info
       return {
@@ -43,8 +78,8 @@ function main(sources, inputs) {
         send: {
           route: "/search",
           data: {
-            begins: searchDateTime.clone().add(3, 'day').startOf('day'),
-            ends: searchDateTime.clone().add(3, 'day').endOf('day'),
+            begins: searchDateTime.clone().startOf('day'),
+            ends: searchDateTime.clone().endOf('day'),
             center: searchPosition.data,
             radius: 10000
           }
@@ -60,9 +95,12 @@ function main(sources, inputs) {
   return {
     DOM: vtree$,
     HTTP: retrieve$,
-    Storage: state$.map((state: any) => ({
+    Storage: state$
+      .filter((state: any) => state.searchDateTime && state.results && state.filters)
+      .map((state: any) => ({
         results: state.results,
-        searchDateTime: state.searchDateTime.toDate()
+        searchDateTime: state.searchDateTime.toDate(),
+        filters: state.filters
       }))
       .map(val => ({
         action: "setItem",

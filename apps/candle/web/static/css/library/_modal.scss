@@ -1,0 +1,84 @@
+.modal-component {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  z-index: 1000; // Mapbox zoom component has 999 so go one greater
+
+
+  .modal-backdrop {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    height: 100%;
+    //background-color: blue;
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+
+  @media (max-width: 767px) {
+    .modal-dialog {
+      height: 100%;
+      width: 100%;
+      background-color: white;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .modal-dialog {
+      display: flex;
+      width: 25rem;
+      height: 25rem;
+      background-color: white;
+    }
+  }
+
+  .modal-header {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-content: center;
+
+    .modal-title {
+      display: flex;
+      flex: 1 1 auto;
+      justify-content: center;
+      align-items: center;
+      height: 2.5rem;
+    }
+
+    .close {
+      position: absolute;
+      top: 0;
+      right: 0;
+      padding: 0 .5rem;
+    }
+
+    .close:hover {
+      color: lightgray;
+      cursor: default;
+    }
+  }
+
+  .modal-body {
+    margin: 1rem;
+  }
+
+  .modal-footer {
+    display: flex;
+    justify-content: center;;
+
+    // button {
+    //   background-color: gray;
+    // }
+  }
+
+  .modal-content {
+    width: 100%;
+    height: 100%;
+  }
+
+
+}

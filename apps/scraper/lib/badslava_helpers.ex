@@ -403,7 +403,7 @@ defmodule Scraper.BadslavaScraper.Helpers do
                   data: %{
                     cover: cover.cover, 
                     upgrades: [%{
-                      type: %{type: "pay_with_max", data: [1, 10]},
+                      type: %{type: "pay_with_min_max", data: [1, 10]},
                       item: %{type: "stage_time", data: 1}
                     }]
                   }

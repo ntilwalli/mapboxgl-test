@@ -1,6 +1,7 @@
 import {Observable as O} from 'rxjs'
 import Immutable = require('immutable')
 import {combineObj} from '../../../../utils'
+import {getDefaultFilters} from '../helpers'
 
 const log = console.log.bind(console)
 
@@ -12,10 +13,12 @@ export default function model(actions, inputs) {
   const reducer$ = reducers(actions, inputs)
 
   return inputs.props$
-    .map(events => {
-      const isValid = Array.isArray(events) && events
+    .map((info: any) => {
+      const {results, filters} = info
+      const isValid = Array.isArray(results) && results
       return Immutable.Map({
-        events: isValid ? events : []
+        results: isValid ? results : [],
+        filters: filters || getDefaultFilters()
       })
     })
     .switchMap(init => {

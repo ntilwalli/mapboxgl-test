@@ -17,27 +17,6 @@ const inflate = x => {
   if (begins) {
     const inflated_begins = moment(begins)
     listing.cuando.begins = inflated_begins
-
-    // if (sign_up) {
-    //   if (sign_up.begins) {
-    //     meta.sign_up.begins = inflated_begins.clone().add(sign_up.begins, 'minutes')
-    //   }
-
-    //   if (sign_up.ends) {
-    //     meta.sign_up.ends = inflated_begins.clone().add(sign_up.ends, 'minutes')
-    //   }
-    // }
-
-    // if (check_in) {
-    //   if (check_in.begins) {
-    //     meta.check_in.begins = inflated_begins.clone().add(check_in.begins, 'minutes')
-    //   }
-
-    //   if (check_in.ends) {
-    //     meta.check_in.ends = inflated_begins.clone().add(check_in.ends, 'minutes')
-    //   }
-    // }
-
   }
 
   if (ends) {
@@ -47,10 +26,8 @@ const inflate = x => {
   return x
 }
 
-
-
 export default function intent(sources) {
-  const {HTTP, Global} = sources
+  const {DOM, HTTP, Global} = sources
   const {good$, bad$, ugly$} = processHTTP(sources, `searchOneDay`)
   const success$ = good$
     .filter(onlySuccess)
@@ -75,10 +52,21 @@ export default function intent(sources) {
       return stored
     })
 
+  const addDay$ = DOM.select(`.appAddDay`).events(`click`)
+    .mapTo(1)
+  const subtractDay$ = DOM.select(`.appSubtractDay`).events(`click`)
+    .mapTo(-1)
+
+  const changeDate$ = O.merge(addDay$, subtractDay$)
+
+  const showFilters$ = DOM.select(`.appShowFilters`).events(`click`)
+
   return {
     results$: success$,
     cached$,
-    geolocation$
+    geolocation$,
+    changeDate$,
+    showFilters$
   }
 }
 

@@ -1,0 +1,52 @@
+.controller {
+  position: fixed;
+  background-color: white;
+  border-color: black;
+  border-style: solid;
+  border-width: 0 0 1px;
+  height: 3rem;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  button {
+    border: none;
+    background-color: transparent;
+  }
+
+  button:focus {
+    outline: none;
+  }
+
+  .date-controller {
+    display: flex;
+    .date-display {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 9.5rem;
+    }
+
+    .past {
+      font-style: italic;
+      color: gray;
+    }
+
+    // .today {
+    //   color: green
+    // }
+
+    .add-day:hover {
+      color: orange;
+    }
+
+    .subtract-day:hover {
+      color: orange;
+    }
+  }
+
+  .show-filters:hover {
+    color: orange;
+  }
+}
