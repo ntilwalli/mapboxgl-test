@@ -3,7 +3,6 @@ import {normalizeComponent} from './utils'
 import LeftMenuModal from './library/leftMenuModal'
 
 function getModal(type, sources, inputs): any {
-  console.log(type)
   if (type === "leftMenu") {
     return LeftMenuModal(sources, inputs)
   } else {

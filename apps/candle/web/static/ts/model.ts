@@ -3,7 +3,6 @@ import Immutable = require('immutable')
 
 function reducers(actions, inputs) {
   const showMenuR = inputs.showMenu$.map(_ => state => {
-    console.log(`show menu...`)
     return state.set(`modal`, `leftMenu`)
   })
 

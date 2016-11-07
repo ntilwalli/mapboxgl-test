@@ -131,15 +131,15 @@ function mergeSelective(...sinks) {
 }
 
 export function mergeSinks(...components) {
-  const MapJSON = mergeSelective(...components.map(c => c.MapJSON).filter(x => !!x)).publish().refCount()
+  //const MapJSON = mergeSelective(...components.map(c => c.MapJSON).filter(x => !!x)).publish().refCount()
   const HTTP = mergeSelective(...components.map(c => c.HTTP).filter(x => !!x)).publish().refCount()
   const Router = mergeSelective(...components.map(c => c.Router).filter(x => !!x)).publish().refCount()
   const Global = mergeSelective(...components.map(c => c.Global).filter(x => !!x)).publish().refCount()
   const Storage = mergeSelective(...components.map(c => c.Storage).filter(x => !!x)).publish().refCount()
-  const Heartbeat = mergeSelective(...components.map(c => c.Heartbeat).filter(x => !!x)).publish().refCount()
-  const message$ = mergeSelective(...components.map(c => c.message$).filter(x => !!x)).publish().refCount()
+  //const Heartbeat = mergeSelective(...components.map(c => c.Heartbeat).filter(x => !!x)).publish().refCount()
+  const MessageBus = mergeSelective(...components.map(c => c.MessageBus$).filter(x => !!x)).publish().refCount()
   return {
-    MapJSON, HTTP, Router, Global, Storage, Heartbeat, message$
+    HTTP, Router, Global, Storage, MessageBus
   }
 }
 
@@ -150,22 +150,22 @@ export function normalizeComponent(component) {
     Router: defaultNever(component, `Router`).publish().refCount(),
     Global: defaultNever(component, `Global`).publish().refCount(),
     Storage: defaultNever(component, `Storage`).publish().refCount(),
-    HTTP: defaultNever(component, `HTTP`).publish().refCount()//,
+    HTTP: defaultNever(component, `HTTP`).publish().refCount(),
     // Heartbeat: defaultNever(component, `Heartbeat`).publish().refCount(),
-    // message$: defaultNever(component, `message$`).publish().refCount(),
+    MessageBus: defaultNever(component, `MessageBus`).publish().refCount()
   })
 }
 
 export function normalizeComponentStream(component$) {
   return {
     DOM: normalizeSink(component$, `DOM`).publish().refCount(),
-    MapJSON: normalizeSink(component$, `MapJSON`).publish().refCount(),
+    //MapJSON: normalizeSink(component$, `MapJSON`).publish().refCount(),
     Router: normalizeSink(component$, `Router`).publish().refCount(),
     Global: normalizeSink(component$, `Global`).publish().refCount(),
     Storage: normalizeSink(component$, `Storage`).publish().refCount(),
     HTTP: normalizeSink(component$, `HTTP`).publish().refCount(),
-    Heartbeat: normalizeSink(component$, `Heartbeat`).publish().refCount(),
-    message$: normalizeSink(component$, `message$`).publish().refCount(),
+    //Heartbeat: normalizeSink(component$, `Heartbeat`).publish().refCount(),
+    MessageBus: normalizeSink(component$, `MessageBus`).publish().refCount(),
   }
 }
 
