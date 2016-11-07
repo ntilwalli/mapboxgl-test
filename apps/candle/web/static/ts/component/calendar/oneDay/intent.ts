@@ -61,12 +61,16 @@ export default function intent(sources) {
 
   const showFilters$ = DOM.select(`.appShowFilters`).events(`click`)
 
+  const showMenu$ = DOM.select(`.appMenuButton`).events(`click`)
+
+
   return {
     results$: success$,
     cached$,
     geolocation$,
     changeDate$,
-    showFilters$
+    showFilters$,
+    showMenu$
   }
 }
 

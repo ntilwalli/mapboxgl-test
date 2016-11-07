@@ -106,7 +106,9 @@ function main(sources, inputs) {
         action: "setItem",
         key: "calendar/oneDay",
         value: JSON.stringify(val)
-      }))
+      })),
+    showMenu$: actions.showMenu$
+
       //.filter(x => false)
       //.do(x => console.log(`to storage:`, x))
   }

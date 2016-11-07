@@ -41,20 +41,27 @@ function renderDateDisplay(state) {
 
 function renderDateController(state) {
   return span(`.date-controller`, [
-    button(`.appSubtractDay.subtract-day.fa.fa-angle-left.fa-2x`),
+    button(`.appSubtractDay.subtract-day.fa.fa-angle-left.fa-1-5x`),
     renderDateDisplay(state), //span(`.date-display`[`This is the controller`]),
-    button(`.appAddDay.add-day.fa.fa-angle-right.fa-2x`)
+    button(`.appAddDay.add-day.fa.fa-angle-right.fa-1-5x`)
   ])
 }
 
 function renderFiltersController(state) {
   return span(`.filter-controller`, [
-    button(`.appShowFilters.show-filters.fa.fa-cog.fa-2x`)
+    button(`.appShowFilters.show-filters.fa.fa-cog.fa-1-2x`)
+  ])
+}
+
+function renderMenuButton(state) {
+  return span(`.menu-button`, [
+    i(`.appMenuButton.fa.fa-bars.fa-1-2x`, [])
   ])
 }
 
 function renderController(state) {
   return div(`.controller`, [
+    renderMenuButton(state),
     renderDateController(state),
     renderFiltersController(state)
   ])

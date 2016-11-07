@@ -147,7 +147,7 @@ export function normalizeComponent(component) {
   return spread(component, {
     DOM: defaultNever(component, `DOM`).publish().refCount(),
     // MapJSON: defaultNever(component, 'MapJSON').publish().refCount(),
-    // Router: defaultNever(component, `Router`).publish().refCount(),
+    Router: defaultNever(component, `Router`).publish().refCount(),
     Global: defaultNever(component, `Global`).publish().refCount(),
     Storage: defaultNever(component, `Storage`).publish().refCount(),
     HTTP: defaultNever(component, `HTTP`).publish().refCount()//,

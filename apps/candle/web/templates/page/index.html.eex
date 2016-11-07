@@ -15,9 +15,8 @@
     <link rel="stylesheet" href="<%= static_path(@conn, "/css/base.css") %>">
   </head>
   <body>
-    <!-- <iron-icon></iron-icon> -->
     <div id="app-main"></div>
-    <!--<script src="<%= static_path(@conn, "/mapbox/mapbox-gl.js") %>" async></script>-->
+    <script src="<%= static_path(@conn, "/mapbox/mapbox-gl.js") %>" async></script>
     <script src="<%= static_path(@conn, "/js/main.js") %>" async></script>
   </body>
 </html>
