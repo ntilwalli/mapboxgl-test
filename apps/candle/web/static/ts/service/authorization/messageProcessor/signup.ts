@@ -44,15 +44,13 @@ function intent(sources) {
   }
 }
 
-export default function process(sources, message$) {
+export default function process(sources) {
   const actions = intent(sources)
 
-  const signup$ = message$
-    .filter(x => x.type === `signup`)
-    .map(x => x.data)
-    .publish().refCount()
+  const signup$ = sources.MessageBus.address(`/authorization/signup`)
 
   const attempt$ = signup$
+    //.do(x => console.log(`signup message`, x))
     .filter(x => x.type === `attempt`)
     .map(x => x.data)
     .map(x => ({
@@ -62,23 +60,14 @@ export default function process(sources, message$) {
         send: x,
         category: `signup`
     }))
-    .map(x => {
-      return x
-    })
     .publish().refCount()
 
-  const toMessage$ = O.merge(
-    actions.failed$
-      .map(x => ({
-        type: `signup`,
-        data: {
-          type: `error`,
-          data: x
-        }
-      }))
-      .map(x => {
-        return x
-      }),
+  const toMessageBus$ = O.merge(
+      actions.failed$
+        .map(x => ({
+            type: `error`,
+            data: x
+          })),
       attempt$.mapTo({
         type: `waiting`,
         data: true
@@ -87,9 +76,8 @@ export default function process(sources, message$) {
         type: `waiting`,
         data: false
       })
-    ).map(x => {
-      return x
-    })
+    )
+    .map(x => ({to: `/modal/signup`, message: x}))
 
   return {
     HTTP: attempt$,
@@ -101,7 +89,7 @@ export default function process(sources, message$) {
         type: `redirect`,
         data: `/`
       }),
-    message$: toMessage$
+    MessageBus: toMessageBus$
   }
 
 }

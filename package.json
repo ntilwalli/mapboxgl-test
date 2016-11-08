@@ -26,8 +26,8 @@
     "deploy": "rm -rf apps/candle/priv/static && mkdir apps/candle/priv/static && npm run build-js && npm run build-css && npm run copy-bootstrap && npm run build-assets && npm run copy-mapbox-data"
   },
   "dependencies": {
-    "@cycle/dom": "^13.0.0",
-    "@cycle/http": "^11.1.0",
+    "@cycle/dom": "^14.0.0",
+    "@cycle/http": "^11.2.0",
     "@cycle/isolate": "^1.4.0",
     "@cycle/rxjs-run": "^3.0.3",
     "@cycle/storage": "3.0.0-rc3",
@@ -47,7 +47,7 @@
     "phoenix_html": "file:deps/phoenix_html",
     "query-string": "^4.2.2",
     "rrule": "file:custom_deps/rrule",
-    "rxjs": "^5.0.0-rc.1",
+    "rxjs": "^5.0.0-rc.2",
     "superagent": "file:custom_deps/superagent",
     "validator": "^5.2.0",
     "xregexp": "^3.1.1",
@@ -55,6 +55,7 @@
     "xstream": "^7.0.0"
   },
   "devDependencies": {
+    "@types/chai": "^3.4.34",
     "@types/deep-equal": "0.0.30",
     "@types/history": "^2.0.38",
     "@types/js-cookie": "^2.0.28",

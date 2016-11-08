@@ -1,6 +1,6 @@
 import {Observable as O} from 'rxjs'
 import Immutable = require('immutable')
-import {combineObj} from '../../../utils'
+import {combineObj, geoToLngLat} from '../../../utils'
 import {getDefaultFilters} from './helpers'
 import moment = require('moment')
 
@@ -8,11 +8,6 @@ const log = console.log.bind(console)
 const onlyUserLocation = preferences => preferences.useLocation === `user`
 const onlyHomeLocation = preferences => preferences.useLocation === `home`
 const onlyOverrideLocation = preferences => preferences.useLocation === `override`
-
-const geoToLngLat = x => {
-  const {latitude, longitude} = x.data.coords
-  return {lng: longitude, lat: latitude}
-}
 
 function reducers(actions, inputs) {
   const retrieveR = inputs.retrieve$.map(_ => state => {
@@ -28,7 +23,7 @@ function reducers(actions, inputs) {
   const userPositionR = inputs.preferences$
     .filter(onlyUserLocation)
     .switchMap(preferences => {
-      return actions.geolocation$.take(1).map(geolocation => ({preferences, geolocation}))
+      return inputs.Geolocation.cachedGeolocation$.map(geolocation => ({preferences, geolocation}))
     })
     .map(({preferences, geolocation}) => state => {
       //console.log(`userPosition updated...`)
@@ -111,10 +106,11 @@ export default function model(actions, inputs) {
   const searchDateTime = moment()
   return combineObj({
       preferences$: inputs.preferences$.take(1),
-      cached$: actions.cached$.take(1)
+      cached$: actions.cached$.take(1),
+      authorization$: inputs.Authorization.status$.take(1)
     })
     .switchMap((info: any) => {
-      const {preferences, cached} = info
+      const {preferences, cached, authorization} = info
       //console.log(`Cached:`, cached)
       return reducer$
         .startWith(Immutable.Map({
@@ -123,7 +119,8 @@ export default function model(actions, inputs) {
           searchPosition: getInitialSearchPosition(preferences),
           retrieving: false,
           showFilters: false,
-          filters: (cached && cached.filters) || getDefaultFilters()
+          filters: (cached && cached.filters) || getDefaultFilters(),
+          authorization
         }))
         .scan((acc, f: Function) => f(acc))
     })

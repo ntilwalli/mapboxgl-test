@@ -53,13 +53,10 @@ function intent(sources) {
   }
 }
 
-export default function process(sources, message$) {
+export default function process(sources) {
   const actions = intent(sources)
 
-  const signup$ = message$
-    .filter(x => x.type === `presignup`)
-    .map(x => x.data)
-    .publish().refCount()
+  const signup$ = sources.MessageBus.address(`/authorization/presignup`)
 
   const attempt$ = signup$
     .filter(x => x.type === `attempt`)
@@ -78,29 +75,24 @@ export default function process(sources, message$) {
     })
     .publish().refCount()
 
-  const toMessage$ = O.merge(
+  const toMessageBus$ = O.merge(
     actions.failed$
       .map(x => ({
-        type: `presignup`,
-        data: {
+        to: `/modal/presignup`,
+        message: {
           type: `error`,
           data: x
         }
-      }))
-      .map(x => {
-        return x
-      }),
-    attempt$.mapTo({
-        type: `waiting`,
-        data: true
-      }),
-    actions.stopWaiting$.mapTo({
-        type: `waiting`,
-        data: false
-      })
-  ).map(x => {
-      return x
-    })
+      }))//,
+    // attempt$.mapTo({
+    //     type: `waiting`,
+    //     data: true
+    //   }),
+    // actions.stopWaiting$.mapTo({
+    //     type: `waiting`,
+    //     data: false
+    //   })
+  )
 
   return {
     HTTP: attempt$,
@@ -115,7 +107,7 @@ export default function process(sources, message$) {
         }),
       actions.redirect$
     ),
-    message$: toMessage$
+    MessageBus: toMessageBus$
   }
 
 }

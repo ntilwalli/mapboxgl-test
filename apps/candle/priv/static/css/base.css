@@ -11,6 +11,12 @@
   font-style: normal;
   font-weight: normal;
   src: local("Akkurat Regular"), url("/fonts/Akkurat Regular.otf") format("opentype"); }
+html {
+  box-sizing: border-box; }
+
+*, *:before, *:after {
+  box-sizing: inherit; }
+
 html, body {
   height: 100%;
   font-family: 'Fixedsys Excelsior 3.01'; }
@@ -34,6 +40,15 @@ button, input {
 .fa-1-5x {
   font-size: 1.5rem; }
 
+.flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center; }
+
+.form-group {
+  width: 100%;
+  margin: 0 0 1rem; }
+
 .one-day-calendar {
   height: 100%;
   width: 100%; }
@@ -56,16 +71,22 @@ button, input {
     display: flex;
     justify-content: space-between;
     align-items: center; }
+    .one-day-calendar .controller .section {
+      display: flex;
+      align-items: center; }
     .one-day-calendar .controller button {
       border: none;
       background-color: transparent; }
     .one-day-calendar .controller button:focus {
       outline: none; }
     .one-day-calendar .controller .menu-button {
-      padding-left: .5rem; }
+      padding-left: .5rem;
+      padding-right: .75rem; }
     .one-day-calendar .controller .menu-button:hover {
       color: orange; }
     .one-day-calendar .controller .date-controller {
+      position: relative;
+      top: -.1rem;
       display: flex; }
       .one-day-calendar .controller .date-controller .date-display {
         display: flex;
@@ -79,7 +100,11 @@ button, input {
         color: orange; }
       .one-day-calendar .controller .date-controller .subtract-day:hover {
         color: orange; }
+    .one-day-calendar .controller .show-filters {
+      padding-left: .7rem; }
     .one-day-calendar .controller .show-filters:hover {
+      color: orange; }
+    .one-day-calendar .controller .auth-button:hover {
       color: orange; }
   .one-day-calendar .one-day-grid {
     padding-top: 2rem;
@@ -223,13 +248,15 @@ button, input {
     .modal-component .modal-dialog {
       display: flex;
       width: 25rem;
-      height: 25rem;
       background-color: white; } }
   .modal-component .modal-header {
     position: relative;
     display: flex;
     justify-content: space-between;
-    align-content: center; }
+    align-content: center;
+    border-color: lightgray;
+    border-style: solid;
+    border-width: 0 0 1px; }
     .modal-component .modal-header .modal-title {
       display: flex;
       flex: 1 1 auto;
@@ -276,7 +303,70 @@ button, input {
   .modal-component .left-menu-body .item:hover {
     color: orange; }
 
-.smart-text-input .text-input {
-  width: 1rem; }
+.alerts-area {
+  color: red; }
+
+.external-auth-button, .internal-auth-button {
+  height: 2rem;
+  width: 100%; }
+
+.signup-or-separator {
+  background: none;
+  text-align: center; }
+
+.signup-or-separator--text {
+  background-color: #fff;
+  display: inline-block;
+  padding: 8px;
+  margin: 0; }
+
+.signup-or-separator hr {
+  margin: -14px auto 10px;
+  width: 100%; }
+
+.facebook-button {
+  color: #3b5998;
+  background-color: white; }
+
+.facebook-button:hover {
+  background-color: #3b5998;
+  color: white; }
+
+.switch-auth-type-area {
+  display: flex; }
+
+.login-button, .sign-up-button {
+  background-color: white;
+  color: #FF7538; }
+  .login-button.disabled, .sign-up-button.disabled {
+    color: lightgray;
+    border-color: lightgray; }
+
+.login-button:hover, .sign-up-button:hover {
+  color: white;
+  background-color: #FF7538; }
+  .login-button:hover.disabled, .sign-up-button:hover.disabled {
+    background-color: white;
+    color: lightgray;
+    border-color: lightgray; }
+
+.go-to-signup-link, .go-to-login-link {
+  border: none;
+  background-color: transparent;
+  color: #0000EE;
+  margin-left: .5rem; }
+
+.go-to-signup-link:hover, .go-to-login-link:hover {
+  text-decoration: underline; }
+
+.switch-auth-type-area {
+  display: flex;
+  align-items: center;
+  margin-top: 1rem; }
+
+.auth-input {
+  width: 100%;
+  height: 2rem;
+  padding: .5rem; }
 
 /*# sourceMappingURL=base.css.map */

@@ -6,7 +6,11 @@ export default function messageBusify(main) {
     const MessageBus = {
       address: function(selector) {
         const message$ = bridge$
-          .filter(x => x.to === selector)
+          .filter(x => {
+            //console.log(`to: `, x.to)
+            //console.log(`selector: `, selector)
+            return x.to === selector
+          })
           .map(x => x.message)
           .publish().refCount()
 
@@ -18,8 +22,8 @@ export default function messageBusify(main) {
     bridge$.attach(
       sinks.MessageBus
         .map(x => {
-          if (x.hasOwnProperty(`to`) && 
-            x.hasOwnProperty(`message`)) {
+          //console.log(`MessageBus:`, x)
+          if (x.hasOwnProperty(`to`)) {
             return x
           } else {
             throw new Error(`Invalid message sent on MessageBus`)

@@ -30,7 +30,6 @@
     .modal-dialog {
       display: flex;
       width: 25rem;
-      height: 25rem;
       background-color: white;
     }
   }
@@ -40,6 +39,9 @@
     display: flex;
     justify-content: space-between;
     align-content: center;
+    border-color: lightgray;
+    border-style: solid;
+    border-width: 0 0 1px;
 
     .modal-title {
       display: flex;
@@ -112,6 +114,4 @@
       color: orange;
     }
   }
-
-
 }

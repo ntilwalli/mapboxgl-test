@@ -7,11 +7,12 @@ export default function intent(sources) {
   const twitter$ = DOM.select(`.appTwitterLink`).events(`click`)
 
   const submit$ = DOM.select(`.appLoginButton`).events(`click`)
-
+  const signup$ = DOM.select(`.appSwitchToSignupButton`).events(`click`)
   return {
     submit$,
     github$,
     facebook$,
-    twitter$
+    twitter$,
+    signup$
   }
 }

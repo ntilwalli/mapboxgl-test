@@ -36,7 +36,9 @@ defmodule Candle.Mixfile do
        :shared,
        :auth,
        :user,
-        :listing,
+       :listing,
+       :httpoison
+             
     ]]
   end
 
@@ -64,7 +66,8 @@ defmodule Candle.Mixfile do
      {:ecto, "~> 2.1.0-rc.2", override: true},
      {:shared, in_umbrella: true},
      {:auth, in_umbrella: true},
-     {:user, in_umbrella: true}
+     {:user, in_umbrella: true},
+     {:httpoison, "~> 0.9.0"},
    ]
   end
 

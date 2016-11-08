@@ -1,0 +1,94 @@
+@import '../../_variables';
+// .username-section, .password-section {
+//   width: 100%;
+//   height: 3rem;
+// }
+
+.alerts-area {
+  color: red
+}
+
+.external-auth-button, .internal-auth-button {
+  height: 2rem;
+  width: 100%;
+}
+
+.signup-or-separator {
+  background: none;
+  text-align: center;
+}
+
+.signup-or-separator--text {
+  background-color: #fff;
+  display: inline-block;
+  padding: 8px;
+  margin: 0;
+}
+
+.signup-or-separator hr {
+    margin: -14px auto 10px;
+    width: 100%;
+}
+
+.facebook-button {
+  color: #3b5998;
+  background-color: white;
+}
+
+.facebook-button:hover {
+  background-color: #3b5998;
+  color: white;
+}
+
+.switch-auth-type-area {
+  display: flex;
+}
+
+.login-button, .sign-up-button {
+  background-color: white;
+  color: $crayola-orange;
+
+  &.disabled {
+    color: lightgray;
+    border-color: lightgray;
+  }
+}
+
+.login-button:hover, .sign-up-button:hover {
+  color: white;
+  background-color: $crayola-orange;
+  &.disabled {
+    background-color: white;
+    color: lightgray;
+    border-color: lightgray;
+  }
+}
+
+
+.go-to-signup-link, .go-to-login-link {
+  border: none;
+  background-color: transparent;
+  color: $link-color;
+  margin-left: .5rem;
+}
+
+.go-to-signup-link:hover, .go-to-login-link:hover {
+  text-decoration: underline;
+}
+
+.switch-auth-type-area {
+  display: flex;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.auth-input {
+  width: 100%;
+  height: 2rem;
+  padding: .5rem;
+}
+
+
+// .input-error {
+
+// }

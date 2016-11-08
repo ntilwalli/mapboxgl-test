@@ -9,29 +9,23 @@ function intent(sources) {
     DOM.select(`.appModalBackdrop`).events(`click`)
       .filter(targetIsOwner)
   )
-  const done$ = DOM.select(`.appDoneButton`).events(`click`)
-    .map(x => {
-      return x
-    })
 
   return {
-    close$, done$
+    close$
   } 
 }
 
 function renderModal(info) {
   const {props, content} = info
   const title = props.title || ``
-  return div(`.modal-dialog`, [
+  const styleClass = props.styleClass || ``
+  return div(`.modal-dialog${styleClass}`, [
     div(`.modal-content`, [
       div(`.modal-header`, [
         div(`.modal-title.modal-header-text`, [title]),
         span(`.appModalClose.close.fa-2x`, [`×`])
       ]),
-      div(`.modal-body`, [content]),
-      div(`.modal-footer`, [
-        button(`.appDoneButton`, [`Done`])
-      ])
+      div(`.modal-body`, [content])
     ])
   ])
 }
@@ -56,8 +50,6 @@ export default function main(sources, inputs) {
 
   return spread(content, {
     DOM: view(inputs.props$, content.DOM),
-    output$,
-    close$: actions.close$,
-    done$: actions.done$.withLatestFrom(output$, (_, output) => output)
+    MessageBus: O.merge(content.MessageBus, actions.close$.mapTo({to: `main`, message: `hideModal`})),
   })
 }

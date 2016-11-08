@@ -33,11 +33,10 @@ function view(auth$) {
 }
 
 export default function main(sources, inputs) {
-
   const actions = intent(sources)
   
   return {
-    DOM: view(inputs.authorization$),
-    close$: actions.close$,
+    DOM: view(inputs.Authorization.status$),
+    MessageBus: actions.close$.mapTo({to: `main`, message: `hideModal`}),
   }
 }

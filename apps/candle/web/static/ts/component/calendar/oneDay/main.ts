@@ -107,7 +107,14 @@ function main(sources, inputs) {
         key: "calendar/oneDay",
         value: JSON.stringify(val)
       })),
-    showMenu$: actions.showMenu$
+    MessageBus: O.merge(
+      actions.showMenu$
+        .map(_ => ({to: `main`, message: `showLeftMenu`})),
+      actions.login$
+        .map(_ => ({to: `main`, message: `showLogin`})),
+      actions.logout$
+        .map(_ => ({to: `/authorization/logout`}))
+    )
 
       //.filter(x => false)
       //.do(x => console.log(`to storage:`, x))

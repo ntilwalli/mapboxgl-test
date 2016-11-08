@@ -337,6 +337,7 @@ defmodule Scraper.BadslavaScraper.Helpers do
   #
   # :priority_order, price, description
   # :additional_stage_time, price, qty
+  # :pay_with_min_max
 
   defp extract_cost_info(listing) do
     note_string = listing["note"]

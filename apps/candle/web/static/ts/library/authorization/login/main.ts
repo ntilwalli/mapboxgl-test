@@ -7,53 +7,52 @@ import intent from './intent'
 import model from './model'
 
 import {combineObj, spread} from '../../../utils'
-import TextInput from '../../textInput'
+//import TextInput from '../../textInput'
+import TextInput, {SmartTextInputValidation} from '../../smartTextInput'
 
 const usernameInputProps = O.of({
   placeholder: `Username`,
   name: `username`,
-  required: true,
-  key: `login`
+  autofocus: true,
+  //required: true,
+  styleClass: `.auth-input`
+  // key: `login`
 })
 
 const passwordInputProps = O.of({
   type: `password`,
   placeholder: `Password`,
   name: `password`,
-  required: true,
-  key: `login`
+  //required: true,
+  styleClass: `.auth-input`
+  // key: `login`
 })
 
 const BACKEND_URL = `/api_auth/login`
 
 export default function main(sources, inputs) {
 
-  const error$ = inputs.message$
-    .filter(x => x.type === `authorization`)
-    .map(x => x.data)
-    .filter(x => x.type === `login`)
-    .map(x => x.data)
+  const error$ = sources.MessageBus.address(`/modal/login`)
+    .do(x => console.log(`bus message:`, x))
     .filter(x => x.type === `error`)
     .map(x => x.data)
     .publishReplay(1).refCount()
 
   const usernameInput = TextInput(sources, {
     props$: usernameInputProps, 
-    error$, 
     initialText$: O.of(undefined)
   })
 
   const passwordInput = TextInput(sources, {
     props$: passwordInputProps, 
-    error$,
     initialText$: O.of(undefined)
   })
 
   const actions = intent(sources)
   const state$ = model(actions, spread(
     inputs, {
-    username$: usernameInput.value$,
-    password$: passwordInput.value$,
+    username$: usernameInput.output$,
+    password$: passwordInput.output$,
     error$
   }))
 
@@ -64,41 +63,21 @@ export default function main(sources, inputs) {
 
   return {
     DOM: vtree$,
-    message$: O.merge(
-      actions.facebook$.mapTo({
-        type: `authorization`,
-        data: {
-          type: `login`,
-          data: {type: `facebook`}
-        }
-      }),
-      actions.twitter$.mapTo({
-        type: `authorization`,
-        data: {
-          type: `login`,
-          data: {type: `twitter`}
-        }
-      }),
-      actions.github$.mapTo({
-        type: `authorization`,
-        data: {
-          type: `login`,
-          data: {type: `github`}
-        }
-      }),
-      actions.submit$.withLatestFrom(state$, (_, state) => {
-        const {username, password} = state
-        return {
-          type: `authorization`,
-          data: {
-            type: `login`,
-            data: {
-              type: `local`,
-              data: {username, password}
-            }
+    MessageBus: O.merge(
+      O.merge(
+        actions.facebook$.mapTo({type: `facebook`}),
+        actions.twitter$.mapTo({type: `twitter`}),
+        actions.github$.mapTo({type: `github`}),
+        actions.submit$.withLatestFrom(state$, (_, state) => {
+          const {username, password} = state
+          return {
+            type: `local`,
+            data: {username, password}
           }
-        }
-      })
+        })
+      ).map(x => ({to: `/authorization/login`, message: x})),
+      actions.signup$.mapTo({to: `main`, message: `showSignup`})
     )
+    //.do(x => console.log(`login message`, x))
   }
 }

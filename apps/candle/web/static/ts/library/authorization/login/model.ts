@@ -20,18 +20,12 @@ function reducers(actions, inputs) {
   const {username$, password$, error$} = inputs
   const usernameR = username$.skip(1)
     .map(x => state => {
-      if (x.valid)
-        return setValid(state.set(`username`, x.value))
-      else
-        return setValid(state.set(`username`, null))
+      return setValid(state.set(`username`, x))
     })
 
   const passwordR = password$.skip(1)
     .map(x => state => {
-      if (x.valid)
-        return setValid(state.set(`password`, x.value))
-      else
-        return setValid(state.set(`password`, null))
+      return setValid(state.set(`password`, x))
     })
 
   const errorR = error$.map(error => state => {
@@ -49,8 +43,8 @@ export default function model(actions, inputs) {
   const reducer$ = reducers(actions, inputs)
 
   return combineObj({
-    username$: inputs.username$.map(checkValidity),
-    password$: inputs.password$.map(checkValidity)
+    username$: inputs.username$,//.map(checkValidity),
+    password$: inputs.password$//.map(checkValidity)
   }).take(1)
    .map(inputs => {
       const valid = isValid(inputs)

@@ -62,9 +62,9 @@ export default function model(actions, inputs) {
   //const {name$, username$, email$} = inputs
   return combineObj({
     initialValue$: inputs.initialValue$ || O.of({}),
-    name$: inputs.name$.map(checkValidity),
-    username$: inputs.username$.map(checkValidity),
-    email$: inputs.email$.map(checkValidity)
+    name$: inputs.name$,//.map(checkValidity),
+    username$: inputs.username$,//.map(checkValidity),
+    email$: inputs.email$//.map(checkValidity)
   }).take(1)
     .map((info: any) => {
       const {initialValue, name, username, email} = info

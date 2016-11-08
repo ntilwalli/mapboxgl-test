@@ -7,26 +7,13 @@ import Presignup from './messageProcessor/presignup'
 const COOKIE_INDICATOR = `cookie`
 const AUTHORIZATION_INDICATOR = `authorization`
 
-export default function Authorization(sources, inputs) {
-  const authMessage$ = inputs.message$
-    .map(x => {
-      return x
-    })
-    .filter(x => x.type === AUTHORIZATION_INDICATOR)
-    .map(x => x.data)
-    .publish().refCount()
+function Authorization(sources) {
+  const login = Login(sources)
+  const logout = Logout(sources)
+  const signup = Signup(sources)
+  const presignup = Presignup(sources)
 
-  const login = Login(sources, authMessage$)
-  const logout = Logout(sources, authMessage$)
-  const signup = Signup(sources, authMessage$)
-  const presignup = Presignup(sources, authMessage$)
-
-  const status$ = sources.Global
-    .map(x => {
-      return x
-    })
-    .filter(x => x.type === COOKIE_INDICATOR && x.data)
-    .map(x => x.data)
+  const status$ = sources.Global.cookie$
     //.do(x => console.log("cookies:", x))
     .map(x => x && x.authorization)
     .map(x => {
@@ -51,16 +38,13 @@ export default function Authorization(sources, inputs) {
     .publishReplay(1).refCount()
 
   return {
-    status$: status$,
+    output: {
+      status$,
+    },
     Global: O.merge(login.Global, logout.Global, signup.Global, presignup.Global),
     HTTP: O.merge(login.HTTP, logout.HTTP, signup.HTTP, presignup.HTTP),
-    message$: O.merge(signup.message$, login.message$, presignup.message$)
-      .map(x => ({
-        type: AUTHORIZATION_INDICATOR,
-        data: x
-      }))
-      .map(x => {
-        return x
-      })
+    MessageBus: O.merge(signup.MessageBus, login.MessageBus, presignup.MessageBus)
   }
 }
+
+export default Authorization

@@ -22,44 +22,32 @@ function setValid(state) {
 }
 
 function reducers(actions, inputs) {
-  const {name$, username$, email$, password$, error$} = inputs
+  const {name$, username$, email$, password$, errors$} = inputs
   const userTypeR = actions.userType$
     .map(userType => state => state.set(`type`, userType))
 
   const nameR = name$.skip(1)
     .map(x => state => {
-      if (x.valid)
-        return setValid(state.set(`name`, x.value))
-      else
-        return setValid(state.set(`name`, null))
+      return setValid(state.set(`name`, x))
     })
 
   const usernameR = username$.skip(1)
     .map(x => state => {
-      if (x.valid)
-        return setValid(state.set(`username`, x.value))
-      else
-        return setValid(state.set(`username`, null))
+      return setValid(state.set(`username`, x))
     })
 
   const emailR = email$.skip(1)
     .map(x => state => {
-      if (x.valid)
-        return setValid(state.set(`email`, x.value))
-      else
-        return setValid(state.set(`email`, null))
+      return setValid(state.set(`email`, x))
     })
 
   const passwordR = password$.skip(1)
     .map(x => state => {
-      if (x.valid)
-        return setValid(state.set(`password`, x.value))
-      else
-        return setValid(state.set(`password`, null))
+      return setValid(state.set(`password`, x))
     })
 
-  const errorR = error$.map(error => state => {
-    return state.set(`errors`, (error && error.errors) ? error.errors.filter(x => x.type === `general`).map(x => x.error) : [])
+  const errorsR = errors$.map(val => state => {
+    return state.set(`errors`, (val && val.errors) ? val.val.filter(x => x.type === `general`).map(x => x.error) : [])
   })
   
 
@@ -69,7 +57,7 @@ function reducers(actions, inputs) {
     usernameR,
     emailR,
     passwordR,
-    errorR
+    errorsR
   )
 }
 
@@ -78,10 +66,10 @@ export default function model(actions, inputs) {
 
   return combineObj({
     initialValue$: inputs.initialValue$ ? inputs.initialValue$.take(1) : O.of({}),
-    name$: inputs.name$.map(checkValidity),
-    username$: inputs.username$.map(checkValidity),
-    email$: inputs.email$.map(checkValidity),
-    password$: inputs.password$.map(checkValidity)
+    name$: inputs.name$,//.map(checkValidity),
+    username$: inputs.username$,//.map(checkValidity),
+    email$: inputs.email$,//.map(checkValidity),
+    password$: inputs.password$,//.map(checkValidity)
   })
   .take(1)
   .map((inputs: any) => {

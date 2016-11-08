@@ -14,14 +14,9 @@ function intent(sources) {
   }
 }
 
-export default function process(sources, message$) {
+export default function process(sources) {
   const actions = intent(sources )
-  const logout$ = message$
-    .filter(x => x.type === `logout`)
-    .map(x => {
-      return x
-    })
-    .publish().refCount()
+  const logout$ = sources.MessageBus.address(`/authorization/logout`)
 
   const toHTTP$ = logout$
     .mapTo({
@@ -31,16 +26,17 @@ export default function process(sources, message$) {
       category: `logout`
     })
 
-  const toMessage$ = O.merge(
-    logout$.mapTo({
-      type: `waiting`,
-      data: true
-    }),
-    actions.redirect$.mapTo({
-      type: `waiting`,
-      data: false
-    })
-  )
+  const toMessageBus$ = O.never()
+  // O.merge(
+  //   logout$.mapTo({
+  //     type: `waiting`,
+  //     data: true
+  //   }),
+  //   actions.redirect$.mapTo({
+  //     type: `waiting`,
+  //     data: false
+  //   })
+  // )
 
   return {
     Global: actions.redirect$
@@ -49,6 +45,6 @@ export default function process(sources, message$) {
         data: `/`
       })),
     HTTP: toHTTP$,
-    message$: toMessage$
+    MessageBus: toMessageBus$
   }
 }

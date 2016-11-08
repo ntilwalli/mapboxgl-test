@@ -38,13 +38,12 @@ function intent(sources) {
   }
 }
 
-export default function process(sources, message$) {
+export default function process(sources) {
   const actions = intent(sources)
 
-  const data$ = message$
-    .filter(x => x.type === `login`)
-    .map(x => x.data)
-    .publish().refCount()
+  const data$ = sources.MessageBus.address(`/authorization/login`)
+    .do(x => console.log(`login message:`, x))
+    .publishReplay(1).refCount()
 
   const local$ = data$
     .filter(x => x.type === 'local')
@@ -71,14 +70,11 @@ export default function process(sources, message$) {
     .filter(x => x.type === `github`)
     .map(() => `/auth/github`)
 
-  const toMessage$ = O.merge(
+  const toMessageBus$ = O.merge(
     actions.failedLogin$
       .map(x => ({
-        type: `login`,
-        data: {
           type: `error`,
           data: x
-        }
       })),
     local$.mapTo({
       type: `waiting`,
@@ -88,18 +84,19 @@ export default function process(sources, message$) {
       type: `waiting`,
       data: false
     })
-  ).map(x => {
-      return x
-    })
+  )
+  .map(x => ({to: `/modal/login`, message: x}))
+  .publishReplay(1).refCount()
 
+  //local$.subscribe()
   return {
-    HTTP: local$,
+    HTTP: local$.do(x => console.log(`login HTTP`, x)),
     Global: O.merge(facebook$, twitter$, github$, actions.redirect$)
       .map(data => ({
         type: `redirect`,
         data
       })),
-    message$: toMessage$
+    MessageBus: toMessageBus$
   }
 
 }

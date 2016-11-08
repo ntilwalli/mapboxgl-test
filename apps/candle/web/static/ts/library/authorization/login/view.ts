@@ -1,6 +1,5 @@
 import {nav, hr, div, a, input, form, strong, span, button} from '@cycle/dom'
 import {
-  attrs,
   renderTextPasswordField,
   renderOrSeparator,
   renderExternalButton,
@@ -10,10 +9,17 @@ import {
 
 
 function renderLoginButton(state) {
-  return div(`.form-group`, [
-    input(
-      `.appLoginButton.btn.btn-block.btn-primary`,
-      attrs({type: `button`, value: `Log in`}, !state.valid ? [`disabled`] : []))
+  return div(``, [
+    input(`.appLoginButton.internal-auth-button.login-button`, {
+      class: {
+        disabled: !state.valid
+      },
+      attrs: {
+        type: `button`, 
+        value: `Log in`, 
+        disabled: !state.valid
+      }
+    })
   ])
 }
 
@@ -21,39 +27,38 @@ function renderNoAccountArea() {
   return div(`.switch-auth-type-area.form-group`, [
     div(`.question`, [`Don't have an account?`]),
     div(`.answer`, [
-      a(`.btn.btn-danger-outline`, {attrs: {href: `/?modal=signup`}}, [`Sign up`])
+      button(`.appSwitchToSignupButton.go-to-signup-link`, [`Sign-up!`])
     ])
   ])
 }
 
-function renderRememberMeForgottenPassword(state) {
-  return div(`.form-group.remember-me`, [
-    div(`.checkbox-inline.pull-xs-left`, [
-      input(
-        `.appRememberMe`,
-        attrs({type: `checkbox`}, state.rememberMe ? [`checked`] : null)
-      ),
-      `Remember me`
-    ]),
-    a(`.pull-xs-right`, {attrs: {href: `#`}}, [`Forgot password?`])
-  ])
-}
+// function renderRememberMeForgottenPassword(state) {
+//   return div(`.remember-me-area`, [
+//     div(`.checkbox-inline.pull-xs-left`, [
+//       input(
+//         `.appRememberMe`, {
+//         attrs: {type: `checkbox`, checked: state.rememberMe}
+//       }),
+//       `Remember me`
+//     ]),
+//     (`.pull-xs-right`, {attrs: {href: `#`}}, [`Forgot password?`])
+//   ])
+// }
 
 function renderBody({state, components}) {
   return div(`.login-modal`, [
     renderAlerts(state),
-    renderExternalButton(`Log in with Twitter`, `.appTwitterLink`),
-    renderExternalButton(`Log in with Facebook`, `.appFacebookLink`),
-    renderExternalButton(`Log in with Github`, `.appGithubLink`),
-    renderOrSeparator(),
-    form({attrs: {action: `/auth/identity/callback`, method: `POST`}}, [
-      components.username,
-      components.password,
-      renderRememberMeForgottenPassword(state),
+    form([
+      div(`.form-group.username-section`, [components.username]),
+      div(`.form-group.password-section`, [components.password]),
+      //renderRememberMeForgottenPassword(state),
       renderLoginButton(state)
     ]),
+    renderOrSeparator(),
+    renderExternalButton(`Log in with Facebook`, `.appFacebookLink.facebook-button`),
     hr(),
     renderNoAccountArea()
+
   ])
 }
 

@@ -35,8 +35,6 @@ export default function intent(sources) {
     .map(x => x.filter(onlySingleBadslava).map(inflate))
     .publish().refCount()
 
-  const geolocation$ = Global.geolocation$
-
   const cached$ = sources.Storage.local.getItem(`calendar/oneDay`)
     .map(stored => {
       //console.log(`from storage:`, stored)
@@ -63,14 +61,16 @@ export default function intent(sources) {
 
   const showMenu$ = DOM.select(`.appMenuButton`).events(`click`)
 
-
+  const login$ = DOM.select(`.appShowLoginButton`).events(`click`)
+  const logout$ = DOM.select(`.appShowLogoutButton`).events(`click`)
   return {
     results$: success$,
     cached$,
-    geolocation$,
     changeDate$,
     showFilters$,
-    showMenu$
+    showMenu$,
+    login$,
+    logout$
   }
 }
 

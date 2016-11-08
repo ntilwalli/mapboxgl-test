@@ -10,6 +10,11 @@
   justify-content: space-between;
   align-items: center;
 
+  .section {
+    display: flex;
+    align-items: center;
+  }
+
   button {
     border: none;
     background-color: transparent;
@@ -21,6 +26,7 @@
 
   .menu-button {
     padding-left: .5rem;
+    padding-right: .75rem;
   }
 
   .menu-button:hover {
@@ -28,6 +34,8 @@
   }
 
   .date-controller {
+    position: relative;
+    top: -.1rem;
     display: flex;
     .date-display {
       display: flex;
@@ -54,7 +62,14 @@
     }
   }
 
+  .show-filters {
+    padding-left: .7rem;
+  }
   .show-filters:hover {
+    color: orange;
+  }
+
+  .auth-button:hover {
     color: orange;
   }
 }

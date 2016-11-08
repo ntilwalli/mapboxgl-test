@@ -27,23 +27,23 @@ export function createProxy(): ProxyObservable<any> {
   return <ProxyObservable<any>> proxy
 }
 
-export function attrs (val, monoProps?) {
-  if (monoProps) {
-    if (monoProps.some(x => x === `checked`)) {
-      val.checked = `checked`
-    }
+// export function attrs (val, monoProps?) {
+//   if (monoProps) {
+//     if (monoProps.some(x => x === `checked`)) {
+//       val.checked = `checked`
+//     }
 
-    if (monoProps.some(x => x === `disabled`)) {
-      val.disabled = `disabled`
-    }
+//     if (monoProps.some(x => x === `disabled`)) {
+//       val.disabled = `disabled`
+//     }
 
-    if (monoProps.some(x => x === `hidden`)) {
-      val.hidden = `hidden`
-    }
-  }
+//     if (monoProps.some(x => x === `hidden`)) {
+//       val.hidden = `hidden`
+//     }
+//   }
 
-  return {attrs: val}
-}
+//   return {attrs: val}
+// }
 
 export function targetIsOwner(ev) {
   return ev.target === ev.ownerTarget
@@ -53,32 +53,32 @@ export function noop() {}
 
 export function renderTextPasswordField(type, name, cssClass, placeholder, value) {
   return div(`.form-group`, [
-    input(`${cssClass}.form-control`, attrs({type, placeholder, name, value: value ? value : ``}))
+    input(`${cssClass}.form-control`, {attrs: {type, placeholder, name, value: value ? value : ``}})
   ])
 }
 
 export function renderOrSeparator() {
-  return div(`.signup-or-separator`, [
-    span(`.h6.signup-or-separator--text`, [`or`]),
+  return div(`.signup-or-separator.form-group`, [
+    span(`.h6.signup-or-separator--text.flex-center`, [`or`]),
     hr()
   ])
 }
 
 export function renderExternalButton(text, cssClass) {
   const c = cssClass ? cssClass : ``
-  return div(`.form-group`, [
-    button(`${c}.btn.btn-block.btn-primary`, [text])
+  return div(`.form-group.flex-center`, [
+    button(`${c}.external-auth-button`, [text])
   ])
 }
 
 export function renderExternalLink(text, cssClass) {
   const c = cssClass ? cssClass : ``
-  return button(`${c}.btn.btn-link.external-link`, [text])
+  return button(`${c}.flex-center`, [text])
 }
 
 export function renderAlerts(state) {
   return div(`.form-group`, [
-    div(`alerts-area`, state.errors.map(err => div(`.input-error`, [err])))
+    div(`.alerts-area`, state.errors.map(err => div(`.input-error`, [err])))
   ])
 }
 
@@ -156,7 +156,7 @@ export function normalizeComponent(component) {
   })
 }
 
-export function normalizeComponentStream(component$) {
+export function componentify(component$) {
   return {
     DOM: normalizeSink(component$, `DOM`).publish().refCount(),
     //MapJSON: normalizeSink(component$, `MapJSON`).publish().refCount(),
@@ -326,5 +326,10 @@ export function clean (val) {
   if (typeof val === 'string') {
     return val.replace(/town of,?/i, '')
   }
+}
+
+export function geoToLngLat(x) {
+  const {latitude, longitude} = x.data.coords
+  return {lng: longitude, lat: latitude}
 }
 

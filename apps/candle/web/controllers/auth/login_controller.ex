@@ -9,8 +9,11 @@ defmodule Candle.LoginController do
       "password" => password
     } = params, current_user, _claims) do
     
+    IO.puts "login attempt"
+    IO.inspect params
+
     user = Helpers.get_user(conn, current_user)
-    pid = User.Registry.lookup(User.Registry, user)
+    {:ok, pid} = User.Registry.lookup(User.Registry, user)
     case User.Anon.login(pid, params) do
     #case Auth.Manager.login(Auth.Manager, params) do
       {:error, error} ->

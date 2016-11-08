@@ -17,6 +17,13 @@
   src: local('Akkurat Regular'), url('/fonts/Akkurat Regular.otf') format('opentype');
 }
 
+html {
+  box-sizing: border-box;
+}
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
 html, body {
   height: 100%;
   font-family: 'Fixedsys Excelsior 3.01';//'Akkurat Regular';//"Corona4Typewriter";
@@ -45,6 +52,17 @@ button, input {
 
 .fa-1-5x {
   font-size: 1.5rem;
+}
+
+.flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.form-group {
+  width: 100%;
+  margin: 0 0 1rem;
 }
 
 @import 'component/_index';

@@ -1,6 +1,5 @@
 import {nav, hr, div, a, input, form, strong, span, button} from '@cycle/dom'
 import {
-  attrs,
   renderTextPasswordField,
   renderOrSeparator,
   renderAlerts
@@ -8,71 +7,63 @@ import {
 
 
 function renderSignupButton(state) {
-  return div(`.form-group`, [
-    input(
-      `.appSignUpButton.btn.btn-block.btn-primary`,
-      attrs({type: `button`, value: `Sign up`}, !state.valid ? [`disabled`] : []))
+  return div(``, [
+    input(`.appSignupButton.internal-auth-button.sign-up-button`, {
+      class: {
+        disabled: !state.valid
+      },
+      attrs: {
+        type: `submit`, 
+        value: `Sign-up`, 
+        disabled: !state.valid
+      }
+    })
   ])
 }
 
-function renderHaveAccountArea() {
-  return div(`.switch-auth-type-area.form-group`, [
-    div(`.question`, [`Already have an account?`]),
-    div(`.answer`, [
-      a(`.btn.btn-danger-outline`, attrs({href: `/login`}), [`Log in`])
-    ])
-  ])
-}
+// function renderSignupButton(state) {
+//   return div(`.form-group`, [
+//     input(
+//       `.appSignUpButton.btn.btn-block.btn-primary`,
+//       {attrs: {type: `button`, value: `Sign up`, disabled: !state.valid}})
+//   ])
+// }
 
-function renderExternalLinks() {
-  return div(`.form-group`, [
-    div({style: {"text-align": "center"}}, [
-      `Sign up with `,
-      a(attrs({href: `#`}), [`Facebook`]),
-      ` or `,
-      a(attrs({href: `#`}), [`Twitter`]),
-      ` or `,
-      a(attrs({href: `#`}), [`Github`]),
-    ])
-  ])
-}
+// function renderAccountTypes(state) {
+//   const accType = state.type
+//   const individual = accType === `individual`
+//   const group = state.accountType === `group`
 
-function renderAccountTypes(state) {
-  const accType = state.type
-  const individual = accType === `individual` ? [`checked`] : null
-  const group = state.accountType === `group` ? [`checked`] : null
-
-  return div(`.form-group.account-type`, [
-    div(`.radio-inline`, [
-      input(
-        `.appAccountTypeIndividual`,
-        attrs({name: `type`, type: `radio`, value: `individual`}, individual)),
-      `Individual`
-    ]),
-    div(`.radio-inline`, [
-      input(
-        `.appAccountTypeGroup`,
-        attrs({name: `type`, type: `radio`, value: `group`}, group)),
-      `Performer group`
-    ])
-  ])
-}
+//   return div(`.form-group.account-type`, [
+//     div(`.radio-inline`, [
+//       input(
+//         `.appAccountTypeIndividual`,
+//         {attrs: {name: `type`, type: `radio`, value: `individual`, checked: individual}}),
+//       `Individual`
+//     ]),
+//     div(`.radio-inline`, [
+//       input(
+//         `.appAccountTypeGroup`,
+//         {attrs: {name: `type`, type: `radio`, value: `group`, checked: group}}),
+//       `Performer group`
+//     ])
+//   ])
+// }
 
 function renderBody({state, components}) {
   return div(`.presignup-modal`, [
     renderAlerts(state),
     div(`.form-group`, [
       div(`.presignup-encouragement`, [
-        div([`This is your first time authenticating with that account...`]),
         div([`A few more pieces of info and you'll be all set.`])
       ])
     ]),
     //form(attrs({action: `/auth/presignup`, method: `POST`}), [
     form([
-      renderAccountTypes(state),
-      components.name,
-      components.username,
-      components.email,
+      //renderAccountTypes(state),
+      div(`.form-group`, [components.name]),
+      div(`.form-group`, [components.username]),
+      div(`.form-group`, [components.email]),
       renderSignupButton(state)
     ])
   ])

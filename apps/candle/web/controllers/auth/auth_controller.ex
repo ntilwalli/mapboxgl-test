@@ -32,8 +32,10 @@ defmodule Candle.AuthController do
     IO.puts "Testing auth"
     IO.inspect partial
 
-    pid = User.Registry.lookup(User.Registry, user)
-    case User.Anon.route(User.Anon, pid, partial) do
+    {:ok, pid} = User.Registry.lookup(User.Registry, user)
+    IO.inspect pid
+    case User.Anon.oauth_login(pid, partial) do
+    #case User.Anon.route(User.Anon, pid, partial) do
     #case Auth.Manager.oauth_login(Auth.Manager, partial) do
       {:ok, user} ->
         conn

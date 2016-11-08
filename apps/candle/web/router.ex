@@ -51,6 +51,8 @@ defmodule Candle.Router do
 
   scope "/api", Candle do
     pipe_through [:accepts_json, :browser, :browser_auth]
+    post "/geotag", UserController, :geotag
+    post "/tz", UserController, :timezone
     post "/user", UserController, :route
   end
 

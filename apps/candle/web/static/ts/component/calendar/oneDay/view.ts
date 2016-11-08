@@ -60,10 +60,19 @@ function renderMenuButton(state) {
 }
 
 function renderController(state) {
+  const {authorization} = state
+  const authClass = authorization ? `Logout` : `Login`
   return div(`.controller`, [
-    renderMenuButton(state),
-    renderDateController(state),
-    renderFiltersController(state)
+    div(`.section`, [
+      renderMenuButton(state)
+    ]),
+    div(`.section`, [
+      renderDateController(state),
+      renderFiltersController(state)
+    ]),
+    div(`.section`, [
+      button(`.appShow${authClass}Button.auth-button`, {key: `oneDayController${authClass}`}, [authClass])
+    ])
   ])
 }
 

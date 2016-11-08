@@ -7,7 +7,7 @@ function view(state$, components) {
     .map((info: any) => {
       const {state, components} = info
       const {content, modal} = components
-      state.modal ? console.log(modal) : null
+      //state.modal ? console.log(modal) : null
       return div(`.root-container`, [
         content,
         state.modal ? modal : null
