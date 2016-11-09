@@ -1,6 +1,5 @@
 defmodule User.Auth do
   use GenServer
-  use Timex
 
   alias Shared.ListingSessionManager
   alias Shared.ListingSession

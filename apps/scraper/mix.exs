@@ -26,7 +26,6 @@ defmodule Scraper.Mixfile do
         :logger,
         :listing, 
         :shared,
-        :timex,
         :httpoison
       ],
       mod: {Scraper, []}
@@ -50,7 +49,6 @@ defmodule Scraper.Mixfile do
     [
       {:shared, in_umbrella: true},
       {:listing, in_umbrella: true},
-      {:timex, "~> 3.1"},
       {:poison, "~> 2.2"},
       {:httpoison, "~> 0.9.0"},
       {:floki, "~> 0.10.1"}

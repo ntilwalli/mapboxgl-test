@@ -3,7 +3,6 @@ defmodule Scraper.BadslavaScraper do
   import Ecto.Query, only: [from: 2]
   import Scraper.Helpers
   import Scraper.BadslavaScraper.Helpers
-  use Timex
   alias Scraper.Helpers
   alias Shared.Scrapings
   alias Shared.Repo
