@@ -6,7 +6,7 @@
     "copy-mapbox-data": "rm -rf apps/candle/priv/static/mapbox; mkdir -p apps/candle/priv/static/mapbox; cp -r node_modules/mapbox-gl/dist/ apps/candle/priv/static/mapbox/",
     "build-assets": "cp -r apps/candle/web/static/assets/* apps/candle/priv/static",
     "watch-assets": "watch-run -i -p 'apps/candle/web/static/assets/**' npm run build-assets",
-    "build-browserify": "rm -rf apps/candle/priv/static/js; mkdir -p apps/candle/priv/static/js; browserify apps/candle/web/static/ts/main.ts -p [ tsify ] > apps/candle/priv/static/js/main.js",
+    "build-browserify": "rm -rf apps/candle/priv/static/js; mkdir -p apps/candle/priv/static/js; ./node_modules/.bin/browserify apps/candle/web/static/ts/main.ts -p [ tsify ] > apps/candle/priv/static/js/main.js",
     "watch-browserify": "rm -rf apps/candle/priv/static/js; mkdir -p apps/candle/priv/static/js; watchify apps/candle/web/static/ts/main.ts -p [ tsify ] -o apps/candle/priv/static/js/main.js -dv",
     "build-webpack": "rm -rf apps/candle/priv/static/ts; mkdir -p apps/candle/priv/static/ts; webpack",
     "watch-webpack": "rm -rf apps/candle/priv/static/ts; mkdir -p apps/candle/priv/static/ts; webpack -w",
