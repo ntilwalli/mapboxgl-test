@@ -20,7 +20,7 @@
     "test": "browserify -t babelify apps/candle/test/static/ts/*.js | tap",
     "test-build": "watchify -v -t babelify apps/candle/web/static/ts/test.js -o apps/candle/priv/static/ts/test.js",
     "test-serve": "live-server --entry-file=apps/candle/test.html",
-    "deploy": "rm -rf apps/candle/priv/static && mkdir apps/candle/priv/static && npm run build-browserify && npm run build-css && npm run build-assets && npm run copy-mapbox-data && npm run copy-font-awesome-data && npm run copy-normalize-css"
+    "deploy": "rm -rf apps/candle/priv/static && mkdir -p apps/candle/priv/static && npm run build-browserify && npm run build-css && npm run build-assets && npm run copy-mapbox-data && npm run copy-font-awesome-data && npm run copy-normalize-css"
   },
   "dependencies": {
     "@cycle/dom": "^14.0.0",
