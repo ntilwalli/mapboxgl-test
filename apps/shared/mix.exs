@@ -26,7 +26,7 @@ defmodule Shared.Mixfile do
       #{:calecto, "~> 0.16.0"},
       {:postgrex, "0.12.1"},
       {:ecto, "~> 2.1.0-rc.3", override: true},
-      {:geo, "~> 1.2", path: "../../custom_deps/geo"},
+      {:geo, "~> 1.2", path: "../../custom_deps/geo", override: true},
       {:poison, "~> 2.2"},
       {:httpoison, "~> 0.9.0"},
       {:floki, "~> 0.10.1"}
