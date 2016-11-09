@@ -30,7 +30,7 @@ defmodule Listing.GenerateRecurring do
   end
 
   def schedule_work() do
-    Process.send_after(self(), :work, 60 * 1000)
+    Process.send_after(self(), :work, 24 * 60 * 60 * 1000)
   end
 
   defp work(registry_name) do
