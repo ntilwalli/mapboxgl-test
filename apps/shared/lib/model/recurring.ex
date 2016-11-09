@@ -8,7 +8,7 @@ defmodule Shared.Model.Recurring do
     field :rdate, {:array, :naive_datetime}
     embeds_one :rrule, Shared.Model.RRule
     field :exdate, {:array, :naive_datetime}
-    field :duration, :integer
+    field :duration, :float
   end
 
   @allowed_fields [:rdate, :exdate, :duration]

@@ -100,9 +100,10 @@ defmodule Listing.GenerateRecurring do
   defp generate_single(template, dt_tz) do
     begins = dt_tz
     cuando = decode_cuando(template.type, template.cuando)
+    # IO.inspect template
     single_cuando = case cuando.duration do
       nil -> %{begins: begins}
-      val -> %{begins: begins, ends: Calendar.DateTime.add!(begins, val*60)}
+      val -> %{begins: begins, ends: Calendar.DateTime.add!(begins, round(val*60.0))}
     end
 
     out = %{

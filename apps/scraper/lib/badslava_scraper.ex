@@ -333,7 +333,10 @@ defmodule Scraper.BadslavaScraper do
     captures = Regex.named_captures(~r/^(?<hour>\d\d?):(?<minute>\d\d)(?<meridiem>[a|p]m)$/, val)
 
     meridiem = captures["meridiem"]
-    hour = Timex.Time.to_24hour_clock(String.to_integer(captures["hour"]), String.to_atom(meridiem))
+    hour = case meridiem do
+      "am" -> String.to_integer(captures["hour"])
+      "pm" -> String.to_integer(captures["hour"]) + 12
+    end
     minute = String.to_integer(captures["minute"])
     case Time.new(hour, minute, 0) do
       {:ok, val} -> val

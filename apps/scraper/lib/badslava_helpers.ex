@@ -240,7 +240,8 @@ defmodule Scraper.BadslavaScraper.Helpers do
             extract_duration(listing)
           val -> 
             {:ok, dtend} = NaiveDateTime.new(date, end_time)
-            Timex.diff(dtend, dtstart, :minutes)
+            {:ok, seconds, _, _} = Calendar.NaiveDateTime.diff(dtend, dtstart)
+            seconds/60
             # IO.inspect note
             # IO.inspect dtstart
             # IO.inspect dtend
@@ -844,9 +845,9 @@ defmodule Scraper.BadslavaScraper.Helpers do
         {hour, _} = Integer.parse(match_map["hour"])
         case meridiem do
           "am" -> 
-            Time.new(Timex.Time.to_24hour_clock(hour, :am), end_minute, 0)
+            Time.new(hour, end_minute, 0)
           "pm" -> 
-            Time.new(Timex.Time.to_24hour_clock(hour, :pm), end_minute, 0)
+            Time.new(hour + 12, end_minute, 0)
         end
     end) 
     |> Enum.take(1)
@@ -872,9 +873,9 @@ defmodule Scraper.BadslavaScraper.Helpers do
     {hour, _} = Integer.parse(match_map["hour"])
     case meridiem do
       "am" -> 
-        Time.new(Timex.Time.to_24hour_clock(hour, :am), end_minute, 0)
+        Time.new(hour, end_minute, 0)
       "pm" -> 
-        Time.new(Timex.Time.to_24hour_clock(hour, :pm), end_minute, 0)
+        Time.new(hour + 12, end_minute, 0)
     end
   end
 
@@ -924,7 +925,7 @@ defmodule Scraper.BadslavaScraper.Helpers do
         week_num = round(Float.ceil(day/7))
         %{
           freq: "monthly",
-          dtstart: dtstart |> Timex.to_naive_datetime,
+          dtstart: dtstart, #|> Calendar.DateTime.to_naive,
           bysetpos: [if week_num == 5 do -1 else week_num end],
           byweekday: [week_day |> String.downcase],
         }
@@ -948,7 +949,7 @@ defmodule Scraper.BadslavaScraper.Helpers do
 
         %{
           freq: "monthly",
-          dtstart: dtstart |> Timex.to_naive_datetime,
+          dtstart: dtstart, #|> Calendar.DateTime.to_naive,
           bysetpos: bysetpos,
           byweekday: [week_day |> String.downcase]
         }
