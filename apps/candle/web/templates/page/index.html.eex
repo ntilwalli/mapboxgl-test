@@ -16,7 +16,7 @@
   </head>
   <body>
     <div id="app-main"></div>
-    <script src="<%= static_path(@conn, "/mapbox/mapbox-gl.js") %>" async></script>
-    <script src="<%= static_path(@conn, "/js/main.js") %>" async></script>
+    <script src="<%= static_path(@conn, "/mapbox/mapbox-gl.js") %>" type="application/javascript" async></script>
+    <script src="<%= static_path(@conn, "/js/main.js") %>" type="application/javascript" async></script>
   </body>
 </html>

@@ -126,7 +126,7 @@ defmodule Listing.Registry do
   end
 
   defp start_listing(listing, w_sup) do
-    self_name = Process.info self, :registered_name
+    {:registered_name, self_name} = Process.info self, :registered_name
     {:ok, pid} = Listing.Worker.Supervisor.start_worker(w_sup, listing, self_name)
     ref = Process.monitor(pid)
     {pid, ref}
