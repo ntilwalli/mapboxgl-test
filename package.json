@@ -1,9 +1,9 @@
 {
   "repository": {},
   "scripts": {
-    "copy-normalize-css": "rm -rf apps/candle/priv/static/normalize; mkdir -p apps/candle/priv/static/normalize; cp -r node_modules/normalize.css/normalize.css apps/candle/priv/static/normalize",
-    "copy-font-awesome-data": "rm -rf apps/candle/priv/static/font-awesome; mkdir -p apps/candle/priv/static/font-awesome; cp -r node_modules/font-awesome/css apps/candle/priv/static/font-awesome; cp -r node_modules/font-awesome/fonts apps/candle/priv/static/font-awesome",
-    "copy-mapbox-data": "rm -rf apps/candle/priv/static/mapbox; mkdir -p apps/candle/priv/static/mapbox; cp -r node_modules/mapbox-gl/dist/ apps/candle/priv/static/mapbox/",
+    "copy-normalize-css": "rm -rf apps/candle/priv/static/normalize; mkdir -p apps/candle/priv/static/normalize; cp -r ./node_modules/normalize.css/normalize.css apps/candle/priv/static/normalize",
+    "copy-font-awesome-data": "rm -rf apps/candle/priv/static/font-awesome; mkdir -p apps/candle/priv/static/font-awesome; cp -r ./node_modules/font-awesome/css apps/candle/priv/static/font-awesome; cp -r ./node_modules/font-awesome/fonts apps/candle/priv/static/font-awesome",
+    "copy-mapbox-data": "rm -rf apps/candle/priv/static/mapbox; mkdir -p apps/candle/priv/static/mapbox; cp -r ./node_modules/mapbox-gl/dist/ apps/candle/priv/static/mapbox/",
     "build-assets": "cp -r apps/candle/web/static/assets/* apps/candle/priv/static",
     "watch-assets": "watch-run -i -p 'apps/candle/web/static/assets/**' npm run build-assets",
     "build-browserify": "rm -rf apps/candle/priv/static/js; mkdir -p apps/candle/priv/static/js; ./node_modules/.bin/browserify apps/candle/web/static/ts/main.ts -p [ tsify ] > apps/candle/priv/static/js/main.js",
