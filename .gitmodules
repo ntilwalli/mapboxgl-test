@@ -1,0 +1,3 @@
+[submodule "custom_deps/geo"]
+	path = custom_deps/geo
+	url = git@github.com:ntilwalli/geo
