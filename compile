@@ -1,2 +1,2 @@
 npm run deploy
-MIX_ENV=prod mix phoenix.digest
+mix phoenix.digest
