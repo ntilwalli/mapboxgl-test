@@ -29,7 +29,7 @@
         
     },
     "files": [
-        "customTypings/validator.d.ts",
+        //"customTypings/validator.d.ts",
         "customTypings/cookie_js.d.ts",
         "customTypings/parse-address.d.ts",
         "customTypings/rrule.d.ts",
