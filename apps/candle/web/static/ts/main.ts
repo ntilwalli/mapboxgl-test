@@ -110,7 +110,7 @@ const wrappedMain = messageBusify(main)
 Cycle.run(wrappedMain, {
   DOM: makeDOMDriver(`#app-main`),
   HTTP: makeHTTPDriver(),
-  Router: makeRouterDriver(createHistory(), routeFunction, {capture: true}),
+  Router: makeRouterDriver(createHistory() as any, routeFunction, {capture: true}),
   Global: makeGlobalDriver(),
   Storage: storageDriver
 })
