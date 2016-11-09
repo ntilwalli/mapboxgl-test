@@ -1,4 +1,0 @@
-"use strict";
-var main_1 = require("./src/main");
-exports.makeMapJSONDriver = main_1.makeMapJSONDriver;
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoibWFpbi5qcyIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi4uLy4uL21haW4udHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IjtBQUFBLG1DQUE0QztBQUcxQyw0QkFITSx3QkFBaUIsQ0FHTiIsInNvdXJjZXNDb250ZW50IjpbImltcG9ydCB7bWFrZU1hcEpTT05Ecml2ZXJ9IGZyb20gJy4vc3JjL21haW4nXG5cbmV4cG9ydCB7XG4gIG1ha2VNYXBKU09ORHJpdmVyXG59XG4iXX0=
