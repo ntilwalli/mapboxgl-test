@@ -76,23 +76,21 @@ export default function process(sources) {
     .publish().refCount()
 
   const toMessageBus$ = O.merge(
-    actions.failed$
-      .map(x => ({
-        to: `/modal/presignup`,
-        message: {
-          type: `error`,
-          data: x
-        }
-      }))//,
-    // attempt$.mapTo({
-    //     type: `waiting`,
-    //     data: true
-    //   }),
-    // actions.stopWaiting$.mapTo({
-    //     type: `waiting`,
-    //     data: false
-    //   })
-  )
+      actions.failed$
+        .map(x => ({
+            type: `error`,
+            data: x
+          })),
+      attempt$.mapTo({
+        type: `waiting`,
+        data: true
+      }),
+      actions.stopWaiting$.mapTo({
+        type: `waiting`,
+        data: false
+      })
+    )
+    .map(x => ({to: `/modal/presignup`, message: x}))
 
   return {
     HTTP: attempt$,

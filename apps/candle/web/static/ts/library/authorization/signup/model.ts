@@ -3,8 +3,8 @@ import Immutable = require('immutable')
 import {combineObj, spread, checkValidity} from '../../../utils'
 
 function isValid(state) {
-  const {name, username, email, password, type} = state
-  if (name && username && email && password && type) {
+  const {name, username, email, password} = state
+  if (name && username && email && password) {
     return true
   } else {
     return false
@@ -16,15 +16,12 @@ function setValid(state) {
   const username = state.get(`username`)
   const email = state.get(`email`)
   const password = state.get(`password`)
-  const type = state.get(`type`)
 
-  return state.set(`valid`, isValid({name, username, email, password, type}))
+  return state.set(`valid`, isValid({name, username, email, password}))
 }
 
 function reducers(actions, inputs) {
   const {name$, username$, email$, password$, errors$} = inputs
-  const userTypeR = actions.userType$
-    .map(userType => state => state.set(`type`, userType))
 
   const nameR = name$.skip(1)
     .map(x => state => {
@@ -52,7 +49,6 @@ function reducers(actions, inputs) {
   
 
   return O.merge(
-    userTypeR,
     nameR,
     usernameR,
     emailR,
@@ -75,7 +71,6 @@ export default function model(actions, inputs) {
   .map((inputs: any) => {
     const {initialValue, name, username, email, password} = inputs
     const state = {
-      type: initialValue && initialValue.type || `individual`,
       name,
       username,
       email,

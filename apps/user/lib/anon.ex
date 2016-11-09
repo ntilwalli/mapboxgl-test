@@ -23,6 +23,10 @@ defmodule User.Anon do
     GenServer.call(server, {:oauth_login, message})
   end
 
+  def oauth_signup(server, message) do
+    GenServer.call(server, {:oauth_signup, message})
+  end
+
   def signup(server, message) do
     GenServer.call(server, {:signup, message})
   end

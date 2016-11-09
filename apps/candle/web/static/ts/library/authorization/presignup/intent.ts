@@ -6,7 +6,7 @@ export default function intent({DOM}) {
     DOM.select(`.appAccountTypeGroup`).events(`click`)
   ).map((ev: any) => ev.target.value)
 
-  const submit$ = DOM.select(`.appSignUpButton`).events(`click`)
+  const submit$ = DOM.select(`.appSignupButton`).events(`click`)
 
   return {
     userType$,

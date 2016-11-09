@@ -11,9 +11,7 @@ import TextInput, {SmartTextInputValidation} from '../../smartTextInput'
 import validator = require('validator')
 const {isEmail, isAlphanumeric, isAlpha} = validator
 
-
-
-function emailParser(val): SmartTextInputValidation {
+function emailValidator(val): SmartTextInputValidation {
   if (val && isEmail(val)) {
     return {value: val, errors: []}
   } else {
@@ -24,57 +22,57 @@ function emailParser(val): SmartTextInputValidation {
 const emailInputProps = O.of({
   placeholder: `E-mail address`,
   name: `email`,
-  required: true,
   styleClass: `.auth-input`
 })
 
-function usernameParser(val): SmartTextInputValidation {
-  if (val && isAlpha(val.substring(0, 1)) && isAlphanumeric(val)) return {value: val, errors: []}
-  else return {value: undefined, errors: [`Username must start with a letter and be alphanumeric`]}
+function usernameValidator(val): SmartTextInputValidation {
+  if (val && isAlpha(val.substring(0, 1)) && isAlphanumeric(val)) {
+    return {value: val, errors: []}
+  } else {
+    return {value: undefined, errors: [`Username must start with a letter and be alphanumeric`]}
+  }
 }
-
 const usernameInputProps = O.of({
   placeholder: `Username`,
   name: `username`,
-  required: true,
   styleClass: `.auth-input`
 })
 
 const nameInputProps = O.of({
   placeholder: `Display name`,
   name: `name`,
-  required: true,
   styleClass: `.auth-input`
 })
+
 
 const BACKEND_URL = `/api_auth/presignup`
 
 
 export default function main(sources, inputs) {
 
-  const error$ = sources.MessageBus.address(`/modal/presignup`)
+  const errors$ = sources.MessageBus.address(`/modal/presignup`)
     .filter(x => x.type === `error`)
     .map(x => x.data)
     .publishReplay(1).refCount()
 
   const nameInput = TextInput(sources, {
     props$: nameInputProps, 
-    error$,
+    errors$,
     initialText$: sources.Global.cookie$
       .map(x => x.suggested_name)
   })
 
   const usernameInput = TextInput(sources, {
-    parser: usernameParser,
+    validator: usernameValidator,
     props$: usernameInputProps, 
-    error$,
+    errors$,
     initialText$: O.of(undefined)
   })
 
   const emailInput = TextInput(sources, {
-    parser: emailParser,
+    validator: emailValidator,
     props$: emailInputProps, 
-    error$,
+    errors$,
     initialText$: O.of(undefined)
   })
 
@@ -84,7 +82,7 @@ export default function main(sources, inputs) {
     email$: emailInput.output$,
     name$: nameInput.output$,
     username$: usernameInput.output$,
-    error$
+    errors$
   }))
 
   const vtree$ = view(combineObj({
@@ -102,7 +100,7 @@ export default function main(sources, inputs) {
       const {type, name, username, email} = state
       return {
         to: `/authorization/presignup`,
-        message: {type: `attempt`, data: {type, name, username, email}}
+        message: {type: `attempt`, data: {type: "individual", name, username, email}}
       }
     })
   }

@@ -3,8 +3,8 @@ import Immutable = require('immutable')
 import {combineObj, spread, checkValidity} from '../../../utils'
 
 function isValid(state) {
-  const {type, name, username, email} = state
-  return type && name && username && email
+  const {name, username, email} = state
+  return name && username && email
 }
 function setValid(state) {
   const name = state.get(`name`)
@@ -16,44 +16,35 @@ function setValid(state) {
 }
 
 function reducers(actions, inputs) {
-  const {name$, username$, email$, error$} = inputs
-  const userTypeR = actions.userType$
-    .map(userType => state => state.set(`type`, userType))
+  const {name$, username$, email$, errors$} = inputs
+  // const userTypeR = actions.userType$
+  //   .map(userType => state => state.set(`type`, userType))
 
   const nameR = name$.skip(1)
     .map(x => state => {
-      if (x.valid)
-        return setValid(state.set(`name`, x.value))
-      else
-        return setValid(state.set(`name`, null))
+      return setValid(state.set(`name`, x))
     })
 
   const usernameR = username$.skip(1)
     .map(x => state => {
-      if (x.valid)
-        return setValid(state.set(`username`, x.value))
-      else
-        return setValid(state.set(`username`, null))
+      return setValid(state.set(`username`, x))
     })
 
   const emailR = email$.skip(1)
     .map(x => state => {
-      if (x.valid)
-        return setValid(state.set(`email`, x.value))
-      else
-        return setValid(state.set(`email`, null))
+      return setValid(state.set(`email`, x))
     })
 
-  const errorR = error$.map(error => state => {
-    return state.set(`errors`, (error && error.errors) ? error.errors.filter(x => x.type === `general`).map(x => x.error) : [])
+  const errorsR = errors$.map(val => state => {
+    return state.set(`errors`, (val && val.errors) ? val.errors.filter(x => x.type === `general`).map(x => x.error) : [])
   })
 
   return O.merge(
-    userTypeR,
+    //userTypeR,
     nameR,
     usernameR,
     emailR,
-    errorR
+    errorsR
   )
 }
 
@@ -68,8 +59,8 @@ export default function model(actions, inputs) {
   }).take(1)
     .map((info: any) => {
       const {initialValue, name, username, email} = info
-      const userType = initialValue && initialValue.type || `individual`
-      const state = {name, username, email, type: userType}
+      //const userType = initialValue && initialValue.type || `individual`
+      const state = {name, username, email}//, type: userType}
       return spread(state, {
         valid: isValid(state),
         errors: []

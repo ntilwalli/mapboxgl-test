@@ -13,7 +13,7 @@ function renderSignupButton(state) {
         disabled: !state.valid
       },
       attrs: {
-        type: `submit`, 
+        type: `button`, 
         value: `Sign-up`, 
         disabled: !state.valid
       }
