@@ -1,3 +1,2 @@
-pwd
 npm run deploy
 mix phoenix.digest
