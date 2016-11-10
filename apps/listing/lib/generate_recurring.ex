@@ -18,19 +18,19 @@ defmodule Listing.GenerateRecurring do
 
   def init({:ok, registry_name}) do
     Logger.info "Starting recurrence worker..."
-    work(registry_name)
-    schedule_work()
+    #work(registry_name)
+    schedule_work(1)
     {:ok, registry_name}
   end
 
   def handle_info(:work, registry_name = state) do
     work(registry_name)
-    schedule_work()
+    schedule_work(24 * 60 * 60)
     {:noreply, state}
   end
 
-  def schedule_work() do
-    Process.send_after(self(), :work, 24 * 60 * 60 * 1000)
+  def schedule_work(wait_duration) do
+    Process.send_after(self(), :work, wait_duration * 1000)
   end
 
   defp work(registry_name) do

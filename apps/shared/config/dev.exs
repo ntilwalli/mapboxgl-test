@@ -7,7 +7,7 @@ config :shared, Shared.Repo,
   # password: "",
   # database: "spotlight_repo",
   # hostname: "localhost",
-  url: System.get_env("DATABASE_URL"),
+  url: System.get_env("DEV_DATABASE_URL"),
   pool_size: 10,
   extensions: [
     {Geo.PostGIS.Extension, []}

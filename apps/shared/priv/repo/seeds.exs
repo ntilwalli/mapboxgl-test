@@ -10,3 +10,4 @@
 # We recommend using the bang functions (`insert!`, `update!`
 # and so on) as they will fail if something goes wrong.
 
+Shared.Repo.insert!(%Shared.User{ id: 0, type: "root" })

@@ -6,20 +6,19 @@ defmodule Scraper.Worker do
   end
 
   def init(:ok) do
-    work()
-    schedule_work()
+    schedule_work(1)
     {:ok, []}
   end
 
   def handle_info(:work, state) do
     #IO.puts "Processing"
     work()
-    schedule_work()
+    schedule_work(12 * 60 * 60)
     {:noreply, state}
   end
 
-  defp schedule_work() do
-    Process.send_after(self(), :work, 24 * 60 * 60 * 1000)
+  defp schedule_work(wait_duration) do
+    Process.send_after(self(), :work, wait_duration * 1000)
   end
 
   defp work() do
