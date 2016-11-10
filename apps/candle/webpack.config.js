@@ -2,10 +2,10 @@ const webpack = require('webpack')
 const CompressionPlugin = require('compression-webpack-plugin')
 const path = require('path')
 const config = {
-  context: path.join(__dirname, 'apps/candle/web/static/ts')
+  context: path.join(__dirname, 'web/static/ts')
   , entry: './main'
   , output: {
-      path: 'apps/candle/priv/static/js',
+      path: 'priv/static/js',
       filename: 'main.js'
   }
   , resolve: {

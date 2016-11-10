@@ -2,8 +2,8 @@
     "compilerOptions": {
         "target": "es5",
         //"module": "commonjs",
-        "rootDir": "apps/candle/web/static/ts",
-        "outDir": "apps/candle/priv/static/ts",
+        "rootDir": "web/static/ts",
+        "outDir": "priv/static/ts",
         //"sourceRoot": "apps/candle/priv/static/ts",
         "sourceMap": true,
         "lib": [
@@ -34,7 +34,7 @@
         "customTypings/parse-address.d.ts",
         "customTypings/rrule.d.ts",
         "customTypings/cycle-storage.d.ts",
-        "apps/candle/web/static/ts/main.ts"
+        "web/static/ts/main.ts"
     ],
     "exclude": [
       "node_modules",

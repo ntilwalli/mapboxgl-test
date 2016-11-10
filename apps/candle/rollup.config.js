@@ -75,7 +75,7 @@ const typescriptOptions = {
 }
 
 export default {
-  entry: 'apps/candle/web/static/ts/main.js',
+  entry: 'web/static/ts/main.js',
   format: 'cjs',
   plugins: [
     typescript(typescriptOptions), 
@@ -86,7 +86,7 @@ export default {
     json(), 
     sourcemaps()
   ],
-  dest: 'apps/candle/priv/static/js/main.js', // equivalent to --output,
+  dest: 'priv/static/js/main.js', // equivalent to --output,
   sourceMap: 'inline'
   // moduleContext: {
   //   './node_modules/superagent/lib/request-base.js': 'this'

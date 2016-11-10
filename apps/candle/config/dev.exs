@@ -11,7 +11,10 @@ config :candle, Candle.Endpoint,
   debug_errors: true,
   code_reloader: true,
   check_origin: false,
-  watchers: [exit_on_eof: ["npm run watch"]]
+  watchers: [exit_on_eof: [
+    "npm run watch", 
+    cd: Path.expand("../", __DIR__)
+  ]]
 
 # Watch static and templates for browser reloading.
 config :candle, Candle.Endpoint,
