@@ -3,24 +3,47 @@ defmodule Candle.UserController do
   plug Ueberauth
   import Ecto.Changeset, only: [apply_changes: 1]
   alias Candle.Auth.Helpers
-  alias Shared.Model.Search.Query
-
+  alias Shared.Message.Search.Query, as: SearchQuery
+  alias Shared.Message.LngLat, as: MessageLngLat
+  alias Shared.Model.LngLat, as: ModelLngLat
   def geotag(conn, %{"lat" => lat, "lng" => lng} = params, _current_user, _claims) do
-    IO.inspect params
-    geo_tag_url = "https://api.factual.com/geotag"
-    factual_key = "99aLr5p8dp2AjzpGNGLMpc4NTWJx07UWbKl34ALW"
-    url = "#{geo_tag_url}?latitude=#{lat}&longitude=#{lng}&KEY=#{factual_key}"
-    #IO.inspect url
-    resp = HTTPoison.get! url
-    body = resp.body
-    #IO.inspect body
-    conn
-    |> render("route.json", message: %{type: "success", data: body})
+    cs = MessageLngLat.changeset(%MessageLngLat{}, params)
+    case cs.valid? do
+      true ->
+        %{lng: lng, lat: lat} = apply_changes(cs) 
+        geo_tag_url = "https://api.factual.com/geotag"
+        factual_key = "99aLr5p8dp2AjzpGNGLMpc4NTWJx07UWbKl34ALW"
+        url = "#{geo_tag_url}?latitude=#{lat}&longitude=#{lng}&KEY=#{factual_key}"
+        #IO.inspect url
+        resp = HTTPoison.get! url
+        body = resp.body
+        #IO.inspect body
+        conn
+        |> render("route.json", message: %{type: "success", data: body})
+      false ->
+        conn
+        |> render("route.json", message: %{
+          type: "error", 
+          data: "Could not retrieve geotag, sent lng/lat (#{Float.to_string(lng)}/#{Float.to_string(lat)}) is invalid."
+        })
+    end
   end
 
   def timezone(conn, %{"lat": lat, "lng": lng} = params, _current_user, _claims) do
-    conn
-    |> render("route.json", message: %{type: "success", data: "timezone"})
+    cs = ModelLngLat.changeset(%ModelLngLat{}, params)
+    case cs.valid? do
+      true ->
+        %{timezone: timezone} = apply_changes(cs)
+
+        conn
+        |> render("route.json", message: %{type: "success", data: timezone})
+      false ->
+        conn
+        |> render("route.json", message: %{
+          type: "error", 
+          data: "Could not retrieve timezone, sent lng/lat (#{Float.to_string(lng)}/#{Float.to_string(lat)}) is invalid."
+        })
+    end
   end
 
   def route(conn, %{"route" => "/search", "data" => query} = params, current_user, _claims) do
@@ -28,7 +51,7 @@ defmodule Candle.UserController do
     #IO.inspect params
     user = Helpers.get_user(conn, current_user)
 
-    cs = Query.changeset(%Query{}, query)
+    cs = SearchQuery.changeset(%SearchQuery{}, query)
     case cs.valid? do
       true -> 
         q = apply_changes(cs)
@@ -52,10 +75,17 @@ defmodule Candle.UserController do
     end
   end
 
-  # def route(conn, params, current_user, _claims) do
-  #   IO.puts "Routed to user controller default"
-  #   IO.inspect params
-  #   conn
-  #   |> render("route.json", %{message: %{type: "success"}})
-  # end
+  def route(conn, %{"route" => "/retrieve_listing", "data" => listing_id} = params, current_user, _claims) do
+    user = Helpers.get_user(conn, current_user)
+
+    case Integer.parse(listing_id) do
+      {whole, _} -> 
+        {:ok, listing} = User.Registry.retrieve_listing(User.Registry, user, whole)
+        conn
+        |> render("route.json", message: %{type: "success", data: listing})
+      :error ->
+        conn
+        |> render("route.json", message: %{type: "error", data: "Sent listing id (#{listing_id}) invalid."})
+    end
+  end
 end

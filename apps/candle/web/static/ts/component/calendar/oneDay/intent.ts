@@ -1,5 +1,5 @@
 import {Observable as O} from 'rxjs'
-import {processHTTP} from '../../../utils'
+import {processHTTP, inflateListing} from '../../../utils'
 import moment = require('moment')
 
 const onlySuccess = x => x.type === "success"
@@ -8,22 +8,10 @@ const onlySingleBadslava = x => {
   const listing = x.listing
   return listing.type === "single" && listing.meta.type === "badslava" && listing.cuando.begins
 }
-const inflate = x => {
-  const listing = x.listing
-  const {cuando, meta} = listing
-  const {begins, ends} = cuando
-  const {sign_up, check_in} = meta
 
-  if (begins) {
-    const inflated_begins = moment(begins)
-    listing.cuando.begins = inflated_begins
-  }
-
-  if (ends) {
-    listing.cuando.ends = moment(ends)
-  }
-
-  return x
+function drillInflate(result) {
+  result.listing = inflateListing(result.listing)
+  return result
 }
 
 export default function intent(sources) {
@@ -32,7 +20,7 @@ export default function intent(sources) {
   const success$ = good$
     .filter(onlySuccess)
     .pluck(`data`)
-    .map(x => x.filter(onlySingleBadslava).map(inflate))
+    .map(x => x.filter(onlySingleBadslava).map(drillInflate))
     .publish().refCount()
 
   const cached$ = sources.Storage.local.getItem(`calendar/oneDay`)
@@ -41,7 +29,7 @@ export default function intent(sources) {
       if (stored) {
         const val = JSON.parse(stored)
         val.searchDateTime = moment(val.searchDateTime)
-        val.results = val.results.map(inflate)
+        val.results = val.results.map(drillInflate)
         // console.log(`stored transformed:`, stored)
         return val
       }

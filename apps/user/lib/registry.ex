@@ -22,9 +22,11 @@ defmodule User.Registry do
   end
 
   def search(server, user, query) do
-    IO.puts "Search server: #{server}"
     GenServer.call(server, {:search, user, query})
-    #{:ok, []}
+  end
+
+  def retrieve_listing(server, user, listing_id) do
+    GenServer.call(server, {:retrieve_listing, user, listing_id})
   end
 
   defp add_auth_process(user, %{auth_supervisor: auth_supervisor, auth: auth, auth_ref: auth_ref} = state) do
@@ -141,6 +143,27 @@ defmodule User.Registry do
         end
     end
   end
+
+  def handle_call({:retrieve_listing, user, listing_id}, _from, %{auth: auth, anon: anon} = state) do
+    case user do
+      %{user_id: user_id} ->
+        pid = auth[user_id]
+        {:reply, User.Auth.retrieve_listing(pid, listing_id), state}
+      %{anonymous_id: anonymous_id} ->
+        case anon[anonymous_id] do
+          nil ->
+            new_state = start_anonymous_user(anonymous_id, state)
+            %{anon: anon} = new_state
+            pid = anon[anonymous_id]
+            out = User.Anon.retrieve_listing(pid, listing_id)
+            {:reply, out, new_state}
+          pid -> 
+            out = User.Anon.retrieve_listing(pid, listing_id)
+            {:reply, out, state}
+        end
+    end
+  end
+
 
   def handle_info({:DOWN, ref, :process, _pid, reason}, %{anon_supervisor: anon_supervisor, auth: auth, anon: anon, auth_ref: auth_ref, anon_ref: anon_ref} = state) do
     case reason do

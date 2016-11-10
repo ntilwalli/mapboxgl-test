@@ -25,6 +25,7 @@ import getModal from './getModal'
 import intent from './intent'
 import model from './model'
 import view from './view'
+import routing from './routing'
 
 
 import messageBusify from './messageBusify'
@@ -45,7 +46,9 @@ function main(sources) {
     Authorization: authService.output,
     Geolocation: geoService.output
   }
-  const out = normalizeComponent(OneDayCalendar(sources, inputs))
+  
+  //const out = normalizeComponent(OneDayCalendar(sources, inputs))
+  const out = routing(sources, inputs)
 
   const actions = intent(sources)
   const showMenu$ = sources.MessageBus.address(`main`).filter(x => x === `showLeftMenu`)

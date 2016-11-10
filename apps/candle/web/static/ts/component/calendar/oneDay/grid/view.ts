@@ -296,7 +296,7 @@ function renderResult(result) {
   const {name, cuando, donde, meta} = listing
   const {begins, ends} = cuando
   const {cost, sign_up, stage_time, performer_limit} = meta
-  return div(`.result`, [
+  return div(`.appResult.result`, {props: {searchResult: result}}, [
     div(`.left`, [
       renderName(name),
       renderBegins(cuando),

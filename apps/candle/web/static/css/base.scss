@@ -38,6 +38,11 @@ button, input {
   width: 100%;
 }
 
+.root-container {
+  height: 100%;
+  width: 100%;
+}
+
 .no-scroll {
   overflow: hidden;
 }
@@ -52,6 +57,11 @@ button, input {
 
 .fa-1-5x {
   font-size: 1.5rem;
+}
+
+.waiting-screen { 
+  height: 100%;  
+  width: 100%;
 }
 
 .flex-center {

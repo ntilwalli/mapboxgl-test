@@ -1,17 +1,21 @@
-defmodule Shared.Model.Search.Query.Center do
+defmodule Shared.Message.Search.Query do
   use Shared.Lib, :model
 
   @derive {Poison.Encoder, except: [:__meta__]}
   @primary_key false
   embedded_schema do
-    field :lng, :float
-    field :lat, :float
+    field :begins, :utc_datetime
+    field :ends, :utc_datetime
+    field :radius, :float
+    embeds_one :center, Shared.Model.LngLat
   end
 
-  @required_fields [:lng, :lat]
+  @required_fields [:begins, :ends, :radius]
+
   def changeset(schema, params \\ :empty) do
     schema
     |> cast(params, @required_fields)
+    |> cast_embed(:center)
     |> validate_required(@required_fields)
   end
 end

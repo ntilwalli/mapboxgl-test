@@ -22,7 +22,19 @@ function main(sources, inputs) {
   const vtree$ = view(state$) 
 
   return {
-    DOM: vtree$
+    DOM: vtree$,
+    Router: actions.click$.map(val => {
+      const listing = val.listing
+      const out = {
+        pathname: `/listing/${listing.id}`,
+        action: `PUSH`,
+        state: listing
+      }
+
+      console.log(out)
+
+      return out
+    })
   }
 }
 

@@ -5,10 +5,10 @@ defmodule User.Anon do
   import Ecto.Query.API, only: [fragment: 1]
   import Shared.Macro.GeoGeography
   alias Shared.Repo
-  alias Shared.Model.Search.Query, as: SearchQuery
+  alias Shared.Message.Search.Query, as: SearchQuery
   
-  def start_link(anonymous_id) do
-    GenServer.start_link(__MODULE__, {:ok, anonymous_id}, [])
+  def start_link(listing_registry, anonymous_id) do
+    GenServer.start_link(__MODULE__, {:ok, listing_registry, anonymous_id}, [])
   end
 
   def route(server, message) do
@@ -35,8 +35,12 @@ defmodule User.Anon do
     GenServer.call(server, {:search, query})
   end
 
-  def init({:ok, anonymous_id}) do
-    {:ok, %{anonymous_id: anonymous_id}}
+  def retrieve_listing(server, listing_id) do
+    GenServer.call(server, {:retrieve_listing, listing_id})
+  end
+
+  def init({:ok, listing_registry, anonymous_id}) do
+    {:ok, %{anonymous_id: anonymous_id, listing_registry: listing_registry}}
   end
 
   def handle_call({:login, info}, _from, state) do
@@ -74,8 +78,13 @@ defmodule User.Anon do
 
   def handle_call({:search, %SearchQuery{} = query} , _from, state) do
     listings = User.Helpers.search(query)
-
     {:reply, {:ok, listings}, state}
+  end
+
+  def handle_call({:retrieve_listing, id} , _from, %{listing_registry: listing_registry} = state) do
+    {:ok, pid} = Listing.Registry.lookup(listing_registry, id)
+    {:ok, listing} = Listing.Worker.retrieve(pid)
+    {:reply, {:ok, listing}, state}
   end
 
 end

@@ -3,7 +3,7 @@ defmodule User.Helpers do
   import Ecto.Query.API, only: [fragment: 1]
   import Shared.Macro.GeoGeography
   alias Shared.Repo
-  alias Shared.Model.Search.Query, as: SearchQuery
+  alias Shared.Message.Search.Query, as: SearchQuery
 
   def search(%SearchQuery{} = query) do
     %SearchQuery{begins: begins, ends: ends, center: %{lng: lng, lat: lat}, radius: radius} = query

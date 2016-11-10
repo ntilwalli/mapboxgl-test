@@ -29,6 +29,10 @@ defmodule Listing.Worker do
     GenServer.call(server, {:add_child, listing, user})#, listing, user})
   end
 
+  def retrieve(server) do
+    GenServer.call(server, :retrieve)
+  end
+
   # def stop(server) do
   #   GenServer.stop(server, :stop)
   # end  
@@ -41,6 +45,10 @@ defmodule Listing.Worker do
         :ok = ensure_searchability(listing)
         {:ok, %{listing: listing, registry_name: r_name}, 60 * 1_000}
     end
+  end
+
+  def handle_call(:retrieve, _from, %{listing: listing} = state) do
+    {:reply, {:ok, listing}, state}
   end
 
   #def handle_call({:add_child, listing, user}, _from, %{listing: listing, registry_name: r_name} = state) do

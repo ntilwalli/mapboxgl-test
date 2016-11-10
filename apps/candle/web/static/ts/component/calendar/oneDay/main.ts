@@ -94,6 +94,7 @@ function main(sources, inputs) {
 
   return {
     DOM: vtree$,
+    Router: grid.Router,
     HTTP: retrieve$,
     Storage: state$
       .filter((state: any) => state.searchDateTime && state.results && state.filters)
