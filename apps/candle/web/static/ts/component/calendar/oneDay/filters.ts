@@ -205,7 +205,8 @@ function main(sources, inputs) {
   const state$ = model(actions, {props$, stageTime$: stageTimeProxy$})
 
   const stageTime = SmartTextInput(sources, {
-    props$: props$.pluck(`stageTime`), 
+    props$: O.of({}),
+    initialText$: props$.pluck(`stageTime`), 
     parser: stageTimeParser,
     disabled$: state$.map(x => !x.filterStageTime).distinctUntilChanged()
   })
