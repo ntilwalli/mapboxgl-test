@@ -1,3 +1,5 @@
+@import '../../../variables';
+
 .controller {
   position: fixed;
   background-color: white;
@@ -30,7 +32,7 @@
   }
 
   .menu-button:hover {
-    color: orange;
+    color:$crayola-orange;
   }
 
   .date-controller {
@@ -54,11 +56,11 @@
     // }
 
     .add-day:hover {
-      color: orange;
+      color: $crayola-orange;
     }
 
     .subtract-day:hover {
-      color: orange;
+      color: $crayola-orange;
     }
   }
 
@@ -66,10 +68,10 @@
     padding-left: .7rem;
   }
   .show-filters:hover {
-    color: orange;
+    color: $crayola-orange;
   }
 
   .auth-button:hover {
-    color: orange;
+    color: $crayola-orange;
   }
 }
