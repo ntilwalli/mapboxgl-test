@@ -35,7 +35,7 @@ function view(state$) {
     .map(state => {
       const {listing} = state
       const donde = listing.donde
-      console.log(donde)
+      //console.log(donde)
       return div(`.listing-profile`, [
         div([listing.name]),
         div(`#listing-location-map`)
@@ -101,7 +101,6 @@ function mapview(state$) {
 
 export function main(sources, inputs) {
   const actions = intent(sources)
-  console.log(inputs)
   const state$ = model(actions, inputs)
   const vtree$ = view(state$)
   const mapjson$ = mapview(state$)
