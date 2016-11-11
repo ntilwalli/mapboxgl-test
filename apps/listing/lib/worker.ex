@@ -48,7 +48,7 @@ defmodule Listing.Worker do
   end
 
   def handle_call(:retrieve, _from, %{listing: listing} = state) do
-    {:reply, {:ok, listing}, state}
+    {:reply, {:ok, %{listing: listing}}, state}
   end
 
   #def handle_call({:add_child, listing, user}, _from, %{listing: listing, registry_name: r_name} = state) do

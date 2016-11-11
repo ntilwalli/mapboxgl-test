@@ -1,3 +1,4 @@
+@import '../../../variables';
 .one-day-grid {
   padding-top: 2rem;
   width: 100%;
@@ -40,16 +41,10 @@
     background-color: lightgray;
   }
 
-  .round-one::before {
-    content: 'Round 1:'
-  }
-  .round-two::before {
-    content: 'Round 2:'
-  }
-
   .time {
     margin-left: 0.5rem;
   }
+  
   .begins::before {
     content: 'Begins:'
   }
@@ -78,7 +73,7 @@
 
   // }
   .near-future {
-    color: orange;
+    color: $crayola-orange;
   }
   .in-progress {
     color: green;

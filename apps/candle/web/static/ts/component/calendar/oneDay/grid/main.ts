@@ -23,15 +23,13 @@ function main(sources, inputs) {
 
   return {
     DOM: vtree$,
-    Router: actions.click$.map(val => {
-      const listing = val.listing
+    Router: actions.click$.map(val => { 
+      console.log(val)
       const out = {
-        pathname: `/listing/${listing.id}`,
+        pathname: `/listing/${val.listing.id}`,
         action: `PUSH`,
-        state: listing
+        state: val
       }
-
-      console.log(out)
 
       return out
     })

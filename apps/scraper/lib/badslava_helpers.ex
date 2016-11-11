@@ -377,7 +377,12 @@ defmodule Scraper.BadslavaScraper.Helpers do
               type: "minimum_purchase",
               data: %{minimum_purchase: minimum_purchase}
             }
-          true -> %{type: "free"}
+          true -> 
+            case Map.get(listing, "cost") do
+              "Free" -> %{type: "free"}
+              "Paid" -> %{type: "paid"}
+              _ -> raise ArgumentError, message: "Unknown cost type"
+            end
         end
 
         out = case out do
@@ -446,6 +451,7 @@ defmodule Scraper.BadslavaScraper.Helpers do
                 %{out | type: "cover_or_minimum_purchase"}
               true -> out
             end
+          _ -> out
         end
 
         out
@@ -458,7 +464,7 @@ defmodule Scraper.BadslavaScraper.Helpers do
       ~r/\$(?<cover>\d\d?) cover/i,
       ~r/\$(?<cover>\d\d?) plus .* drink/i,
       ~r/\$(?<cover>\d\d?) flat fee/i,
-      ~r/\$(?<cover>\d\d?) for \d min/i,
+      ~r/\$(?<cover>\d\d?) for \d ?min/i,
       ~r/(?<cover>a) dollar or a drink/i,
       ~r/mic costs \$(?<cover>\d\d?)/i,
       ~r/plus \$(?<cover>\d\d?)/i,
@@ -613,7 +619,11 @@ defmodule Scraper.BadslavaScraper.Helpers do
   defp extract_contact_info(listing) do
     #IO.puts "extract contact info..."
     note = listing["note"]
-    out = %{}
+    out = %{
+      email: Map.get(listing, "email"),
+      phone: Map.get(listing, "phone")
+    }
+
     if note do
       email_regex = ~r/(?<email>([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?))/
       if match_map = Regex.named_captures(email_regex, note) do
@@ -630,6 +640,9 @@ defmodule Scraper.BadslavaScraper.Helpers do
         out = Map.put(out, :website, match_map["website"])
       end
     end
+    # IO.inspect listing
+    # IO.inspect note
+    # IO.inspect out
 
     out
   end
@@ -660,7 +673,7 @@ defmodule Scraper.BadslavaScraper.Helpers do
         out = out ++ [%{type: "email_priority"}]
       end
 
-      if Regex.match?(~r/plus if you email/i, note) do
+      if Regex.match?(~r/plus if you e-?mail/i, note) do
         out = out ++ [%{type: "email_priority"}]
       end
 

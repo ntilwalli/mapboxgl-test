@@ -13,6 +13,12 @@ const routes = [
 
 const onlySuccess = x => x.type === "success"
 const onlyError = x => x.type === "error"
+
+function drillInflate(result) {
+  result.listing = inflateListing(result.listing)
+  return result
+}
+
 function intent(sources) {
   const {HTTP} = sources
   const {good$, bad$, ugly$} = processHTTP(sources, `getListingById`)
@@ -20,7 +26,7 @@ function intent(sources) {
     .do(x => console.log(`got listing`, x))
     .filter(onlySuccess)
     .pluck(`data`)
-    .map(inflateListing)
+    .map(drillInflate)
     .publish().refCount()
   
   const notFound$ = good$
@@ -53,12 +59,12 @@ function fromRoute(route: any, sources, inputs, actions): any {
   } else {
 
     if (pushState) {
-      //console.log(`Got push state`, pushState)
+      console.log(`Got push state`, pushState)
       return Profile(
         spread(sources, {
           Router: Router.path(route.path.substring(1))
         }), 
-        spread(inputs, {props$: O.of(pushState)})
+        spread(inputs, {props$: O.of(drillInflate(pushState))})
       )
     } else {
       const listingId = route.path.substring(1)
@@ -68,10 +74,10 @@ function fromRoute(route: any, sources, inputs, actions): any {
           span(`.loader`, [])
         ])),
         Router: O.merge(
-          actions.listing$.map(listing => ({
+          actions.listing$.map(result => ({
             action: `push`,
-            state: listing,
-            pathname: `/listing/${listing.id}`
+            state: result,
+            pathname: `/listing/${result.listing.id}`
           })), 
           actions.notFound$.map(message => ({
             action: `push`,

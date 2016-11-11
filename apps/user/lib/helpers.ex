@@ -5,6 +5,19 @@ defmodule User.Helpers do
   alias Shared.Repo
   alias Shared.Message.Search.Query, as: SearchQuery
 
+  def gather_listings_info(query, listing_registry) do
+    search_results = search(query)
+    listings_info =
+      search_results
+      |> Enum.map(fn l -> 
+          {:ok, pid} = Listing.Registry.lookup(listing_registry, l.listing.id)
+          {:ok, listing_info} = Listing.Worker.retrieve(pid)
+          %{l | listing: listing_info.listing}
+        end)
+
+    listings_info
+  end
+
   def search(%SearchQuery{} = query) do
     %SearchQuery{begins: begins, ends: ends, center: %{lng: lng, lat: lat}, radius: radius} = query
     point = %Geo.Point{coordinates: {lng, lat}, srid: 4326}

@@ -36,9 +36,9 @@ defmodule User.Auth do
     {:stop, :normal, :ok, nil}
   end
 
-  def handle_call({:search, %SearchQuery{} = query} , _from, state) do
-    listings = User.Helpers.search(query)
-    {:reply, {:ok, listings}, state}
+  def handle_call({:search, %SearchQuery{} = query} , _from, %{listing_registry: l_reg} = state) do
+    listings_info = User.Helpers.gather_listings_info(query, l_reg)
+    {:reply, {:ok, listings_info}, state}
   end
 
   def handle_call({:retrieve_listing, id} , _from, %{listing_registry: listing_registry} = state) do
