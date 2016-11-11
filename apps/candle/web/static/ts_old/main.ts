@@ -109,7 +109,7 @@ Cycle.run(main, {
   DOM: makeDOMDriver(`#app-main`),
   MapJSON: makeMapJSONDriver(
     `pk.eyJ1IjoibXJyZWRlYXJzIiwiYSI6ImNpbHJsZnJ3NzA4dHZ1bGtub2hnbGVnbHkifQ.ph2UH9MoZtkVB0_RNBOXwA`),
-  Router: makeRouterDriver(createHistory(), routeFunction, {capture: true}),
+  Router: makeRouterDriver(createHistory() as any, routeFunction, {capture: true}),
   Global: makeGlobalDOMEventDriver(),
   Storage: storageDriver,
   HTTP: makeHTTPDriver(),

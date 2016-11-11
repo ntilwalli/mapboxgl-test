@@ -6,11 +6,12 @@ import makeGlobalDriver from './globalDriver'
 import {makeRouterDriver} from 'cyclic-router'
 import {createHistory} from 'history';
 import storageDriver from '@cycle/storage'
-import isolate from '@cycle/isolate'
+import {makeMapJSONDriver} from 'cycle-mapboxgl'
+//import isolate from '@cycle/isolate'
 import queryString = require('query-string')
 
-// import {makeMapJSONDriver} from 'cycle-mapboxgl'
-// import isolate from '@cycle/isolate'
+
+
 import {normalizeComponent, createProxy, spread} from './utils'
 
 import routeFunction from './routeFunction'
@@ -100,6 +101,7 @@ function main(sources) {
 
   return spread(out, {
     DOM: vtree$,
+    MapJSON: O.merge(out.MapJSON),
     Global: O.merge(out.Global, authService.Global, fromModalGlobal),
     HTTP: O.merge(out.HTTP, geoService.HTTP, authService.HTTP, fromModalHTTP),
     Router: O.merge(out.Router, toRouter$, fromModalRouter),
@@ -112,6 +114,8 @@ const wrappedMain = messageBusify(main)
 
 Cycle.run(wrappedMain, {
   DOM: makeDOMDriver(`#app-main`),
+  MapJSON: makeMapJSONDriver(
+    `pk.eyJ1IjoibXJyZWRlYXJzIiwiYSI6ImNpbHJsZnJ3NzA4dHZ1bGtub2hnbGVnbHkifQ.ph2UH9MoZtkVB0_RNBOXwA`),
   HTTP: makeHTTPDriver(),
   Router: makeRouterDriver(createHistory() as any, routeFunction, {capture: true}),
   Global: makeGlobalDriver(),

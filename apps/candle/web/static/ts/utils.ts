@@ -117,7 +117,7 @@ export function blankComponent() {
     Global: O.never(),
     Storage: O.never(),
     HTTP: O.never(),
-    Heartbeat: O.never(),
+    //Heartbeat: O.never(),
     message$: O.never()
   }
 }
@@ -130,7 +130,7 @@ export function blankComponentUndefinedDOM() {
     Global: O.never(),
     Storage: O.never(),
     HTTP: O.never(),
-    Heartbeat: O.never(),
+    //Heartbeat: O.never(),
     message$: O.never()
   }
 }
@@ -149,7 +149,7 @@ function mergeSelective(...sinks) {
 }
 
 export function mergeSinks(...components) {
-  //const MapJSON = mergeSelective(...components.map(c => c.MapJSON).filter(x => !!x)).publish().refCount()
+  const MapJSON = mergeSelective(...components.map(c => c.MapJSON).filter(x => !!x)).publish().refCount()
   const HTTP = mergeSelective(...components.map(c => c.HTTP).filter(x => !!x)).publish().refCount()
   const Router = mergeSelective(...components.map(c => c.Router).filter(x => !!x)).publish().refCount()
   const Global = mergeSelective(...components.map(c => c.Global).filter(x => !!x)).publish().refCount()
@@ -157,14 +157,14 @@ export function mergeSinks(...components) {
   //const Heartbeat = mergeSelective(...components.map(c => c.Heartbeat).filter(x => !!x)).publish().refCount()
   const MessageBus = mergeSelective(...components.map(c => c.MessageBus$).filter(x => !!x)).publish().refCount()
   return {
-    HTTP, Router, Global, Storage, MessageBus
+    MapJSON, HTTP, Router, Global, Storage, MessageBus
   }
 }
 
 export function normalizeComponent(component) {
   return spread(component, {
     DOM: defaultNever(component, `DOM`).publish().refCount(),
-    // MapJSON: defaultNever(component, 'MapJSON').publish().refCount(),
+    MapJSON: defaultNever(component, 'MapJSON').publish().refCount(),
     Router: defaultNever(component, `Router`).publish().refCount(),
     Global: defaultNever(component, `Global`).publish().refCount(),
     Storage: defaultNever(component, `Storage`).publish().refCount(),
@@ -177,7 +177,7 @@ export function normalizeComponent(component) {
 export function componentify(component$) {
   return {
     DOM: normalizeSink(component$, `DOM`).publish().refCount(),
-    //MapJSON: normalizeSink(component$, `MapJSON`).publish().refCount(),
+    MapJSON: normalizeSink(component$, `MapJSON`).publish().refCount(),
     Router: normalizeSink(component$, `Router`).publish().refCount(),
     Global: normalizeSink(component$, `Global`).publish().refCount(),
     Storage: normalizeSink(component$, `Storage`).publish().refCount(),

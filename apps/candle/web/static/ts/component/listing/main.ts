@@ -53,13 +53,13 @@ function fromRoute(route: any, sources, inputs, actions): any {
   } else {
 
     if (pushState) {
-      console.log(`Got push state`)
-      console.log(pushState)
-      return Profile(spread(
-        sources, {
-        props$: O.of(pushState),
-        Router: Router.path(route.path.substring(1))
-      }), inputs)
+      //console.log(`Got push state`, pushState)
+      return Profile(
+        spread(sources, {
+          Router: Router.path(route.path.substring(1))
+        }), 
+        spread(inputs, {props$: O.of(pushState)})
+      )
     } else {
       const listingId = route.path.substring(1)
       console.log(`No push state, retrieving listing by id ${listingId}`)
@@ -87,7 +87,7 @@ function fromRoute(route: any, sources, inputs, actions): any {
             data: listingId
           },
           category: `getListingById`
-        })
+        }).delay(0)  // ensure sinks are wired up before firing this
       }
     }
   }
