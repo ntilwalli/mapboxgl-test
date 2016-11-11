@@ -8,15 +8,15 @@
     <meta name="author" content="">
 
     <title>Candle - Go out, do something, make it count</title>
-    <link rel="stylesheet" href="<%= static_path(@conn, "/normalize/normalize.css") %>">
-    <!--<link rel="stylesheet" href="<%= static_path(@conn, "/bootstrap/css/bootstrap.css") %>">-->
-    <link rel="stylesheet" href="<%= static_path(@conn, "/mapbox/mapbox-gl.css") %>">
-    <link rel="stylesheet" href="<%= static_path(@conn, "/font-awesome/css/font-awesome.min.css") %>">
-    <link rel="stylesheet" href="<%= static_path(@conn, "/css/base.css") %>">
+    <link rel="stylesheet" type="text/css" href="<%= static_path(@conn, "/normalize/normalize.css") %>">
+    <!--<link rel="stylesheet" type="text/css" href="<%= static_path(@conn, "/bootstrap/css/bootstrap.css") %>">-->
+    <link rel="stylesheet" type="text/css" href="<%= static_path(@conn, "/mapbox/mapbox-gl.css") %>">
+    <link rel="stylesheet" type="text/css" href="<%= static_path(@conn, "/font-awesome/css/font-awesome.min.css") %>">
+    <link rel="stylesheet" type="text/css" href="<%= static_path(@conn, "/css/base.css") %>">
   </head>
   <body>
     <div id="app-main"></div>
-    <script src="<%= static_path(@conn, "/mapbox/mapbox-gl.js") %>" type="application/javascript" async></script>
-    <script src="<%= static_path(@conn, "/js/main.js") %>" type="application/javascript" async></script>
+    <script src="<%= static_path(@conn, "/mapbox/mapbox-gl.js") %>" type="application/javascript"></script>
+    <script src="<%= static_path(@conn, "/js/main.js") %>" type="application/javascript"></script>
   </body>
 </html>

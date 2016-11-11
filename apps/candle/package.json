@@ -19,7 +19,7 @@
     "test": "browserify -t babelify test/static/ts/*.js | tap",
     "test-build": "watchify -v -t babelify web/static/ts/test.js -o priv/static/ts/test.js",
     "test-serve": "live-server --entry-file=test.html",
-    "mk-priv-dirs": "rm -rf priv/static && mkdir -p priv/static; mkdir -p priv/static/ts; mkdir -p priv/static/font-awesome; mkdir -p priv/static/mapbox; mkdir -p priv/static/js; mkdir -p priv/static/css",
+    "mk-priv-dirs": "rm -rf priv/static && mkdir -p priv/static; mkdir -p priv/static/ts; mkdir -p priv/static/normalize; mkdir -p priv/static/font-awesome; mkdir -p priv/static/mapbox; mkdir -p priv/static/js; mkdir -p priv/static/css",
     "deploy": "npm run mk-priv-dirs; npm run build-browserify && npm run build-css && npm run build-assets && npm run copy-mapbox-data && npm run copy-font-awesome-data && npm run copy-normalize-css"
   },
   "dependencies": {
