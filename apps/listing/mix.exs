@@ -21,7 +21,9 @@ defmodule AppListing.Mixfile do
   def application do
     [applications: [
         :logger,
-        :shared
+        :shared,
+        :geocalc,
+        :calendar
       ],
      mod: {Listing, []}]
   end
@@ -41,7 +43,9 @@ defmodule AppListing.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
-      {:shared, in_umbrella: true}
+      {:shared, in_umbrella: true},
+      {:geocalc, "~> 0.5"},
+      {:calendar, "~> 0.16.1"}
     ]
   end
 end

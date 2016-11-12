@@ -23,6 +23,11 @@ export default function intent(sources) {
     .map(x => x.filter(onlySingleBadslava).map(drillInflate))
     .publish().refCount()
 
+  // const error$ = good$
+  //   .filter(onlyError)
+  //   .pluck(`data`)
+  //   .subscribe(x => console.log(`listing search error`, x))
+
   const cached$ = sources.Storage.local.getItem(`calendar/oneDay`)
     .map(stored => {
       //console.log(`from storage:`, stored)

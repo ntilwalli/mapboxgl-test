@@ -9,6 +9,7 @@ defmodule Listing.Worker do
   alias Shared.SingleListingSearch, as: SLSearch
   alias Shared.SingleListingCategories, as: SLCategories
   alias Shared.SingleListingEventTypes, as: SLEventTypes
+  alias Shared.CheckIn
 
 
   def start_link(listing, registry_name) do
@@ -33,16 +34,26 @@ defmodule Listing.Worker do
     GenServer.call(server, :retrieve)
   end
 
+  def check_in(server, user, %Shared.Message.LngLat{} = lng_lat) do
+    GenServer.call(server, {:check_in, user, lng_lat})
+  end
+
   # def stop(server) do
   #   GenServer.stop(server, :stop)
   # end  
 
   def init({:ok, %Shared.Listing{id: listing_id}, r_name}) do
-    case Repo.get(Shared.Listing, listing_id) do
+    Logger.metadata(listing_id: listing_id)
+    case retrieve_listing_with_check_ins(listing_id) do
+    #case Repo.get(Shared.Listing, listing_id) do
       nil -> {:stop, "Listing not found in database"}
       listing -> 
-        Logger.debug "Starting process for listing #{listing_id}"
+        Logger.info "Starting process for listing #{listing_id}"
         :ok = ensure_searchability(listing)
+        ci_query = from c in Shared.CheckIn, where: c.listing_id == ^listing_id
+        #IO.inspect ci_query
+        check_ins = Repo.all(ci_query)
+        IO.inspect check_ins
         {:ok, %{listing: listing, registry_name: r_name}, 60 * 1_000}
     end
   end
@@ -80,6 +91,67 @@ defmodule Listing.Worker do
 
     Shared.Manager.ListingManager.delete_one(listing)
     {:stop, :normal, :ok, nil}
+  end
+
+  defp before_check_in_start?(event_begins, rel_start, dt) do
+    false
+  end
+
+  defp after_check_in_start?(event_begins, event_ends, rel_end, dt) do
+    false
+  end
+
+  def handle_call({:check_in, user, %{lng: lng, lat: lat}}, _from, %{listing: listing} = state) do
+    l_type = listing.type
+    case l_type do
+      "single" ->
+          check_ins = listing.check_ins
+          settings = %{
+            type: "default",
+            radius: 50,
+            begins: -30,
+            ends: 30
+          }
+
+          default_ends = 120
+
+          listing_lng = listing.donde.lng_lat.lng
+          listing_lat = listing.donde.lng_lat.lat
+          cuando = listing.cuando
+          begins = cuando.begins
+          ends = cuando.ends
+
+          IO.puts "Checkin listing begins/ends"
+          IO.inspect begins
+          IO.inspect ends
+          # Check if user already has checked-in
+          cond do
+            Enum.any?(check_ins, fn x -> x.user_id === user.id end) ->
+              {:reply, {:error, "Already checked-in"}, state}
+            before_check_in_start?(begins, settings.begins, nil) ->
+              {:reply, {:error, "Check-in has not yet started"}, state}
+            after_check_in_start?(begins, ends, settings.ends, nil) ->
+              {:reply, {:error, "Check-ins have completed"}, state}
+            Geocalc.distance_between([lat, lng], [listing_lat, listing_lng]) > settings.radius ->
+              {:reply, {:error, "Not within check-in radius: #{Integer.to_string(settings.radius)} meters"}, state}
+            true ->
+              listing_id = listing.id
+              check_in_row = Ecto.build_assoc(user, :check_ins)
+                |> Map.set(:listing_id, listing_id)
+                |> Map.set(:geom, %Geo.Point{coordinates: {lng, lat}, srid: 4326})
+              result = Repo.insert(check_in_row)
+              new_state = %{state | listing: retrieve_listing_with_check_ins(listing_id)}
+              {:reply, {:ok, result}, new_state}
+          end
+      _ ->
+        {:reply, {:error, "Invalid check-in, only allowed on single-type listings"}, state}
+    end
+
+  end
+
+  def retrieve_listing_with_check_ins(listing_id) do
+    query = from l in Shared.Listing, where: l.id == ^listing_id, preload: [:check_ins]
+    Repo.one(query)
   end
 
   def update_children(%ListingTable{} = _listing, _registry_name) do

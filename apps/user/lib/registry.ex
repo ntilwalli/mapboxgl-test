@@ -17,32 +17,21 @@ defmodule User.Registry do
     GenServer.call(router, {:create_auth_process, user_id})
   end
 
-  def lookup(server, user) do
-    GenServer.call(server, {:lookup, user})
+  def lookup_anonymous(server, anonymous_id) do
+    GenServer.call(server, {:lookup_anonymous, anonymous_id})
   end
 
-  def search(server, user, query) do
-    GenServer.call(server, {:search, user, query})
+  def lookup_user(server, %Shared.User{} = user) do
+    GenServer.call(server, {:lookup_user, user})
   end
 
-  def retrieve_listing(server, user, listing_id) do
-    GenServer.call(server, {:retrieve_listing, user, listing_id})
-  end
+  # def search(server, user, query) do
+  #   GenServer.call(server, {:search, user, query})
+  # end
 
-  defp add_auth_process(user, %{auth_supervisor: auth_supervisor, auth: auth, auth_ref: auth_ref} = state) do
-    {:ok, pid} = User.Auth.Supervisor.start_user(auth_supervisor, user)
-    ref = Process.monitor(pid)
-    user_id = user.id
-    # IO.puts "Old auth"
-    # IO.inspect auth
-    auth = Map.put(auth, user_id, pid)
-
-    auth_ref = Map.put(auth_ref, ref, user_id)
-    new_state = %{state | auth: auth, auth_ref: auth_ref}
-    # IO.puts "New auth"
-    # IO.inspect new_state.auth
-    new_state
-  end
+  # def retrieve_listing(server, user, listing_id) do
+  #   GenServer.call(server, {:retrieve_listing, user, listing_id})
+  # end
 
   def init({:ok, anon_supervisor, auth_supervisor}) do
     auth = %{}
@@ -64,105 +53,73 @@ defmodule User.Registry do
     {:ok, state}
   end
 
-  def handle_call({:lookup, %{anonymous_id: anonymous_id}}, _from, %{anon: anon} = state) do
-    {:reply, {:ok, Map.get(anon, anonymous_id)}, state}
+  def handle_call({:lookup_user, %Shared.User{id: user_id}}, _from, %{auth: auth} = state) do
+    {:reply, {:ok, Map.get(auth, user_id)}, state}
   end
 
-  def handle_call({:lookup, %{user_id: user_id}}, _from, %{auth: auth} = state) do
-    {:reply, {:ok, Map.get(auth, user_id)}, state}
+  def handle_call({:lookup_anonymous, anonymous_id}, _from, %{anon: anon} = state) do
+    case anon[anonymous_id] do
+      nil ->
+        new_state = start_anonymous_user(anonymous_id, state)
+        %{anon: anon} = new_state
+        pid = anon[anonymous_id]
+        {:reply, {:ok, pid}, new_state}
+      pid -> 
+        {:reply, {:ok, pid}, state}
+    end
   end
 
   def handle_call({:create_auth_process, user}, _from, %{auth: auth} = state) do
     user_id = user.id
     case Map.get(auth, user_id) do
       nil -> 
-        # IO.puts "Adding new user, old state"
-        #IO.inspect state
         user = Shared.Repo.get(Shared.User, user_id)
         new_state = add_auth_process(user, state)
-        # IO.puts "Adding new user, new state"
-        # IO.inspect new_state
         {:reply, user_id, new_state}
       pid -> 
         {:reply, user_id, state}
     end
   end
 
-  def handle_call({:register_app_load, %{:user_id => user_id, :anonymous_id => anonymous_id}}, _from, state) do
-    {:reply, nil, state}
-  end
+  # def handle_call({:search, user, query}, _from, %{auth: auth, anon: anon} = state) do
+  #   case user do
+  #     %{user_id: user_id} ->
+  #       pid = auth[user_id]
+  #       {:reply, User.Auth.search(pid, query), state}
+  #     %{anonymous_id: anonymous_id} ->
+  #       case anon[anonymous_id] do
+  #         nil ->
+  #           new_state = start_anonymous_user(anonymous_id, state)
+  #           %{anon: anon} = new_state
+  #           pid = anon[anonymous_id]
+  #           out = User.Anon.search(pid, query)
+  #           {:reply, out, new_state}
+  #         pid -> 
+  #           out = User.Anon.search(pid, query)
+  #           {:reply, out, state}
+  #       end
+  #   end
+  #end
 
-  def handle_call({:register_app_load, %{:anonymous_id => anonymous_id}}, _from, %{anon_supervisor: anon_supervisor, anon: anon, anon_ref: anon_ref} = state) do
-    # IO.puts "Handling anonymous register"
-    case anonymous_id do
-      nil -> 
-        # Logger.debug "Generating new UUID..."
-        uuid = to_string(Ecto.UUID.autogenerate())
-        {:ok, pid} = User.Anon.Supervisor.start_user(anon_supervisor, uuid)
-        ref = Process.monitor(pid)
-        # IO.puts "Adding anon process..."
-        # IO.inspect pid
-        anon = Map.put(anon, uuid, pid)
-        anon_ref = Map.put(anon_ref, ref, uuid)
-        {:reply, uuid, %{state | anon: anon, anon_ref: anon_ref}}
-      a_id ->
-        # IO.puts "Using existing anonymous_id: #{a_id}"
-        case Map.get(anon, a_id) do
-          nil -> 
-            {:ok, pid} = User.Anon.Supervisor.start_user(anon_supervisor, a_id)
-            ref = Process.monitor(pid)
-            # IO.puts "Creating new PID with existing a_id"
-            # IO.inspect pid
-            anon = Map.put(anon, a_id, pid)
-            anon_ref = Map.put(anon_ref, ref, a_id)
-            {:reply, a_id, %{state | anon: anon, anon_ref: anon_ref}}
-          pid -> 
-            #   IO.puts "Existing anonymous PID"
-            #   IO.inspect pid
-            {:reply, a_id, state}
-        end
-    end
-  end
-
-  def handle_call({:search, user, query}, _from, %{auth: auth, anon: anon} = state) do
-    case user do
-      %{user_id: user_id} ->
-        pid = auth[user_id]
-        {:reply, User.Auth.search(pid, query), state}
-      %{anonymous_id: anonymous_id} ->
-        case anon[anonymous_id] do
-          nil ->
-            new_state = start_anonymous_user(anonymous_id, state)
-            %{anon: anon} = new_state
-            pid = anon[anonymous_id]
-            out = User.Anon.search(pid, query)
-            {:reply, out, new_state}
-          pid -> 
-            out = User.Anon.search(pid, query)
-            {:reply, out, state}
-        end
-    end
-  end
-
-  def handle_call({:retrieve_listing, user, listing_id}, _from, %{auth: auth, anon: anon} = state) do
-    case user do
-      %{user_id: user_id} ->
-        pid = auth[user_id]
-        {:reply, User.Auth.retrieve_listing(pid, listing_id), state}
-      %{anonymous_id: anonymous_id} ->
-        case anon[anonymous_id] do
-          nil ->
-            new_state = start_anonymous_user(anonymous_id, state)
-            %{anon: anon} = new_state
-            pid = anon[anonymous_id]
-            out = User.Anon.retrieve_listing(pid, listing_id)
-            {:reply, out, new_state}
-          pid -> 
-            out = User.Anon.retrieve_listing(pid, listing_id)
-            {:reply, out, state}
-        end
-    end
-  end
+  # def handle_call({:retrieve_listing, user, listing_id}, _from, %{auth: auth, anon: anon} = state) do
+  #   case user do
+  #     %{user_id: user_id} ->
+  #       pid = auth[user_id]
+  #       {:reply, User.Auth.retrieve_listing(pid, listing_id), state}
+  #     %{anonymous_id: anonymous_id} ->
+  #       case anon[anonymous_id] do
+  #         nil ->
+  #           new_state = start_anonymous_user(anonymous_id, state)
+  #           %{anon: anon} = new_state
+  #           pid = anon[anonymous_id]
+  #           out = User.Anon.retrieve_listing(pid, listing_id)
+  #           {:reply, out, new_state}
+  #         pid -> 
+  #           out = User.Anon.retrieve_listing(pid, listing_id)
+  #           {:reply, out, state}
+  #       end
+  #   end
+  # end
 
 
   def handle_info({:DOWN, ref, :process, _pid, reason}, %{anon_supervisor: anon_supervisor, auth: auth, anon: anon, auth_ref: auth_ref, anon_ref: anon_ref} = state) do
@@ -214,4 +171,20 @@ defmodule User.Registry do
     anon_ref = Map.put(anon_ref, ref, a_id)
     %{%{state | anon: anon} | anon_ref: anon_ref}
   end
+
+  defp add_auth_process(user, %{auth_supervisor: auth_supervisor, auth: auth, auth_ref: auth_ref} = state) do
+    {:ok, pid} = User.Auth.Supervisor.start_user(auth_supervisor, user)
+    ref = Process.monitor(pid)
+    user_id = user.id
+    # IO.puts "Old auth"
+    # IO.inspect auth
+    auth = Map.put(auth, user_id, pid)
+
+    auth_ref = Map.put(auth_ref, ref, user_id)
+    new_state = %{state | auth: auth, auth_ref: auth_ref}
+    # IO.puts "New auth"
+    # IO.inspect new_state.auth
+    new_state
+  end
+
 end

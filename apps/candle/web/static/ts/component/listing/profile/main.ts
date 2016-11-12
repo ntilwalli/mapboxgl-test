@@ -229,7 +229,7 @@ function mapview(state$) {
 export function main(sources, inputs) {
   const actions = intent(sources)
   const in_flight$ = createProxy()
-  const state$ = model(actions, spread(inputs, {in_flight$, geolocation$: inputs.Geolocation.geolocation$}))
+  const state$ = model(actions, spread(inputs, {in_flight$, geolocation$: inputs.Geolocation.cachedGeolocation$}))
   const vtree$ = view(state$)
   const mapjson$ = mapview(state$)
 

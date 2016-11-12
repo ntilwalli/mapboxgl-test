@@ -21,13 +21,4 @@ defmodule Candle.Auth.Helpers do
     |> Plug.Conn.put_resp_cookie("authorization", "", max_age: -1)
     #|> Plug.Conn.put_resp_cookie("aid", "", max_age: -1)
   end
-
-  def get_user(conn, current_user) do
-    case current_user do
-      nil -> 
-        %{anonymous_id: conn.cookies["aid"]}
-      %{id: user_id} -> 
-        %{user_id: user_id}
-    end
-  end
 end

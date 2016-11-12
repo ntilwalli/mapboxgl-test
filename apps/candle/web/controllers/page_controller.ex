@@ -7,23 +7,26 @@ defmodule Candle.PageController do
   alias Candle.Auth.Helpers
 
   def index(conn, _params, current_user, _claims) do
-    session_anon_id = conn.cookies["aid"]
-    
     case current_user do
       nil ->
-        anon_id = User.Registry.register_app_load(User.Registry, %{:anonymous_id => session_anon_id})
-        Logger.debug "Register anonymous user app load: #{anon_id}"
+        anonymous_id = 
+          case Map.get(conn.cookies, "aid") do
+            nil -> to_string(Ecto.UUID.autogenerate())
+            val -> val
+          end 
+
+        {:ok, pid} = User.Registry.lookup_anonymous(User.Registry, anonymous_id)
+        :ok = User.Anon.route(pid, "/register_app_load", nil)
 
         conn
-        |> Plug.Conn.put_resp_cookie("aid", anon_id)
+        |> Plug.Conn.put_resp_cookie("aid", anonymous_id)
         |> Plug.Conn.put_resp_cookie("authorization", "", max_age: -1)
         |> render("index.html")
-      auth ->
-        User.Registry.register_app_load(User.Registry, %{:user_id => current_user.id, :anonymous_id => session_anon_id})
-        Logger.debug "Register user app load: #{current_user.id}, transition from anonymous: #{session_anon_id}"
-
+      _ -> 
+        {:ok, pid} = User.Registry.lookup_user(User.Registry, current_user)
+        :ok = User.Auth.route(pid, "/register_app_load", nil) 
+        
         conn
-        #|> Plug.Conn.delete_session("aid")
         |> Helpers.reset_cookies
         |> Plug.Conn.put_resp_cookie("authorization", Guardian.Plug.current_token(conn), http_only: false)
         |> render("index.html")

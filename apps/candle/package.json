@@ -33,6 +33,7 @@
     "deep-assign": "^2.0.0",
     "deep-equal": "^1.0.1",
     "font-awesome": "^4.7.0",
+    "geolib": "^2.0.22",
     "history": "^3.0.0",
     "immutable": "^3.8.1",
     "js-cookie": "^2.1.3",

@@ -11,7 +11,7 @@ defmodule Shared.Listing do
   @derive {Poison.Encoder, except: [
     :__meta__, :sort_id, :source, :user, :user_listings, 
     :child_listings, :single_listing_search, :single_listing_categories, 
-    :single_listing_event_types, :inserted_at, :updated_at
+    :single_listing_event_types, :check_ins, :inserted_at, :updated_at
   ]}
 
   @primary_key {:id, :id, autogenerate: true}
@@ -38,6 +38,7 @@ defmodule Shared.Listing do
     has_one :single_listing_search, Shared.SingleListingSearch
     has_many :single_listing_categories, Shared.SingleListingCategories
     has_many :single_listing_event_types, Shared.SingleListingEventTypes
+    has_many :check_ins, Shared.CheckIn
 
     timestamps
   end
