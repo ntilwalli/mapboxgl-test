@@ -17,11 +17,15 @@
 
       .result-cost, .result-status, .result-stage-time, 
       .result-sign-up-begins, .result-sign-up-methods,
-      .result-performer-limit {
+      .result-performer-limit, .result-check-in {
         display: flex;
         justify-content: flex-end;
       }
 
+      .result-check-in {
+        margin-top: .5rem;
+        color: green;
+      }
       .result-email {
         margin-top: .5rem;
       }
@@ -51,28 +55,37 @@
       color: green;
       background-color: white;
 
-      &:hover {
-        color: white;
-        background-color: green;
+      &.enabled {
+        &:hover {
+          color: white;
+          background-color: green;
+        }
       }
 
       &.disabled {
         border-color: lightgray;
         color: lightgray;
+        &:hover {
+          border-color: lightgray;
+          color: lightgray;
+        }
       }
-    }
 
-    .enabled {
-      &.check-in-button:hover, &.share-button:hover {
-        border-color: $crayola-orange;
-        color: $crayola-orange;
-        cursor: pointer;
+      &.checked-in {
+        background-color: green;
+        color: white;
       }
+
+      .loader {
+        width: 1rem;
+        height: 1rem;
+      }
+
     }
 
     .disabled {
       border-color: gray;
-
+      color: gray;
     }
   }
 

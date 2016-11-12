@@ -1,5 +1,5 @@
 import {Observable as O} from 'rxjs'
-import {div, button} from '@cycle/dom'
+import {div, span, button} from '@cycle/dom'
 import {combineObj, processHTTP, spread, createProxy} from '../../../utils'
 import {geoToLngLat} from '../../../mapUtils'
 import {createFeatureCollection} from '../../../mapUtils'
@@ -43,11 +43,16 @@ function reducers(actions, inputs) {
   })
 
   const checkin_failure_r = actions.checkin_failure$.map(_ => state => {
+    console.log(`HTTP Error, _`)
     return state.set(`in_flight`, false)
   })
 
+  const geolocation_r = inputs.geolocation$.skip(1).map(geo => state => {
+    return state.set(`geolocation`, geo)
+  })
+
   return O.merge(
-    in_flight_r, checkin_success_r, checkin_failure_r
+    in_flight_r, checkin_success_r, checkin_failure_r, geolocation_r
   )
 }
 
@@ -56,7 +61,7 @@ function model(actions, inputs) {
   return combineObj({
     props$: inputs.props$,
     authorization$: inputs.Authorization.status$,
-    geolocation$: inputs.Geolocation.geolocation$
+    geolocation$: inputs.geolocation$.take(1)
   })
     .map((info: any) => {
       const {props, authorization, geolocation} = info
@@ -79,7 +84,7 @@ function model(actions, inputs) {
     .publishReplay(1).refCount()
 }
 
-function renderButtons(authorization, checked_in, settings) {
+function renderButtons(authorization, checked_in, in_flight, settings) {
   const disabled = authorization ? false : true
 
   return div(`.buttons`, [
@@ -95,13 +100,15 @@ function renderButtons(authorization, checked_in, settings) {
     ]),
     button(`.appCheckin.check-in-button.flex-center`, {
       class: {
-        disabled
+        disabled,
+        enabled: !disabled,
+        ".appUncheckin": checked_in
       },
       attrs: {
         disabled
       }
     }, [
-      `Check-in`
+      in_flight? span(`.loader`, []) : checked_in ? span([`Uncheck-in`]) : span([`Check-in`])
     ])
   ])
 }
@@ -121,6 +128,7 @@ function renderSingleListing(state) {
         renderDonde(donde),
         renderContactInfo(contact),
         renderHostInfo(hosts)
+        
       ]),
       div(`.right`, [
         renderStatus(cuando),
@@ -128,6 +136,7 @@ function renderSingleListing(state) {
         renderStageTime(stage_time),
         renderSignup(cuando, sign_up),
         renderPerformerLimit(performer_limit),
+        checked_in ? div(`.result-check-in`, [`Checked-in`]) : null
       ])
     ]),
     div(`.bottom`, [
@@ -154,12 +163,12 @@ function view(state$) {
   return state$
     .map(state => {
       console.log(state)
-      const {authorization, listing, checked_in, settings} = state
+      const {authorization, listing, checked_in, in_flight, settings} = state
       const {type, donde} = listing
       //console.log(donde)
       return div(`.listing-profile`, [
         type === "single" ? renderSingleListing(state) : renderRecurringListing(state),
-        renderButtons(authorization, checked_in, settings),
+        renderButtons(authorization, checked_in, in_flight, settings),
         div(`.map`, [
           renderMarkerInfo(donde),
           div(`#listing-location-map`)
@@ -220,7 +229,7 @@ function mapview(state$) {
 export function main(sources, inputs) {
   const actions = intent(sources)
   const in_flight$ = createProxy()
-  const state$ = model(actions, spread(inputs, {in_flight$}))
+  const state$ = model(actions, spread(inputs, {in_flight$, geolocation$: inputs.Geolocation.geolocation$}))
   const vtree$ = view(state$)
   const mapjson$ = mapview(state$)
 
