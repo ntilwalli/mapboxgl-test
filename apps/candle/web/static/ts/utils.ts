@@ -346,8 +346,3 @@ export function clean (val) {
   }
 }
 
-export function geoToLngLat(x) {
-  const {latitude, longitude} = x.data.coords
-  return {lng: longitude, lat: latitude}
-}
-

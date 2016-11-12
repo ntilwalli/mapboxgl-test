@@ -45,10 +45,21 @@
     .check-in-button, .share-button {
       margin: .5rem;
       width: 50%;
-      border: 1px solid black;
+      border: 1px solid green;
       border-radius: .25rem;
       padding: .25rem;
-      color: black;
+      color: green;
+      background-color: white;
+
+      &:hover {
+        color: white;
+        background-color: green;
+      }
+
+      &.disabled {
+        border-color: lightgray;
+        color: lightgray;
+      }
     }
 
     .enabled {
@@ -61,6 +72,7 @@
 
     .disabled {
       border-color: gray;
+
     }
   }
 

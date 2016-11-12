@@ -3,11 +3,12 @@ defmodule Candle.UserController do
   plug Ueberauth
   import Ecto.Changeset, only: [apply_changes: 1]
   alias Candle.Auth.Helpers
-  alias Shared.Message.Search.Query, as: SearchQuery
-  alias Shared.Message.LngLat, as: MessageLngLat
-  alias Shared.Model.LngLat, as: ModelLngLat
+  alias Shared.Message.Search.Query, as: SearchQueryMessage
+  alias Shared.Message.LngLat, as: LngLatMessage
+  alias Shared.Model.LngLat, as: LngLatModel
+  alias Shared.Message.Listing.CheckIn, as: CheckInMessage
   def geotag(conn, %{"lat" => lat, "lng" => lng} = params, _current_user, _claims) do
-    cs = MessageLngLat.changeset(%MessageLngLat{}, params)
+    cs = LngLatMessage.changeset(%LngLatMessage{}, params)
     case cs.valid? do
       true ->
         %{lng: lng, lat: lat} = apply_changes(cs) 
@@ -30,7 +31,7 @@ defmodule Candle.UserController do
   end
 
   def timezone(conn, %{"lat": lat, "lng": lng} = params, _current_user, _claims) do
-    cs = ModelLngLat.changeset(%ModelLngLat{}, params)
+    cs = LngLatModel.changeset(%LngLatModel{}, params)
     case cs.valid? do
       true ->
         %{timezone: timezone} = apply_changes(cs)
@@ -51,7 +52,7 @@ defmodule Candle.UserController do
     #IO.inspect params
     user = Helpers.get_user(conn, current_user)
 
-    cs = SearchQuery.changeset(%SearchQuery{}, query)
+    cs = SearchQueryMessage.changeset(%SearchQueryMessage{}, query)
     case cs.valid? do
       true -> 
         q = apply_changes(cs)
@@ -88,4 +89,24 @@ defmodule Candle.UserController do
         |> render("route.json", message: %{type: "error", data: "Sent listing id (#{listing_id}) invalid."})
     end
   end
+
+  def check_in(conn, params, current_user, _claims) do
+    user = Helpers.get_user(conn, current_user)
+    case user do
+      %{user_id: user_id} -> 
+        cs = CheckInMessage.changeset(%CheckInMessage{}, params)
+          case cs.valid? do
+            true -> 
+              message = apply_changes(cs)
+              message = Map.put(message, :user_id, user_id)
+              IO.inspect message
+              render(conn, "route.json", message: %{type: "success", data: message})
+            _ -> 
+              render(conn, "route.json", message: %{type: "error", data: "Check-in message is invalid"})
+          end
+      _ -> 
+        render(conn, "route.json", message: %{type: "error", data: "User must be authenticated to check-in"})
+    end
+  end
+
 end

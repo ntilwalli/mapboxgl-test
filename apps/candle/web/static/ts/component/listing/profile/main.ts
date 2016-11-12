@@ -1,6 +1,7 @@
 import {Observable as O} from 'rxjs'
-import {div} from '@cycle/dom'
-import {combineObj} from '../../../utils'
+import {div, button} from '@cycle/dom'
+import {combineObj, processHTTP, spread, createProxy} from '../../../utils'
+import {geoToLngLat} from '../../../mapUtils'
 import {createFeatureCollection} from '../../../mapUtils'
 import Immutable = require('immutable')
 import * as renderHelpers from '../../renderHelpers/listing'
@@ -10,22 +11,64 @@ const {renderName, renderDateTimeBegins, renderDateTimeEnds, renderCost,
   renderStageTime, renderPerformerLimit, renderDonde, 
   renderStatus, renderSignup, renderNote, renderContactInfo, renderHostInfo} = renderHelpers
 
-function intent(sources) {
-  return {
+const onlySuccess = x => x.type === "success"
+const onlyError = x => x.type === "error"
 
+function intent(sources) {
+  const {DOM, HTTP} = sources
+  const {good$, bad$, ugly$} = processHTTP(sources, `checkInToEvent`)
+  const checkin_success$ = good$.filter(onlySuccess)
+  const checkin_failure$ = bad$.filter(onlyError)
+
+  const checkin$ = DOM.select(`.appCheckin`).events(`click`)
+      .publishReplay(1).refCount()
+
+  return {
+    checkin$,
+    checkin_success$,
+    checkin_failure$
   }
 }
 
 function reducers(actions, inputs) {
-  return O.never()
+
+  const in_flight_r = inputs.in_flight$.map(_ => state => {
+    return state.set(`in_flight`, true)
+  })
+
+  const checkin_success_r = actions.checkin_success$.map(_ => state => {
+    console.log(`HTTP Success`, _)
+    return state.set(`checked_in`, true)
+      .set(`in_flight`, false)
+  })
+
+  const checkin_failure_r = actions.checkin_failure$.map(_ => state => {
+    return state.set(`in_flight`, false)
+  })
+
+  return O.merge(
+    in_flight_r, checkin_success_r, checkin_failure_r
+  )
 }
 
 function model(actions, inputs) {
   const reducer$ = reducers(actions, inputs)
-  return inputs.props$
+  return combineObj({
+    props$: inputs.props$,
+    authorization$: inputs.Authorization.status$,
+    geolocation$: inputs.Geolocation.geolocation$
+  })
     .map((info: any) => {
-      const {listing, distance, status} = info
-      return Immutable.Map(info)
+      const {props, authorization, geolocation} = info
+      const {listing, distance, status} = props
+      return Immutable.Map(spread(info, {
+        authorization,
+        geolocation,
+        listing,
+        distance,
+        checked_in: !!(status && status.checked_in),
+        in_flight: false
+      }))
     })
     .switchMap(init => {
       return reducer$
@@ -36,20 +79,36 @@ function model(actions, inputs) {
     .publishReplay(1).refCount()
 }
 
-function renderButtons(status, settings) {
+function renderButtons(authorization, checked_in, settings) {
+  const disabled = authorization ? false : true
+
   return div(`.buttons`, [
-    div(`.appShare.enabled.share-button.flex-center`, [
+    button(`.appShare.disabled.share-button.flex-center`, {
+      class: {
+        disabled: true
+      },
+      attrs: {
+        disabled: true
+      }
+    }, [
       `Share`
     ]),
-    div(`.appCheckIn.enabled.check-in-button.flex-center`, [
+    button(`.appCheckin.check-in-button.flex-center`, {
+      class: {
+        disabled
+      },
+      attrs: {
+        disabled
+      }
+    }, [
       `Check-in`
     ])
   ])
 }
 
 function renderSingleListing(state) {
-  const {listing, status, settings} = state
-  console.log(listing)
+  const {authorization, listing, checked_in, settings} = state
+
   const {name, cuando, donde, meta} = listing
   const {begins, ends} = cuando
   const {hosts, contact, cost, sign_up, stage_time, performer_limit, note} = meta
@@ -95,12 +154,12 @@ function view(state$) {
   return state$
     .map(state => {
       console.log(state)
-      const {listing, status, settings} = state
+      const {authorization, listing, checked_in, settings} = state
       const {type, donde} = listing
       //console.log(donde)
       return div(`.listing-profile`, [
         type === "single" ? renderSingleListing(state) : renderRecurringListing(state),
-        renderButtons(status, settings),
+        renderButtons(authorization, checked_in, settings),
         div(`.map`, [
           renderMarkerInfo(donde),
           div(`#listing-location-map`)
@@ -158,16 +217,38 @@ function mapview(state$) {
     })
 }
 
-
-
 export function main(sources, inputs) {
   const actions = intent(sources)
-  const state$ = model(actions, inputs)
+  const in_flight$ = createProxy()
+  const state$ = model(actions, spread(inputs, {in_flight$}))
   const vtree$ = view(state$)
   const mapjson$ = mapview(state$)
 
+  const to_http$ = actions.checkin$.withLatestFrom(state$, (_, state) => {
+    const {geolocation, listing} = state
+    if (geolocation.type === `position`) {
+      const lng_lat = geoToLngLat(geolocation)
+      return {
+        url: `/api/checkin`,
+        method: `post`,
+        send: {
+          listing_id: listing.id,
+          lng_lat
+        },
+        category: `checkInToEvent`
+      }
+    } else {
+      return null
+    }
+  }).filter(x => !!x)
+    .do(x => console.log(`checkin request`, x))
+    .publishReplay(1).refCount()
+  
+  in_flight$.attach(to_http$)
+
   return {
-    DOM: vtree$, //O.of(`Hello darling`),
-    MapJSON: mapjson$
+    DOM: vtree$,
+    MapJSON: mapjson$,
+    HTTP: to_http$
   }
 }

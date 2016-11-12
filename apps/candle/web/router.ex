@@ -54,6 +54,7 @@ defmodule Candle.Router do
     post "/geotag", UserController, :geotag
     post "/tz", UserController, :timezone
     post "/user", UserController, :route
+    post "/checkin", UserController, :check_in
   end
 
   scope "/", Candle do

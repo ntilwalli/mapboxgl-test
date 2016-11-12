@@ -1,6 +1,7 @@
 import {Observable as O} from 'rxjs'
 import Immutable = require('immutable')
-import {combineObj, geoToLngLat} from '../utils'
+import {combineObj} from '../utils'
+import {geoToLngLat} from '../mapUtils'
 import deepEqual = require('deep-equal')
 
 import FactualGeotagService from '../thirdParty/FactualGeotagService'
