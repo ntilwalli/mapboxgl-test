@@ -1,5 +1,6 @@
 defmodule Candle.AuthController do
   use Candle.Web, :controller
+  require Logger
   plug Ueberauth
   plug :put_layout, false
 
@@ -16,42 +17,40 @@ defmodule Candle.AuthController do
   end
 
   def callback(%{assigns: %{ueberauth_auth: auth}} = conn, _params, current_user, _claims) do
+    case current_user do
+      nil ->
+        redirect(conn, to: "/")
+      _ ->  
+        partial = %Authorization{
+          provider: auth.provider,
+          uid: auth.uid,
+          token: auth.credentials.token,
+          refresh_token: auth.credentials.refresh_token,
+          expires_at: auth.credentials.expires_at,
+          profile: auth.info
+        }
 
-    user = Helpers.get_user(conn, current_user)
-
-
-    partial = %Authorization{
-      provider: auth.provider,
-      uid: auth.uid,
-      token: auth.credentials.token,
-      refresh_token: auth.credentials.refresh_token,
-      expires_at: auth.credentials.expires_at,
-      profile: auth.info
-    }
-
-    IO.puts "Testing auth"
-    IO.inspect partial
-
-    {:ok, pid} = User.Registry.lookup(User.Registry, user)
-    IO.inspect pid
-    case User.Anon.oauth_login(pid, partial) do
-    #case User.Anon.route(User.Anon, pid, partial) do
-    #case Auth.Manager.oauth_login(Auth.Manager, partial) do
-      {:ok, user} ->
-        conn
-        |> Guardian.Plug.sign_in(user)
-        |> redirect(to: "/")
-      :error ->
-        conn
-        |> Plug.Conn.put_session("partial_authorization", partial)
-        |> Plug.Conn.put_resp_cookie("suggested_name", name_from_auth(auth), http_only: false)
-        |> redirect(to: "/?modal=presignup")
+        {:ok, pid} = User.Registry.lookup_anonymous(User.Registry, conn.cookies["aid"])
+        case User.Anon.oauth_login(pid, partial) do
+          {:ok, user} ->
+            Logger.info "Successfully found oauth user"
+            conn
+            |> Guardian.Plug.sign_in(user)
+            |> redirect(to: "/")
+          :error ->
+            Logger.info "Failed to find oauth user"
+            conn
+            |> Plug.Conn.put_session("partial_authorization", partial)
+            |> Plug.Conn.put_resp_cookie("suggested_name", name_from_auth(auth), http_only: false)
+            |> redirect(to: "/?modal=presignup")
+        end
     end
   end
 
   def logout(conn, _params, current_user, _claims) do
-    if current_user != nil do
-      Auth.Manager.logout(Auth.Manager, current_user.id)
+    if current_user do
+      {:ok, pid} = User.Registry.lookup_user(User.Registry, current_user)
+      :ok = User.Auth.logout(pid)
     end
 
     conn

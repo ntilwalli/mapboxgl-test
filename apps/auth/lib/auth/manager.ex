@@ -9,6 +9,10 @@ defmodule Auth.Manager do
   alias Auth.Registration
   alias Auth.Credential
 
+  alias Shared.Message.Authorization.Login, as: LoginMessage
+  alias Shared.Message.Authorization.Signup, as: SignupMessage
+  alias Shared.Message.Authorization.Presignup, as: PresignupMessage
+
   # Client functions
   def start_link(opts \\ []) do
     GenServer.start_link(__MODULE__, :ok, opts)
@@ -39,9 +43,9 @@ defmodule Auth.Manager do
     {:ok, nil}
   end
 
-  def handle_call({:login, %{
-        "username" => username,
-        "password" => password
+  def handle_call({:login, %LoginMessage{
+        username: username,
+        password: password
       }}, _from, state) do
    IO.puts("Got to login")
    out = Utils.login(
@@ -52,12 +56,12 @@ defmodule Auth.Manager do
    {:reply, out, state}
   end
 
-    def handle_call({:signup, %{
-        "name" => name,
-        "username" => username,
-        "email" => email,
-        "type" => type,
-        "password" => password
+    def handle_call({:signup, %SignupMessage{
+        name: name,
+        username: username,
+        email: email,
+        type: type,
+        password: password
       }}, _from, state) do
 
    out = Utils.signup(
@@ -76,11 +80,11 @@ defmodule Auth.Manager do
   end
 
   def handle_call({:oauth_signup, {
-      %{
-        "name" => name,
-        "username" => username,
-        "email" => email,
-        "type" => type
+      %PresignupMessage{
+        name: name,
+        username: username,
+        email: email,
+        type: type
       } = registration,
       %Authorization{} = auth
     }}, _from, state) do

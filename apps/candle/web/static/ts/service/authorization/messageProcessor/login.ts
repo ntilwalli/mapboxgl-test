@@ -42,7 +42,7 @@ export default function process(sources) {
   const actions = intent(sources)
 
   const data$ = sources.MessageBus.address(`/authorization/login`)
-    .do(x => console.log(`login message:`, x))
+    //.do(x => console.log(`login message:`, x))
     .publishReplay(1).refCount()
 
   const local$ = data$

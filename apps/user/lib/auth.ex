@@ -8,12 +8,12 @@ defmodule User.Auth do
     GenServer.start_link(__MODULE__, {:ok, listing_registry, user}, [])
   end
 
-  def route(server, "/register_app_load", _) do
+  def logout(server) do
     :ok
   end
 
-  def route(server, "/logout") do
-    GenServer.call(server, :logout)
+  def route(server, "/register_app_load", _) do
+    :ok
   end
 
   def route(server, "/search", query) do
@@ -25,7 +25,7 @@ defmodule User.Auth do
   end
 
   def route(server, "/check_in", message) do
-    
+    GenServer.call
   end
 
   def route(server, unknown_route, message) do 
@@ -37,10 +37,6 @@ defmodule User.Auth do
       user: user,
       listing_registry: listing_registry
     }}
-  end
-
-  def handle_call(:logout, _, state) do
-    {:stop, :normal, :ok, nil}
   end
 
   def handle_call({:search, params} , _from, %{listing_registry: l_reg} = state) do

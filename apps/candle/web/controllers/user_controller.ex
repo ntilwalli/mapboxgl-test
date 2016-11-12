@@ -46,13 +46,15 @@ defmodule Candle.UserController do
     end
   end
 
-  def route(conn, %{"route" => route, "data" => message}, current_user, _claims) do
+  def route(conn, %{"route" => route, "data" => %{} = message}, current_user, _claims) do
     response = 
       case current_user do
         nil -> 
+          IO.puts "Anonymous"
           {:ok, pid} = User.Registry.lookup_anonymous(User.Registry, conn.cookies["aid"])
           User.Anon.route(pid, route, message)
         _ -> 
+          IO.puts "User"
           {:ok, pid} = User.Registry.lookup_user(User.Registry, current_user)
           User.Auth.route(pid, route, message)
       end
@@ -64,38 +66,4 @@ defmodule Candle.UserController do
         render(conn, "route.json", message: %{type: "error", data: message})
     end
   end
-
-  # def route(conn, %{"route" => "/retrieve_listing", "data" => listing_id} = params, current_user, _claims) do
-  #   user = Helpers.get_user(conn, current_user)
-
-  #   case Integer.parse(listing_id) do
-  #     {whole, _} -> 
-  #       {:ok, listing} = User.Registry.retrieve_listing(User.Registry, user, whole)
-  #       conn
-  #       |> render("route.json", message: %{type: "success", data: listing})
-  #     :error ->
-  #       conn
-  #       |> render("route.json", message: %{type: "error", data: "Sent listing id (#{listing_id}) invalid."})
-  #   end
-  # end
-
-  # def check_in(conn, params, current_user, _claims) when not is_nil(current_user) do
-  #   cs = CheckInMessage.changeset(%CheckInMessage{}, params)
-  #   case cs.valid? do
-  #     true -> 
-  #       message = apply_changes(cs)
-  #       {:ok, pid} = User.Registy.lookup_auth(User.Registry, current_user)
-  #       case Listing.Worker.check_in(pid, current_user, message.lng_lat) do
-  #         {:ok, response} -> render(conn, "route.json", message: %{type: "success", data: response})
-  #         {:error, message} -> render(conn, "route.json", message: %{type: "error", data: message})
-  #       end
-  #     _ -> 
-  #       render(conn, "route.json", message: %{type: "error", data: "Check-in message is invalid"})
-  #   end
-  # end
-
-  # def check_in(conn, _, _, _) do
-  #   render(conn, "route.json", message: %{type: "error", data: "User must be authenticated to check-in"})
-  # end
-
 end
