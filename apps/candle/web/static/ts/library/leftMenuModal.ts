@@ -7,8 +7,12 @@ function intent(sources) {
   const close$ = DOM.select(`.appModalBackdrop`).events(`click`)
     .filter(targetIsOwner)
 
+  const logout$ = DOM.select(`.appMenuLogoutButton`).events(`click`)
+  const login$ = DOM.select(`.appMenuLoginButton`).events(`click`)
   return {
-    close$
+    close$,
+    logout$,
+    login$
   } 
 }
 
@@ -23,7 +27,7 @@ function view(auth$) {
                 `Hopscotch!`
               ]),
               div(`.left-menu-body`, [
-                div(`.item`, [auth ? `Logout` : `Login`])
+                button(`.item`, {class: {appMenuLogoutButton: !!auth, appMenuLoginButton: !auth}}, [auth ? `Logout` : `Login`])
               ]),
             ])
           ])
@@ -37,6 +41,10 @@ export default function main(sources, inputs) {
   
   return {
     DOM: view(inputs.Authorization.status$),
-    MessageBus: actions.close$.mapTo({to: `main`, message: `hideModal`}),
+    MessageBus: O.merge(
+      actions.close$.mapTo({to: `main`, message: `hideModal`}),
+      actions.logout$.mapTo({to: `/authorization/logout`}),
+      actions.login$.mapTo({to: `main`, message: `showLogin`})
+    )
   }
 }

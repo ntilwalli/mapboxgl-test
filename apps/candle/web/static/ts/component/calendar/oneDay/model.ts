@@ -112,7 +112,7 @@ export default function model(actions, inputs) {
     })
     .switchMap((info: any) => {
       const {preferences, cached, authorization} = info
-      //console.log(`Cached:`, cached)
+      //console.log(`Resetting oneDay state...`)
       return reducer$
         .startWith(Immutable.Map({
           results: useCached(cached) ? cached.results : undefined,
@@ -126,6 +126,7 @@ export default function model(actions, inputs) {
         .scan((acc, f: Function) => f(acc))
     })
     .map((x: any) => x.toJS())
-    //.do(x => console.log(`model state:`, x))
+    .debounceTime(0)
+    //.do(x => console.log(`oneDay state:`, x))
     .publishReplay(1).refCount()
 }

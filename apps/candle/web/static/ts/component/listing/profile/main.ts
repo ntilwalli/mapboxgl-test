@@ -17,8 +17,12 @@ const onlyError = x => x.type === "error"
 function intent(sources) {
   const {DOM, HTTP} = sources
   const {good$, bad$, ugly$} = processHTTP(sources, `checkInToEvent`)
-  const checkin_success$ = good$.filter(onlySuccess)
-  const checkin_failure$ = bad$.filter(onlyError)
+  const checkin_success$ = good$
+    //.do(x => console.log(`success`, x))
+    .filter(onlySuccess)
+  const checkin_failure$ = good$
+    //.do(x => console.log(`error`, x))
+    .filter(onlyError)
 
   const checkin$ = DOM.select(`.appCheckin`).events(`click`)
       .publishReplay(1).refCount()
@@ -43,7 +47,7 @@ function reducers(actions, inputs) {
   })
 
   const checkin_failure_r = actions.checkin_failure$.map(_ => state => {
-    console.log(`HTTP Error, _`)
+    console.log(`HTTP Error`, _)
     return state.set(`in_flight`, false)
   })
 
@@ -66,6 +70,7 @@ function model(actions, inputs) {
     .map((info: any) => {
       const {props, authorization, geolocation} = info
       const {listing, distance, status} = props
+      console.log(props)
       return Immutable.Map(spread(info, {
         authorization,
         geolocation,
@@ -81,6 +86,7 @@ function model(actions, inputs) {
         .scan((acc, f: Function) => f(acc))
     })
     .map((x: any) => x.toJS())
+    .do(x => console.log(`profile state:`, x))
     .publishReplay(1).refCount()
 }
 
@@ -150,40 +156,41 @@ function renderButtons(state) {
     const userLL = convertLngLat(geoToLngLat(geolocation))
     const dondeLL = convertLngLat(donde.lng_lat)
     const distance = Geolib.getDistance(userLL, dondeLL)
-    console.log(`User distance: `, distance)
+    //console.log(`User distance: `, distance)
     const within_radius = distance <= checkin_radius
-    console.log(`Within radius: `, within_radius)
+    //console.log(`Within radius: `, within_radius)
     const now = moment()
     const within_time_window = now.isSameOrAfter(checkin_begins) && now.isSameOrBefore(checkin_ends)
-    console.log(`Within time window: `, within_time_window)
+    //console.log(`Within time window: `, within_time_window)
 
-    disabled = (within_radius && within_time_window) ? false : true
-    console.log(`disabled: `, disabled)
+    disabled = checked_in || !(within_radius && within_time_window ) ? true : false
+    console.log(`check-in disabled: `, disabled)
   }
+
+  //enabled, disabled, checked-in
 
 
   return div(`.buttons`, [
-    button(`.appShare.disabled.share-button.flex-center`, {
-      class: {
-        disabled: true
-      },
-      attrs: {
-        disabled: true
-      }
-    }, [
-      `Share`
-    ]),
-    button(`.appCheckin.check-in-button.flex-center`, {
+    // button(`.appShare.disabled.share-button.flex-center`, {
+    //   class: {
+    //     disabled: true
+    //   },
+    //   attrs: {
+    //     disabled: true
+    //   }
+    // }, [
+    //   `Share`
+    // ]),
+    checked_in ? null : button(`.appCheckin.check-in-button.flex-center`, {
       class: {
         disabled,
         enabled: !disabled,
-        ".appUncheckin": checked_in
       },
       attrs: {
         disabled
       }
     }, [
-      in_flight? span(`.loader`, []) : checked_in ? span([`Uncheck-in`]) : span([`Check-in`])
+      in_flight? span(`.loader`, []) : checked_in ? span([`Checked-in`]) : span([`Check-in`])
     ])
   ])
 }

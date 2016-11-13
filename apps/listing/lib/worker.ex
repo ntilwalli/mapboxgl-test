@@ -34,17 +34,13 @@ defmodule Listing.Worker do
     GenServer.call(server, {:add_child, listing, user})#, listing, user})
   end
 
-  def retrieve(server) do
-    GenServer.call(server, :retrieve)
+  def retrieve(server, user) do
+    GenServer.call(server, {:retrieve, user})
   end
 
   def check_in(server, user, %Shared.Message.LngLat{} = lng_lat) do
     GenServer.call(server, {:check_in, user, lng_lat})
   end
-
-  # def stop(server) do
-  #   GenServer.stop(server, :stop)
-  # end  
 
   def init({:ok, %Shared.Listing{id: listing_id}, r_name}) do
     Logger.metadata(listing_id: listing_id)
@@ -54,19 +50,20 @@ defmodule Listing.Worker do
       listing -> 
         Logger.info "Starting process for listing #{listing_id}"
         :ok = ensure_searchability(listing)
-        ci_query = from c in Shared.CheckIn, where: c.listing_id == ^listing_id
-        #IO.inspect ci_query
-        check_ins = Repo.all(ci_query)
-        IO.inspect check_ins
         {:ok, %{listing: listing, registry_name: r_name}, 60 * 1_000}
     end
   end
 
-  def handle_call(:retrieve, _from, %{listing: listing} = state) do
-    {:reply, {:ok, %{listing: listing}}, state}
+  def handle_call({:retrieve, user}, _from, %{listing: listing} = state) do
+    status = 
+      case user do
+        nil -> nil
+        _ -> %{checked_in: listing.check_ins |> Enum.any?(fn x -> x.user_id === user.id end)}
+      end
+
+    {:reply, {:ok, %{listing: listing, status: status}}, state}
   end
 
-  #def handle_call({:add_child, listing, user}, _from, %{listing: listing, registry_name: r_name} = state) do
   def handle_call({:add_child, child_listing, user}, _from, %{listing: listing, registry_name: r_name} = state) do
     {:ok, result} = info = Listing.Registry.create(Listing.Registry, child_listing, user) 
     {:reply, {:ok, result}, state}
@@ -97,19 +94,33 @@ defmodule Listing.Worker do
     {:stop, :normal, :ok, nil}
   end
 
-  defp before_check_in_start?(event_begins, rel_start, dt) do
-    false
-  end
-
-  defp after_check_in_end?(event_begins, event_ends, rel_end, dt) do
-    false
-  end
-
   def handle_call({:check_in, user, %{lng: lng, lat: lat} = lng_lat}, _from, %{listing: listing} = state) do
+    case get_check_in_ability(user, lng_lat, listing) do
+      {:error, val} = response -> {:reply, response, state}
+      :ok ->
+        listing_id = listing.id
+        check_in_row = Ecto.build_assoc(user, :check_ins)
+          |> Map.put(:listing_id, listing_id)
+          |> Map.put(:geom, %Geo.Point{coordinates: {lng, lat}, srid: 4326})
+        {:ok, result} = Repo.insert(check_in_row)
+        new_state = %{state | listing: retrieve_listing_with_check_ins(listing_id)}
+        {:reply, {:ok, result}, new_state}
+    end
+  end
+
+  # def handle_call({:remove_check_in, user}, _from, %{listing: listing} = state) do
+  #   listing_id = listing.id
+  #   check_in_row = Ecto.build_assoc(user, :check_ins)
+  #     |> Map.put(:listing_id, listing_id)
+  #   {:ok, result} = Repo.delete(check_in_row)
+  #   new_state = %{state | listing: retrieve_listing_with_check_ins(listing_id)}
+  #   {:reply, {:ok, result}, new_state}
+  # end
+
+  defp get_check_in_ability(user, %{lng: lng, lat: lat} = lng_lat, listing) do
     l_type = listing.type
     case l_type do
       "single" ->
-
           cs_donde = BadslavaDonde.changeset(%BadslavaDonde{}, listing.donde)
           donde = apply_changes(cs_donde)
           #IO.inspect donde
@@ -163,42 +174,31 @@ defmodule Listing.Worker do
               # IO.puts "distance"
               # IO.inspect distance
 
-              checkin_radius = 1000
-                # case settings.check_in.radius do
-                #   nil -> 30
-                #   val -> val
-                # end
+              checkin_radius =
+                case settings.check_in.radius do
+                  nil -> 30
+                  val -> val
+                end
 
               within_radius = distance <= checkin_radius
               # IO.puts "Within radius"
               # IO.inspect within_radius
-
-              {:reply, {:error, "Testing"}, state}
-
-
               cond do
                 Enum.any?(check_ins, fn x -> x.user_id === user.id end) ->
-                  {:reply, {:error, "Already checked-in"}, state}
+                  {:error, "Already checked-in"}
                 !within_window ->
-                  {:reply, {:error, "Check-in time window has passed"}, state}
+                  {:error, "Check-in time window has passed"}
                 !within_radius ->
-                  {:reply, {:error, "Not within check-in radius: #{Integer.to_string(settings.radius)} meters"}, state}
+                  {:error, "Not within check-in radius: #{Integer.to_string(settings.radius)} meters"}
                 true ->
-                  listing_id = listing.id
-                  check_in_row = Ecto.build_assoc(user, :check_ins)
-                    |> Map.put(:listing_id, listing_id)
-                    |> Map.put(:geom, %Geo.Point{coordinates: {lng, lat}, srid: 4326})
-                  {:ok, result} = Repo.insert(check_in_row)
-                  new_state = %{state | listing: retrieve_listing_with_check_ins(listing_id)}
-                  {:reply, {:ok, result}, new_state}
+                  :ok
               end
             false ->
-              {:reply, {:error, "Check-in not enabled for this listing"}, state}
+              {:error, "Check-in not enabled for this listing"}
           end
       _ ->
-        {:reply, {:error, "Invalid check-in, only allowed on single-type listings"}, state}
+        {:error, "Invalid check-in, only allowed on single-type listings"}
     end
-
   end
 
   def retrieve_listing_with_check_ins(listing_id) do

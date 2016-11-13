@@ -22,11 +22,13 @@ export default function model(actions, inputs) {
       })
     })
     .switchMap(init => {
+      //console.log(`Resetting grid state...`)
       return reducer$
         .startWith(init)
         .scan((acc, f: Function) => f(acc))
     })
     .map((x: any) => x.toJS())
+    //.do(x => console.log(`grid state:`, x))
     .publishReplay(1).refCount()
 }
 

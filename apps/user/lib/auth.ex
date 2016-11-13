@@ -40,24 +40,24 @@ defmodule User.Auth do
     }}
   end
 
-  def handle_call({:search, params} , _from, %{listing_registry: l_reg} = state) do
+  def handle_call({:search, params} , _from, %{user: user, listing_registry: l_reg} = state) do
     cs = SearchQueryMessage.changeset(%SearchQueryMessage{}, params)
     case cs.valid? do
       true -> 
         query_params = apply_changes(cs)
-        listings_info = User.Helpers.gather_listings_info(query_params, l_reg)
+        listings_info = User.Helpers.gather_listings_info(query_params, user, l_reg)
         {:reply, {:ok, listings_info}, state}
       false -> 
         {:reply, {:error, "Sent search params invalid"}, state}
     end
   end
 
-  def handle_call({:retrieve_listing, listing_id}, _from, %{listing_registry: l_reg} = state) do
+  def handle_call({:retrieve_listing, listing_id}, _from, %{user: user, listing_registry: l_reg} = state) do
     out = case Integer.parse(listing_id) do
       {whole, _} -> 
         {:ok, pid} = Listing.Registry.lookup(l_reg, whole)
-        {:ok, listing} = Listing.Worker.retrieve(pid)
-        {:reply, {:ok, listing}, state}
+        {:ok, result} = Listing.Worker.retrieve(pid, user)
+        {:reply, {:ok, result}, state}
       :error ->
         {:reply, {:error, "Sent listing id (#{listing_id}) invalid"}, state}
     end
@@ -70,8 +70,8 @@ defmodule User.Auth do
         %{listing_id: listing_id, lng_lat: lng_lat} = apply_changes(cs)
         {:ok, pid} = Listing.Registry.lookup(l_reg, listing_id)
         out = Listing.Worker.check_in(pid, user, lng_lat)
-        # IO.puts "Check-in output..."
-        # IO.inspect out
+        IO.puts "Check-in output..."
+        IO.inspect out
         {:reply, out, state}
       false ->
         {:reply, {:error, "Sent invalid check-in parameters"}, state}

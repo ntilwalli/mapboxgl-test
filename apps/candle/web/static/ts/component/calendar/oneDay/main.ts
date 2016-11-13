@@ -31,7 +31,8 @@ function main(sources, inputs) {
     props$: state$.map(x => {
         return {results: x.results, filters: x.filters}
       })
-      .distinctUntilChanged(null, x => x),
+      //.do(x => console.log(`to grid props$`, x))
+      //.distinctUntilChanged(null, x => x),
   })
 
   const filtersModal$ = state$.pluck(`showFilters`)
@@ -109,12 +110,9 @@ function main(sources, inputs) {
         value: JSON.stringify(val)
       })),
     MessageBus: O.merge(
-      actions.showMenu$
-        .map(_ => ({to: `main`, message: `showLeftMenu`})),
-      actions.login$
-        .map(_ => ({to: `main`, message: `showLogin`})),
-      actions.logout$
-        .map(_ => ({to: `/authorization/logout`}))
+      actions.showMenu$.mapTo({to: `main`, message: `showLeftMenu`}),
+      actions.login$.mapTo({to: `main`, message: `showLogin`}),
+      actions.logout$.mapTo({to: `/authorization/logout`})
     )
 
       //.filter(x => false)

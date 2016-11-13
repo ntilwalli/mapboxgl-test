@@ -1,3 +1,4 @@
+@import '../variables';
 .modal-component {
   position: fixed;
   top: 0;
@@ -108,10 +109,12 @@
       border-width: 0 0 1px;
       border-style: solid;
       border-color: black;
+      background-color: white;
+      width: 100%;
     }
 
     .item:hover {
-      color: orange;
+      color: $crayola-orange;
     }
   }
 }

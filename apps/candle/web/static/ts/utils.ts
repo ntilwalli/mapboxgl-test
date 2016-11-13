@@ -294,8 +294,8 @@ export function processHTTP(sources, category) {
 
   return {
     good$: out$.filter(x => x.type === "good").map(x => x.data).publish().refCount(),
-    bad$: out$.filter(x => x.type === "bad").map(x => x.data),
-    ugly$: out$.filter(x => x.type === "ugly").map(x => x.data)
+    bad$: out$.filter(x => x.type === "bad").map(x => x.data).publish().refCount(),
+    ugly$: out$.filter(x => x.type === "ugly").map(x => x.data).publish().refCount()
   }
 
 }

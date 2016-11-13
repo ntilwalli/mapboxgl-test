@@ -44,7 +44,7 @@
 
   .buttons {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-around;
 
     .check-in-button, .share-button {
       margin: .5rem;
@@ -69,6 +69,8 @@
           border-color: lightgray;
           color: lightgray;
         }
+
+        pointer-events: none;
       }
 
       &.checked-in {
