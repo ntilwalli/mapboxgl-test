@@ -1,7 +1,7 @@
 defmodule Shared.User do
   use Shared.Lib, :model
 
-  @derive {Poison.Encoder, only: [:id, :name, :username, :email, :type]}
+  @derive {Poison.Encoder, only: [:id, :name, :username]}
   schema "users" do
     field :name, :string
     field :username, :string
@@ -11,6 +11,7 @@ defmodule Shared.User do
     has_many :authorizations, Shared.Authorization
     has_many :listings, Shared.Listing
     has_many :user_listings, Shared.UserListing
+    has_many :check_ins, Shared.CheckIn
     timestamps
   end
 

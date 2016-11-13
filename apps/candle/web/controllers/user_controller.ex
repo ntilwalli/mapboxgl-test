@@ -46,15 +46,16 @@ defmodule Candle.UserController do
     end
   end
 
-  def route(conn, %{"route" => route, "data" => %{} = message}, current_user, _claims) do
+  def route(conn, %{"route" => route, "data" => message}, current_user, _claims) do
+    IO.inspect message
     response = 
       case current_user do
         nil -> 
-          IO.puts "Anonymous"
+          #IO.puts "Anonymous"
           {:ok, pid} = User.Registry.lookup_anonymous(User.Registry, conn.cookies["aid"])
           User.Anon.route(pid, route, message)
         _ -> 
-          IO.puts "User"
+          #IO.puts "User"
           {:ok, pid} = User.Registry.lookup_user(User.Registry, current_user)
           User.Auth.route(pid, route, message)
       end

@@ -1,11 +1,11 @@
 import {Observable as O} from 'rxjs'
 import {div, span, button} from '@cycle/dom'
 import {combineObj, processHTTP, spread, createProxy} from '../../../utils'
-import {geoToLngLat} from '../../../mapUtils'
-import {createFeatureCollection} from '../../../mapUtils'
+import {createFeatureCollection, geoToLngLat} from '../../../mapUtils'
 import Immutable = require('immutable')
 import * as renderHelpers from '../../renderHelpers/listing'
 import moment = require('moment')
+import * as Geolib from 'geolib'
 
 const {renderName, renderDateTimeBegins, renderDateTimeEnds, renderCost, 
   renderStageTime, renderPerformerLimit, renderDonde, 
@@ -84,35 +84,6 @@ function model(actions, inputs) {
     .publishReplay(1).refCount()
 }
 
-function renderButtons(authorization, checked_in, in_flight, settings) {
-  const disabled = authorization ? false : true
-
-  return div(`.buttons`, [
-    button(`.appShare.disabled.share-button.flex-center`, {
-      class: {
-        disabled: true
-      },
-      attrs: {
-        disabled: true
-      }
-    }, [
-      `Share`
-    ]),
-    button(`.appCheckin.check-in-button.flex-center`, {
-      class: {
-        disabled,
-        enabled: !disabled,
-        ".appUncheckin": checked_in
-      },
-      attrs: {
-        disabled
-      }
-    }, [
-      in_flight? span(`.loader`, []) : checked_in ? span([`Uncheck-in`]) : span([`Check-in`])
-    ])
-  ])
-}
-
 function renderSingleListing(state) {
   const {authorization, listing, checked_in, settings} = state
 
@@ -159,16 +130,73 @@ function renderMarkerInfo(donde) {
   ])
 }
 
+const convertLngLat = x => ({longitude: x.lng, latitude: x.lat})
+function renderButtons(state) {
+  const {geolocation, authorization, listing, checked_in, in_flight} = state
+  const {donde, cuando, settings} = listing
+  const checkin_begins = cuando.begins.clone().add(settings.begins || -30, 'minutes')
+  const checkin_ends = settings.ends || cuando.begins.clone().add(settings.ends || 120, 'minutes')
+  const checkin_radius = 1000//settings.radius || 30
+  
+  let disabled = true;
+
+  // console.log(geolocation)
+  const valid_geo = geolocation.type === "position"
+  if (authorization && valid_geo) {
+    //console.log(settings)
+
+    // console.log(geolocation)
+    // console.log(donde.lng_lat)
+    const userLL = convertLngLat(geoToLngLat(geolocation))
+    const dondeLL = convertLngLat(donde.lng_lat)
+    const distance = Geolib.getDistance(userLL, dondeLL)
+    console.log(`User distance: `, distance)
+    const within_radius = distance <= checkin_radius
+    console.log(`Within radius: `, within_radius)
+    const now = moment()
+    const within_time_window = now.isSameOrAfter(checkin_begins) && now.isSameOrBefore(checkin_ends)
+    console.log(`Within time window: `, within_time_window)
+
+    disabled = (within_radius && within_time_window) ? false : true
+    console.log(`disabled: `, disabled)
+  }
+
+
+  return div(`.buttons`, [
+    button(`.appShare.disabled.share-button.flex-center`, {
+      class: {
+        disabled: true
+      },
+      attrs: {
+        disabled: true
+      }
+    }, [
+      `Share`
+    ]),
+    button(`.appCheckin.check-in-button.flex-center`, {
+      class: {
+        disabled,
+        enabled: !disabled,
+        ".appUncheckin": checked_in
+      },
+      attrs: {
+        disabled
+      }
+    }, [
+      in_flight? span(`.loader`, []) : checked_in ? span([`Uncheck-in`]) : span([`Check-in`])
+    ])
+  ])
+}
+
 function view(state$) {
   return state$
     .map(state => {
-      console.log(state)
-      const {authorization, listing, checked_in, in_flight, settings} = state
+      const {geolocation, authorization, listing, checked_in, in_flight, settings} = state
       const {type, donde} = listing
       //console.log(donde)
       return div(`.listing-profile`, [
         type === "single" ? renderSingleListing(state) : renderRecurringListing(state),
-        renderButtons(authorization, checked_in, in_flight, settings),
+        renderButtons(state),
         div(`.map`, [
           renderMarkerInfo(donde),
           div(`#listing-location-map`)
@@ -238,11 +266,14 @@ export function main(sources, inputs) {
     if (geolocation.type === `position`) {
       const lng_lat = geoToLngLat(geolocation)
       return {
-        url: `/api/checkin`,
+        url: `/api/user`,
         method: `post`,
         send: {
-          listing_id: listing.id,
-          lng_lat
+          route: `/check_in`,
+          data: {
+            listing_id: listing.id,
+            lng_lat
+          }
         },
         category: `checkInToEvent`
       }

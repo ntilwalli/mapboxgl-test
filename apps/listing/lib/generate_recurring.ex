@@ -117,7 +117,8 @@ defmodule Listing.GenerateRecurring do
       donde: template.donde,
       cuando: single_cuando,
       meta: template.meta,
-      source: template.source
+      settings: template.settings,
+      source: template.source,
     }
   end
 

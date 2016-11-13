@@ -172,7 +172,15 @@ defmodule Scraper.BadslavaScraper do
         }
       },
       cuando: when_info,
-      meta: meta
+      meta: meta,
+      settings: %{
+        type: "badslava",
+        check_in: %{
+          begins: -30,
+          ends: nil,
+          radius: 30
+        }
+      }
     }
     #IO.inspect out
     out

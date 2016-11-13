@@ -14,6 +14,7 @@ defmodule Shared.Repo.Migrations.CreateListingTables do
       add :cuando, :map, null: false
       add :donde, :map, null: false
       add :meta, :map, null: false
+      add :settings, :map, null: false
       add :release, :string, null: false
       add :visibility, :string, null: false
       add :source, :string

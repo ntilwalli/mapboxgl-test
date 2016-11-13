@@ -34,6 +34,7 @@
         "customTypings/parse-address.d.ts",
         "customTypings/rrule.d.ts",
         "customTypings/cycle-storage.d.ts",
+        "customTypings/geolib.d.ts",
         "web/static/ts/main.ts"
     ],
     "exclude": [

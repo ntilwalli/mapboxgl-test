@@ -70,7 +70,10 @@ defmodule Test.Listing do
         },
         "host" => ["Sally Shah", "Rajiv Khanna"],
         "note" => "Some note"
-      }
+      },
+      "settings" => %{},
+      "categories" => ["comedy"],
+      "event_types" => ["open-mic", "show"]
     }
 
     cs = Listing.changeset(%Listing{user_id: 1}, listing)
@@ -83,6 +86,9 @@ defmodule Test.Listing do
       "type" => "blah",
       "visibility" => "public",
       "release" => "posted",
+      "settings" => %{},
+      "event_types" => ["open-mic", "show"],
+      "categories" => ["comedy"],
       "donde" => %{
         "type" => "badslava",
 

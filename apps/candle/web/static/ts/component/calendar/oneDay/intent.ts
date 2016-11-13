@@ -5,6 +5,7 @@ import moment = require('moment')
 const onlySuccess = x => x.type === "success"
 const onlyError = x => x.type === "error"
 const onlySingleBadslava = x => {
+  //console.log(x)
   const listing = x.listing
   return listing.type === "single" && listing.meta.type === "badslava" && listing.cuando.begins
 }

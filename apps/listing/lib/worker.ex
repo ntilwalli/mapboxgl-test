@@ -1,6 +1,7 @@
 defmodule Listing.Worker do
   require Logger
   use GenServer
+  import Ecto.Changeset, only: [apply_changes: 1]
   import Ecto.Query, only: [from: 2]
   import Shared.Model.Decoders
 
@@ -10,6 +11,11 @@ defmodule Listing.Worker do
   alias Shared.SingleListingCategories, as: SLCategories
   alias Shared.SingleListingEventTypes, as: SLEventTypes
   alias Shared.CheckIn
+
+  alias Shared.Model.Listing.Donde.Badslava, as: BadslavaDonde
+  alias Shared.Model.Listing.Meta.Badslava, as: BadslavaMeta
+  alias Shared.Model.Listing.Settings.Badslava, as: BadslavaSettings
+  alias Shared.Model.Listing.Cuando.Once, as: OnceCuando
 
 
   def start_link(listing, registry_name) do
@@ -25,8 +31,6 @@ defmodule Listing.Worker do
   end
 
   def add_child(server, listing, user) do
-    # IO.inspect "Sending"
-    # IO.inspect listing
     GenServer.call(server, {:add_child, listing, user})#, listing, user})
   end
 
@@ -97,51 +101,99 @@ defmodule Listing.Worker do
     false
   end
 
-  defp after_check_in_start?(event_begins, event_ends, rel_end, dt) do
+  defp after_check_in_end?(event_begins, event_ends, rel_end, dt) do
     false
   end
 
-  def handle_call({:check_in, user, %{lng: lng, lat: lat}}, _from, %{listing: listing} = state) do
+  def handle_call({:check_in, user, %{lng: lng, lat: lat} = lng_lat}, _from, %{listing: listing} = state) do
     l_type = listing.type
     case l_type do
       "single" ->
-          check_ins = listing.check_ins
-          settings = %{
-            type: "default",
-            radius: 50,
-            begins: -30,
-            ends: 30
-          }
 
-          default_ends = 120
+          cs_donde = BadslavaDonde.changeset(%BadslavaDonde{}, listing.donde)
+          donde = apply_changes(cs_donde)
+          #IO.inspect donde
+          cs_cuando = OnceCuando.changeset(%OnceCuando{}, listing.cuando)
+          cuando = apply_changes(cs_cuando)
+          #IO.inspect cuando
+          cs_meta = BadslavaMeta.changeset(%BadslavaMeta{}, listing.meta)
+          meta = apply_changes(cs_meta)
+          #IO.inspect meta
+          cs_settings = BadslavaSettings.changeset(%BadslavaSettings{}, listing.settings)
+          settings = apply_changes(cs_settings)
+          #IO.inspect cs_settings
 
-          listing_lng = listing.donde.lng_lat.lng
-          listing_lat = listing.donde.lng_lat.lat
-          cuando = listing.cuando
-          begins = cuando.begins
-          ends = cuando.ends
+          case not is_nil(settings.check_in) do
+            true -> 
+              check_ins = listing.check_ins
+              checkin_begins =
+                case settings.check_in.begins do
+                  nil -> 
+                    {:ok, out} = Calendar.DateTime.add(cuando.begins, 30 * 60)
+                    out
+                  val -> 
+                    {:ok, out} = Calendar.DateTime.add(cuando.begins, val * 60)
+                    out
+                end
+              checkin_ends =
+                case cuando.ends do
+                  nil -> 
+                    case settings.check_in.ends do
+                      nil -> 
+                        {:ok, out} = Calendar.DateTime.add(cuando.begins, 120 * 60)
+                        out
+                      val -> 
+                        {:ok, out} = Calendar.DateTime.add(cuando.begins, val * 60)
+                        out
+                    end
+                  val -> cuando.ends
+                end
 
-          IO.puts "Checkin listing begins/ends"
-          IO.inspect begins
-          IO.inspect ends
-          # Check if user already has checked-in
-          cond do
-            Enum.any?(check_ins, fn x -> x.user_id === user.id end) ->
-              {:reply, {:error, "Already checked-in"}, state}
-            before_check_in_start?(begins, settings.begins, nil) ->
-              {:reply, {:error, "Check-in has not yet started"}, state}
-            after_check_in_start?(begins, ends, settings.ends, nil) ->
-              {:reply, {:error, "Check-ins have completed"}, state}
-            Geocalc.distance_between([lat, lng], [listing_lat, listing_lng]) > settings.radius ->
-              {:reply, {:error, "Not within check-in radius: #{Integer.to_string(settings.radius)} meters"}, state}
-            true ->
-              listing_id = listing.id
-              check_in_row = Ecto.build_assoc(user, :check_ins)
-                |> Map.set(:listing_id, listing_id)
-                |> Map.set(:geom, %Geo.Point{coordinates: {lng, lat}, srid: 4326})
-              result = Repo.insert(check_in_row)
-              new_state = %{state | listing: retrieve_listing_with_check_ins(listing_id)}
-              {:reply, {:ok, result}, new_state}
+              now = Calendar.DateTime.now_utc()
+              within_window = Calendar.DateTime.after?(now, checkin_begins) and Calendar.DateTime.before?(now, checkin_ends)
+              # IO.inspect now
+              # IO.inspect checkin_begins
+              # IO.inspect checkin_ends
+              # IO.puts "Within time window"
+              # IO.inspect within_window
+
+              user_ll = %{lat: lat, lon: lng}
+              venue_ll = %{lat: donde.lng_lat.lat, lon: donde.lng_lat.lng}
+              distance = Geocalc.distance_between(user_ll, venue_ll)
+              # IO.puts "distance"
+              # IO.inspect distance
+
+              checkin_radius = 1000
+                # case settings.check_in.radius do
+                #   nil -> 30
+                #   val -> val
+                # end
+
+              within_radius = distance <= checkin_radius
+              # IO.puts "Within radius"
+              # IO.inspect within_radius
+
+              {:reply, {:error, "Testing"}, state}
+
+
+              cond do
+                Enum.any?(check_ins, fn x -> x.user_id === user.id end) ->
+                  {:reply, {:error, "Already checked-in"}, state}
+                !within_window ->
+                  {:reply, {:error, "Check-in time window has passed"}, state}
+                !within_radius ->
+                  {:reply, {:error, "Not within check-in radius: #{Integer.to_string(settings.radius)} meters"}, state}
+                true ->
+                  listing_id = listing.id
+                  check_in_row = Ecto.build_assoc(user, :check_ins)
+                    |> Map.put(:listing_id, listing_id)
+                    |> Map.put(:geom, %Geo.Point{coordinates: {lng, lat}, srid: 4326})
+                  {:ok, result} = Repo.insert(check_in_row)
+                  new_state = %{state | listing: retrieve_listing_with_check_ins(listing_id)}
+                  {:reply, {:ok, result}, new_state}
+              end
+            false ->
+              {:reply, {:error, "Check-in not enabled for this listing"}, state}
           end
       _ ->
         {:reply, {:error, "Invalid check-in, only allowed on single-type listings"}, state}

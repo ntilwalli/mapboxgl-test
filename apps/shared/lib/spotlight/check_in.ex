@@ -1,7 +1,7 @@
 defmodule Shared.CheckIn do
   use Shared.Lib, :model
 
-  @derive {Poison.Encoder, except: [:__meta__, :updated_at]}
+  #@derive {Poison.Encoder, except: [:__meta__]}
   @primary_key false
   schema "check_ins" do
     belongs_to :user, Shared.User

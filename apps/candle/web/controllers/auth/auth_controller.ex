@@ -19,8 +19,6 @@ defmodule Candle.AuthController do
   def callback(%{assigns: %{ueberauth_auth: auth}} = conn, _params, current_user, _claims) do
     case current_user do
       nil ->
-        redirect(conn, to: "/")
-      _ ->  
         partial = %Authorization{
           provider: auth.provider,
           uid: auth.uid,
@@ -43,7 +41,9 @@ defmodule Candle.AuthController do
             |> Plug.Conn.put_session("partial_authorization", partial)
             |> Plug.Conn.put_resp_cookie("suggested_name", name_from_auth(auth), http_only: false)
             |> redirect(to: "/?modal=presignup")
-        end
+        end        
+      _ ->  
+        redirect(conn, to: "/")
     end
   end
 

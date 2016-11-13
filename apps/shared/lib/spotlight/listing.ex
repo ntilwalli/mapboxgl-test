@@ -28,6 +28,7 @@ defmodule Shared.Listing do
     field :cuando, :map
     field :donde, :map
     field :meta, :map
+    field :settings, :map
     field :source, :string
     field :user_sequence_id, :id, virtual: true
     field :child_sequence_id, :id, virtual: true
@@ -46,11 +47,11 @@ defmodule Shared.Listing do
   @allowed_fields [
     :id, :parent_id, :user_id, :type, :release, :visibility, :handle, :source,
     :name, :event_types, :categories,
-    :cuando, :donde, :meta
+    :cuando, :donde, :meta, :settings
   ]
   
   @required_fields [
-    :user_id, :type, :visibility, :release, :cuando, :donde, :meta, :event_types, :categories
+    :user_id, :type, :visibility, :release, :cuando, :donde, :meta, :settings, :event_types, :categories
   ]
 
   def changeset(model, params \\ :empty) do

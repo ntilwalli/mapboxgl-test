@@ -21,6 +21,6 @@ import_config "../apps/*/config/config.exs"
 #
 config :logger, 
   backends: [:console],
-  level: :debug,
+  level: :info,
   format: "$date $time [$level] $metadata$message\n"#,
   #metadata: [:listing_id]

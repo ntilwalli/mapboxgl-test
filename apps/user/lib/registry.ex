@@ -101,7 +101,7 @@ defmodule User.Registry do
             anon_ref = Map.put(anon_ref, ref, anon_id)
 
             {:noreply, %{%{state | anon: anon} | anon_ref: anon_ref}}
-          Map.has_key(auth_ref, ref) ->
+          Map.has_key?(auth_ref, ref) ->
             user_id = Map.fetch!(auth_ref, ref)
             auth_ref = Map.delete(auth_ref, ref)
             auth = Map.delete(auth, user_id)

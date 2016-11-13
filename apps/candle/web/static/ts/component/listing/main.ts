@@ -93,7 +93,9 @@ function fromRoute(route: any, sources, inputs, actions): any {
             data: listingId
           },
           category: `getListingById`
-        }).delay(0)  // ensure sinks are wired up before firing this
+        })
+        .do(x => console.log(`toHTTP`, x))
+        .delay(0)  // ensure sinks are wired up before firing this
       }
     }
   }

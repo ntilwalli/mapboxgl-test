@@ -22,7 +22,9 @@ defmodule Test.Shared.Manager.ListingManagerTest do
       "type" => "recurring",
       "visibility" => "public",
       "release" => "posted",
-      "categories" => ["comedy", "open_mic"],
+      "categories" => ["comedy"],
+      "event_types" => ["open-mic", "show"],
+      "settings" => %{},
       "donde" => %{
         "type" => "badslava",
         "street" => "something",
@@ -165,7 +167,10 @@ defmodule Test.Shared.Manager.ListingManagerTest do
         },
         "host" => ["Sally Shah", "Rajiv Khanna"],
         "note" => "Some note"
-      }
+      },
+      "settings" => %{},
+      "categories" => ["comedy"],
+      "event_types" => ["open-mic", "show"]
     }
 
     {status, parent_data} = parent_info = ListingManager.add(parent_listing, user)
@@ -195,7 +200,7 @@ defmodule Test.Shared.Manager.ListingManagerTest do
       "meta" => %{
         "type" => "badslava",
         "sign_up" => %{
-          "start" => -15,
+          "begins" => -15,
           "styles" => ["list"],
           "methods" => [%{
             "type" => "email_with_upgrades", 
@@ -240,7 +245,10 @@ defmodule Test.Shared.Manager.ListingManagerTest do
         },
         "host" => ["Sally Shah", "Rajiv Khanna"],
         "note" => "Some note"
-      }
+      },
+      "settings" => %{},
+      "categories" => ["comedy"],
+      "event_types" => ["open-mic", "show"]
     }
 
     {child_status, child_data} = ListingManager.add(child_listing, user)

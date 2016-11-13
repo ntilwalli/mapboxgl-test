@@ -3,6 +3,7 @@ defmodule User.Auth do
 
   import Ecto.Changeset, only: [apply_changes: 1]
   alias Shared.Message.Search.Query, as: SearchQueryMessage
+  alias Shared.Message.Listing.CheckIn, as: CheckInMessage
 
   def start_link(listing_registry, user) do
     GenServer.start_link(__MODULE__, {:ok, listing_registry, user}, [])
@@ -25,7 +26,7 @@ defmodule User.Auth do
   end
 
   def route(server, "/check_in", message) do
-    GenServer.call
+    GenServer.call(server, {:check_in, message})
   end
 
   def route(server, unknown_route, message) do 
@@ -51,7 +52,7 @@ defmodule User.Auth do
     end
   end
 
-  def handle_call({:retrieve_listing, listing_id} , _from, %{listing_registry: l_reg} = state) do
+  def handle_call({:retrieve_listing, listing_id}, _from, %{listing_registry: l_reg} = state) do
     out = case Integer.parse(listing_id) do
       {whole, _} -> 
         {:ok, pid} = Listing.Registry.lookup(l_reg, whole)
@@ -59,6 +60,21 @@ defmodule User.Auth do
         {:reply, {:ok, listing}, state}
       :error ->
         {:reply, {:error, "Sent listing id (#{listing_id}) invalid"}, state}
+    end
+  end
+
+  def handle_call({:check_in, params}, _from, %{user: user, listing_registry: l_reg} = state) do
+    cs = CheckInMessage.changeset(%CheckInMessage{}, params)
+    case cs.valid? do
+      true ->
+        %{listing_id: listing_id, lng_lat: lng_lat} = apply_changes(cs)
+        {:ok, pid} = Listing.Registry.lookup(l_reg, listing_id)
+        out = Listing.Worker.check_in(pid, user, lng_lat)
+        # IO.puts "Check-in output..."
+        # IO.inspect out
+        {:reply, out, state}
+      false ->
+        {:reply, {:error, "Sent invalid check-in parameters"}, state}
     end
   end
 
