@@ -100,7 +100,7 @@ function main(sources, inputs) {
       actions.showUserProfile$.withLatestFrom(state$, (_, state) => {
         const {authorization} = state
         return {
-          pathname: `/user/${authorization.id}`,
+          pathname: `/home`,
           action: `PUSH`
         }
       })

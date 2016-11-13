@@ -105,9 +105,10 @@ const convertLngLat = x => ({longitude: x.lng, latitude: x.lat})
 function renderButtons(state) {
   const {geolocation, authorization, listing, checked_in, in_flight} = state
   const {donde, cuando, settings} = listing
-  const checkin_begins = cuando.begins.clone().add(settings.begins || -30, 'minutes')
-  const checkin_ends = settings.ends || cuando.begins.clone().add(settings.ends || 120, 'minutes')
-  const checkin_radius = 1000//settings.radius || 30
+  const check_in_settings = settings.check_in
+  const checkin_begins = cuando.begins.clone().add(check_in_settings.begins || -30, 'minutes')
+  const checkin_ends = settings.ends || cuando.begins.clone().add(check_in_settings.ends || 120, 'minutes')
+  const checkin_radius = check_in_settings.radius || 30
   
   let disabled = true;
 

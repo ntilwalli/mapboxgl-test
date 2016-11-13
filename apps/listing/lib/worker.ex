@@ -189,7 +189,7 @@ defmodule Listing.Worker do
                 !within_window ->
                   {:error, "Check-in time window has passed"}
                 !within_radius ->
-                  {:error, "Not within check-in radius: #{Integer.to_string(settings.radius)} meters"}
+                  {:error, "Not within check-in radius: #{Integer.to_string(settings.check_in.radius)} meters"}
                 true ->
                   :ok
               end

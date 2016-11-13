@@ -72,7 +72,7 @@ function fromRoute(route: any, sources, inputs, actions): any {
   } else {
 
     if (pushState) {
-      console.log(`Got push state`, pushState)
+      //console.log(`Got push state`, pushState)
       return Profile(
         spread(sources, {
           Router: Router.path(route.path.substring(1))
@@ -81,7 +81,7 @@ function fromRoute(route: any, sources, inputs, actions): any {
       )
     } else {
       const listingId = route.path.substring(1)
-      console.log(`No push state, retrieving listing by id ${listingId}`)
+      //console.log(`No push state, retrieving listing by id ${listingId}`)
       return {
         DOM: O.of(div(`.waiting-screen.flex-center`, [
           span(`.loader`, [])
@@ -107,7 +107,7 @@ function fromRoute(route: any, sources, inputs, actions): any {
           },
           category: `getListingById`
         })
-        .do(x => console.log(`toHTTP`, x))
+        //.do(x => console.log(`toHTTP`, x))
         .delay(0)  // ensure sinks are wired up before firing this
       }
     }
@@ -173,13 +173,9 @@ export default function main(sources, inputs): any {
     DOM: vtree$,
     Router: O.merge(
       componentified.Router,
-      actions.showUserProfile$.withLatestFrom(state$, (_, state) => {
-        const {authorization} = state
-        const {id} = authorization
-        return {
-          pathname: `/user/${id}`,
-          action: `PUSH`
-        }
+      actions.showUserProfile$.mapTo({
+        pathname: `/home`,
+        action: `PUSH`
       })
     ),
     MessageBus: O.merge(
