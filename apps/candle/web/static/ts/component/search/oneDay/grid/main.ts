@@ -24,7 +24,6 @@ function main(sources, inputs) {
   return {
     DOM: vtree$,
     Router: actions.click$.map(val => { 
-      console.log(val)
       const out = {
         pathname: `/listing/${val.listing.id}`,
         action: `PUSH`,

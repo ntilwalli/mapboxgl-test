@@ -14,7 +14,7 @@ import Filters from './filters'
 
 const log = console.log.bind(console)
 const shouldRefreshSearch = (x, y) => {
-  console.log(x, y)
+  //console.log(x, y)
   const x_dt = x.searchDateTime
   const y_dt = y.searchDateTime
   return x_dt.isSame(y_dt)
@@ -95,7 +95,16 @@ function main(sources, inputs) {
 
   return {
     DOM: vtree$,
-    Router: grid.Router,
+    Router: O.merge(
+      grid.Router,
+      actions.showUserProfile$.withLatestFrom(state$, (_, state) => {
+        const {authorization} = state
+        return {
+          pathname: `/user/${authorization.id}`,
+          action: `PUSH`
+        }
+      })
+    ),
     HTTP: retrieve$,
     Storage: state$
       .filter((state: any) => state.searchDateTime && state.results && state.filters)
@@ -110,9 +119,8 @@ function main(sources, inputs) {
         value: JSON.stringify(val)
       })),
     MessageBus: O.merge(
-      actions.showMenu$.mapTo({to: `main`, message: `showLeftMenu`}),
-      actions.login$.mapTo({to: `main`, message: `showLogin`}),
-      actions.logout$.mapTo({to: `/authorization/logout`})
+      actions.showMenu$.mapTo({to: `main`, message: `showLeftMenu`}), 
+      actions.showLogin$.mapTo({to: `main`, message: `showLogin`})
     )
 
       //.filter(x => false)

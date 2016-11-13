@@ -1,6 +1,7 @@
 import {div, button, span, i} from '@cycle/dom'
 import {combineObj} from '../../../utils'
 import moment = require('moment')
+import {renderMenuButton, renderUserProfileButton, renderLoginButton} from '../../renderHelpers/controller'
 
 const showLoader = state => {
   const {results, retrieving, searchPosition} = state
@@ -53,25 +54,20 @@ function renderFiltersController(state) {
   ])
 }
 
-function renderMenuButton(state) {
-  return span(`.menu-button`, [
-    i(`.appMenuButton.fa.fa-bars.fa-1-2x`, [])
-  ])
-}
-
 function renderController(state) {
   const {authorization} = state
   const authClass = authorization ? `Logout` : `Login`
   return div(`.controller`, [
     div(`.section`, [
-      renderMenuButton(state)
+      renderMenuButton()
     ]),
     div(`.section`, [
       renderDateController(state),
       renderFiltersController(state)
     ]),
     div(`.section`, [
-      button(`.appShow${authClass}Button.auth-button`, {key: `oneDayController${authClass}`}, [authClass])
+      !authorization ? renderLoginButton() : null,
+      authorization ? renderUserProfileButton() : null
     ])
   ])
 }

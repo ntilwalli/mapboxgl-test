@@ -1,4 +1,4 @@
-import {div, span, a} from '@cycle/dom'
+import {div, span, a, i} from '@cycle/dom'
 import moment = require('moment')
 
 export function renderName(name) {

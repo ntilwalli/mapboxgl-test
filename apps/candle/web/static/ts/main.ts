@@ -18,9 +18,9 @@ import routeFunction from './routeFunction'
 import PreferencesService from  './service/preferences'
 import AuthorizationService from './service/authorization/main'
 import GeolocationService from './service/geolocation'
-import OneDayCalendar from './component/calendar/oneDay/main'
-import SmartTextInput from './library/smartTextInput'
-import LeftMenuModal from './library/leftMenuModal'
+// import SearchApp from './component/search/oneDay/main'
+// import SmartTextInput from './library/smartTextInput'
+// import LeftMenuModal from './library/leftMenuModal'
 
 import getModal from './getModal'
 import intent from './intent'
@@ -40,6 +40,7 @@ function main(sources) {
 
   const preferences$ = PreferencesService(sources)
   const authService = AuthorizationService(sources)
+
   const geoService = GeolocationService(sources)
 
   const inputs = {
@@ -47,6 +48,8 @@ function main(sources) {
     Authorization: authService.output,
     Geolocation: geoService.output
   }
+
+  inputs.Authorization.status$.subscribe()
   
   //const out = normalizeComponent(OneDayCalendar(sources, inputs))
   const out = routing(sources, inputs)

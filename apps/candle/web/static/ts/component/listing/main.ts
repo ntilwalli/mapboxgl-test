@@ -1,6 +1,8 @@
 import {Observable as O} from 'rxjs'
-import {div, span} from '@cycle/dom'
-import {combineObj, inflateListing, processHTTP, componentify, spread} from '../../utils'
+import {div, span, button} from '@cycle/dom'
+import {combineObj, inflateListing, processHTTP, componentify, spread, defaultNever} from '../../utils'
+import Immutable = require('immutable')
+import {renderMenuButton, renderLoginButton, renderUserProfileButton} from '../renderHelpers/controller'
 
 import {main as Profile} from './profile/main'
 import {main as Invalid} from './invalid'
@@ -20,7 +22,7 @@ function drillInflate(result) {
 }
 
 function intent(sources) {
-  const {HTTP} = sources
+  const {DOM, HTTP} = sources
   const {good$, bad$, ugly$} = processHTTP(sources, `getListingById`)
   const listing$ = good$
     .do(x => console.log(`got listing`, x))
@@ -34,10 +36,21 @@ function intent(sources) {
     .pluck(`data`)
     .publish().refCount()
 
-    return {
-      listing$,
-      notFound$
-    }
+  const showMenu$ = DOM.select(`.appShowMenuButton`).events(`click`)
+
+  const showLogin$ = DOM.select(`.appShowLoginButton`).events(`click`)
+  const showUserProfile$ = DOM.select(`.appShowUserProfileButton`).events(`click`)
+    .publishReplay(1).refCount()
+
+  showUserProfile$.subscribe(x => console.log(`user profile clicked...`))
+
+  return {
+    listing$,
+    notFound$,
+    showMenu$,
+    showLogin$,
+    showUserProfile$
+  }
 }
 
 function fromRoute(route: any, sources, inputs, actions): any {
@@ -50,10 +63,10 @@ function fromRoute(route: any, sources, inputs, actions): any {
 
   if (type === "error") {
     if (route.path === "invalid") {
-      console.log(`Invalid`)
+      //console.log(`Invalid`)
       return Invalid(sources, spread(inputs, {props$: O.of(pushState)}))
     } else {
-      console.log(`Not found`)
+      //console.log(`Not found`)
       return Invalid(sources, spread(inputs, {props$: O.of(pushState)}))
     }
   } else {
@@ -101,12 +114,78 @@ function fromRoute(route: any, sources, inputs, actions): any {
   }
 }
 
+function model(actions, inputs) {
+  return inputs.Authorization.status$
+    .map(authorization => {
+      return Immutable.Map({
+        authorization
+      })
+    })
+    .map(x => x.toJS())
+    .publishReplay(1).refCount()
+}
+
+
+function renderController(state) {
+  const {authorization} = state
+  //const authClass = authorization ? `Logout` : `Login`
+  //console.log(authorization)
+  return div(`.controller`, [
+    div(`.section`, [
+      renderMenuButton()
+    ]),
+    div(`.section`, [
+      !authorization ? renderLoginButton() : null,
+      authorization ? renderUserProfileButton() : null
+    ])
+  ])
+}
+
+function view(state$, components) {
+  return combineObj({state$, components$: combineObj(components)})
+    .debounceTime(0)
+    .map((info: any) => {
+      const {state, components} = info
+      const {content} = components
+      return div(`.listing-component`, [
+        renderController(state),
+        content
+      ])
+    })
+}
+
 export default function main(sources, inputs): any {
   const {Router} = sources
   const actions = intent(sources)
-  const routing$ = Router.define(routes)
+  const state$ = model(actions, inputs)
+  const content$ = Router.define(routes)
     .map(r => fromRoute(r, sources, inputs, actions))
     .publishReplay(1).refCount()
 
-  return componentify(routing$)
+  const components = {
+    content$: content$.switchMap(x => x.DOM)
+  }
+
+  const vtree$ = view(state$, components)
+
+  const componentified = componentify(content$)
+  return spread(componentify(content$), {
+    DOM: vtree$,
+    Router: O.merge(
+      componentified.Router,
+      actions.showUserProfile$.withLatestFrom(state$, (_, state) => {
+        const {authorization} = state
+        const {id} = authorization
+        return {
+          pathname: `/user/${id}`,
+          action: `PUSH`
+        }
+      })
+    ),
+    MessageBus: O.merge(
+      componentified.MessageBus,
+      actions.showMenu$.mapTo({to: `main`, message: `showLeftMenu`}),
+      actions.showLogin$.mapTo({to: `main`, message: `showLogin`}),
+    )
+  })
 }

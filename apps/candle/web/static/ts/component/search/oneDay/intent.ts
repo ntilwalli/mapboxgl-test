@@ -53,18 +53,19 @@ export default function intent(sources) {
 
   const showFilters$ = DOM.select(`.appShowFilters`).events(`click`)
 
-  const showMenu$ = DOM.select(`.appMenuButton`).events(`click`)
+  const showMenu$ = DOM.select(`.appShowMenuButton`).events(`click`)
 
-  const login$ = DOM.select(`.appShowLoginButton`).events(`click`)
-  const logout$ = DOM.select(`.appShowLogoutButton`).events(`click`)
+  const showLogin$ = DOM.select(`.appShowLoginButton`).events(`click`)
+  const showUserProfile$ = DOM.select(`.appShowUserProfileButton`).events(`click`)
+
   return {
     results$: success$,
     cached$,
     changeDate$,
     showFilters$,
     showMenu$,
-    login$,
-    logout$
+    showLogin$,
+    showUserProfile$
   }
 }
 

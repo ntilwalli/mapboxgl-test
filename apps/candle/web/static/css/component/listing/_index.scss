@@ -1,2 +1,8 @@
+.listing-component {
+  height: 100%;
+  width: 100%;
+  @import 'profile/index';
+}
+
 @import 'invalid';
 @import 'profile/_index';

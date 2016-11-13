@@ -1,4 +1,4 @@
-@import '../../../variables';
+@import '../variables';
 
 .controller {
   position: fixed;
@@ -26,13 +26,11 @@
     outline: none;
   }
 
-  .menu-button {
-    padding-left: .5rem;
-    padding-right: .75rem;
-  }
-
-  .menu-button:hover {
-    color:$crayola-orange;
+  .menu-button, .user-profile-button {
+    padding: .5rem;
+    &:hover {
+      color:$crayola-orange;
+    }
   }
 
   .date-controller {

@@ -7,6 +7,7 @@ import * as renderHelpers from '../../renderHelpers/listing'
 import moment = require('moment')
 import * as Geolib from 'geolib'
 
+
 const {renderName, renderDateTimeBegins, renderDateTimeEnds, renderCost, 
   renderStageTime, renderPerformerLimit, renderDonde, 
   renderStatus, renderSignup, renderNote, renderContactInfo, renderHostInfo} = renderHelpers
@@ -70,7 +71,6 @@ function model(actions, inputs) {
     .map((info: any) => {
       const {props, authorization, geolocation} = info
       const {listing, distance, status} = props
-      console.log(props)
       return Immutable.Map(spread(info, {
         authorization,
         geolocation,
@@ -86,43 +86,8 @@ function model(actions, inputs) {
         .scan((acc, f: Function) => f(acc))
     })
     .map((x: any) => x.toJS())
-    .do(x => console.log(`profile state:`, x))
+    //.do(x => console.log(`profile state:`, x))
     .publishReplay(1).refCount()
-}
-
-function renderSingleListing(state) {
-  const {authorization, listing, checked_in, settings} = state
-
-  const {name, cuando, donde, meta} = listing
-  const {begins, ends} = cuando
-  const {hosts, contact, cost, sign_up, stage_time, performer_limit, note} = meta
-  return div(`.info`, [
-    div(`.top`, [
-      div(`.left`, [
-        renderName(name),
-        renderDateTimeBegins(cuando),
-        renderDateTimeEnds(cuando),
-        renderDonde(donde),
-        renderContactInfo(contact),
-        renderHostInfo(hosts)
-        
-      ]),
-      div(`.right`, [
-        renderStatus(cuando),
-        renderCost(cost),
-        renderStageTime(stage_time),
-        renderSignup(cuando, sign_up),
-        renderPerformerLimit(performer_limit),
-        checked_in ? div(`.result-check-in`, [`Checked-in`]) : null
-      ])
-    ]),
-    div(`.bottom`, [
-      renderNote(note),
-    ])
-
-    // renderCheckin(meta),
-    // renderHosts(meta)
-  ])
 }
 
 function renderRecurringListing(listing) {
@@ -164,7 +129,7 @@ function renderButtons(state) {
     //console.log(`Within time window: `, within_time_window)
 
     disabled = checked_in || !(within_radius && within_time_window ) ? true : false
-    console.log(`check-in disabled: `, disabled)
+    //console.log(`check-in disabled: `, disabled)
   }
 
   //enabled, disabled, checked-in
@@ -195,13 +160,49 @@ function renderButtons(state) {
   ])
 }
 
+function renderSingleListing(state) {
+  const {authorization, listing, checked_in, settings} = state
+
+  const {name, cuando, donde, meta} = listing
+  const {begins, ends} = cuando
+  const {hosts, contact, cost, sign_up, stage_time, performer_limit, note} = meta
+  return div(`.info`, [
+    div(`.top`, [
+      div(`.left`, [
+        renderName(name),
+        renderDateTimeBegins(cuando),
+        renderDateTimeEnds(cuando),
+        renderDonde(donde),
+        renderContactInfo(contact),
+        renderHostInfo(hosts)
+        
+      ]),
+      div(`.right`, [
+        renderStatus(cuando),
+        renderCost(cost),
+        renderStageTime(stage_time),
+        renderSignup(cuando, sign_up),
+        renderPerformerLimit(performer_limit),
+        checked_in ? div(`.result-check-in`, [`Checked-in`]) : null
+      ])
+    ]),
+    div(`.bottom`, [
+      renderNote(note),
+    ])
+
+    // renderCheckin(meta),
+    // renderHosts(meta)
+  ])
+}
+
+
 function view(state$) {
   return state$
     .map(state => {
       const {geolocation, authorization, listing, checked_in, in_flight, settings} = state
       const {type, donde} = listing
       //console.log(donde)
-      return div(`.listing-profile`, [
+      return div(`.profile`, [
         type === "single" ? renderSingleListing(state) : renderRecurringListing(state),
         renderButtons(state),
         div(`.map`, [
@@ -288,7 +289,7 @@ export function main(sources, inputs) {
       return null
     }
   }).filter(x => !!x)
-    .do(x => console.log(`checkin request`, x))
+    //.do(x => console.log(`checkin request`, x))
     .publishReplay(1).refCount()
   
   in_flight$.attach(to_http$)

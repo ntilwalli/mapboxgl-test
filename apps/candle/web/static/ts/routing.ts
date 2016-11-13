@@ -1,13 +1,15 @@
 import {Observable as O} from 'rxjs'
 import {combineObj, componentify, spread} from './utils'
 
-import OneDayCalendar from './component/calendar/oneDay/main'
-import Listing from './component/listing/main'
+import SearchApp from './component/search/oneDay/main'
+import ListingApp from './component/listing/main'
+import UserApp from './component/user/main'
 //import CreateListing from './createListing/main'
 
 const routes = [
-  {pattern: /^\/listing/, value: Listing},
-  {pattern: /.*/, value: OneDayCalendar}
+  {pattern: /^\/user/, value: UserApp},
+  {pattern: /^\/listing/, value: ListingApp},
+  {pattern: /.*/, value: SearchApp}
 ]
 
 export default function routing(sources, inputs) {
