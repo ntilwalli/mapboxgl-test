@@ -27,7 +27,10 @@ defmodule User.Helpers do
           s.begins <= ^ends,
         select: s
 
-    Repo.all(query)
+    out = Repo.all(query)
+    IO.inspect query
+    IO.inspect out
+    out
   end
 
   # def search(%SearchQuery{} = query) do
