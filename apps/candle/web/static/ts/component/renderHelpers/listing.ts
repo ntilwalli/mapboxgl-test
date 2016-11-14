@@ -316,7 +316,7 @@ export function renderSignup(cuando, sign_up) {
 function renderWebsite(website) {
   const site = `http://${website}`
   return div(`.result-website`, [
-    a({attrs: {href: site}}, [site])
+    a({attrs: {href: site}}, [`Website`])
   ])
 }
 

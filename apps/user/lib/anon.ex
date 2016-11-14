@@ -94,7 +94,7 @@ defmodule User.Anon do
     out = case Integer.parse(listing_id) do
       {whole, _} -> 
         {:ok, pid} = Listing.Registry.lookup(l_reg, whole)
-        {:ok, listing} = Listing.Worker.retrieve(pid)
+        {:ok, listing} = Listing.Worker.retrieve(pid, nil)
         {:reply, {:ok, listing}, state}
       :error ->
         {:reply, {:error, "Sent listing id (#{listing_id}) invalid"}, state}

@@ -28,8 +28,6 @@ defmodule User.Helpers do
         select: s
 
     out = Repo.all(query)
-    IO.inspect query
-    IO.inspect out
     out
   end
 

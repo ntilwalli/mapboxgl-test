@@ -156,7 +156,7 @@ function renderButtons(state) {
         disabled
       }
     }, [
-      in_flight? span(`.loader`, []) : checked_in ? span([`Checked-in`]) : span([`Check-in`])
+      in_flight? span(`.loader`, []) : checked_in ? span(`.flex-center.button-text`, [`Checked-in`]) : span(`.flex-center.button-text`, [`Check-in`])
     ])
   ])
 }
