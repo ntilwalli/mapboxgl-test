@@ -82,7 +82,7 @@ function main(sources, inputs) {
             begins: searchDateTime.clone().startOf('day'),
             ends: searchDateTime.clone().endOf('day'),
             center: searchPosition.data,
-            radius: 10000
+            radius: 100000
           }
         },
         category: `searchOneDay`
