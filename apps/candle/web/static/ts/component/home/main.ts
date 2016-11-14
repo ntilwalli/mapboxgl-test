@@ -6,6 +6,7 @@ import {renderMenuButton, renderLoginButton, renderSearchCalendarButton} from '.
 
 //import {main as Profile} from './profile/main'
 import {main as Invalid} from './invalid'
+import {main as CheckInGrid} from '../../library/checkInGrid'
 
 const onlySuccess = x => x.type === "success"
 const onlyError = x => x.type === "error"
@@ -75,10 +76,14 @@ function renderController(state) {
 }
 
 function view(state$, components) {
-  return state$.map(state => {
+  return combineObj({state$, components$: combineObj(components)})
+    .map((info: any) => {
+      const {state, components} = info
+      const {checkInGrid} = components
       return div(`.user-component`, [
         renderController(state),
-        div(`.profile`, {style: {paddingTop: "2rem"}}, [`My profile`])
+        div(`.profile`, {style: {paddingTop: "2rem"}}, [`My profile`]),
+        checkInGrid
       ])
     })
 }
@@ -88,7 +93,10 @@ export default function main(sources, inputs): any {
   const actions = intent(sources)
   const state$ = model(actions, inputs)
 
-  const components = {}
+  const checkInGrid = CheckInGrid(sources, inputs)
+  const components = {
+    checkInGrid: checkInGrid.DOM
+  }
 
   const vtree$ = view(state$, components)
 

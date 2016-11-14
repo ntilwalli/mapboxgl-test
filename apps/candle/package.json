@@ -61,7 +61,7 @@
     "grunt-cli": "^1.2.0",
     "ts-loader": "^0.9.1",
     "tsify": "^2.0.2",
-    "typescript": "^2.0.6",
+    "typescript": "^2.2.0-dev.20161114",
     "watch-run": "^1.2.4",
     "webpack": "^1.13.2"
   }
