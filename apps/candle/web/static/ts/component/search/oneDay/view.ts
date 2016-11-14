@@ -16,19 +16,19 @@ function getDateDisplayString(dt) {
   //console.log(diff)
   if (selected.isBefore(today)) {
     if (diff === -1) {
-      return [`${dt.format('dddd')} (Yesterday)`, ".past"]
+      return [`${dt.format('ddd')} (Yesterday)`, ".past"]
     }
 
-    return [`${dt.format('dddd')} (${dt.format('M/D/YY')})`, ".past"]
+    return [`${dt.format('ddd')} (${dt.format('M/D')})`, ".past"]
 
   } else if (selected.isSame(today)) {
-    return [`${dt.format('dddd')} (Today)`, ".today"]
+    return [`${dt.format('ddd')} (Today)`, ".today"]
   } else if (selected.isAfter(today)) {
     if (diff === 1) {
-      return [`${dt.format('dddd')} (Tomorrow)`, ".future"]
+      return [`${dt.format('ddd')} (Tomorrow)`, ".future"]
     }
 
-    return [`${dt.format('dddd')} (${dt.format('M/D/YY')})`, ".future"]
+    return [`${dt.format('ddd')} (${dt.format('M/D')})`, ".future"]
   }
 }
 

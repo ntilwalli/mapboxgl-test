@@ -36,6 +36,7 @@ function main(sources, inputs) {
   })
 
   const filtersModal$ = state$.pluck(`showFilters`)
+    .distinctUntilChanged()
     .map(val => {
       if (val) {
         return DoneModal(sources, {

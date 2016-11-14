@@ -109,6 +109,7 @@ function model(actions, inputs) {
       return Immutable.Map(props)
     })
     .switchMap(init => {
+      //console.log(`reset filters model`)
       return reducer$
         .startWith(init)
         .scan((acc, f: Function) => f(acc))
