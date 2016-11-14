@@ -3,7 +3,7 @@
   "scripts": {
     "copy-normalize-css": "cp -r ./node_modules/normalize.css/normalize.css priv/static/normalize",
     "copy-font-awesome-data": "cp -r ./node_modules/font-awesome/css priv/static/font-awesome; cp -r ./node_modules/font-awesome/fonts priv/static/font-awesome",
-    "copy-mapbox-data": "cp -r ./node_modules/mapbox-gl/dist/ priv/static/mapbox/",
+    "copy-mapbox-data": "cp -r ./node_modules/mapbox-gl/dist/* priv/static/mapbox/",
     "build-assets": "cp -r web/static/assets/* priv/static",
     "watch-assets": "watch-run -i -p 'web/static/assets/**' npm run build-assets",
     "build-browserify": "./node_modules/.bin/browserify web/static/ts/main.ts -p [ tsify ] > priv/static/js/main.js",
