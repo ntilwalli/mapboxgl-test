@@ -16,19 +16,22 @@ function getDateDisplayString(dt) {
   //console.log(diff)
   if (selected.isBefore(today)) {
     if (diff === -1) {
-      return [`${dt.format('ddd')} (Yesterday)`, ".past"]
+      //return [`${dt.format('ddd')} (Yesterday)`, ".past"]
+      return [`Yesterday`, ".past"]
     }
 
-    return [`${dt.format('ddd')} (${dt.format('M/D')})`, ".past"]
+    return [`${dt.format('dd')} ${dt.format('M/D')}`, ".past"]
 
   } else if (selected.isSame(today)) {
-    return [`${dt.format('ddd')} (Today)`, ".today"]
+    //return [`${dt.format('ddd')} (Today)`, ".today"]
+    return [`Today`, ".today"]
   } else if (selected.isAfter(today)) {
     if (diff === 1) {
-      return [`${dt.format('ddd')} (Tomorrow)`, ".future"]
+      //return [`${dt.format('ddd')} (Tomorrow)`, ".future"]
+      return [`Tomorrow`, ".future"]
     }
 
-    return [`${dt.format('ddd')} (${dt.format('M/D')})`, ".future"]
+    return [`${dt.format('dd')} ${dt.format('M/D')}`, ".future"]
   }
 }
 
@@ -62,6 +65,7 @@ function renderController(state) {
       renderMenuButton()
     ]),
     div(`.section`, [
+      //`Hello`,
       renderDateController(state),
       renderFiltersController(state)
     ]),

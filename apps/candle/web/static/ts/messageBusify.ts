@@ -11,7 +11,7 @@ export default function messageBusify(main) {
             //console.log(`selector: `, selector)
             return x.to === selector
           })
-          .map(x => x.message)
+          .map((x: any) => x.message)
           .publish().refCount()
 
         return message$

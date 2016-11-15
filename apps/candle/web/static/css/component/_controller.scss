@@ -11,6 +11,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  z-index: 1;
 
   .section {
     display: flex;
@@ -41,7 +42,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 8rem;
+      width: 5rem;
     }
 
     .past {
@@ -49,9 +50,19 @@
       color: gray;
     }
 
-    // .today {
-    //   color: green
-    // }
+    .today {
+      color: green
+    }
+
+    .add-day {
+      padding: 0;
+      margin-left: 1rem;
+    }
+
+    .subtract-day {
+      padding: 0;
+      margin-right: 1rem;
+    }
 
     .add-day:hover {
       color: $crayola-orange;
@@ -63,8 +74,9 @@
   }
 
   .show-filters {
-    padding-left: .7rem;
+    margin-left: 0.5rem;
   }
+
   .show-filters:hover {
     color: $crayola-orange;
   }

@@ -1,9 +1,48 @@
 defmodule User.Helpers do
+  import Ecto.Changeset, only: [apply_changes: 1]
   import Ecto.Query, only: [from: 2]
   import Ecto.Query.API, only: [fragment: 1]
   import Shared.Macro.GeoGeography
+  
   alias Shared.Repo
-  alias Shared.Message.Search.Query, as: SearchQuery
+  alias Shared.Message.Incoming.Search.Query, as: SearchQueryMessage
+  alias Shared.Message.DateTimeRange, as: DateTimeRangeMessage
+  alias Shared.Message.Outgoing.Home.CheckIns, as: CheckInsMessage
+  alias Shared.Message.Outgoing.CheckIn, as: CheckInItem
+  alias Shared.Model.Listing.Cuando.Once, as: CuandoOnce
+  def gather_check_ins(
+    %DateTimeRangeMessage{begins: begins, ends: ends}, 
+    %Shared.User{id: user_id}
+  ) do
+    query = from s in Shared.CheckIn,
+        preload: :listing,
+        where: s.user_id == ^user_id and 
+          s.inserted_at >= ^begins and 
+          s.inserted_at <= ^ends,
+        select: s
+
+    # IO.puts "gather_check_ins..."
+    # IO.inspect query
+
+    results = Repo.all(query)
+  
+    out =
+      for c <- results do
+        cuando_map = c.listing.cuando
+        cs = CuandoOnce.changeset(%CuandoOnce{}, cuando_map)
+        cuando = apply_changes(cs)
+        # IO.puts "Check-in cuando..."
+        # IO.inspect cuando
+        %CheckInItem{
+          listing_id: c.listing_id, 
+          check_in_datetime: c.inserted_at,
+          listing_name: c.listing.name,
+          listing_datetime: cuando.begins
+        }
+      end
+
+    %CheckInsMessage{check_ins: out}
+  end
 
   def gather_listings_info(query, user, listing_registry) do
     search_results = search(query, user)
@@ -17,8 +56,8 @@ defmodule User.Helpers do
     listings_info
   end
 
-  def search(%SearchQuery{} = query, user) do
-    %SearchQuery{begins: begins, ends: ends, center: %{lng: lng, lat: lat}, radius: radius} = query
+  def search(%SearchQueryMessage{} = query, user) do
+    %SearchQueryMessage{begins: begins, ends: ends, center: %{lng: lng, lat: lat}, radius: radius} = query
     point = %Geo.Point{coordinates: {lng, lat}, srid: 4326}
     query = from s in Shared.SingleListingSearch,
         preload: :listing,
@@ -28,9 +67,9 @@ defmodule User.Helpers do
         select: s
 
     out = Repo.all(query)
-    IO.puts "search query/out"
-    IO.inspect query
-    IO.inspect out
+    # IO.puts "search query/out"
+    # IO.inspect query
+    # IO.inspect out
     out
   end
 

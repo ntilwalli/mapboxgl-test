@@ -9,9 +9,9 @@ defmodule Auth.Manager do
   alias Auth.Registration
   alias Auth.Credential
 
-  alias Shared.Message.Authorization.Login, as: LoginMessage
-  alias Shared.Message.Authorization.Signup, as: SignupMessage
-  alias Shared.Message.Authorization.Presignup, as: PresignupMessage
+  alias Shared.Message.Incoming.Authorization.Login, as: LoginMessage
+  alias Shared.Message.Incoming.Authorization.Signup, as: SignupMessage
+  alias Shared.Message.Incoming.Authorization.Presignup, as: PresignupMessage
 
   # Client functions
   def start_link(opts \\ []) do

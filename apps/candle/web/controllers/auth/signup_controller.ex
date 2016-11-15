@@ -4,7 +4,7 @@ defmodule Candle.SignupController do
 
   import Ecto.Changeset, only: [apply_changes: 1]
   alias Candle.Auth.Helpers
-  alias Shared.Message.Authorization.Signup, as: SignupMessage
+  alias Shared.Message.Incoming.Authorization.Signup, as: SignupMessage
 
   def index(conn, params, current_user, _claims) do
     case current_user do

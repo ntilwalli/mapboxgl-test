@@ -2,8 +2,10 @@ defmodule User.Auth do
   use GenServer
 
   import Ecto.Changeset, only: [apply_changes: 1]
-  alias Shared.Message.Search.Query, as: SearchQueryMessage
-  alias Shared.Message.Listing.CheckIn, as: CheckInMessage
+  alias Shared.Message.Incoming.Search.Query, as: SearchQueryMessage
+  alias Shared.Message.Incoming.Listing.CheckIn, as: CheckInMessage
+  alias Shared.Message.Outgoing.Home.CheckIns, as: CheckInsMessage
+  alias Shared.Message.DateTimeRange, as: DateTimeRangeMessage
 
   def start_link(listing_registry, user) do
     GenServer.start_link(__MODULE__, {:ok, listing_registry, user}, [])
@@ -13,8 +15,12 @@ defmodule User.Auth do
     :ok
   end
 
-  def route(server, "/register_app_load", _) do
+  def route(server, "/register_app_load") do
     :ok
+  end
+
+  def route(server, "/home/profile") do
+    GenServer.call(server, :home_profile)
   end
 
   def route(server, "/search", query) do
@@ -23,6 +29,10 @@ defmodule User.Auth do
 
   def route(server, "/retrieve_listing", listing_id) do
     GenServer.call(server, {:retrieve_listing, listing_id})
+  end
+
+  def route(server, "/home/check_ins", message) do
+    GenServer.call(server, {:home_check_ins, message})
   end
 
   def route(server, "/check_in", message) do
@@ -52,7 +62,9 @@ defmodule User.Auth do
     end
   end
 
-  def handle_call({:retrieve_listing, listing_id}, _from, %{user: user, listing_registry: l_reg} = state) do
+  def handle_call({:retrieve_listing, listing_id} = msg, _from, %{user: user, listing_registry: l_reg} = state) do
+    #IO.puts "Retrieve listing message"
+    #IO.inspect msg
     out = case Integer.parse(listing_id) do
       {whole, _} -> 
         {:ok, pid} = Listing.Registry.lookup(l_reg, whole)
@@ -78,4 +90,20 @@ defmodule User.Auth do
     end
   end
 
+  def handle_call(:home_profile, _from, %{user: user} = state) do
+    {:reply, {:ok, user}  , state}
+  end
+
+  def handle_call({:home_check_ins, params}, _from, %{user: user} = state) do
+    cs = DateTimeRangeMessage.changeset(%DateTimeRangeMessage{}, params)
+    case cs.valid? do
+      true ->
+        out = User.Helpers.gather_check_ins(apply_changes(cs), user)
+        IO.puts "Check-in output..."
+        IO.inspect out
+        {:reply, {:ok, out}, state}
+      false ->
+        {:reply, {:error, "Sent invalid date-time range parameters"}, state}
+    end
+  end
 end

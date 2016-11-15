@@ -4,7 +4,7 @@ defmodule Candle.LoginController do
   require Logger
   import Ecto.Changeset, only: [apply_changes: 1]
   alias Candle.Auth.Helpers
-  alias Shared.Message.Authorization.Login, as: LoginMessage
+  alias Shared.Message.Incoming.Authorization.Login, as: LoginMessage
 
   def index(conn, params, current_user, _claims) do
     IO.inspect current_user

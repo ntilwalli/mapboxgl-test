@@ -129,7 +129,7 @@ function renderButtons(state) {
     const within_time_window = now.isSameOrAfter(checkin_begins) && now.isSameOrBefore(checkin_ends)
     //console.log(`Within time window: `, within_time_window)
 
-    disabled = checked_in || !(within_radius && within_time_window ) ? true : false
+    disabled = checked_in //|| !(within_radius && within_time_window ) ? true : false
     //console.log(`check-in disabled: `, disabled)
   }
 
@@ -147,7 +147,7 @@ function renderButtons(state) {
     // }, [
     //   `Share`
     // ]),
-    checked_in ? null : button(`.appCheckin.check-in-button.flex-center`, {
+    button(`.appCheckin.check-in-button.flex-center`, {
       class: {
         disabled,
         enabled: !disabled,

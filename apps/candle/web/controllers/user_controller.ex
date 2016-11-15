@@ -47,7 +47,6 @@ defmodule Candle.UserController do
   end
 
   def route(conn, %{"route" => route, "data" => message}, current_user, _claims) do
-    IO.inspect message
     response = 
       case current_user do
         nil -> 
@@ -67,4 +66,26 @@ defmodule Candle.UserController do
         render(conn, "route.json", message: %{type: "error", data: message})
     end
   end
+
+  def route(conn, %{"route" => route}, current_user, _claims) do
+    response = 
+      case current_user do
+        nil -> 
+          #IO.puts "Anonymous"
+          {:ok, pid} = User.Registry.lookup_anonymous(User.Registry, conn.cookies["aid"])
+          User.Anon.route(pid, route)
+        _ -> 
+          #IO.puts "User"
+          {:ok, pid} = User.Registry.lookup_user(User.Registry, current_user)
+          User.Auth.route(pid, route)
+      end
+
+    case response do
+      {:ok, message} ->
+        render(conn, "route.json", message: %{type: "success", data: message})
+      {:error, message} -> 
+        render(conn, "route.json", message: %{type: "error", data: message})
+    end
+  end
+
 end

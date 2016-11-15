@@ -61,6 +61,8 @@ defmodule Listing.Worker do
         _ -> %{checked_in: listing.check_ins |> Enum.any?(fn x -> x.user_id === user.id end)}
       end
 
+    #IO.puts "Retrieve listing..."
+    #IO.inspect  %{listing: listing, status: status}
     {:reply, {:ok, %{listing: listing, status: status}}, state}
   end
 
@@ -102,6 +104,7 @@ defmodule Listing.Worker do
         check_in_row = Ecto.build_assoc(user, :check_ins)
           |> Map.put(:listing_id, listing_id)
           |> Map.put(:geom, %Geo.Point{coordinates: {lng, lat}, srid: 4326})
+          |> Map.put(:inserted_at, Calendar.DateTime.now_utc())
         {:ok, result} = Repo.insert(check_in_row)
         new_state = %{state | listing: retrieve_listing_with_check_ins(listing_id)}
         {:reply, {:ok, result}, new_state}
@@ -186,10 +189,10 @@ defmodule Listing.Worker do
               cond do
                 Enum.any?(check_ins, fn x -> x.user_id === user.id end) ->
                   {:error, "Already checked-in"}
-                !within_window ->
-                  {:error, "Check-in time window has passed"}
-                !within_radius ->
-                  {:error, "Not within check-in radius: #{Integer.to_string(settings.check_in.radius)} meters"}
+                # !within_window ->
+                #   {:error, "Check-in time window has passed"}
+                # !within_radius ->
+                #   {:error, "Not within check-in radius: #{Integer.to_string(settings.check_in.radius)} meters"}
                 true ->
                   :ok
               end

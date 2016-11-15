@@ -1,14 +1,16 @@
-defmodule Shared.Message.Authorization.Login do
+defmodule Shared.Message.Incoming.Authorization.Presignup do
   use Shared.Lib, :model
 
   @derive {Poison.Encoder, except: [:__meta__]}
   @primary_key false
   embedded_schema do
+    field :name, :string
+    field :email, :string
     field :username, :string
-    field :password, :string
+    field :type, :string
   end
 
-  @required_fields [:username, :password]
+  @required_fields [:name, :email, :username, :type]
   def changeset(schema, params \\ :empty) do
     schema
     |> cast(params, @required_fields)

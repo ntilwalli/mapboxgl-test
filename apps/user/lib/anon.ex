@@ -2,7 +2,7 @@ defmodule User.Anon do
   use GenServer
 
   import Ecto.Changeset, only: [apply_changes: 1]
-  alias Shared.Message.Search.Query, as: SearchQueryMessage
+  alias Shared.Message.Incoming.Search.Query, as: SearchQueryMessage
   alias Shared.Message.Listing.CheckIn, as: CheckInMessage
   
   def start_link(listing_registry, anonymous_id) do
@@ -25,7 +25,7 @@ defmodule User.Anon do
     GenServer.call(server, {:signup, message})
   end
 
-  def route(server, "/register_app_load", _) do
+  def route(server, "/register_app_load") do
     :ok
   end
 

@@ -16,7 +16,7 @@ defmodule Candle.PageController do
           end 
 
         {:ok, pid} = User.Registry.lookup_anonymous(User.Registry, anonymous_id)
-        :ok = User.Anon.route(pid, "/register_app_load", nil)
+        :ok = User.Anon.route(pid, "/register_app_load")
 
         conn
         |> Plug.Conn.put_resp_cookie("aid", anonymous_id)
@@ -24,7 +24,7 @@ defmodule Candle.PageController do
         |> render("index.html")
       _ -> 
         {:ok, pid} = User.Registry.lookup_user(User.Registry, current_user)
-        :ok = User.Auth.route(pid, "/register_app_load", nil) 
+        :ok = User.Auth.route(pid, "/register_app_load") 
         
         conn
         |> Helpers.reset_cookies
