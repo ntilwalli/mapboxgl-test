@@ -1,5 +1,5 @@
 import {Observable as O} from 'rxjs'
-import {div, svg} from '@cycle/dom'
+import {div, strong, svg} from '@cycle/dom'
 import Immutable = require('immutable')
 import {combineObj, spread, processHTTP} from '../utils'
 import moment = require('moment')
@@ -10,6 +10,8 @@ const onlySuccess = x => x.type === "success"
 const onlyError = x => x.type === "error"
 
 function inflateCheckIn(result) {
+  result.check_in_datetime = moment(result.check_in_datetime)
+  result.listing_datetime = moment(result.listing_datetime)
   return result
 }
 
@@ -17,7 +19,7 @@ function intent(sources) {
   const {DOM, HTTP} = sources
   const {good$, bad$, ugly$} = processHTTP(sources, `homeCheckIns`)
   const check_ins$ = good$
-    .do(x => console.log(`got home/check_ins response`, x))
+    //.do(x => console.log(`got home/check_ins response`, x))
     .filter(onlySuccess)
     .pluck(`data`)
     .pluck(`check_ins`)
@@ -36,9 +38,6 @@ function intent(sources) {
   const mouseleave$ = DOM.select(`.check-in-grid`).select(`.day`).events(`mouseleave`)
     .publishReplay(1).refCount()
 
-  // mouseenter$.subscribe(x => console.log(`mouseenter: `, x))
-  // mouseleave$.subscribe(x => console.log(`mouseleave: `, x))
-
   return {
     check_ins$,
     error$,
@@ -47,11 +46,71 @@ function intent(sources) {
   }
 } 
 
+
+function getEmptyBuckets() {
+  const out = {}
+  for (let i = 1; i < 32; i++) {
+    out[i] = []
+  }
+
+  return out
+}
+
+function getEmptyWeekArray() {
+  return [null, null, null, null, null, null, null]
+}
+
+function summarizeBucket(date, bucket) {
+  // console.log(date)
+  // console.log(bucket)
+  return {
+    eventCount: bucket.length,
+    date
+  }
+}
+
+function getWeekArrays(buckets) {
+  //console.log(buckets)
+  let day_index = 28
+  let curr_date = moment()
+  let curr_index = curr_date.day()
+  let week_array = getEmptyWeekArray()
+  const out_array = []
+  while (day_index > 0) {
+    if (curr_date.month() === 1 && curr_date.date() === 29) {
+      day_index ++
+    }
+
+    if (curr_index < 0) {
+      out_array.push(week_array)
+      week_array = getEmptyWeekArray()
+      curr_index = 6
+    }
+
+    week_array[curr_index] = summarizeBucket(curr_date.clone(), buckets[curr_date.date()]) 
+    curr_date.subtract(1, 'day')
+    curr_index--
+    day_index--
+  }
+
+  out_array.push(week_array)
+
+  return out_array
+}
+
+
 function reducers(actions, inputs) {
 
   const check_ins_r = actions.check_ins$.map(check_ins => state => {
-    console.log(`check_ins`, check_ins)
-    return state
+    const buckets = getEmptyBuckets()
+    //console.log(buckets)
+    check_ins.forEach(x => {
+      //console.log(x.check_in_datetime)
+      //console.log(x.check_in_datetime.date())
+      buckets[x.check_in_datetime.date()].push(x)
+    })
+    //console.log(`buckets`, buckets)
+    return state.set(`buckets`, buckets).set(`in_flight`, false)
   })
 
   const mouseenter_r = actions.mouseenter$.map(x => state => {
@@ -65,26 +124,29 @@ function reducers(actions, inputs) {
   return O.merge(check_ins_r, mouseenter_r, mouseleave_r)
 }
 
+
 function model(actions, inputs) {
   const reducer$ = reducers(actions, inputs)
 
-  return inputs.props$.map(props => {
-      const out = getWeekArrays()
-      const participation = out.map(x => {
-        return x.map(foo => {
-          if (!!foo) {
-            return {
-              date: foo,
-              eventCount: Math.floor(Math.random() * 10)
-            }
-          }
+  return inputs.props$.map(buckets => {
+      //const out = getWeekArrays(undefined)
+      // const participation = out.map(x => {
+      //   return x.map(foo => {
+      //     if (!!foo) {
+      //       return {
+      //         date: foo,
+      //         eventCount: Math.floor(Math.random() * 10),
+      //         buckets: undefined
+      //       }
+      //     }
 
-          return null
-        })
-      })
+      //     return null
+      //   })
+      // })
       
       return {
-        participation: props || participation,
+        buckets: undefined,
+        in_flight: true,
         element: null,
         begins: moment().subtract(28, 'days')
       }
@@ -124,7 +186,7 @@ function renderDay(info, i) {
         y: 0,
         fill: c,
         "data-date": info.date,
-        "data-count": info.count
+        "data-count": info.eventCount
       }
     })
   } else {
@@ -142,67 +204,43 @@ function getDayLabels() {
   return dayAcronyms.map(renderDayLabel)
 }
 
-function renderTooltip(boundingRect) {
-  const text = "Hello how are you"
+function renderTooltip(el) {
+  const boundingRect = el.getBoundingClientRect()
+  //console.log(`tooltip info...`)
+  const count = parseInt(el.getAttribute("data-count"))
+  const date = moment(new Date(el.getAttribute("data-date")))
+  //console.log(date)
+  const text = `${count ? count : 'No'} mics, ` + date.format('LL') 
   const length = text.length
-  const width = length * 6
+  const width = length * 8
   const offsetX = width/2
   const x = boundingRect.left - offsetX
   const y = boundingRect.top - 40
-  return div({style: {position: "fixed", top: `${y}px`, left: `${x}px`, color: "white", padding: ".5rem", backgroundColor: "rgba(0, 0, 0, 0.8)"}}, [
-    text
+  return div({style: {position: "fixed", fontSize: "90%", top: `${y}px`, left: `${x}px`, color: "white", padding: ".5rem", backgroundColor: "rgba(0, 0, 0, 0.8)"}}, [
+    strong([`${count ? count : 'No'} mics`]),
+    `, ${date.format('LL')}`
   ])
 }
 
-function getEmptyWeekArray() {
-  return [null, null, null, null, null, null, null]
-}
 
-function getWeekArrays() {
-  let day_index = 28
-  let curr_date = moment()//.add(2, 'day')
-  let curr_index = curr_date.day()
-  let week_array = getEmptyWeekArray()
-  const out_array = []
-  while (day_index > 0) {
-    if (curr_date.month() === 1 && curr_date.date() === 29) {
-      day_index ++
-    }
-
-    if (curr_index < 0) {
-      out_array.push(week_array)
-      week_array = getEmptyWeekArray()
-      curr_index = 6
-    }
-
-    week_array[curr_index] = curr_date.toDate()
-    curr_date.subtract(1, 'day')
-    curr_index--
-    day_index--
-  }
-
-  out_array.push(week_array)
-
-  return out_array
-}
 
 function view(state$) {
   return state$.map(state => {
-    const {participation, element} = state
+    const {buckets, in_flight, element} = state
     const boundingRect = element && element.getBoundingClientRect()
 
 
-    const squares = participation.map((arr, index) => {
+    const squares = in_flight ? null : getWeekArrays(buckets).map((arr, index) => {
       return g({attrs: {transform: `translate(0, ${index * 33})`}}, 
         arr.map(renderDay)
       )
     }).concat(getDayLabels())
 
-    return div(`.check-in-grid-container`, {style: {display: "flex", justifyContent: "center", position: "relative"}}, [
+    return in_flight ? null : div(`.check-in-grid-container`, {style: {display: "flex", justifyContent: "center", position: "relative"}}, [
       svg({attrs: {width: 241, height: 1746, class: `check-in-grid`}}, [
         g({attrs: {transform: `translate(0, 30)`}}, squares)
       ]),
-      element ? renderTooltip(element.getBoundingClientRect()) : null
+      element ? renderTooltip(element) : null
     ])
   })
 }
@@ -214,10 +252,7 @@ export function main(sources, inputs) {
     DOM: vtree$,
     HTTP: state$.map(state => state.begins.clone())
       .distinctUntilChanged((x, y) => {
-        //console.log(`blah`, x)
-        //console.log(y)
         const isSame = x.isSame(y)
-        //console.log(isSame)
         return isSame
       })
       .map(begins => {

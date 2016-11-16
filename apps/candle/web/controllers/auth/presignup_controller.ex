@@ -6,7 +6,7 @@ defmodule Candle.PresignupController do
 
   import Ecto.Changeset, only: [apply_changes: 1]
   alias Candle.Auth.Helpers
-  alias Shared.Message.Authorization.Presignup, as: PresignupMessage
+  alias Shared.Message.Incoming.Authorization.Presignup, as: PresignupMessage
 
   def index(conn, params, current_user, _claims) do
     case current_user do

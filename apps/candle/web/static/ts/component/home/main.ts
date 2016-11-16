@@ -19,7 +19,7 @@ function intent(sources) {
   const {DOM, HTTP} = sources
   const {good$, bad$, ugly$} = processHTTP(sources, `getHomeProfile`)
   const profile$ = good$
-    .do(x => console.log(`got home/profile response`, x))
+    //.do(x => console.log(`got home/profile response`, x))
     .filter(onlySuccess)
     .pluck(`data`)
     .map(drillInflate)
@@ -77,7 +77,7 @@ function model(actions, inputs) {
         .scan((acc, f: Function) => f(acc))
     })
     .map(x => x.toJS())
-    .do(x => console.log(`home/profile state`, x))
+    //.do(x => console.log(`home/profile state`, x))
     .publishReplay(1).refCount()
 }
 
