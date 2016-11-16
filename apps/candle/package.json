@@ -23,7 +23,7 @@
     "deploy": "npm run mk-priv-dirs; npm run build-browserify && npm run build-css && npm run build-assets && npm run copy-mapbox-data && npm run copy-font-awesome-data && npm run copy-normalize-css"
   },
   "dependencies": {
-    "@cycle/dom": "file:///Users/ntilwalli/dev/spotlight/custom_deps/cyclejs/dom",
+    "@cycle/dom": "file:../../custom_deps/dom",
     "@cycle/http": "^11.2.0",
     "@cycle/isolate": "^1.4.0",
     "@cycle/rxjs-run": "^3.0.3",
