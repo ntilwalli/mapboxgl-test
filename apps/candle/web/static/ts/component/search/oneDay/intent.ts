@@ -49,23 +49,23 @@ export default function intent(sources) {
   const subtractDay$ = DOM.select(`.appSubtractDay`).events(`click`)
     .mapTo(-1)
 
-  const changeDate$ = O.merge(addDay$, subtractDay$)
+  const change_date$ = O.merge(addDay$, subtractDay$)
 
-  const showFilters$ = DOM.select(`.appShowFilters`).events(`click`)
+  const show_filters$ = DOM.select(`.appShowFilters`).events(`click`)
 
-  const showMenu$ = DOM.select(`.appShowMenuButton`).events(`click`)
+  const show_menu$ = DOM.select(`.appShowMenuButton`).events(`click`)
 
-  const showLogin$ = DOM.select(`.appShowLoginButton`).events(`click`)
-  const showUserProfile$ = DOM.select(`.appShowUserProfileButton`).events(`click`)
+  const show_login$ = DOM.select(`.appShowLoginButton`).events(`click`)
+  const show_user_profile$ = DOM.select(`.appShowUserProfileButton`).events(`click`)
 
   return {
     results$: success$,
     cached$,
-    changeDate$,
-    showFilters$,
-    showMenu$,
-    showLogin$,
-    showUserProfile$
+    change_date$,
+    show_filters$,
+    show_menu$,
+    show_login$,
+    show_user_profile$
   }
 }
 

@@ -23,15 +23,17 @@ function main(sources, inputs) {
 
   return {
     DOM: vtree$,
-    Router: actions.click$.map(val => { 
-      const out = {
-        pathname: `/listing/${val.listing.id}`,
-        action: `PUSH`,
-        state: val
-      }
+    Router: O.merge(
+      actions.click$.map(val => { 
+        const out = {
+          pathname: `/listing/${val.listing.id}`,
+          action: `PUSH`,
+          state: val
+        }
 
-      return out
-    })
+        return out
+      })
+    )
   }
 }
 

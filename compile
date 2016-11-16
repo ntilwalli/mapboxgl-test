@@ -1,2 +1,8 @@
+cd ../../custom_deps/cyclejs
+npm run install
+cd dom
+npm run install
+npm run dist
+cd ../../../apps/candle
 npm run deploy
 mix phoenix.digest

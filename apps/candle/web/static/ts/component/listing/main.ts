@@ -2,7 +2,7 @@ import {Observable as O} from 'rxjs'
 import {div, span, button} from '@cycle/dom'
 import {combineObj, inflateListing, processHTTP, componentify, spread, defaultNever} from '../../utils'
 import Immutable = require('immutable')
-import {renderMenuButton, renderLoginButton, renderUserProfileButton} from '../renderHelpers/controller'
+import {renderMenuButton, renderLoginButton, renderSearchCalendarButton, renderUserProfileButton} from '../renderHelpers/controller'
 
 import {main as Profile} from './profile/main'
 import {main as Invalid} from './invalid'
@@ -17,6 +17,7 @@ const onlySuccess = x => x.type === "success"
 const onlyError = x => x.type === "error"
 
 function drillInflate(result) {
+  // console.log(result)
   result.listing = inflateListing(result.listing)
   return result
 }
@@ -31,25 +32,29 @@ function intent(sources) {
     .map(drillInflate)
     .publish().refCount()
   
-  const notFound$ = good$
+  const not_found$ = good$
     .filter(onlyError)
     .pluck(`data`)
     .publish().refCount()
 
-  const showMenu$ = DOM.select(`.appShowMenuButton`).events(`click`)
+  const show_menu$ = DOM.select(`.appShowMenuButton`).events(`click`)
 
-  const showLogin$ = DOM.select(`.appShowLoginButton`).events(`click`)
-  const showUserProfile$ = DOM.select(`.appShowUserProfileButton`).events(`click`)
+  const show_login$ = DOM.select(`.appShowLoginButton`).events(`click`)
+  const show_user_profile$ = DOM.select(`.appShowUserProfileButton`).events(`click`)
     .publishReplay(1).refCount()
 
-  showUserProfile$.subscribe(x => console.log(`user profile clicked...`))
+  const show_back$ = DOM.select(`.appShowBackButton`).events(`click`)
+  const show_search_calendar$ = DOM.select(`.appShowSearchCalendarButton`).events(`click`)
+    .publishReplay(1).refCount()
 
   return {
     listing$,
-    notFound$,
-    showMenu$,
-    showLogin$,
-    showUserProfile$
+    not_found$,
+    show_menu$,
+    show_login$,
+    show_user_profile$,
+    show_back$,
+    show_search_calendar$
   }
 }
 
@@ -74,10 +79,8 @@ function fromRoute(route: any, sources, inputs, actions): any {
     if (pushState) {
       //console.log(`Got push state`, pushState)
       return Profile(
-        spread(sources, {
-          Router: Router.path(route.path.substring(1))
-        }), 
-        spread(inputs, {props$: O.of(drillInflate(pushState))})
+        {...sources, Router: Router.path(route.path.substring(1))}, 
+        {...inputs, props$: O.of(drillInflate(pushState))}
       )
     } else {
       const listingId = route.path.substring(1)
@@ -92,7 +95,7 @@ function fromRoute(route: any, sources, inputs, actions): any {
             state: result,
             pathname: `/listing/${result.listing.id}`
           })), 
-          actions.notFound$.map(message => ({
+          actions.not_found$.map(message => ({
             action: `push`,
             state: message,
             pathname: `/listing/notFound`
@@ -115,13 +118,19 @@ function fromRoute(route: any, sources, inputs, actions): any {
 }
 
 function model(actions, inputs) {
-  return inputs.Authorization.status$
-    .map(authorization => {
+  return combineObj({
+      props$: inputs.props$.take(1), 
+      authorization$: inputs.Authorization.status$.take(1)
+    })
+    .map((info: any) => {
+      const {authorization, props} = info
       return Immutable.Map({
-        authorization
+        authorization,
+        listing: props.listing
       })
     })
     .map(x => x.toJS())
+    //.do(x => console.log(`listing/main state`, x))
     .publishReplay(1).refCount()
 }
 
@@ -135,6 +144,7 @@ function renderController(state) {
       renderMenuButton()
     ]),
     div(`.section`, [
+      renderSearchCalendarButton(),
       !authorization ? renderLoginButton() : null,
       authorization ? renderUserProfileButton() : null
     ])
@@ -157,7 +167,11 @@ function view(state$, components) {
 export default function main(sources, inputs): any {
   const {Router} = sources
   const actions = intent(sources)
-  const state$ = model(actions, inputs)
+  const state$ = model(
+    actions, {
+      ...inputs, 
+      props$: sources.Router.history$.map(x => x.state)
+    })
   const content$ = Router.define(routes)
     .map(r => fromRoute(r, sources, inputs, actions))
     .publishReplay(1).refCount()
@@ -172,16 +186,28 @@ export default function main(sources, inputs): any {
   return spread(componentify(content$), {
     DOM: vtree$,
     Router: O.merge(
+      actions.show_search_calendar$.withLatestFrom(state$, (_, state) => {
+        return {
+          pathname: `/`,
+          action: `push`,
+          state: {
+            searchDateTime: state.listing.cuando.begins.clone().toDate().toISOString()
+          }
+        }
+      }),
       componentified.Router,
-      actions.showUserProfile$.mapTo({
+      actions.show_user_profile$.mapTo({
         pathname: `/home`,
         action: `PUSH`
+      }),
+      actions.show_back$.mapTo({
+        action: `POP`
       })
     ),
     MessageBus: O.merge(
       componentified.MessageBus,
-      actions.showMenu$.mapTo({to: `main`, message: `showLeftMenu`}),
-      actions.showLogin$.mapTo({to: `main`, message: `showLogin`}),
+      actions.show_menu$.mapTo({to: `main`, message: `showLeftMenu`}),
+      actions.show_login$.mapTo({to: `main`, message: `showLogin`}),
     )
   })
 }

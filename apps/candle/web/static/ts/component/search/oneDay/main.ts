@@ -23,10 +23,17 @@ const shouldRefreshSearch = (x, y) => {
 function main(sources, inputs) {
   const actions = intent(sources)
   const retrieve$ = createProxy()
-  const hideFilters$ = createProxy()
-  const updateFilters$ = createProxy()
+  const hide_filters$ = createProxy()
+  const update_filters$ = createProxy()
 
-  const state$ = model(actions, spread({retrieve$, hideFilters$, updateFilters$}, inputs))
+  const state$ = model(
+    actions, {
+      ...inputs, 
+      props$: sources.Router.history$.map(x => x.state), 
+      retrieve$, 
+      hide_filters$, 
+      update_filters$
+    })
   const grid = Grid(sources, {
     props$: state$.map(x => {
         return {results: x.results, filters: x.filters}
@@ -55,8 +62,8 @@ function main(sources, inputs) {
     .publishReplay(1).refCount()
 
 
-  hideFilters$.attach(filtersModal$.switchMap(x => x.close$))
-  updateFilters$.attach(filtersModal$.switchMap(x => x.done$))
+  hide_filters$.attach(filtersModal$.switchMap(x => x.close$))
+  update_filters$.attach(filtersModal$.switchMap(x => x.done$))
 
   const components = {
     grid$: grid.DOM,
@@ -97,8 +104,18 @@ function main(sources, inputs) {
   return {
     DOM: vtree$,
     Router: O.merge(
+      actions.change_date$.withLatestFrom(state$, (amt, state) => {
+        //console.log(`Shifting date by: `, amt)
+        return {
+          pathname: `/`,
+          action: `REPLACE`,
+          state: {
+            searchDateTime: state.searchDateTime.clone().add(amt, 'days').toDate().toISOString()
+          }
+        }
+      }),
       grid.Router,
-      actions.showUserProfile$.withLatestFrom(state$, (_, state) => {
+      actions.show_user_profile$.withLatestFrom(state$, (_, state) => {
         const {authorization} = state
         return {
           pathname: `/home`,
@@ -119,9 +136,10 @@ function main(sources, inputs) {
         key: "calendar/oneDay",
         value: JSON.stringify(val)
       })),
+      //.do(x => console.log(`to storage`, JSON.parse(x.value))),
     MessageBus: O.merge(
-      actions.showMenu$.mapTo({to: `main`, message: `showLeftMenu`}), 
-      actions.showLogin$.mapTo({to: `main`, message: `showLogin`})
+      actions.show_menu$.mapTo({to: `main`, message: `showLeftMenu`}), 
+      actions.show_login$.mapTo({to: `main`, message: `showLogin`})
     )
 
       //.filter(x => false)

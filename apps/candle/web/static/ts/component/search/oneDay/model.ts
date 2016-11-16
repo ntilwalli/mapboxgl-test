@@ -51,24 +51,24 @@ function reducers(actions, inputs) {
       return state.searchPosition = {type: "override", data: preferences.overrideLocation.position}
     })
 
-  const changeDateR = actions.changeDate$
-    .map(val => state => {
-      //console.log(`changeDate...`)
-      return state.update(`searchDateTime`, x => {
-        return x.clone().add(val, 'days')
-      }).set(`results`, [])
-    })
+  // const changeDateR = actions.changeDate$
+  //   .map(val => state => {
+  //     //console.log(`changeDate...`)
+  //     return state.update(`searchDateTime`, x => {
+  //       return x.clone().add(val, 'days')
+  //     }).set(`results`, [])
+  //   })
   
-  const showFiltersR = actions.showFilters$.map(_ => state => {
+  const showFiltersR = actions.show_filters$.map(_ => state => {
     //console.log(`show filters...`)
     return state.set(`showFilters`, true)
   })
 
-  const hideFiltersR = inputs.hideFilters$.map(_ => state => {
+  const hideFiltersR = inputs.hide_filters$.map(_ => state => {
     return state.set(`showFilters`, false)
   })
 
-  const updateFiltersR = inputs.updateFilters$.map(val => state => {
+  const updateFiltersR = inputs.update_filters$.map(val => state => {
     //console.log(`update filters:`, val)
     return state.set(`showFilters`, false).set(`filters`, val)
   })
@@ -76,7 +76,8 @@ function reducers(actions, inputs) {
   return O.merge(
     retrieveR, resultsR, userPositionR, 
     homePositionR, overridePositionR,
-    changeDateR, showFiltersR, hideFiltersR,
+    //changeDateR, 
+    showFiltersR, hideFiltersR,
     updateFiltersR
   )
 }
@@ -92,11 +93,11 @@ function getInitialSearchPosition(preferences) {
   }
 }
 
-const useCached = cached => {
+const useCached = (sdt, cached) => {
   if (cached) {
-    const todayStart = moment().startOf('day')
+    const currStart = sdt.startOf('day')
     const cachedStart = cached.searchDateTime.startOf('day')
-    return (cached && todayStart.isSame(cachedStart)) ? true : false
+    return (cached && currStart.isSame(cachedStart)) ? true : false
   }
 
   return false
@@ -104,19 +105,29 @@ const useCached = cached => {
 
 export default function model(actions, inputs) {
   const reducer$ = reducers(actions, inputs)
-  const searchDateTime = moment()
   return combineObj({
+      props$: inputs.props$.take(1),
       preferences$: inputs.preferences$.take(1),
       cached$: actions.cached$.take(1),
       authorization$: inputs.Authorization.status$.take(1)
     })
     .switchMap((info: any) => {
-      const {preferences, cached, authorization} = info
+      const {props, preferences, cached, authorization} = info
       //console.log(`Resetting oneDay state...`)
+      let searchDateTime
+      //console.log(props)
+      if (props && props.searchDateTime) {
+        //console.log(`searchDateTime from props`, props)
+        searchDateTime = moment(new Date(props.searchDateTime))
+      } else {
+        //console.log(`searchDateTime from now`, moment())
+        searchDateTime = moment()
+      }
+
       return reducer$
         .startWith(Immutable.Map({
-          results: useCached(cached) ? cached.results : undefined,
-          searchDateTime: moment(),
+          results: useCached(searchDateTime, cached) ? cached.results : undefined,
+          searchDateTime,
           searchPosition: getInitialSearchPosition(preferences),
           retrieving: false,
           showFilters: false,
