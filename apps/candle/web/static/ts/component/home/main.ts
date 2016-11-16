@@ -1,6 +1,6 @@
 import {Observable as O} from 'rxjs'
 import {div, span, button} from '@cycle/dom'
-import {combineObj, inflateListing, processHTTP, componentify, spread, defaultNever} from '../../utils'
+import {combineObj, createProxy, processHTTP, componentify, spread, defaultNever} from '../../utils'
 import Immutable = require('immutable')
 import {renderMenuButton, renderLoginButton, renderSearchCalendarButton} from '../renderHelpers/controller'
 
@@ -36,8 +36,6 @@ function intent(sources) {
   const showSearchCalendar$ = DOM.select(`.appShowSearchCalendarButton`).events(`click`)
     .publishReplay(1).refCount()
 
-  showSearchCalendar$.subscribe(x => console.log(`user profile clicked...`))
-
   return {
     profile$,
     error$,
@@ -56,7 +54,11 @@ function reducers(actions, inputs) {
     return state.set(`in_flight`, false)
   })
 
-  return O.merge(profile_r, error_r)
+  const selected_check_in_r = inputs.selected_check_in$.map(x => state => {
+    return state.set(`selected_check_in`, x)
+  })
+
+  return O.merge(profile_r, error_r, selected_check_in_r)
 }
 
 function model(actions, inputs) {
@@ -66,6 +68,7 @@ function model(actions, inputs) {
     .map(authorization => {
       return {
         authorization, 
+        selected_check_in: undefined,
         profile: undefined,
         in_flight: true
       }
@@ -97,16 +100,76 @@ function renderController(state) {
   ])
 }
 
+function render_check_in(info) {
+  return div(`.check-in`, [
+    span([info.listing_name]),
+    ', ',
+    span([info.check_in_datetime.format('LT')])
+  ])
+}
+
+function renderBreakdown(info) {
+  let out
+
+  if (info.length) {
+    out = info.map(render_check_in)
+  } else {
+    out = [`No check-ins on this day`]
+  }
+
+  return div(`.check-ins-breakdown`, out)
+}
+
+function render_selected_check_in_date(info) {
+  const date = info.date
+  return div(`.selected-date-section`, [
+    div(`.heading`, [date.format('LL')]),
+    renderBreakdown(info.check_ins)
+  ])
+}
+
+function render_profile_info(authorization, profile) {
+  return div(`.info`, [
+    div([authorization.name]),
+    div([`(@${authorization.username})`])
+  ])
+}
+
+function render_participation(info) {
+  const {state, components} = info
+  const {authorization, profile, selected_check_in} = state
+  const {check_in_grid} = components
+
+  return div(`.participation`, [
+    span(`.heading`, [
+      `Participation (Last 28 days)`
+    ]),
+    check_in_grid,
+    selected_check_in ? render_selected_check_in_date(selected_check_in) : null
+  ])
+}
+
+function renderContent(info) {
+  const {state, components} = info
+  const {authorization, profile} = state
+  const {check_in_grid} = components
+
+  return div(`.content`, [
+    render_profile_info(authorization, profile),
+    render_participation(info)
+  ])
+}
+
 function view(state$, components) {
   return combineObj({state$, components$: combineObj(components)})
+    .debounceTime(0)
     .map((info: any) => {
       const {state, components} = info
-      const {authorization} = state
-      const {checkInGrid} = components
+      const {authorization, profile, selected_check_in} = state
+      const {check_in_grid} = components
       return div(`.user-component`, [
         renderController(state),
-        div(`.profile`, {style: {paddingTop: "2rem"}}, [authorization.name]),
-        checkInGrid
+        renderContent(info)
       ])
     })
 }
@@ -114,11 +177,13 @@ function view(state$, components) {
 export default function main(sources, inputs): any {
   const {Router} = sources
   const actions = intent(sources)
-  const state$ = model(actions, inputs)
+  
+  const check_in_grid = CheckInGrid(sources, inputs)
 
-  const checkInGrid = CheckInGrid(sources, inputs)
+  const state$ = model(actions, {...inputs, selected_check_in$: check_in_grid.output$})
+
   const components = {
-    checkInGrid: checkInGrid.DOM
+    check_in_grid$: check_in_grid.DOM
   }
 
   const vtree$ = view(state$, components)
@@ -131,7 +196,7 @@ export default function main(sources, inputs): any {
         route: `/home/profile`
       }
     }).delay(0),
-    checkInGrid.HTTP
+    check_in_grid.HTTP
   )
 
   return {

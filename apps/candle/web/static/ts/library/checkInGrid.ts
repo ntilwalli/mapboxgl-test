@@ -38,14 +38,18 @@ function intent(sources) {
   const mouseleave$ = DOM.select(`.check-in-grid`).select(`.day`).events(`mouseleave`)
     .publishReplay(1).refCount()
 
+  const click$ = DOM.select(`.check-in-grid`).select(`.day`).events(`click`)
+    .map(ev => ev.target)
+    .publishReplay(1).refCount()
+
   return {
     check_ins$,
     error$,
     mouseenter$,
-    mouseleave$
+    mouseleave$,
+    click$
   }
 } 
-
 
 function getEmptyBuckets() {
   const out = {}
@@ -55,49 +59,6 @@ function getEmptyBuckets() {
 
   return out
 }
-
-function getEmptyWeekArray() {
-  return [null, null, null, null, null, null, null]
-}
-
-function summarizeBucket(date, bucket) {
-  // console.log(date)
-  // console.log(bucket)
-  return {
-    eventCount: bucket.length,
-    date
-  }
-}
-
-function getWeekArrays(buckets) {
-  //console.log(buckets)
-  let day_index = 28
-  let curr_date = moment()
-  let curr_index = curr_date.day()
-  let week_array = getEmptyWeekArray()
-  const out_array = []
-  while (day_index > 0) {
-    if (curr_date.month() === 1 && curr_date.date() === 29) {
-      day_index ++
-    }
-
-    if (curr_index < 0) {
-      out_array.push(week_array)
-      week_array = getEmptyWeekArray()
-      curr_index = 6
-    }
-
-    week_array[curr_index] = summarizeBucket(curr_date.clone(), buckets[curr_date.date()]) 
-    curr_date.subtract(1, 'day')
-    curr_index--
-    day_index--
-  }
-
-  out_array.push(week_array)
-
-  return out_array
-}
-
 
 function reducers(actions, inputs) {
 
@@ -114,40 +75,29 @@ function reducers(actions, inputs) {
   })
 
   const mouseenter_r = actions.mouseenter$.map(x => state => {
-    return state.set(`element`, x)
+    return state.set(`hover_element`, x)
   })
 
   const mouseleave_r = actions.mouseleave$.map(x => state => {
-    return state.set(`element`, null)
+    return state.set(`hover_element`, null)
   })
 
-  return O.merge(check_ins_r, mouseenter_r, mouseleave_r)
-}
+  const day_selected_r = actions.click$.map(x => state => {
+    return state.set(`click_element`, x)
+  })
 
+  return O.merge(check_ins_r, mouseenter_r, mouseleave_r, day_selected_r)
+}
 
 function model(actions, inputs) {
   const reducer$ = reducers(actions, inputs)
 
-  return inputs.props$.map(buckets => {
-      //const out = getWeekArrays(undefined)
-      // const participation = out.map(x => {
-      //   return x.map(foo => {
-      //     if (!!foo) {
-      //       return {
-      //         date: foo,
-      //         eventCount: Math.floor(Math.random() * 10),
-      //         buckets: undefined
-      //       }
-      //     }
-
-      //     return null
-      //   })
-      // })
-      
+  return inputs.props$.map(buckets => {      
       return {
         buckets: undefined,
         in_flight: true,
-        element: null,
+        hover_element: null,
+        click_element: null,
         begins: moment().subtract(28, 'days')
       }
     })
@@ -160,8 +110,6 @@ function model(actions, inputs) {
     .map((x: any) => x.toJS())
     .publishReplay(1).refCount()
 }
-
-
 
 function renderDay(info, i) {
   if (info) {
@@ -185,6 +133,8 @@ function renderDay(info, i) {
         x: 33 * i,
         y: 0,
         fill: c,
+        "stroke-width": info.clicked ? 1 : 0,
+        stroke: "rgb(0,0,0)",
         "data-date": info.date,
         "data-count": info.eventCount
       }
@@ -222,33 +172,91 @@ function renderTooltip(el) {
   ])
 }
 
+function getEmptyWeekArray() {
+  return [null, null, null, null, null, null, null]
+}
 
+function summarizeBucket(curr_date, bucket, click_element) {
+  let clicked = false
+  if (click_element) {
+    if (moment(new Date(click_element.getAttribute(`data-date`))).date() === curr_date.date()) {
+      clicked = true
+    }
+  }
+
+  return {
+    eventCount: bucket.length,
+    date: curr_date,
+    clicked
+  }
+}
+
+function getWeekArrays(buckets, click_element) {
+  //console.log(buckets)
+  let day_index = 28
+  let curr_date = moment()
+  let curr_index = curr_date.day()
+  let week_array = getEmptyWeekArray()
+  const out_array = []
+  while (day_index > 0) {
+    if (curr_date.month() === 1 && curr_date.date() === 29) {
+      day_index ++
+    }
+
+    if (curr_index < 0) {
+      out_array.push(week_array)
+      week_array = getEmptyWeekArray()
+      curr_index = 6
+    }
+
+    week_array[curr_index] = summarizeBucket(curr_date.clone(), buckets[curr_date.date()], click_element) 
+    curr_date.subtract(1, 'day')
+    curr_index--
+    day_index--
+  }
+
+  out_array.push(week_array)
+
+  return out_array
+}
 
 function view(state$) {
   return state$.map(state => {
-    const {buckets, in_flight, element} = state
-    const boundingRect = element && element.getBoundingClientRect()
+    const {buckets, in_flight, click_element, hover_element} = state
+    const boundingRect = hover_element && hover_element.getBoundingClientRect()
 
-
-    const squares = in_flight ? null : getWeekArrays(buckets).map((arr, index) => {
+    const squares = in_flight ? null : getWeekArrays(buckets, click_element).map((arr, index) => {
       return g({attrs: {transform: `translate(0, ${index * 33})`}}, 
         arr.map(renderDay)
       )
     }).concat(getDayLabels())
 
     return in_flight ? null : div(`.check-in-grid-container`, {style: {display: "flex", justifyContent: "center", position: "relative"}}, [
-      svg({attrs: {width: 241, height: 1746, class: `check-in-grid`}}, [
+      svg({attrs: {width: 241, height: 33 * 6, class: `check-in-grid`}}, [
         g({attrs: {transform: `translate(0, 30)`}}, squares)
       ]),
-      element ? renderTooltip(element) : null
+      hover_element ? renderTooltip(hover_element) : null
     ])
   })
 }
+
 export function main(sources, inputs) {
   const actions = intent(sources)
   const state$ = model(actions, {props$: O.of(undefined)})
   const vtree$ = view(state$) 
   return {
+    output$: state$
+      .distinctUntilChanged((x, y) => x.click_element === y.click_element)
+      .filter(x => !!x.click_element)
+      .map(x => {
+        const element = x.click_element
+        const date = moment(new Date(element.getAttribute(`data-date`)))
+        const bucket = x.buckets[date.date()]
+        return{
+          date,
+          check_ins: bucket
+        }
+      }),
     DOM: vtree$,
     HTTP: state$.map(state => state.begins.clone())
       .distinctUntilChanged((x, y) => {
