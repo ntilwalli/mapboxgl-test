@@ -1,3 +1,5 @@
+@import '_variables';
+
 @font-face {
   font-family: Corona4Typewriter;
   src: local("Corona4Typewriter"), url("/fonts/corona4typewriter.ttf") format('truetype')
@@ -27,13 +29,30 @@ html {
 html, body {
   height: 100%;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-  //font-size: 95%;
+  font-size: .9rem;
   //font-family: 'Fixedsys Excelsior 3.01';//'Akkurat Regular';//"Corona4Typewriter";
 }
 
-button, input {
-  font-family: 'Fixedsys Excelsior 3.01';
+.fa {
+  font-size: 1rem;
 }
+
+/*button, input {
+  font-family: 'Fixedsys Excelsior 3.01';
+}*/
+
+  @media (max-width: 767px) {
+    .show-lg {
+      display: none
+    }
+  }
+
+  @media (min-width: 768px) {
+    .show-sm {
+      display: none;
+    }
+  }
+
 
 #app-main {
   height: 100%;
@@ -75,6 +94,16 @@ button, input {
 .form-group {
   width: 100%;
   margin: 0 0 1rem;
+}
+
+.text-button {
+  background-color: transparent;
+  border: none;
+  padding: 0;
+}
+
+.text-button:hover {
+  color: $crayola-orange;
 }
 
 @import 'component/_index';

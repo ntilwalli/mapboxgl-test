@@ -4,10 +4,11 @@ import {combineObj, componentify, spread} from './utils'
 import SearchApp from './component/search/oneDay/main'
 import ListingApp from './component/listing/main'
 import HomeApp from './component/home/main'
-//import CreateListing from './createListing/main'
+import {main as CreateListing} from './component/create/main'
 
 const routes = [
   //{pattern: /^\/user/, value: UserApp},
+  {pattern: /^\/create/, value: CreateListing},
   {pattern: /^\/home/, value: HomeApp},
   {pattern: /^\/listing/, value: ListingApp},
   {pattern: /.*/, value: SearchApp}

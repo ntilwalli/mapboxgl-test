@@ -346,3 +346,7 @@ export function clean (val) {
   }
 }
 
+export const onlySuccess = x => x.type === "success"
+export const onlyError = x => x.type === "error"
+
+

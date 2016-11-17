@@ -15,7 +15,7 @@ import queryString = require('query-string')
 import {normalizeComponent, createProxy, spread} from './utils'
 
 import routeFunction from './routeFunction'
-import PreferencesService from  './service/preferences'
+import SettingsService from  './service/settings'
 import AuthorizationService from './service/authorization/main'
 import GeolocationService from './service/geolocation'
 // import SearchApp from './component/search/oneDay/main'
@@ -38,14 +38,13 @@ function main(sources) {
   // to maintain validity
   sources.Global.geolocation$.subscribe()
 
-  const preferences$ = PreferencesService(sources)
-  const authService = AuthorizationService(sources)
-
+  const authorizationService = AuthorizationService(sources)
+  const settingsService = SettingsService(sources, {authorization$: authorizationService.output.status$})
   const geoService = GeolocationService(sources)
 
   const inputs = {
-    preferences$: preferences$.output$, 
-    Authorization: authService.output,
+    settings$: settingsService.output$, 
+    Authorization: authorizationService.output,
     Geolocation: geoService.output
   }
 
@@ -105,11 +104,17 @@ function main(sources) {
   return spread(out, {
     DOM: vtree$,
     MapJSON: O.merge(out.MapJSON),
-    Global: O.merge(out.Global, authService.Global, fromModalGlobal),
-    HTTP: O.merge(out.HTTP, geoService.HTTP, authService.HTTP, fromModalHTTP),
+    Global: O.merge(out.Global, authorizationService.Global, fromModalGlobal),
+    HTTP: O.merge(
+      out.HTTP, 
+      settingsService.HTTP, 
+      geoService.HTTP, 
+      authorizationService.HTTP, 
+      fromModalHTTP
+    ),//.do(x => console.log(`main/http sink`, x)),
     Router: O.merge(out.Router, toRouter$, fromModalRouter),
     Storage: O.merge(out.Storage, geoService.Storage, fromModalStorage),
-    MessageBus: O.merge(out.MessageBus, authService.MessageBus, fromModalMessageBus)
+    MessageBus: O.merge(out.MessageBus, authorizationService.MessageBus, fromModalMessageBus)
   })
 }
 

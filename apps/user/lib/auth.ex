@@ -23,6 +23,10 @@ defmodule User.Auth do
     GenServer.call(server, :home_profile)
   end
 
+  def route(server, "/preferences") do
+    GenServer.call(server, :preferences)
+  end
+
   def route(server, "/search", query) do
     GenServer.call(server, {:search, query})
   end
@@ -48,6 +52,14 @@ defmodule User.Auth do
       user: user,
       listing_registry: listing_registry
     }}
+  end
+
+  def handle_call(:home_profile, _from, %{user: user} = state) do
+    {:reply, {:ok, user}  , state}
+  end
+
+  def handle_call(:preferences, _from, state) do
+    {:reply, {:ok, nil}, state}
   end
 
   def handle_call({:search, params} , _from, %{user: user, listing_registry: l_reg} = state) do
@@ -88,10 +100,6 @@ defmodule User.Auth do
       false ->
         {:reply, {:error, "Sent invalid check-in parameters"}, state}
     end
-  end
-
-  def handle_call(:home_profile, _from, %{user: user} = state) do
-    {:reply, {:ok, user}  , state}
   end
 
   def handle_call({:home_check_ins, params}, _from, %{user: user} = state) do

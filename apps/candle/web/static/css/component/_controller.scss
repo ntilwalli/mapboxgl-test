@@ -35,8 +35,6 @@
   }
 
   .date-controller {
-    position: relative;
-    top: -.1rem;
     display: flex;
     .date-display {
       display: flex;
@@ -87,5 +85,10 @@
   
   .auth-button:hover {
     color: $crayola-orange;
+  }
+
+  .buttons {
+    display: flex;
+    align-items: center;
   }
 }

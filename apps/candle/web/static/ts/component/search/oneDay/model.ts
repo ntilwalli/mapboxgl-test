@@ -6,9 +6,9 @@ import {getDefaultFilters} from './helpers'
 import moment = require('moment')
 
 const log = console.log.bind(console)
-const onlyUserLocation = preferences => preferences.useLocation === `user`
-const onlyHomeLocation = preferences => preferences.useLocation === `home`
-const onlyOverrideLocation = preferences => preferences.useLocation === `override`
+const onlyUserLocation = settings => settings.useLocation === `user`
+const onlyHomeLocation = settings => settings.useLocation === `home`
+const onlyOverrideLocation = settings => settings.useLocation === `override`
 
 function reducers(actions, inputs) {
   const retrieveR = inputs.retrieve$.map(_ => state => {
@@ -21,34 +21,34 @@ function reducers(actions, inputs) {
     return state.set(`results`, results).set(`retrieving`, false)
   })
 
-  const userPositionR = inputs.preferences$
+  const userPositionR = inputs.settings$
     .filter(onlyUserLocation)
-    .switchMap(preferences => {
-      return inputs.Geolocation.cachedGeolocation$.map(geolocation => ({preferences, geolocation}))
+    .switchMap(settings => {
+      return inputs.Geolocation.cachedGeolocation$.map(geolocation => ({settings, geolocation}))
     })
-    .map(({preferences, geolocation}) => state => {
+    .map(({settings, geolocation}) => state => {
       //console.log(`userPosition updated...`)
       if (geolocation.type === "position") {
         return state.set(`searchPosition`, {type: "user", data: geoToLngLat(geolocation)})
       } else {
-        return state.set(`searchPosition`, {type: "user_location_not_available_using_home", data: preferences.homeLocation.position})
+        return state.set(`searchPosition`, {type: "user_location_not_available_using_home", data: settings.homeLocation.position})
       }
     })
 
   // const userPositionR = actions.geolocation$.map(x => state => state.set(`searchPosition`, {type: "user", data: geoToLngLat(x)}))
 
-  const homePositionR = inputs.preferences$
+  const homePositionR = inputs.settings$
     .filter(onlyHomeLocation)
-    .map(preferences => state => {
+    .map(settings => state => {
       //console.log(`homePosition updated...`)
-      return state.searchPosition = {type: "home", data: preferences.homeLocation.position}
+      return state.searchPosition = {type: "home", data: settings.homeLocation.position}
     })
 
-  const overridePositionR = inputs.preferences$
+  const overridePositionR = inputs.settings$
     .filter(onlyOverrideLocation)
-    .map(preferences => state => {
+    .map(settings => state => {
       //console.log(`overridePosition updated...`)
-      return state.searchPosition = {type: "override", data: preferences.overrideLocation.position}
+      return state.searchPosition = {type: "override", data: settings.overrideLocation.position}
     })
 
   // const changeDateR = actions.changeDate$
@@ -82,8 +82,9 @@ function reducers(actions, inputs) {
   )
 }
 
-function getInitialSearchPosition(preferences) {
-  const {useLocation, homeLocation, overrideLocation} = preferences
+function getInitialSearchPosition(settings) {
+  //console.log(settings)
+  const {useLocation, homeLocation, overrideLocation} = settings
   if (useLocation === "override" && overrideLocation) {
     return {type: "override", data: overrideLocation.position}
   } else if (useLocation === "user") {
@@ -107,12 +108,13 @@ export default function model(actions, inputs) {
   const reducer$ = reducers(actions, inputs)
   return combineObj({
       props$: inputs.props$.take(1),
-      preferences$: inputs.preferences$.take(1),
+      settings$: inputs.settings$.take(1),
       cached$: actions.cached$.take(1),
       authorization$: inputs.Authorization.status$.take(1)
     })
     .switchMap((info: any) => {
-      const {props, preferences, cached, authorization} = info
+      const {props, settings, cached, authorization} = info
+      //console.log(``)
       //console.log(`Resetting oneDay state...`)
       let searchDateTime
       //console.log(props)
@@ -128,7 +130,7 @@ export default function model(actions, inputs) {
         .startWith(Immutable.Map({
           results: useCached(searchDateTime, cached) ? cached.results : undefined,
           searchDateTime,
-          searchPosition: getInitialSearchPosition(preferences),
+          searchPosition: getInitialSearchPosition(settings),
           retrieving: false,
           showFilters: false,
           filters: (cached && cached.filters) || getDefaultFilters(),
