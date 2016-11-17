@@ -1,14 +1,16 @@
 import {Observable as O} from 'rxjs'
-import {combineObj, componentify, spread} from './utils'
+import {combineObj, componentify} from './utils'
 
 import SearchApp from './component/search/oneDay/main'
 import ListingApp from './component/listing/main'
 import HomeApp from './component/home/main'
-import {main as CreateListing} from './component/create/main'
+import {main as CreateListingApp} from './component/create/main'
+import {main as SettingsApp} from './component/settings/main'
 
 const routes = [
   //{pattern: /^\/user/, value: UserApp},
-  {pattern: /^\/create/, value: CreateListing},
+  {pattern: /^\/settings/, value: SettingsApp},
+  {pattern: /^\/create/, value: CreateListingApp},
   {pattern: /^\/home/, value: HomeApp},
   {pattern: /^\/listing/, value: ListingApp},
   {pattern: /.*/, value: SearchApp}
@@ -20,10 +22,10 @@ export default function routing(sources, inputs) {
     .map(route => {
       const data = route.value
       const component = data.info
-      return component(spread(
-        sources, {
+      return component({
+        ...sources,
         Router: Router.path(route.path)
-      }), inputs)
+      }, inputs)
     })
     .map(x => {
       return x

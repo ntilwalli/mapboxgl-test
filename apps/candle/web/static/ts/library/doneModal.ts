@@ -50,8 +50,8 @@ function view(props$, content$) {
 export default function main(sources, inputs) {
 
   const actions = intent(sources)
-  const {Geolocation, Authorization, preferences$, initialState$} = inputs
-  const content = inputs.content(sources, {props$: initialState$, Geolocation, Authorization, preferences$}) 
+  const {Geolocation, Authorization, settings$, initialState$} = inputs
+  const content = inputs.content(sources, {props$: initialState$, Geolocation, Authorization, settings$}) 
   const output$ = content.output$
 
   return spread(content, {

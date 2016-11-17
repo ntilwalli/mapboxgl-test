@@ -11,20 +11,23 @@ function getModal(type, sources, inputs): any {
     case "leftMenu":
       return LeftMenuModal(sources, inputs)
     case "login":
-      return GlobalModal(sources, spread(inputs, {
+      return GlobalModal(sources, {
+        ...inputs,
         props$: O.of({title: `Login`, styleClass: `.login-height`}),
         content: Login
-      }))
+      })
     case "signup":
-      return GlobalModal(sources, spread(inputs, {
+      return GlobalModal(sources, {
+        ...inputs,
         props$: O.of({title: `Sign-up`, styleClass: `.sign-up-height`}),
         content: Signup
-      }))
+      })
     case "presignup":
-      return GlobalModal(sources, spread(inputs, {
+      return GlobalModal(sources, {
+        ...inputs, 
         props$: O.of({title: `Almost done...`, styleClass: `.presignup-height`}),
         content: Presignup
-      }))
+      })
     default:
       //console.log(type)
       return {

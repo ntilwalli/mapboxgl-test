@@ -292,10 +292,14 @@ export function processHTTP(sources, category) {
       })
     ).publish().refCount()
 
+  const good$ = out$.filter(x => x.type === "good").map(x => x.data).publish().refCount()
+  
   return {
-    good$: out$.filter(x => x.type === "good").map(x => x.data).publish().refCount(),
+    good$,
     bad$: out$.filter(x => x.type === "bad").map(x => x.data).publish().refCount(),
-    ugly$: out$.filter(x => x.type === "ugly").map(x => x.data).publish().refCount()
+    ugly$: out$.filter(x => x.type === "ugly").map(x => x.data).publish().refCount(),
+    success$: good$.filter(onlySuccess).pluck(`data`),
+    error$: good$.filter(onlyError).pluck(`data`)
   }
 
 }

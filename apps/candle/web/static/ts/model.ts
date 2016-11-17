@@ -2,22 +2,23 @@ import {Observable as O} from 'rxjs'
 import Immutable = require('immutable')
 
 function reducers(actions, inputs) {
-  const showModalR = inputs.showModal$.skip(1).map(modal => state => {
+  const show_modal_r = actions.show_modal$.skip(1).map(modal => state => {
+    //console.log(modal)
     return state.set(`modal`, modal)
   })
 
-  const hideModalR = inputs.hideModal$.map(_ => state => {
+  const hide_modal_r = actions.hide_modal$.map(_ => state => {
     //console.log(`hideMenu`)
     return state.set(`modal`, null)
   })
   
-  return O.merge(showModalR, hideModalR)
+  return O.merge(show_modal_r, hide_modal_r)
 }
 
 function model(actions, inputs) {
   const reducer$ = reducers(actions, inputs)
 
-  return inputs.showModal$.take(1)
+  return actions.show_modal$.take(1)
     .switchMap(modal => {
       return reducer$ 
         .startWith(Immutable.Map({

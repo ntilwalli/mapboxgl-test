@@ -54,17 +54,7 @@ function main(sources) {
   const out = routing(sources, inputs)
 
   const actions = intent(sources)
-  const showMenu$ = sources.MessageBus.address(`main`).filter(x => x === `showLeftMenu`)
-    .mapTo(`leftMenu`)
-  const showLogin$ = sources.MessageBus.address(`main`).filter(x => x === `showLogin`)
-    .mapTo(`login`)
-  const showSignup$ = sources.MessageBus.address(`main`).filter(x => x === `showSignup`)
-    .mapTo(`signup`)
-    
-  const showModal$ = O.merge(actions.modal$, showMenu$, showLogin$, showSignup$)
-  const hideModal$ = sources.MessageBus.address(`main`).filter(x => x === `hideModal`)
-
-  const state$ = model(actions, {showModal$, hideModal$})
+  const state$ = model(actions, {})
   const modal$ = state$.map((state: any) => getModal(state.modal, sources, inputs))
     .map(normalizeComponent)
     .publishReplay(1).refCount()
@@ -79,7 +69,7 @@ function main(sources) {
     .distinctUntilChanged()
     .filter(x => !x)
     .switchMap(_ => {
-      return actions.urlParams$
+      return actions.url_params$
         .filter(x => !!x.modal)
         .map(x => {
           // Hacky any to be handled later...

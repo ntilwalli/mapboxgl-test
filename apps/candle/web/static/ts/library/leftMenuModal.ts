@@ -7,12 +7,14 @@ function intent(sources) {
   const close$ = DOM.select(`.appModalBackdrop`).events(`click`)
     .filter(targetIsOwner)
 
-  const logout$ = DOM.select(`.appMenuLogoutButton`).events(`click`)
-  const login$ = DOM.select(`.appMenuLoginButton`).events(`click`)
+  const logout$ = DOM.select(`.appShowLogoutButton`).events(`click`)
+  const login$ = DOM.select(`.appShowLoginButton`).events(`click`)
+  const show_settings$ = DOM.select(`.appShowSettingsButton`).events(`click`)
   return {
     close$,
     logout$,
-    login$
+    login$,
+    show_settings$
   } 
 }
 
@@ -27,7 +29,8 @@ function view(auth$) {
                 `Hopscotch!`
               ]),
               div(`.left-menu-body`, [
-                button(`.item`, {class: {appMenuLogoutButton: !!auth, appMenuLoginButton: !auth}}, [auth ? `Logout` : `Login`])
+                button(`.item`, {class: {appShowSettingsButton: true}}, [`Settings`]),
+                button(`.item`, {class: {appShowLogoutButton: !!auth, appShowLoginButton: !auth}}, [auth ? `Logout` : `Login`])
               ]),
             ])
           ])
@@ -41,10 +44,15 @@ export default function main(sources, inputs) {
   
   return {
     DOM: view(inputs.Authorization.status$),
+    Router: actions.show_settings$.mapTo({
+      pathname: `/settings`, 
+      action: `PUSH`
+    }),
     MessageBus: O.merge(
       actions.close$.mapTo({to: `main`, message: `hideModal`}),
       actions.logout$.mapTo({to: `/authorization/logout`}),
-      actions.login$.mapTo({to: `main`, message: `showLogin`})
+      actions.login$.mapTo({to: `main`, message: `showLogin`}),
+      //actions.show_settings$.mapTo({to: `main`, message: `showSettings`})
     )
   }
 }

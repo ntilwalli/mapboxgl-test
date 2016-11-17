@@ -43,7 +43,6 @@ function intent(sources) {
   const show_user_profile$ = DOM.select(`.appShowUserProfileButton`).events(`click`)
     .publishReplay(1).refCount()
 
-  const show_back$ = DOM.select(`.appShowBackButton`).events(`click`)
   const show_search_calendar$ = DOM.select(`.appShowSearchCalendarButton`).events(`click`)
     .publishReplay(1).refCount()
 
@@ -53,7 +52,6 @@ function intent(sources) {
     show_menu$,
     show_login$,
     show_user_profile$,
-    show_back$,
     show_search_calendar$
   }
 }
@@ -157,7 +155,7 @@ function view(state$, components) {
     .map((info: any) => {
       const {state, components} = info
       const {content} = components
-      return div(`.listing-component`, [
+      return div(`.listing-component.application`, [
         renderController(state),
         content
       ])
@@ -199,9 +197,6 @@ export default function main(sources, inputs): any {
       actions.show_user_profile$.mapTo({
         pathname: `/home`,
         action: `PUSH`
-      }),
-      actions.show_back$.mapTo({
-        action: `POP`
       })
     ),
     MessageBus: O.merge(

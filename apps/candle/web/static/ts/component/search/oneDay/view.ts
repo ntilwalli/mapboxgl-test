@@ -95,7 +95,7 @@ function view(state$, components) {
     const {showFilters} = state
     const {grid, filters} = components
 
-    return div(`.one-day-calendar`, {class: {"no-scroll": showFilters}}, [
+    return div(`.search-component-one-day.application`, {class: {"no-scroll": showFilters}}, [
       renderController(state),
       showLoader(state) ? renderLoader() : grid,
       showFilters ? filters : null

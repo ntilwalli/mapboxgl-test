@@ -94,8 +94,7 @@ function renderController(state) {
       renderMenuButton()
     ]),
     div(`.section`, [
-      !authorization ? renderLoginButton() : null,
-      authorization ? renderSearchCalendarButton() : null
+      renderSearchCalendarButton()
     ])
   ])
 }
@@ -167,7 +166,7 @@ function view(state$, components) {
       const {state, components} = info
       const {authorization, profile, selected_check_in} = state
       const {check_in_grid} = components
-      return div(`.user-component`, [
+      return div(`.user-component.application`, [
         renderController(state),
         renderContent(info)
       ])

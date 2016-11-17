@@ -59,7 +59,7 @@ function model(actions, inputs) {
         .startWith(init)
         .scan((acc, f: Function) => f(acc))
     })
-    //.do(x => console.log(`settings`, x))
+    //.do(x => console.log(`services/settings state`, x))
     .publishReplay(1).refCount()
 }
 
@@ -109,6 +109,7 @@ function main(sources, inputs) {
     HTTP: toHTTP$,
     output$: state$
       .distinctUntilChanged()
+      //.do(x => console.log(`services/settings output`, x))
       .publishReplay(1).refCount(),
     waiting$: O.never()
     // O.merge(toHTTP$.mapTo(true), actions.success$.mapTo(false))
