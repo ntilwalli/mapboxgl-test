@@ -215,7 +215,7 @@ export function renderStageTime(stage_time) {
 }
 
 export function renderPerformerLimit(performer_limit) {
-console.log(performer_limit)
+//console.log(performer_limit)
   if (performer_limit) {
     
     const {type, data} = performer_limit
