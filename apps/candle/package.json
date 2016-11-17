@@ -23,7 +23,7 @@
     "deploy": "npm run mk-priv-dirs; npm run build-browserify && npm run build-css && npm run build-assets && npm run copy-mapbox-data && npm run copy-font-awesome-data && npm run copy-normalize-css"
   },
   "dependencies": {
-    "@cycle/dom": "file:../../custom_deps/dom",
+    "@cycle/dom": "^14.1.0",
     "@cycle/http": "^11.2.0",
     "@cycle/isolate": "^1.4.0",
     "@cycle/rxjs-run": "^3.0.3",
@@ -61,7 +61,7 @@
     "grunt-cli": "^1.2.0",
     "ts-loader": "^0.9.1",
     "tsify": "^2.0.2",
-    "typescript": "^2.2.0-dev.20161114",
+    "typescript": "^2.2.0-dev.20161116",
     "watch-run": "^1.2.4",
     "webpack": "^1.13.2"
   }

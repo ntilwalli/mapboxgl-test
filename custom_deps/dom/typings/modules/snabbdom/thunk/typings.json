@@ -1,8 +1,0 @@
-{
-  "resolution": "main",
-  "tree": {
-    "src": "/Users/ntilwalli/dev/spotlight/custom_deps/cyclejs/dom/src/custom-typings/snabbdom-thunk.d.ts",
-    "raw": "file:src/custom-typings/snabbdom-thunk.d.ts",
-    "typings": "/Users/ntilwalli/dev/spotlight/custom_deps/cyclejs/dom/src/custom-typings/snabbdom-thunk.d.ts"
-  }
-}

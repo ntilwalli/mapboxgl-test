@@ -215,12 +215,19 @@ export function renderStageTime(stage_time) {
 }
 
 export function renderPerformerLimit(performer_limit) {
-
+console.log(performer_limit)
   if (performer_limit) {
+    
     const {type, data} = performer_limit
-    return div(`.result-performer-limit`, [
-      (type === "limit" ? data.limit : `${data.min}-${data.max}`) + ' people'
-    ])
+    if (type === "booked_plus_walkin") {
+      return div(`.result-performer-limit`, [
+        `${data.booked} booked, ${data.walk_in} walk-in`
+      ])
+    } else {
+      return div(`.result-performer-limit`, [
+        (type === "limit" ? data.limit : `${data.min}-${data.max}`) + ' people'
+      ])
+    }
   }
   return null
 }
