@@ -76,7 +76,6 @@ function createRegionAutocomplete(sources, inputs, prop) {
 function intent(sources) {
   const {DOM} = sources
   const {success$, error$} = processHTTP(sources, `setApplicationSettings`)
-  const done$ = DOM.select(`.appDoneButton`).events(`click`)
   const show_menu$ = DOM.select(`.appShowMenuButton`).events(`click`)
 
   const show_login$ = DOM.select(`.appShowLoginButton`).events(`click`)
@@ -96,8 +95,8 @@ function intent(sources) {
   const save_changes$ = DOM.select(`.appSaveChanges`).events(`click`)
 
   return {
-    done$,
     success$,
+    error$,
     show_menu$,
     show_login$,
     show_user_profile$,
@@ -152,10 +151,19 @@ function reducers(actions, inputs) {
     return state.set(`settings`, settings).set(`is_valid`, getValidity(settings))
   })
 
+  const success_r = actions.success$.map(x => state => {
+    return state.set(`save_status`, {type: `success`, data: `Settings saved`})
+  })
+
+  const error_r = actions.error$.map(x => state => {
+    return state.set(`save_status`, {type: `error`, data: x})
+  })
+
   return O.merge(
     region_type_r, 
     clear_override_region_r, override_waiting_r, override_region_r,
-    clear_home_region_r, home_waiting_r, home_region_r
+    clear_home_region_r, home_waiting_r, home_region_r,
+    success_r, error_r
   )
 }
 
@@ -171,7 +179,7 @@ function model(actions, inputs) {
 
       return reducer$
         .startWith(Immutable.Map({
-          authorization, settings, region_waiting: false, is_valid: true
+          authorization, settings, region_waiting: false, is_valid: true, save_status: undefined
         }))
         .scan((acc, f: Function) => f(acc))
     })
@@ -261,9 +269,10 @@ function renderHomeRegionSection(info) {
 
 function renderContent(info) {
   const {state, components} = info
-  const {is_valid} = state
+  const {is_valid, save_status} = state
   const disabled = !is_valid
-  return div(`.content.flex-center`, [
+  return div(`.content`, [
+    save_status ? div(`.status-section.${save_status.type}`, [save_status.data]) : null,
     renderRegionSection(info),
     renderHomeRegionSection(info),
     div(`.button-section`, [

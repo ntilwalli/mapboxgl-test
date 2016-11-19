@@ -1,16 +1,29 @@
 @import '../../variables';
 .settings-component {
   .content {
+    padding: 2rem 1rem 0;
+
     width: 100%;
     display: flex;
     flex-flow: column nowrap;
     //justify-content: center;
-    padding-top: 2rem;
+    /*padding-top: 2rem;*/
+
+    .status-section {
+      padding-top: 1rem;
+      &.success {
+        color: green
+      }
+
+      &.error {
+        color: red
+      }
+    }
 
     .region-section, .home-region-section {
       margin-top: 1rem;
       flex-flow: column nowrap;
-      width: 90%;
+      width: 100%;
 
       .choice {
         margin-top: .5rem;
@@ -52,7 +65,7 @@
     }
 
     .button-section {
-      width: 90%;
+      width: 100%;
       margin-top: 2rem;
       display: flex;
       justify-content: center;
