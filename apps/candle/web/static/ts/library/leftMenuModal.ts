@@ -24,14 +24,12 @@ function view(auth$) {
       return div(`.modal-component`, [
         div(`.appModalBackdrop.modal-backdrop`, [
           div(`.left-menu-modal`, [
-            div(`.left-menu-content`, [
-              div(`.left-menu-header`, [
-                `Hopscotch!`
-              ]),
-              div(`.left-menu-body`, [
-                button(`.item`, {class: {appShowSettingsButton: true}}, [`Settings`]),
-                button(`.item`, {class: {appShowLogoutButton: !!auth, appShowLoginButton: !auth}}, [auth ? `Logout` : `Login`])
-              ]),
+            div(`.header`, [
+              `Hopscotch`
+            ]),
+            div(`.content`, [
+              button(`.item`, {class: {appShowSettingsButton: true}}, [`Settings`]),
+              button(`.item`, {class: {appShowLogoutButton: !!auth, appShowLoginButton: !auth}}, [auth ? `Logout` : `Login`])
             ])
           ])
         ])

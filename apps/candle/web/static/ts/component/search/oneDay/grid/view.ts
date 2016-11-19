@@ -18,23 +18,24 @@ function renderResult(result) {
   const {name, cuando, donde, meta} = listing
   const {begins, ends} = cuando
   const {cost, sign_up, stage_time, performer_limit} = meta
-  return div(`.appResult.result`, {props: {searchResult: result}}, [
-    div(`.left`, [
-      renderName(name),
-      renderBegins(cuando),
-      renderEnds(cuando),
-      renderDonde(donde)
-    ]),
-    div(`.right`, [
-      renderStatus(cuando),
-      renderCost(cost),
-      renderStageTime(stage_time),
-      renderSignup(cuando, sign_up),
-      renderPerformerLimit(performer_limit)
+  return div(`.appResult.result-container`, {props: {searchResult: result}}, [
+    div(`.result`, [
+      div(`.left`, [
+        renderName(name),
+        renderBegins(cuando),
+        renderEnds(cuando),
+        renderDonde(donde)
+      ]),
+      div(`.right`, [
+        renderStatus(cuando),
+        renderCost(cost),
+        renderStageTime(stage_time),
+        renderSignup(cuando, sign_up),
+        renderPerformerLimit(performer_limit)
+      ])
+      // renderCheckin(meta),
+      // renderHosts(meta)
     ])
-
-    // renderCheckin(meta),
-    // renderHosts(meta)
   ])
 }
 
