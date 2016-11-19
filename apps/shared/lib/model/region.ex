@@ -4,16 +4,15 @@ defmodule Shared.Model.Region do
   @derive {Poison.Encoder, except: [:__meta__]}
   @primary_key false
   embedded_schema do
-    field :country, :string
-    field :state, :string
-    field :city, :string
+    embeds_one :position, Shared.Message.LngLat
+    embeds_one :geotag, Shared.Model.Geotag
   end
 
-  @required_fields [:country, :state, :city]
 
   def changeset(model, params \\ :empty) do
     model
-    |> cast(params, @required_fields)
-    |> validate_required(@required_fields)
+    |> cast(params, [])
+    |> cast_embed(:position, required: true)
+    |> cast_embed(:geotag, required: true)
   end
 end

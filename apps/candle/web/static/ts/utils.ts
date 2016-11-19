@@ -1,5 +1,6 @@
 import {Observable as O, Subject, ReplaySubject} from 'rxjs'
 import {nav, hr, div, a, input, form, strong, span, button} from '@cycle/dom'
+import {getState} from './states'
 import moment = require('moment')
 
 export function toMoment(c) { return moment(c.toISOString()) }
@@ -30,16 +31,30 @@ interface ProxyObservable<T> extends O<T> {
 }
 
 export function createProxy(): ProxyObservable<any> {
+  let start_up_token = "start up token"
+  let upstream
   let sub
   const source = new Subject()
-  const proxy = source.finally(() => {
-    if (sub) {
-      sub.unsubscribe()
-    }
-  }).publish().refCount()
+  const proxy = source
+    .startWith(start_up_token)
+    .do(x => {
+      if (x === start_up_token) {
+        if (upstream && !sub) {
+          sub = upstream.subscribe(source)
+        }
+      }
+    })
+    .filter(x => x !== start_up_token)
+    .finally(() => {
+      if (sub) {
+        sub.unsubscribe()
+        sub = undefined
+      }
+    }).publish().refCount()
 
   ;(<ProxyObservable<any>> proxy).attach = (stream) => {
-    sub = stream.subscribe(source)
+    upstream = stream
+    sub = upstream.subscribe(source)
   }
 
   return <ProxyObservable<any>> proxy
@@ -275,6 +290,7 @@ export function processHTTP(sources, category) {
   const out$ = HTTP.select(category)
     .switchMap(res$ => res$
       .map(res => {
+        //console.log(res)
         if (res.statusCode === 200) {
           return {
             type: "good",
@@ -298,51 +314,15 @@ export function processHTTP(sources, category) {
     good$,
     bad$: out$.filter(x => x.type === "bad").map(x => x.data).publish().refCount(),
     ugly$: out$.filter(x => x.type === "ugly").map(x => x.data).publish().refCount(),
-    success$: good$.filter(onlySuccess).pluck(`data`),
-    error$: good$.filter(onlyError).pluck(`data`)
+    success$: good$.filter(onlySuccess)
+      //.do(x => console.log(`good$`, x))
+      .pluck(`data`),
+    error$: good$.filter(onlyError)
+      //.do(x => console.log(`error$`, x))
+      .pluck(`data`)
   }
 
 }
-
-export function getVicinityFromGeolocation(geolocation) {
-  const {prefer, user, home, override} = geolocation
-  let vicinity
-  if (prefer === `override` && override) {
-    vicinity = override
-  } else if (prefer === `user` && user && user.region) {
-    vicinity = user
-  } else {
-    vicinity = home
-  }
-
-  return vicinity
-}
-
-export function getNormalizedRegion(saRegion) {
-  const {source} = saRegion
-  if (source === `arcgis`) {
-    if (saRegion.type === `somewhere`) {
-
-      const data = saRegion.data
-      const {city, state, country, cityAbbr, stateAbbr, countryAbbr} = data
-      return {
-        type: "somewhere", 
-        data: {
-          country: countryAbbr || country,
-          region: stateAbbr || state,
-          locality: city
-        }
-      }
-    } else {
-      return {
-        saRegion
-      }
-    }
-  } else if (source === `factual` || source === `manual`) {
-      return saRegion
-  }
-}
-
 
 export function clean (val) {
   if (typeof val === 'string') {
@@ -353,4 +333,20 @@ export function clean (val) {
 export const onlySuccess = x => x.type === "success"
 export const onlyError = x => x.type === "error"
 
+function cleanCityName(x) {
+  if (x.toUpperCase() === "New York City".toUpperCase()) {
+    return "New York"
+  }
 
+  return x
+}
+
+export const normalizeArcGISSingleLineToString = x => {
+  const tokens = x.split(',')
+  return `${cleanCityName(tokens[0].trim())}, ${getState(tokens[1].trim())}`
+}
+
+export const normalizeArcGISSingleLineToParts = x => {
+  const tokens = x.split(',')
+  return {city: cleanCityName(tokens[0].trim()), state_abbr: getState(tokens[1].trim())}
+}

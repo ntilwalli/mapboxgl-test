@@ -1,0 +1,72 @@
+@import '../../variables';
+.settings-component {
+  .content {
+    width: 100%;
+    display: flex;
+    flex-flow: column nowrap;
+    //justify-content: center;
+    padding-top: 2rem;
+
+    .region-section, .home-region-section {
+      margin-top: 1rem;
+      flex-flow: column nowrap;
+      width: 90%;
+
+      .choice {
+        margin-top: .5rem;
+      }
+    }
+
+    .override-region, .home-region {
+      margin-top: .5rem;
+      position: relative;
+      display: flex;
+      width: 100%;
+
+      .display {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px solid lightgray;
+        padding: .2rem;
+      }
+
+      .autocomplete {
+        width: 100%;
+
+        .autocomplete-result {
+          line-height: 1rem;
+          padding: .2rem;
+          border: 1px solid lightgray;
+        }
+
+        .light-gray {
+          background-color: lightgray;
+        }
+      }
+      /*&.disabled {
+        pointer-events: none;
+        opacity: .5;
+      }*/
+    }
+
+    .button-section {
+      width: 90%;
+      margin-top: 2rem;
+      display: flex;
+      justify-content: center;
+    }
+
+    .save-button {
+      padding: .5rem;
+      border: 1px solid black;
+      background-color: white;
+    }
+
+    .save-button:hover {
+      color: $crayola-orange;
+      border-color: $crayola-orange;
+    }
+  }
+}

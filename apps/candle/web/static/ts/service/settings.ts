@@ -1,18 +1,18 @@
 import {Observable as O} from 'rxjs'
 import {div} from '@cycle/dom'
-import {combineObj, processHTTP, onlyError, onlySuccess} from '../utils'
+import {combineObj, traceStartStop, processHTTP, onlyError, onlySuccess} from '../utils'
 import Immutable = require('immutable')
 
 function intent(sources) {
   const {HTTP, MessageBus} = sources
 
-  const {good$, bad$, ugly$} = processHTTP(sources, 'getUserSettings')
+  const {good$, bad$, ugly$} = processHTTP(sources, 'getApplicationSettings')
   const success$ = good$.filter(onlySuccess).pluck(`data`)
     //.do(x => console.log(`settings http/source`, x))
     .publishReplay(1).refCount()
   const error$ = O.merge(good$.filter(onlyError), bad$, ugly$)
     .publishReplay(1).refCount()
-  const storage_settings$ = sources.Storage.local.getItem(`userSettings`)
+  const storage_settings$ = sources.Storage.local.getItem(`applicationSettings`)
     .take(1)
     .publishReplay(1).refCount()
 
@@ -20,7 +20,7 @@ function intent(sources) {
     success$,
     error$,
     storage_settings$,
-    update$: MessageBus.address(`/preferences`)
+    update$: MessageBus.address(`/settings`)
   }
 }
 
@@ -45,12 +45,13 @@ function model(actions, inputs) {
             else return null
           })
       })
+      //.do(x => console.log(`get application settings`, x))
       .take(1)
   )
 
   return combineObj({
     default_settings$: inputs.props$.take(1),
-    retrieved_settings$
+    retrieved_settings$: retrieved_settings$
   }).switchMap((info: any) => {
       const {default_settings, retrieved_settings} = info
       let init = retrieved_settings || default_settings
@@ -59,12 +60,12 @@ function model(actions, inputs) {
         .startWith(init)
         .scan((acc, f: Function) => f(acc))
     })
+    //.letBind(traceStartStop(`settings state trace`))
     //.do(x => console.log(`services/settings state`, x))
     .publishReplay(1).refCount()
 }
 
 function main(sources, inputs) {
-
   const actions = intent(sources)
 
   const authorized$ = inputs.authorization$.filter(x => !!x)
@@ -75,14 +76,27 @@ function main(sources, inputs) {
     .publishReplay(1).refCount()
 
   const defaultSettings = {
-      useLocation: `user`,
-      homeLocation: {
+      use_region: `user`,
+      home_region: {
         position: {
           lng: -74.0059,
           lat: 40.7128
+        },
+        geotag: {
+          city: `New York`,
+          state_abbr: `NY`
         }
       },
-      overrideLocation: undefined
+      override_region: {
+        position: {
+          lng: -74.0059,
+          lat: 40.7128
+        },
+        geotag: {
+          city: `New York`,
+          state_abbr: `NY`
+        }
+      }
     }
   const props$ = O.of(defaultSettings)
 
@@ -98,15 +112,27 @@ function main(sources, inputs) {
         url: `/api/user`,
         method: `post`,
         send: {
-          route: `/preferences`
+          route: `/settings`
         },
-        category: `getUserSettings`
+        category: `getApplicationSettings`
       }
     })
     .publishReplay(1).refCount()
 
+  const toStorage$ = inputs.authorization$
+    .filter(x => !x)
+    .switchMap(_ => state$)
+    .map(x => ({
+      action: `setItem`,
+      key: `applicationSettings`,
+      value: JSON.stringify(x)
+    }))
+    .skip(1)
+    .do(x => console.log(`set application settings`, x))
+
   return {
     HTTP: toHTTP$,
+    Storage: toStorage$,
     output$: state$
       .distinctUntilChanged()
       //.do(x => console.log(`services/settings output`, x))

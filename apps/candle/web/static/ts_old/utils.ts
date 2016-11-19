@@ -12,15 +12,18 @@ interface ProxyObservable<T> extends O<T> {
 }
 
 export function createProxy(): ProxyObservable<any> {
+  console.log(`creating proxy`)
   let sub
   const source = new Subject()
   const proxy = source.finally(() => {
     if (sub) {
+      console.log(`proxy unsub`)
       sub.unsubscribe()
     }
   }).publish().refCount()
 
   ;(<ProxyObservable<any>> proxy).attach = (stream) => {
+    console.log(`proxy sub`)
     sub = stream.subscribe(source)
   }
 

@@ -40,6 +40,7 @@ function main(sources) {
 
   const authorizationService = AuthorizationService(sources)
   const settingsService = SettingsService(sources, {authorization$: authorizationService.output.status$})
+  settingsService.output$.subscribe()
   const geoService = GeolocationService(sources)
 
   const inputs = {
@@ -91,6 +92,8 @@ function main(sources) {
   const fromModalStorage = modal$.switchMap(x => x.Storage)
   const fromModalMessageBus = modal$.switchMap(x => x.MessageBus)
 
+  //out.MessageBus.subscribe(x => console.log(`toMessageBus root:`, x))
+
   return spread(out, {
     DOM: vtree$,
     MapJSON: O.merge(out.MapJSON),
@@ -103,7 +106,7 @@ function main(sources) {
       fromModalHTTP
     ),//.do(x => console.log(`main/http sink`, x)),
     Router: O.merge(out.Router, toRouter$, fromModalRouter),
-    Storage: O.merge(out.Storage, geoService.Storage, fromModalStorage),
+    Storage: O.merge(out.Storage, settingsService.Storage, geoService.Storage, fromModalStorage),
     MessageBus: O.merge(out.MessageBus, authorizationService.MessageBus, fromModalMessageBus)
   })
 }

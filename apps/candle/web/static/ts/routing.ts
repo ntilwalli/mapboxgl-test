@@ -32,5 +32,7 @@ export default function routing(sources, inputs) {
     })
     .publishReplay(1).refCount()
 
-  return componentify(routing$)
+  const out = componentify(routing$)
+  //out.MessageBus.subscribe(x => console.log(`MessageBus routing:`, x))
+  return out
 }

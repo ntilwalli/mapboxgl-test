@@ -6,9 +6,9 @@ import {getDefaultFilters} from './helpers'
 import moment = require('moment')
 
 const log = console.log.bind(console)
-const onlyUserLocation = settings => settings.useLocation === `user`
-const onlyHomeLocation = settings => settings.useLocation === `home`
-const onlyOverrideLocation = settings => settings.useLocation === `override`
+const onlyUserRegion = settings => settings.use_region === `user`
+const onlyHomeRegion = settings => settings.use_region === `home`
+const onlyOverrideRegion = settings => settings.use_region === `override`
 
 function reducers(actions, inputs) {
   const retrieveR = inputs.retrieve$.map(_ => state => {
@@ -22,7 +22,7 @@ function reducers(actions, inputs) {
   })
 
   const userPositionR = inputs.settings$
-    .filter(onlyUserLocation)
+    .filter(onlyUserRegion)
     .switchMap(settings => {
       return inputs.Geolocation.cachedGeolocation$.map(geolocation => ({settings, geolocation}))
     })
@@ -31,24 +31,24 @@ function reducers(actions, inputs) {
       if (geolocation.type === "position") {
         return state.set(`searchPosition`, {type: "user", data: geoToLngLat(geolocation)})
       } else {
-        return state.set(`searchPosition`, {type: "user_location_not_available_using_home", data: settings.homeLocation.position})
+        return state.set(`searchPosition`, {type: "user_location_not_available_using_home", data: settings.home_region.position})
       }
     })
 
   // const userPositionR = actions.geolocation$.map(x => state => state.set(`searchPosition`, {type: "user", data: geoToLngLat(x)}))
 
   const homePositionR = inputs.settings$
-    .filter(onlyHomeLocation)
+    .filter(onlyHomeRegion)
     .map(settings => state => {
       //console.log(`homePosition updated...`)
-      return state.searchPosition = {type: "home", data: settings.homeLocation.position}
+      return state.searchPosition = {type: "home", data: settings.home_region.position}
     })
 
   const overridePositionR = inputs.settings$
-    .filter(onlyOverrideLocation)
+    .filter(onlyOverrideRegion)
     .map(settings => state => {
       //console.log(`overridePosition updated...`)
-      return state.searchPosition = {type: "override", data: settings.overrideLocation.position}
+      return state.searchPosition = {type: "override", data: settings.override_region.position}
     })
 
   // const changeDateR = actions.changeDate$
@@ -84,13 +84,13 @@ function reducers(actions, inputs) {
 
 function getInitialSearchPosition(settings) {
   //console.log(settings)
-  const {useLocation, homeLocation, overrideLocation} = settings
-  if (useLocation === "override" && overrideLocation) {
-    return {type: "override", data: overrideLocation.position}
-  } else if (useLocation === "user") {
+  const {use_region, home_region, override_region} = settings
+  if (use_region === "override" && override_region) {
+    return {type: "override", data: override_region.position}
+  } else if (use_region === "user") {
     return undefined
   } else {
-    return {type: "home", data: homeLocation.position}
+    return {type: "home", data: home_region.position}
   }
 }
 

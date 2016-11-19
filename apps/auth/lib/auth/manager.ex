@@ -47,7 +47,7 @@ defmodule Auth.Manager do
         username: username,
         password: password
       }}, _from, state) do
-   IO.puts("Got to login")
+
    out = Utils.login(
      %Credential{
         username: username, 
@@ -88,15 +88,14 @@ defmodule Auth.Manager do
       } = registration,
       %Authorization{} = auth
     }}, _from, state) do
-   IO.inspect registration
-   IO.inspect auth
+
    input = {%Registration{
       name: name, 
       username: username, 
       email: email, 
       type: type
     }, auth}
-   IO.inspect input
+
    {:reply,
      Utils.oauth_signup(input, Repo), 
      state

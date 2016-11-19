@@ -1,0 +1,22 @@
+.autocomplete-container {
+  width: 100%;
+
+  .autocomplete-input {
+    width: 100%;
+    display: flex;
+        
+    font-size: 1rem;
+    line-height: 2rem;
+    padding: 0 .2rem;
+  }
+
+  .results-container {
+    padding: 0;
+    margin: 0;
+    list-style-type: none;
+  }
+
+  .autocomplete-item {
+
+  }
+}

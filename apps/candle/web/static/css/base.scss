@@ -106,5 +106,24 @@ html, body {
   color: $crayola-orange;
 }
 
+.clear-button {
+  color: black;
+  background-color: transparent;
+  border: none; 
+  padding: .3rem;
+}
+
+.clear-button:focus {
+  outline: none;
+}
+
+.clear-button::after {
+  content: '×';
+}
+
+.clear-button:hover {
+  color: lightgray;
+}
+
 @import 'component/_index';
 @import 'library/_index';

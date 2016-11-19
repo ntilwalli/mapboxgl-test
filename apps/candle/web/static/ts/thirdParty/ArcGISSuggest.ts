@@ -1,6 +1,6 @@
 import {Observable as O} from 'rxjs'
 import moment = require('moment')
-import {combineObj, clean} from '../utils'
+import {combineObj, clean, normalizeArcGISSingleLineToString} from '../utils'
 import Immutable = require('immutable')
 
 const suggestUrlPrefix = `http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/suggest`
@@ -31,8 +31,9 @@ function ArcGISSuggest (sources, inputs) {
   const {props$, input$, center$} = inputs
   const sharedProps$ = props$.publishReplay(1).refCount()
 
-  const filteredInput$ = input$.filter(x => x.length)
-    .filter(input => input.length > 0)
+  const filteredInput$ = input$
+    //.do(x => console.log(`received input`, x))
+    .filter(x => x.length)
 
   const withLatestInput$ = filteredInput$.withLatestFrom(combineObj({
     props$: sharedProps$,
@@ -42,12 +43,14 @@ function ArcGISSuggest (sources, inputs) {
   const toHTTP$ = withLatestInput$
     .map(({props, input, center}) => {
       return toRequest({props: props || {}, input, center})
-    }).delay(4)
+    })
+    //.do(x => console.log(`to http`, x))
 
   const suggestionsResponse$ = sharedProps$.switchMap(props => {
     return sources.HTTP.select(props.category || defaultCategory)
       .switchMap(res$ => res$
         .map(res => {
+          //console.log(`from http`, res)
           if (res.statusCode === 200) {
             const respData = JSON.parse(res.text)
             return {
@@ -80,13 +83,23 @@ function ArcGISSuggest (sources, inputs) {
         magicKey: result.magicKey,
         type: `default`
       }))
+      .filter(x => x.name.split(',').length === 3)
+      .map(x => {
+        return {...x, normalizedName: normalizeArcGISSingleLineToString(x.name)}
+       })
     })
     .publish().refCount()
+
+  const waiting$ = O.merge(
+    toHTTP$.mapTo(true),
+    O.merge(results$, error$).mapTo(false)
+  ).startWith(false).publishReplay(1).refCount()
 
   return {
     HTTP: toHTTP$,
     results$,
-    error$
+    error$,
+    waiting$
   }
 }
 

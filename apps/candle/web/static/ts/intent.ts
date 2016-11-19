@@ -22,6 +22,7 @@ function intent(sources) {
     .mapTo(`settings`)
   
   const show_modal$ = O.merge(modal$, show_menu$, show_login$, show_signup$, show_settings$)
+
   const hide_modal$ = MessageBus.address(`main`).filter(x => x === `hideModal`)
 
   return {
