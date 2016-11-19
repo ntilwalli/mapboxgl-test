@@ -77,17 +77,7 @@ function main(sources, inputs) {
 
   const defaultSettings = {
       use_region: `user`,
-      home_region: {
-        position: {
-          lng: -74.0059,
-          lat: 40.7128
-        },
-        geotag: {
-          city: `New York`,
-          state_abbr: `NY`
-        }
-      },
-      override_region: {
+      default_region: {
         position: {
           lng: -74.0059,
           lat: 40.7128

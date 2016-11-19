@@ -65,8 +65,8 @@ defmodule User.Auth do
 
   def handle_call(:settings, _from, %{user: user} = state) do
     result = Shared.Repo.get(Shared.Settings, user.id)
-    IO.inspect "settings"
-    IO.inspect result
+    # IO.inspect "settings"
+    # IO.inspect result
     {:reply, {:ok, result}, state}
   end
 
@@ -127,7 +127,7 @@ defmodule User.Auth do
     case cs.valid? do
       true ->
         row = apply_changes(cs)
-        on_conflict = from Shared.Settings, update: [set: [use_region: ^row.use_region, override_region: ^row.override_region, home_region: ^row.home_region]]
+        on_conflict = from Shared.Settings, update: [set: [use_region: ^row.use_region, default_region: ^row.default_region]]
         {:ok, result} = Shared.Repo.insert(row, on_conflict: on_conflict, conflict_target: :user_id)
         {:reply, {:ok, result}, state}
       false ->

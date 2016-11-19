@@ -88,9 +88,7 @@ function intent(sources) {
   const region_type$ = DOM.select(`.appRegionComboBox`).events(`change`)
     .map(ev => ev.target.value)
 
-  const clear_override_region$ = DOM.select(`.appClearOverrideRegion`).events(`click`)
-  const clear_home_region$ = DOM.select(`.appClearHomeRegion`).events(`click`)
-    .publishReplay(1).refCount()
+  const clear_default_region$ = DOM.select(`.appClearDefaultRegion`).events(`click`)
 
   const save_changes$ = DOM.select(`.appSaveChanges`).events(`click`)
 
@@ -102,14 +100,13 @@ function intent(sources) {
     show_user_profile$,
     show_search_calendar$,
     region_type$,
-    clear_override_region$,
-    clear_home_region$,
+    clear_default_region$,
     save_changes$
   }
 }
 
-function getValidity({use_region, override_region, home_region}) {
-  return !!(home_region && (use_region === `user` || override_region))
+function getValidity({default_region}) {
+  return !!default_region 
 }
 
 function reducers(actions, inputs) {
@@ -119,35 +116,19 @@ function reducers(actions, inputs) {
     return state.set(`settings`, settings).set(`is_valid`, getValidity(settings))
   })
 
-  const clear_override_region_r = actions.clear_override_region$.map(_ => state => {
+  const clear_default_region_r = actions.clear_default_region$.map(_ => state => {
     const settings = state.get(`settings`)
-    settings.override_region = undefined
+    settings.default_region = undefined
     return state.set(`settings`, settings).set(`is_valid`, getValidity(settings))
   })
 
-  const override_waiting_r = inputs.override_waiting$.map(x => state => {
+  const default_waiting_r = inputs.default_waiting$.map(x => state => {
     return state.set(`region_waiting`, x)
   })
 
-  const override_region_r = inputs.override_region$.map(x => state => {
+  const default_region_r = inputs.default_region$.map(x => state => {
     const settings = state.get(`settings`)
-    settings.override_region = x
-    return state.set(`settings`, settings).set(`is_valid`, getValidity(settings))
-  })
-
-  const clear_home_region_r = actions.clear_home_region$.map(_ => state => {
-    const settings = state.get(`settings`)
-    settings.home_region = undefined
-    return state.set(`settings`, settings).set(`is_valid`, getValidity(settings))
-  })
-
-  const home_waiting_r = inputs.home_waiting$.map(x => state => {
-    return state.set(`region_waiting`, x)
-  })
-
-  const home_region_r = inputs.home_region$.map(x => state => {
-    const settings = state.get(`settings`)
-    settings.home_region = x
+    settings.default_region = x
     return state.set(`settings`, settings).set(`is_valid`, getValidity(settings))
   })
 
@@ -161,8 +142,7 @@ function reducers(actions, inputs) {
 
   return O.merge(
     region_type_r, 
-    clear_override_region_r, override_waiting_r, override_region_r,
-    clear_home_region_r, home_waiting_r, home_region_r,
+    clear_default_region_r, default_waiting_r, default_region_r,
     success_r, error_r
   )
 }
@@ -202,67 +182,45 @@ function renderController(state) {
   ])
 }
 
-function renderOverrideRegion(info) {
-  const {state, components} = info
-  const {settings} = state
-  const {override_region} = settings
-  if (override_region) {
-    const {position, geotag} = override_region
-    const {city, state_abbr} = geotag
-    return div(`.display`, [
-      span([`${city}, ${state_abbr}`]),
-      button(`.appClearOverrideRegion.clear-button`, [])
-    ])
-  } else {
-     const {overrideAutocomplete, homeAutocomplete} = components
-    return div(`.autocomplete`, [
-      overrideAutocomplete,
-    ])
-  }
-}
-
-function renderRegionSection(info) {
+function renderRegionMethodCombo(info) {
   const {state} = info
   const {settings} = state
   const {use_region} = settings
   const ul  = use_region
 
   //console.log(ul)
-  return div(`.region-section`, [
-    div(`.heading`, [`Region`]),
+  return div(`.region-combo-section`, [
+    div(`.heading`, [`Region Method`]),
     select(`.appRegionComboBox.choice`, [
       option(`.combo-item`, {attrs: {value: `user`, selected: ul === `user`}}, [`Use my location`]),
-      option(`.combo-item`, {attrs: {value: `manual`, selected: ul === `manual`}}, [`Choose manually`])
-    ]),
-    ul === "manual" ? div(`.override-region`, [renderOverrideRegion(info)]) : null
+      option(`.combo-item`, {attrs: {value: `default`, selected: ul === `default`}}, [`Use default region`])
+    ])
   ])
 }
 
-function renderHomeRegion(info) {
+function renderDefaultRegion(info) {
   const {state, components} = info
   const {settings} = state
-  const {home_region} = settings
-  if (home_region) {
-    const {position, geotag} = home_region
+  const {default_region} = settings
+  if (default_region) {
+    const {position, geotag} = default_region
     const {city, state_abbr} = geotag
     return div(`.display`, [
       span([`${city}, ${state_abbr}`]),
-      button(`.appClearHomeRegion.clear-button`, [])
+      button(`.appClearDefaultRegion.clear-button`, [])
     ])
   } else {
-     const {homeAutocomplete} = components
+     const {defaultAutocomplete} = components
     return div(`.autocomplete`, [
-      homeAutocomplete,
+      defaultAutocomplete,
     ])
   }
 }
 
-
-
-function renderHomeRegionSection(info) {
-  return div(`.home-region-section`, [
-    div(`.heading`, [`Home`]),
-    div(`.home-region`, [renderHomeRegion(info)])
+function renderDefaultRegionSection(info) {
+  return div(`.default-region-section`, [
+    div(`.heading`, [`Default Region`]),
+    div(`.default-region`, [renderDefaultRegion(info)])
   ])
 }
 
@@ -273,8 +231,8 @@ function renderContent(info) {
   const disabled = !is_valid
   return div(`.content`, [
     save_status ? div(`.status-section.${save_status.type}`, [save_status.data]) : null,
-    renderRegionSection(info),
-    renderHomeRegionSection(info),
+    renderRegionMethodCombo(info),
+    renderDefaultRegionSection(info),
     div(`.button-section`, [
       button(`.appSaveChanges.save-button`, {attrs: {disabled}}, [`Save`])
     ])
@@ -299,22 +257,16 @@ function view(state$, components) {
 function main(sources, inputs) {
   const actions = intent(sources)
 
-  const overrideAutocomplete = isolate(createRegionAutocomplete)(sources, inputs, `override_region`)
-
-  const homeAutocomplete = isolate(createRegionAutocomplete)(sources, inputs, `home_region`)
-
+  const defaultAutocomplete = isolate(createRegionAutocomplete)(sources, inputs, `default_region`)
 
   const state$ = model(actions, {
     ...inputs, 
-    override_waiting$: overrideAutocomplete.waiting$,
-    override_region$: overrideAutocomplete.output$,
-    home_waiting$: homeAutocomplete.waiting$,
-    home_region$: homeAutocomplete.output$
+    default_waiting$: defaultAutocomplete.waiting$,
+    default_region$: defaultAutocomplete.output$
   })
 
   const components = {
-    overrideAutocomplete$: overrideAutocomplete.DOM,
-    homeAutocomplete$: homeAutocomplete.DOM
+    defaultAutocomplete$: defaultAutocomplete.DOM
   }
 
   const vtree$ = view(state$, components)
@@ -366,8 +318,7 @@ function main(sources, inputs) {
         }
       })
       .filter(x => !!x),
-      overrideAutocomplete.HTTP,
-      homeAutocomplete.HTTP
+      defaultAutocomplete.HTTP
     ),
     //.do(x => console.log(`suggester http`)),
     Router: O.merge(

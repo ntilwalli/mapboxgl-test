@@ -20,7 +20,7 @@
       }
     }
 
-    .region-section, .home-region-section {
+    .region-combo-section, .default-region-section {
       margin-top: 1rem;
       flex-flow: column nowrap;
       width: 100%;
@@ -30,7 +30,7 @@
       }
     }
 
-    .override-region, .home-region {
+    .default-region {
       margin-top: .5rem;
       position: relative;
       display: flex;

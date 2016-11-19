@@ -10,11 +10,13 @@ function intent(sources) {
   const logout$ = DOM.select(`.appShowLogoutButton`).events(`click`)
   const login$ = DOM.select(`.appShowLoginButton`).events(`click`)
   const show_settings$ = DOM.select(`.appShowSettingsButton`).events(`click`)
+  const show_create_workflow$ = DOM.select(`.appShowCreateWorkflowButton`).events(`click`)
   return {
     close$,
     logout$,
     login$,
-    show_settings$
+    show_settings$,
+    show_create_workflow$
   } 
 }
 
@@ -28,6 +30,7 @@ function view(auth$) {
               `Hopscotch`
             ]),
             div(`.content`, [
+              button(`.item`, {class: {appShowCreateWorkflowButton: true}}, [`Add New Listing`]),
               button(`.item`, {class: {appShowSettingsButton: true}}, [`Settings`]),
               button(`.item`, {class: {appShowLogoutButton: !!auth, appShowLoginButton: !auth}}, [auth ? `Logout` : `Login`])
             ])
@@ -42,10 +45,16 @@ export default function main(sources, inputs) {
   
   return {
     DOM: view(inputs.Authorization.status$),
-    Router: actions.show_settings$.mapTo({
-      pathname: `/settings`, 
-      action: `PUSH`
-    }),
+    Router: O.merge(
+        actions.show_settings$.mapTo({
+          pathname: `/settings`, 
+          action: `PUSH`
+        }),
+        actions.show_create_workflow$.mapTo({
+          pathname: `/create`,
+          actions: `PUSH`
+        })
+      ),
     MessageBus: O.merge(
       actions.close$.mapTo({to: `main`, message: `hideModal`}),
       actions.logout$.mapTo({to: `/authorization/logout`}),

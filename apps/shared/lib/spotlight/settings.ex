@@ -5,8 +5,7 @@ defmodule Shared.Settings do
   @primary_key false
   schema "settings" do
     field :use_region, :string
-    embeds_one :override_region, Shared.Model.Region
-    embeds_one :home_region, Shared.Model.Region
+    embeds_one :default_region, Shared.Model.Region
     belongs_to :user, Shared.User, primary_key: true
   end
 
@@ -16,8 +15,7 @@ defmodule Shared.Settings do
     schema
     |> cast(params, @required_fields)
     |> validate_required(@required_fields)
-    |> cast_embed(:override_region)
-    |> cast_embed(:home_region)
+    |> cast_embed(:default_region)
     |> assoc_constraint(:user)
   end
 end
