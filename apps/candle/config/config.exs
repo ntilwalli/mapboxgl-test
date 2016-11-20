@@ -28,7 +28,7 @@ config :guardian, Guardian,
   verify_issuer: true,
   serializer: Auth.GuardianSerializer,
   secret_key: to_string(Mix.env),
-  hooks: GuardianDb,
+  #hooks: GuardianDb,
   permissions: %{
     default: [
       :read_profile,
@@ -57,10 +57,6 @@ config :ueberauth, Ueberauth.Strategy.Facebook.OAuth,
 config :ueberauth, Ueberauth.Strategy.Twitter.OAuth,
   consumer_key: System.get_env("TWITTER_CONSUMER_KEY"),
   consumer_secret: System.get_env("TWITTER_CONSUMER_SECRET")
-
-config :guardian_db, GuardianDb,
-       repo: Shared.Repo
-
 
 
 # Import environment specific config. This must remain at the bottom

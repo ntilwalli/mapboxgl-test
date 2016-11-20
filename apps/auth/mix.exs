@@ -48,7 +48,6 @@ defmodule Auth.Mixfile do
       {:shared, in_umbrella: true},
       #{:ueberauth, "~> 0.3.0"},
       {:guardian, "~> 0.12.0"},
-      {:guardian_db, "~> 0.7.0"},
       {:comeonin, "~> 2.4"},
       {:poison, "~> 2.2"},
       {:oauth, github: "tim/erlang-oauth"},
