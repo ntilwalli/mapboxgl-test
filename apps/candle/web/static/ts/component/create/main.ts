@@ -2,7 +2,7 @@ import {Observable as O} from 'rxjs'
 import {div, span, button} from '@cycle/dom'
 import Immutable = require('immutable')
 import {combineObj, mergeSinks} from '../../utils'
-import {renderMenuButton, renderLoginButton, renderSearchCalendarButton} from '../renderHelpers/controller'
+import {renderMenuButton, renderCircleSpinner, renderLoginButton, renderSearchCalendarButton} from '../renderHelpers/controller'
 
 function intent(sources) {
   return {}
@@ -37,7 +37,7 @@ function renderSaveExitButton() {
   return button(`.appSaveExitButton.text-button.save-exit-button`, [`Save/Exit`])
 }
 
-function renderController(state) {
+function renderController(state: any) {
   //const {authorization} = state
   return div(`.controller`, [
     div(`.section`, [
@@ -48,6 +48,7 @@ function renderController(state) {
     ]),
     div(`.section`, [
       div(`.buttons`, [
+        state.waiting ? renderCircleSpinner() : null,
         renderCancelButton(),
         renderSaveExitButton()
       ])

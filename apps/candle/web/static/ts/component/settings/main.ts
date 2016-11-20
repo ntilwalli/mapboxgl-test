@@ -3,7 +3,7 @@ import {div, button, li, span, select, input, option} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 import Immutable = require('immutable')
 import {combineObj, createProxy, mergeSinks, processHTTP, onlyError, onlySuccess, normalizeArcGISSingleLineToParts} from '../../utils'
-import {renderMenuButton, renderLoginButton, renderUserProfileButton, renderSearchCalendarButton} from '../renderHelpers/controller'
+import {renderMenuButton, renderCircleSpinner, renderLoginButton, renderUserProfileButton, renderSearchCalendarButton} from '../renderHelpers/controller'
 import ArcGISSuggest from '../../thirdParty/ArcGISSuggest'
 import ArcGISGetMagicKey from '../../thirdParty/ArcGISGetMagicKey'
 import AutocompleteInput from '../../library/autocompleteInput'
@@ -95,6 +95,7 @@ function intent(sources) {
   return {
     success$,
     error$,
+    got_response$: O.merge(success$, error$),
     show_menu$,
     show_login$,
     show_user_profile$,
@@ -123,7 +124,7 @@ function reducers(actions, inputs) {
   })
 
   const default_waiting_r = inputs.default_waiting$.map(x => state => {
-    return state.set(`region_waiting`, x)
+    return state.set(`default_waiting`, x)
   })
 
   const default_region_r = inputs.default_region$.map(x => state => {
@@ -133,17 +134,21 @@ function reducers(actions, inputs) {
   })
 
   const success_r = actions.success$.map(x => state => {
-    return state.set(`save_status`, {type: `success`, data: `Settings saved`})
+    return state.set(`save_status`, {type: `success`, data: `Settings saved`}).set(`save_waiting`, false)
   })
 
   const error_r = actions.error$.map(x => state => {
-    return state.set(`save_status`, {type: `error`, data: x})
+    return state.set(`save_status`, {type: `error`, data: x}).set(`save_waiting`, false)
+  })
+
+  const save_waiting_r = inputs.save_waiting$.map(_ => state => {
+    return state.set(`save_waiting`, true).set(`save_status`, undefined)
   })
 
   return O.merge(
     region_type_r, 
     clear_default_region_r, default_waiting_r, default_region_r,
-    success_r, error_r
+    success_r, error_r, save_waiting_r
   )
 }
 
@@ -159,7 +164,12 @@ function model(actions, inputs) {
 
       return reducer$
         .startWith(Immutable.Map({
-          authorization, settings, region_waiting: false, is_valid: true, save_status: undefined
+          authorization, 
+          settings, 
+          default_waiting: false, 
+          is_valid: true, 
+          save_waiting: false,
+          save_status: undefined
         }))
         .scan((acc, f: Function) => f(acc))
     })
@@ -169,12 +179,15 @@ function model(actions, inputs) {
 }
 
 function renderController(state) {
-  const {authorization} = state
+  const {authorization, save_waiting, default_waiting} = state
+  const waiting = !!(save_waiting || default_waiting)
+
   return div(`.controller`, [
     div(`.section`, [
       renderMenuButton()
     ]),
     div(`.section`, [
+      waiting ? renderCircleSpinner() : null,
       renderSearchCalendarButton(),
       !authorization ? renderLoginButton() : null,
       authorization ? renderUserProfileButton() : null
@@ -258,11 +271,12 @@ function main(sources, inputs) {
   const actions = intent(sources)
 
   const defaultAutocomplete = isolate(createRegionAutocomplete)(sources, inputs, `default_region`)
-
+  const save_waiting$ = createProxy()
   const state$ = model(actions, {
     ...inputs, 
     default_waiting$: defaultAutocomplete.waiting$,
-    default_region$: defaultAutocomplete.output$
+    default_region$: defaultAutocomplete.output$,
+    save_waiting$,
   })
 
   const components = {
@@ -298,26 +312,30 @@ function main(sources, inputs) {
 
   //toMessageBus$.subscribe(x => console.log(`toMessageBus:`, x))
 
+  const toHTTP$ = actions.save_changes$.withLatestFrom(state$, (_, state) => {
+    if (state.authorization) {
+      return {
+        url: `/api/user`,
+        method: `post`,
+        category: `setApplicationSettings`,
+        send: {
+          route: `/settings`,
+          data: state.settings
+        }
+      }
+    } else {
+      return null
+    }
+  })
+  .filter(x => !!x)
+  .publish().refCount()
+
+  save_waiting$.attach(O.merge(toHTTP$))
 
   return {
     DOM: vtree$,
     HTTP: O.merge(
-      actions.save_changes$.withLatestFrom(state$, (_, state) => {
-        if (state.authorization) {
-          return {
-            url: `/api/user`,
-            method: `post`,
-            category: `setApplicationSettings`,
-            send: {
-              route: `/settings`,
-              data: state.settings
-            }
-          }
-        } else {
-          return null
-        }
-      })
-      .filter(x => !!x),
+      toHTTP$,
       defaultAutocomplete.HTTP
     ),
     //.do(x => console.log(`suggester http`)),

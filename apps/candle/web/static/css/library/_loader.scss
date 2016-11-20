@@ -5,7 +5,7 @@
   width: 11em;
   height: 11em;
   border-radius: 50%;
-  background: #ffffff;
+  background: transparent;
   background: -moz-linear-gradient(left, #ffffff 10%, rgba(255, 255, 255, 0) 42%);
   background: -webkit-linear-gradient(left, #ffffff 10%, rgba(255, 255, 255, 0) 42%);
   background: -o-linear-gradient(left, #ffffff 10%, rgba(255, 255, 255, 0) 42%);
@@ -29,7 +29,7 @@
   content: '';
 }
 .loader:after {
-  background: #ffffff;
+  background: white;
   width: 75%;
   height: 75%;
   border-radius: 50%;
