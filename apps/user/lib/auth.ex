@@ -28,6 +28,14 @@ defmodule User.Auth do
     GenServer.call(server, :settings)
   end
 
+  def route(server, "/listing_session/new") do
+    GenServer.call(server, :new_listing_session)
+  end
+
+  def route(server, "/listing_session/retrieve", id) do
+    GenServer.call(server, {:retrieve_listing_session, id})
+  end
+
   def route(server, "/search", query) do
     GenServer.call(server, {:search, query})
   end
@@ -63,10 +71,27 @@ defmodule User.Auth do
     {:reply, {:ok, user}  , state}
   end
 
+  def handle_call(:new_listing_session, _from, %{user: user} = state) do
+    session = Ecto.build_assoc(user, :listing_sessions, listing: nil)
+    {:ok, result} = Shared.Repo.insert(session)
+    {:reply, {:ok, result}, state}
+  end
+
   def handle_call(:settings, _from, %{user: user} = state) do
     result = Shared.Repo.get(Shared.Settings, user.id)
     # IO.inspect "settings"
     # IO.inspect result
+    {:reply, {:ok, result}, state}
+  end
+
+  def handle_call({:retrieve_listing_session, id}, _from, %{user: user} = state) do
+    {:ok, result} = Shared.Repo.get(Shared.ListingSession, id)
+    {:reply, {:ok, result}, state}
+  end
+
+  def handle_call({:delete_listing_session, id}, _from, %{user: user} = state) do
+    session = Ecto.build_assoc(user, :listing_sessions, id: id)
+    {:ok, result} = Shared.Repo.delete(session)
     {:reply, {:ok, result}, state}
   end
 

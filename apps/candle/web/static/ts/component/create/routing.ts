@@ -1,25 +1,20 @@
 import {Observable as O} from 'rxjs'
-import {combineObj, componentify} from './utils'
+import {combineObj, componentify} from '../../utils'
 
-import SearchApp from './component/search/oneDay/main'
-import ListingApp from './component/listing/main'
-import HomeApp from './component/home/main'
-import {main as CreateApp} from './component/create/main'
-import {main as SettingsApp} from './component/settings/main'
+import {main as ListingApp} from './listing/main'
+import {main as Landing} from './landing'
 
 const routes = [
   //{pattern: /^\/user/, value: UserApp},
-  {pattern: /^\/settings/, value: SettingsApp},
-  {pattern: /^\/create/, value: CreateApp},
-  {pattern: /^\/home/, value: HomeApp},
   {pattern: /^\/listing/, value: ListingApp},
-  {pattern: /.*/, value: SearchApp}
+  {pattern: /.*/, value: Landing}
 ]
 
-export default function routing(sources, inputs) {
+function main(sources, inputs) {
   const {Router} = sources
   const routing$ = Router.define(routes)
     .map(route => {
+      console.log(`route`, route)
       const data = route.value
       const component = data.info
       return component({
@@ -35,4 +30,8 @@ export default function routing(sources, inputs) {
   const out = componentify(routing$)
   //out.MessageBus.subscribe(x => console.log(`MessageBus routing:`, x))
   return out
+}
+
+export {
+  main
 }

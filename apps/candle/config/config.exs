@@ -28,7 +28,6 @@ config :guardian, Guardian,
   verify_issuer: true,
   serializer: Auth.GuardianSerializer,
   secret_key: to_string(Mix.env),
-  #hooks: GuardianDb,
   permissions: %{
     default: [
       :read_profile,

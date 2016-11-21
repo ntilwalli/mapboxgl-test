@@ -2,7 +2,7 @@ import {Observable as O} from 'rxjs'
 import {div, span, button} from '@cycle/dom'
 import {combineObj, inflateListing, processHTTP, componentify, spread, defaultNever} from '../../utils'
 import Immutable = require('immutable')
-import {renderMenuButton, renderLoginButton, renderSearchCalendarButton, renderUserProfileButton} from '../renderHelpers/controller'
+import {renderMenuButton, renderLoginButton, renderSearchCalendarButton, renderUserProfileButton} from '../renderHelpers/navigator'
 
 import {main as Profile} from './profile/main'
 import {main as Invalid} from './invalid'
@@ -133,11 +133,11 @@ function model(actions, inputs) {
 }
 
 
-function renderController(state) {
+function renderNavigator(state) {
   const {authorization} = state
   //const authClass = authorization ? `Logout` : `Login`
   //console.log(authorization)
-  return div(`.controller`, [
+  return div(`.navigator`, [
     div(`.section`, [
       renderMenuButton()
     ]),
@@ -156,7 +156,7 @@ function view(state$, components) {
       const {state, components} = info
       const {content} = components
       return div(`.listing-component.application`, [
-        renderController(state),
+        renderNavigator(state),
         content
       ])
     })

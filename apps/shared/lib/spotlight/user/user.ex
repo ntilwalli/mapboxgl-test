@@ -13,6 +13,7 @@ defmodule Shared.User do
     has_many :user_listings, Shared.UserListing
     has_many :check_ins, Shared.CheckIn
     has_one :settings, Shared.Settings
+    has_many :listing_sessions, Shared.ListingSession
     timestamps
   end
 

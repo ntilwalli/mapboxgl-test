@@ -3,7 +3,7 @@ import {div, button, li, span, select, input, option} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 import Immutable = require('immutable')
 import {combineObj, createProxy, mergeSinks, processHTTP, onlyError, onlySuccess, normalizeArcGISSingleLineToParts} from '../../utils'
-import {renderMenuButton, renderCircleSpinner, renderLoginButton, renderUserProfileButton, renderSearchCalendarButton} from '../renderHelpers/controller'
+import {renderMenuButton, renderCircleSpinner, renderLoginButton, renderUserProfileButton, renderSearchCalendarButton} from '../renderHelpers/navigator'
 import ArcGISSuggest from '../../thirdParty/ArcGISSuggest'
 import ArcGISGetMagicKey from '../../thirdParty/ArcGISGetMagicKey'
 import AutocompleteInput from '../../library/autocompleteInput'
@@ -178,11 +178,11 @@ function model(actions, inputs) {
     .publishReplay(1).refCount()
 }
 
-function renderController(state) {
+function renderNavigator(state) {
   const {authorization, save_waiting, default_waiting} = state
   const waiting = !!(save_waiting || default_waiting)
 
-  return div(`.controller`, [
+  return div(`.navigator`, [
     div(`.section`, [
       renderMenuButton()
     ]),
@@ -260,7 +260,7 @@ function view(state$, components) {
     .map((info: any) => {
       const {state} = info
       return div(`.settings-component.application`, [
-        renderController(state),
+        renderNavigator(state),
         renderContent(info)
       ])
     })

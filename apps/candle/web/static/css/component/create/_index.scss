@@ -1,8 +1,15 @@
+@import 'landing';
+@import './listing/_index';
+
 .create-component {
   height: 100%;
   width: 100%;
   .save-exit-button {
     margin-left: .5rem;
+  }
+
+  .content {
+    padding-top: 2rem;
   }
 
   /*.cancel-button {

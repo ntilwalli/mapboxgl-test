@@ -1,7 +1,7 @@
 import {div, button, span, i} from '@cycle/dom'
 import {combineObj} from '../../../utils'
 import moment = require('moment')
-import {renderMenuButton, renderUserProfileButton, renderLoginButton} from '../../renderHelpers/controller'
+import {renderMenuButton, renderUserProfileButton, renderLoginButton} from '../../renderHelpers/navigator'
 
 const showLoader = state => {
   const {results, retrieving, searchPosition} = state
@@ -57,10 +57,10 @@ function renderFiltersController(state) {
   ])
 }
 
-function renderController(state) {
+function renderNavigator(state) {
   const {authorization} = state
   const authClass = authorization ? `Logout` : `Login`
-  return div(`.controller`, [
+  return div(`.navigator`, [
     div(`.section`, [
       renderMenuButton()
     ]),
@@ -96,7 +96,7 @@ function view(state$, components) {
     const {grid, filters} = components
 
     return div(`.search-component-one-day.application`, {class: {"no-scroll": showFilters}}, [
-      renderController(state),
+      renderNavigator(state),
       showLoader(state) ? renderLoader() : grid,
       showFilters ? filters : null
     ])
