@@ -7,6 +7,7 @@ defmodule User.Auth do
   alias Shared.Message.Incoming.Listing.CheckIn, as: CheckInMessage
   alias Shared.Message.Outgoing.Home.CheckIns, as: CheckInsMessage
   alias Shared.Message.DateTimeRange, as: DateTimeRangeMessage
+  alias Shared.ListingSession, as: ListingSessionMessage
 
   def start_link(listing_registry, user) do
     GenServer.start_link(__MODULE__, {:ok, listing_registry, user}, [])
@@ -34,6 +35,10 @@ defmodule User.Auth do
 
   def route(server, "/listing_session/retrieve", id) do
     GenServer.call(server, {:retrieve_listing_session, id})
+  end
+
+  def route(server, "/listing_session/save", params) do
+    GenServer.call(server, {:save_listing_session, params})
   end
 
   def route(server, "/search", query) do
@@ -87,6 +92,20 @@ defmodule User.Auth do
   def handle_call({:retrieve_listing_session, id}, _from, %{user: user} = state) do
     {:ok, result} = Shared.Repo.get(Shared.ListingSession, id)
     {:reply, {:ok, result}, state}
+  end
+
+  def handle_call({:save_listing_session, params} , _from, %{user: user, listing_registry: l_reg} = state) do
+    IO.inspect {:save_listing_session, params}
+    cs = Ecto.build_assoc(user, :listing_sessions)
+    session_cs = ListingSessionMessage.changeset(cs, params)
+    case session_cs.valid? do
+      true -> 
+        #session = apply_changes(session_cs)
+        {:ok, session_info} = Shared.Repo.update(session_cs)
+        {:reply, {:ok, session_info}, state}
+      false -> 
+        {:reply, {:error, "Sent session params invalid"}, state}
+    end
   end
 
   def handle_call({:delete_listing_session, id}, _from, %{user: user} = state) do

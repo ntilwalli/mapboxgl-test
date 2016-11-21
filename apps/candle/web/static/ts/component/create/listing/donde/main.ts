@@ -47,12 +47,12 @@ function main(sources, inputs) {
   const state$ = model(actions, inputs)
   const components = {}
   const vtree$ = view(state$, components)
-
+  const session$ = state$.pluck(`session`).publishReplay(1).refCount()
   const local = {
-    DOM: vtree$
+    DOM: vtree$,
   }
 
-  return {...mergeSinks(local), DOM: vtree$}
+  return {...mergeSinks(local), DOM: vtree$, session$}
 }
 
 export {

@@ -28,7 +28,17 @@ function is_invalid(val) {
 function intent(sources) {
   const {DOM, Global, Router} = sources
 
-  const {success$, error$} = processHTTP(sources, `retrieveSavedSession`)
+  const retrieval = processHTTP(sources, `retrieveSavedSession`)
+  const success_retrieve$ = retrieval.success$
+  const error_retrieve$ = retrieval.error$
+
+  const creation = processHTTP(sources, `createNewSession`)
+  const success_create$ = creation.success$
+  const error_create$ = creation.error$
+
+  const saved = processHTTP(sources, `saveSession`)
+  const success_save$ = saved.success$
+  const error_save$ = saved.error$
 
   const push_state$ = Router.history$.map(x => {
     return x.state
@@ -40,16 +50,25 @@ function intent(sources) {
     DOM.select(`.appCloseInstruction`).events(`click`)
   )
 
+  const show_menu$ = DOM.select(`.appShowMenuButton`).events(`click`)
+  const save_exit$ = DOM.select(`.appSaveExitButton`).events(`click`)
+
   return{
-    success$,
-    error$,
+    success_retrieve$,
+    error_retrieve$,
+    success_create$,
+    error_create$,
+    success_save$,
+    error_save$,
     push_state$,
     open_instruction$,
-    close_instruction$
+    close_instruction$,
+    show_menu$,
+    save_exit$
   }
 }
 
-function reducers(actions, inputs) {
+function reducers(actions, inputs: any) {
   const open_instruction_r = actions.open_instruction$.map(_ => state => {
     return state.set(`show_instruction`, true)
   })
@@ -58,19 +77,33 @@ function reducers(actions, inputs) {
     return state.set(`show_instruction`, false)
   })
 
-  return O.merge(open_instruction_r, close_instruction_r)
+  const success_save_r = actions.success_save$.map(val => state => {
+    return state.set(``)
+  })
+
+  const session_r = inputs.session$.map(session => state => {
+    return state.set(`session`, session)
+  })
+
+  return O.merge(
+    open_instruction_r, close_instruction_r, 
+    success_save_r, session_r
+  )
 }
 
 function model(actions, inputs) {
-  const reducer$ = reducers(actions, intent)
+  console.log(`create model`, inputs)
+  const reducer$ = reducers(actions, inputs)
 
   return combineObj({
-      authorization$: inputs.Authorization.status$
+      authorization$: inputs.Authorization.status$.take(1),
+      session$: actions.push_state$.take(1)
     })
     .switchMap((info: any) => {
       const init = Immutable.Map({
         ...info,
-        show_instruction: false
+        show_instruction: false,
+        waiting$: false
       })
       return reducer$.startWith(init).scan((acc, f: Function) => f(acc))
     })
@@ -178,10 +211,9 @@ function view(state$, components) {
   })
 }
 
-
 function main(sources, inputs) {
   const actions = intent(sources)
-  const {success$, error$, push_state$} = actions
+  const {push_state$} = actions
   const to_retrieve$ = push_state$.do(x => console.log(`push_state...`, x)).filter(should_retrieve)
     .pluck(`data`)
     .map(val => {
@@ -229,9 +261,12 @@ function main(sources, inputs) {
   }
 
   const navigation$ = component$.switchMap(x => x.controller.navigation$)
+  const session$ = component$.switchMap(x => {
+    return x.content.session$
+  })
 
-  const state$ = model(actions, inputs)
-
+  //session$.subscribe()
+  const state$ = model(actions, {...inputs, session$})
 
 
   const vtree$ = view(state$, components)
@@ -243,17 +278,42 @@ function main(sources, inputs) {
       return {
         url: `/api/user`,
         method: `post`,
-        category: `retrieveSavedSession`,
+        category: `createNewSession`,
         send: {
           route: `/listing_session/new`
         }
       }
     })
 
+  const to_save_exit$ = actions.save_exit$.withLatestFrom(state$, (_, state) => {
+    return {
+      url: `/api/user`,
+      method: `post`,
+      category: `saveListingSession`,
+      send: {
+        route: `/listing_session/save`,
+        data: state.session
+      }
+    }
+  })
+
   return {
      DOM: vtree$,
-     HTTP: O.merge(to_retrieve$, to_new$).do(x => console.log(`to http`, x)),
+     HTTP: O.merge(
+       to_retrieve$, 
+       to_new$,
+       to_save_exit$
+     ),
+      //.do(x => console.log(`to http`, x)),
      Router: O.merge(
+       actions.success_save$
+         .delay(4)
+         .map(val => {
+           return {
+             pathname: `/home`,
+             action: `replace`
+           }
+         }),
        navigation$.withLatestFrom(state$, (nav, state) => {
          return {
            pathname: `/create/listing`,
@@ -264,35 +324,47 @@ function main(sources, inputs) {
            }
          }
        }),
-       success$.map(val => {
-         return {
-           pathname: `/create/listing`,
-           action: `replace`,
-           state: {
-             type: 'session',
-             data: val
+       O.merge(actions.success_retrieve$, actions.success_create$)
+         .map(val => {
+           return {
+             pathname: `/create/listing`,
+             action: `replace`,
+             state: {
+               type: 'session',
+               data: val
+             }
            }
-         }
-       }),
+         }),
        push_state$.filter(is_invalid).map(x => {
          return {
-           pathname: `/`,
-           action: `replace`,
-           state: {
-             error: `Invalid state given to create/listing app`
-           }
+           pathname: `/create`,
+           action: `replace`
          }
        })
      ).do(x => console.log(`to router`, x)),
-     MessageBus: error$.map(error => {
-       return {
-         to: `main`,
-         message: {
-           type: `error`,
-           data: error
-         }
-       }
-     })
+     MessageBus: O.merge(
+       actions.show_menu$.mapTo({to: `main`, message: `showLeftMenu`}), 
+       O.merge(actions.error_retrieve$, actions.error_save$, actions.error_create$)
+         .map(error => {
+           return {
+             to: `main`,
+             message: {
+               type: `error`,
+               data: error
+             }
+           }
+         }),
+       actions.success_save$
+         .map(_ => {
+           return {
+             to: `main`,
+             message: {
+               type: `status`,
+               data: `Session saved successfully`
+             }
+           }
+         })
+     )
   }
 }
 
