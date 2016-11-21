@@ -137,7 +137,7 @@ function renderNavigator(state) {
   const {authorization} = state
   //const authClass = authorization ? `Logout` : `Login`
   //console.log(authorization)
-  return div(`.navigator`, [
+  return div(`.navigator-section`, [
     div(`.section`, [
       renderMenuButton()
     ]),
@@ -157,7 +157,9 @@ function view(state$, components) {
       const {content} = components
       return div(`.listing-component.application`, [
         renderNavigator(state),
-        content
+        div(`.content-section`, [
+          content
+        ])
       ])
     })
 }

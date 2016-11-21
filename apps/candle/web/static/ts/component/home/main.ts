@@ -89,7 +89,7 @@ function renderNavigator(state) {
   const {authorization} = state
   //const authClass = authorization ? `Logout` : `Login`
   //console.log(authorization)
-  return div(`.navigator`, [
+  return div(`.navigator-section`, [
     div(`.section`, [
       renderMenuButton()
     ]),
@@ -153,9 +153,11 @@ function renderContent(info) {
   const {authorization, profile} = state
   const {check_in_grid} = components
 
-  return div(`.content`, [
-    render_profile_info(authorization, profile),
-    render_participation(info)
+  return div(`.content-section`, [
+    div(`.content`, [
+      render_profile_info(authorization, profile),
+      render_participation(info)
+    ])
   ])
 }
 

@@ -1,9 +1,7 @@
 @import '../../variables';
 .settings-component {
   .content {
-    padding: 2rem 1rem 0;
-
-    width: 100%;
+    margin: 1rem; 
     display: flex;
     flex-flow: column nowrap;
     //justify-content: center;

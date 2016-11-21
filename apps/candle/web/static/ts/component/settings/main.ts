@@ -182,7 +182,7 @@ function renderNavigator(state) {
   const {authorization, save_waiting, default_waiting} = state
   const waiting = !!(save_waiting || default_waiting)
 
-  return div(`.navigator`, [
+  return div(`.navigator-section`, [
     div(`.section`, [
       renderMenuButton()
     ]),
@@ -242,12 +242,14 @@ function renderContent(info) {
   const {state, components} = info
   const {is_valid, save_status} = state
   const disabled = !is_valid
-  return div(`.content`, [
-    save_status ? div(`.status-section.${save_status.type}`, [save_status.data]) : null,
-    renderRegionMethodCombo(info),
-    renderDefaultRegionSection(info),
-    div(`.button-section`, [
-      button(`.appSaveChanges.save-button`, {attrs: {disabled}}, [`Save`])
+  return div(`.content-section`, [
+    div(`.content`, [
+      save_status ? div(`.status-section.${save_status.type}`, [save_status.data]) : null,
+      renderRegionMethodCombo(info),
+      renderDefaultRegionSection(info),
+      div(`.button-section`, [
+        button(`.appSaveChanges.save-button`, {attrs: {disabled}}, [`Save`])
+      ])
     ])
   ])
 }

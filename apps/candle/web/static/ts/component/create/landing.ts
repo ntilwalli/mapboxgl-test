@@ -43,7 +43,7 @@ function renderNavigator(state) {
   const {authorization} = state
   //const authClass = authorization ? `Logout` : `Login`
   //console.log(authorization)
-  return div(`.navigator`, [
+  return div(`.navigator-section`, [
     div(`.section`, [
       renderMenuButton()
     ]),
@@ -58,9 +58,11 @@ function view(state$) {
   return state$.map(state => {
     return div(`.create-landing`, [
       renderNavigator(state),
-      div(`.content`, [
-        button(`.appCreateNewListing.create-new-listing`, [
-          `Create New Listing`
+      div(`.content-section`, [
+        div(`.content`, [
+          button(`.appCreateNewListing.create-new-listing`, [
+            `Create New Listing`
+          ])
         ])
       ])
     ])

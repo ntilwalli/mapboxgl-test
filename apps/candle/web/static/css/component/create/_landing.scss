@@ -1,10 +1,12 @@
 @import '../../variables';
 
 .create-landing {
+  height: 100%;
+  width: 100%;
+  
   .content {
     display: flex;
     justify-content: center;
-    padding-top: 2rem;
 
     .create-new-listing {
       margin-top: 2rem;

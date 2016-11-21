@@ -60,7 +60,7 @@ function renderFiltersController(state) {
 function renderNavigator(state) {
   const {authorization} = state
   const authClass = authorization ? `Logout` : `Login`
-  return div(`.navigator`, [
+  return div(`.navigator-section`, [
     div(`.section`, [
       renderMenuButton()
     ]),
@@ -73,6 +73,16 @@ function renderNavigator(state) {
       !authorization ? renderLoginButton() : null,
       authorization ? renderUserProfileButton() : null
     ])
+  ])
+}
+
+function renderContent(info) {
+  const {state, components} = info
+  const {showFilters} = state
+  const {grid, filters} = components
+
+  return div(`.content-section`, [ 
+    showLoader(state) ? renderLoader() : grid,
   ])
 }
 
@@ -97,7 +107,7 @@ function view(state$, components) {
 
     return div(`.search-component-one-day.application`, {class: {"no-scroll": showFilters}}, [
       renderNavigator(state),
-      showLoader(state) ? renderLoader() : grid,
+      renderContent(info),
       showFilters ? filters : null
     ])
   })

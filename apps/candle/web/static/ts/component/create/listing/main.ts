@@ -1,10 +1,12 @@
 import {Observable as O} from 'rxjs'
 import {div, span, button} from '@cycle/dom'
-import {combineObj, processHTTP, mergeSinks} from '../../../utils'
+import {combineObj, processHTTP, mergeSinks, createProxy} from '../../../utils'
 import Immutable = require('immutable')
 
 import {renderMenuButton, renderCircleSpinner, renderLoginButton, renderSearchCalendarButton} from '../../renderHelpers/navigator'
 import {main as Donde} from './donde/main'
+import {main as NextButton} from '../nextButton'
+import {main as BackNextButtons} from '../backNextButtons'
 
 
 function should_retrieve(val) {
@@ -24,7 +26,7 @@ function is_invalid(val) {
 }
 
 function intent(sources) {
-  const {Router} = sources
+  const {DOM, Global, Router} = sources
 
   const {success$, error$} = processHTTP(sources, `retrieveSavedSession`)
 
@@ -32,15 +34,31 @@ function intent(sources) {
     return x.state
   }).publishReplay(1).refCount()
 
+  const open_instruction$ = DOM.select(`.appOpenInstruction`).events(`click`)
+  const close_instruction$ = O.merge(
+    Global.resize$,
+    DOM.select(`.appCloseInstruction`).events(`click`)
+  )
+
   return{
     success$,
     error$,
-    push_state$
+    push_state$,
+    open_instruction$,
+    close_instruction$
   }
 }
 
-function reducers(actions, intent) {
-  return O.never()
+function reducers(actions, inputs) {
+  const open_instruction_r = actions.open_instruction$.map(_ => state => {
+    return state.set(`show_instruction`, true)
+  })
+
+  const close_instruction_r = actions.close_instruction$.map(_ => state => {
+    return state.set(`show_instruction`, false)
+  })
+
+  return O.merge(open_instruction_r, close_instruction_r)
 }
 
 function model(actions, inputs) {
@@ -50,7 +68,10 @@ function model(actions, inputs) {
       authorization$: inputs.Authorization.status$
     })
     .switchMap((info: any) => {
-      const init = Immutable.Map(info)
+      const init = Immutable.Map({
+        ...info,
+        show_instruction: false
+      })
       return reducer$.startWith(init).scan((acc, f: Function) => f(acc))
     })
     .map((x: any) => x.toJS())
@@ -68,17 +89,14 @@ function renderSaveExitButton() {
 
 function renderNavigator(state: any) {
   //const {authorization} = state
-  return div(`.navigator`, [
+  return div(`.navigator-section`, [
     div(`.section`, [
-      renderMenuButton()
-    ]),
-    div(`.section`, [
+      renderMenuButton(),
       span([`Create workflow`])
     ]),
     div(`.section`, [
       div(`.buttons`, [
         state.waiting ? renderCircleSpinner() : null,
-        renderCancelButton(),
         renderSaveExitButton()
       ])
     ])
@@ -91,15 +109,71 @@ function renderContent(info: any) {
   ])
 }
 
+function renderController(info: any) {
+  return div(`.controller-buttons`, [
+    info.components.controller
+  ])
+}
+
+function renderInstructionSubpanel(info: any) {
+  return div(`.instruction-subpanel`, [
+    `Small instruction`
+  ])
+}
+
+function renderInstructionPanel(info: any) {
+  return div(`.instruction-panel`, [
+    renderInstructionSubpanel(info)
+  ])
+}
+
+
+function renderMainPanelInstructionSection(info) {
+  const {state, components} = info
+  const {show_instruction} = state
+  const {instruction} = components
+  return !show_instruction ? div(`.appOpenInstruction.instruction-section.hide`, [
+    span(`.icon.fa.fa-lightbulb-o`)
+  ]) :
+  div(`.instruction-section.show`, [
+    span(`.appCloseInstruction.close-icon`),
+    span(`.icon.fa.fa-lightbulb-o`),
+    instruction
+  ])
+}
+
+function renderInstructionPanelInstructionSection(info) {
+  const {state, components} = info
+  const {instruction} = components
+  return div(`.instruction-panel`, [
+    div(`.instruction-section`, [
+      div([
+        span(`.icon.fa.fa-lightbulb-o`),
+        instruction
+      ])
+    ])
+  ])
+}
+
 function view(state$, components) {
   return combineObj({
     state$,
     components$: combineObj(components)
   }).map((info: any) => {
     const {state, components} = info
+    const {show_instruction} = state
     return div(`.create-component`, [
       renderNavigator(state),
-      renderContent(info)
+      div(`.content-section`, [
+        div(`.content`, [
+          div(`.main-panel`, [
+            renderContent(info),
+            renderController(info),
+            renderMainPanelInstructionSection(info)
+          ]),
+          renderInstructionPanelInstructionSection(info)
+        ])
+      ])
     ])
   })
 }
@@ -125,27 +199,40 @@ function main(sources, inputs) {
   const to_render$ = push_state$.filter(should_render)
     .pluck(`data`)
 
-  const content$ = to_render$
+  const component$ = to_render$
     .map(push_state => {
       console.log(`push_state`, push_state)
       const {current_step} = push_state 
       if (current_step) {
         switch (current_step) {
           case "donde":
-            return Donde(sources, inputs)
+            return {
+              content: Donde(sources, inputs),
+              controller: NextButton(sources, {...inputs, props$: O.of({next: 'cuando'})})
+            }
           default:
             throw new Error(`Invalid current step given: ${current_step}`)
         }
       } else {
         console.log(`donde`)
-        return Donde(sources, {...inputs, session: push_state})
+        return {
+          content: Donde(sources, inputs),
+          controller: NextButton(sources, {...inputs, props$: O.of({next: 'cuando'})})
+        }
       }
     }).publishReplay(1).refCount()
 
-  const state$ = model(actions, inputs)
+
   const components = {
-    content: content$.switchMap(x => x.DOM)
+    content: component$.switchMap(x => x.content.DOM),
+    controller: component$.switchMap(x => x.controller.DOM)
   }
+
+  const navigation$ = component$.switchMap(x => x.controller.navigation$)
+
+  const state$ = model(actions, inputs)
+
+
 
   const vtree$ = view(state$, components)
 
@@ -167,6 +254,16 @@ function main(sources, inputs) {
      DOM: vtree$,
      HTTP: O.merge(to_retrieve$, to_new$).do(x => console.log(`to http`, x)),
      Router: O.merge(
+       navigation$.withLatestFrom(state$, (nav, state) => {
+         return {
+           pathname: `/create/listing`,
+           action: `replace`,
+           state: {
+             type: 'session',
+             data: {...state.session, current_step: nav}
+           }
+         }
+       }),
        success$.map(val => {
          return {
            pathname: `/create/listing`,

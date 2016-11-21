@@ -1,6 +1,6 @@
-@import '../variables';
+@import 'variables';
 
-.navigator {
+.navigator-section {
   position: fixed;
   background-color: white;
   border-color: black;
@@ -32,6 +32,10 @@
     &:hover {
       color:$crayola-orange;
     }
+  }
+
+  .save-exit-button {
+    margin-right: .5rem;
   }
 
   .date-controller {

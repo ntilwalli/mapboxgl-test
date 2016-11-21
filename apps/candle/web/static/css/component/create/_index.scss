@@ -1,3 +1,4 @@
+@import '../../variables';
 @import 'landing';
 @import './listing/_index';
 
@@ -9,8 +10,133 @@
   }
 
   .content {
-    padding-top: 2rem;
+    display: flex;
+    height: 100%;
+
+    .instruction-section {
+      background-color: white;
+      color: gray;
+    }
+
+    .main-panel {
+      position: relative;
+    }
+
+
+    @media (min-width: 768px) {
+      .main-panel {
+        display: flex;
+        flex: 1 1 calc(100vw * 0.6);
+
+
+        .instruction-section {
+          display: none;
+        }
+
+      }
+
+      .instruction-panel {
+        position: relative;
+        //display: flex;
+        justify-content: flex-start;
+        flex: 1 1 calc(100vw * 0.4);
+        background-color: hsla(200, 0, 90, 1);
+
+        .instruction-section {
+          //position: absolute;
+          margin-top: 80px;
+          margin-left: 20px;
+          max-width: 300px;
+          width: 80%;
+          border-style: solid;
+          border-width: 2px;
+          border-color: lightgray;
+          border-radius: 2px;
+          padding: 1rem;
+                  //font-size: 1.3rem;
+
+          .icon {
+            margin-bottom: .5rem;
+            //color: rgba(0, 128, 0, .5);
+            color: $crayola-orange-transparent;
+            font-size: 2.5rem;
+          }
+        }
+      }
+    }
+
+    @media (max-width: 767px) {
+      .main-panel {
+        display: flex;
+        flex: 1;
+
+
+        .instruction-section.show {
+          position: fixed;
+          bottom: 4.5rem;
+          right: 10px;
+          border-style: solid;
+          border-width: 1px;
+          border-color: lightgray;
+          border-radius: 4px;
+          padding: 1rem;
+          z-index: 1040;
+          margin-left: 40%;
+
+          .icon {
+            margin-bottom: .5rem;
+            //color: rgba(0, 128, 0, .5);
+            color: $crayola-orange-transparent;
+            font-size: 2rem;
+          }
+
+          .close-icon::before {
+            content: "\00d7";
+          }
+
+          .close-icon {
+            color: gray;
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.5rem;
+            line-height: 1.5rem;
+          }
+
+          .close-icon:hover {
+            color: darkgray;
+          }
+        }
+
+        .instruction-section.hide {
+          position: fixed;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          bottom: 3.5rem;
+          right: 10px;
+          width: 50px;
+          height: 50px;
+          border: 1px solid lightgray;
+          border-radius: 50%;
+          z-index: 1000;
+
+          .icon {
+            //color: rgba(0, 128, 0, .5);
+            color: $crayola-orange-transparent;
+            font-size: 2rem;
+          }
+
+        }
+      }
+
+      .instruction-panel {
+        display: none;
+      }
+    }
   }
+
+  @import 'buttons';
 
   /*.cancel-button {
 
