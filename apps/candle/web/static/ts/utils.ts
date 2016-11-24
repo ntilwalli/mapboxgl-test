@@ -1,7 +1,9 @@
 import {Observable as O, Subject, ReplaySubject} from 'rxjs'
 import {nav, hr, div, a, input, form, strong, span, button} from '@cycle/dom'
 import {getState} from './states'
+import {geoToLngLat} from './mapUtils'
 import moment = require('moment')
+import clone = require('clone')
 
 export function toMoment(c) { return moment(c.toISOString()) }
 export function inflateListing(listing) {
@@ -350,3 +352,23 @@ export const normalizeArcGISSingleLineToParts = x => {
   const tokens = x.split(',')
   return {city: cleanCityName(tokens[0].trim()), state_abbr: getState(tokens[1].trim())}
 }
+
+export function getPreferredRegion$(inputs) {
+  return combineObj({
+    settings$: inputs.settings$,
+    geoinfo$: inputs.Geolocation.cachedGeolocationWithGeotagAndCityState$
+  }).map((info: any) => {
+    const {settings, geoinfo} = info
+    const {use_region} = settings
+    const {geolocation, city_state} = geoinfo
+    if (use_region === `user` && geolocation.type === `position`) {
+      return {
+        position: geoToLngLat(geolocation),
+        city_state
+      }
+    } else {
+      return clone(settings.default_region)
+    }
+  })
+}
+  

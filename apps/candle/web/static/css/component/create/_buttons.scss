@@ -45,6 +45,15 @@
         border-color: $crayola-orange;
         color: $crayola-orange;
       }
+
+      &.disabled {
+        border-color: lightgray;
+      }
+      &.disabled:hover {
+        //background-color: $crayola-orange;
+        /*border-color: lightgray;*/
+        color: lightgray;
+      }
     }
   }
 }

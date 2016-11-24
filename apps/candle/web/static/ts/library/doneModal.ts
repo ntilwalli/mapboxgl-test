@@ -54,10 +54,11 @@ export default function main(sources, inputs) {
   const content = inputs.content(sources, {props$: initialState$, Geolocation, Authorization, settings$}) 
   const output$ = content.output$
 
-  return spread(content, {
+  return {
+    ...content,
     DOM: view(inputs.props$, content.DOM),
     output$,
     close$: actions.close$,
     done$: actions.done$.withLatestFrom(output$, (_, output) => output)
-  })
+  }
 }

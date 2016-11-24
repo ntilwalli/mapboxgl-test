@@ -26,6 +26,7 @@ function intent(sources) {
 
 function reducers(actions, inputs) {
   const update_r = actions.update$.map(new_settings => state => {
+    console.log(`new settings`, new_settings)
     return new_settings
   })
 
@@ -82,7 +83,7 @@ function main(sources, inputs) {
           lng: -74.0059,
           lat: 40.7128
         },
-        geotag: {
+        city_state: {
           city: `New York`,
           state_abbr: `NY`
         }

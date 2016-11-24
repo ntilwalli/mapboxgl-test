@@ -1,42 +1,63 @@
 import {Observable as O} from 'rxjs'
-import {div, span, button} from '@cycle/dom'
+import {div, h5, span, button} from '@cycle/dom'
 import Immutable = require('immutable')
-import {combineObj, mergeSinks} from '../../../../utils'
+import {combineObj, getPreferredRegion$, mergeSinks, normalizeSink, componentify, createProxy} from '../../../../utils'
 import {renderMenuButton, renderCircleSpinner, renderLoginButton, renderSearchCalendarButton} from '../../../renderHelpers/navigator'
+import clone = require('clone')
+
+import {model} from './model'
+import {main as getModal} from './getModal'
+import DoneModal from '../../../../library/doneModal'
+import SearchArea from './searchArea/main'
+import {main as VenueInput} from './venue/main'
 
 function intent(sources) {
-  const {Router} = sources
+  const {DOM, Router} = sources
+  const show_search_area_screen$ = DOM.select(`.appChangeSearchAreaButton`).events(`click`)
   return {
-    session$: Router.history$.pluck(`state`)
+    session$: Router.history$.pluck(`state`).pluck(`data`),
+      //.do(x => console.log(`session`, x)),
+    show_search_area_screen$
   }
 }
 
-function reducers(actions, inputs) {
-  return O.merge(O.never())
+function renderSearchArea(info) {
+  const {state} = info
+  const {session} = state
+  const {search_area} = session
+  const {region} = search_area
+  const {city_state} = region
+  const {city, state_abbr} = city_state
+  const sa = `${city}, ${state_abbr}`
+
+  return div(`.search-area.section`, [
+    div(`.heading`, [`Search area`]),
+    div(`.content`, [
+      span([sa]),
+      span(`.change-button`, [
+        button(`.appChangeSearchAreaButton.text-button`, [`change`])
+      ])  
+    ])
+  ])
 }
 
-function model(actions, inputs) {
-  const init = {}
-  const reducer$ = reducers(actions, inputs)
-  return combineObj({
-      session$: actions.session$.take(1),
-      authorization$: inputs.Authorization.status$.take(1)
-    })
-    .switchMap((info: any) => {
-      const {session, authorization} = info
-      const init = {session, authorization}
-      return reducer$
-        .startWith(Immutable.Map(init))
-        .scan((acc, f: Function) => f(acc))
-    })
-    .map((x: any) => x.toJS())
-    .publishReplay(1).refCount()
+function renderModeInput(info) {
+  const {components} = info
+  return div(`.mode-input.section`, [
+    components.input_component
+  ])
 }
 
 function view(state$, components) {
-  return state$.map(state => {
+  return combineObj({
+    state$,
+    components$: combineObj(components)
+  }).map((info: any) => {
+    const {components} = info
     return div(`.donde`, [
-      `create donde`
+      renderModeInput(info),
+      renderSearchArea(info),
+      components.modal
     ])
   })
 }
@@ -44,15 +65,66 @@ function view(state$, components) {
 // This component manages auto-saving
 function main(sources, inputs) {
   const actions = intent(sources)
-  const state$ = model(actions, inputs)
-  const components = {}
+  const hide_modal$ = createProxy()
+  const search_area$ = createProxy()
+  const donde$ = createProxy()
+
+  const state$ = model(actions, {...inputs, hide_modal$, search_area$, donde$})
+
+  const modal$ = state$
+    .distinctUntilChanged((x: any, y: any) => {
+      return x.modal === y.modal
+    })
+    .map((state: any) => getModal(sources, inputs, {modal: state.modal, session: state.session}))
+    .publishReplay(1).refCount()
+
+  hide_modal$.attach(normalizeSink(modal$, `close$`))
+  search_area$.attach(normalizeSink(modal$, `output$`))
+
+  const input_component$ = state$.pluck(`mode`)
+    .distinctUntilChanged()
+    .map(mode => {
+      if (mode === `venue`) {
+        const out = VenueInput(sources, {
+          ...inputs, 
+          search_area$: state$.map((state: any) => state.session.search_area)
+        })
+        //out.HTTP.subscribe(x => console.log(`HTTP blah`, x))
+
+        return out
+      } else {
+        throw new Error(`Invalid mode ${mode}`)
+      }
+    }).publishReplay(1).refCount()
+
+    //input_component$.switch
+
+  donde$.attach(input_component$.switchMap(x => x.output$)) 
+ 
+  const components = {
+    modal$: modal$.switchMap((x: any) => x.DOM),
+    input_component$: input_component$.switchMap((x: any) => x.DOM)
+  }
+
   const vtree$ = view(state$, components)
   const session$ = state$.pluck(`session`).publishReplay(1).refCount()
+  const valid$ = state$.pluck(`valid`).publishReplay(1).refCount()
   const local = {
     DOM: vtree$,
   }
 
-  return {...mergeSinks(local), DOM: vtree$, session$}
+  const out = {
+    DOM: vtree$,
+    HTTP: O.merge(modal$.switchMap((x: any) => x.HTTP), input_component$.switchMap((x: any) => x.HTTP)),
+    MapJSON: O.merge(modal$.switchMap((x: any) => x.MapJSON), input_component$.switchMap((x: any) => x.MapJSON)).publish().refCount(), 
+    Global: input_component$.switchMap((x: any) => x.Global), 
+    session$, valid$
+  }
+
+  out.MapJSON.subscribe(x => console.log(`MapJSON donde main`, x))
+
+  //console.log(out)
+  return out
 }
 
 export {

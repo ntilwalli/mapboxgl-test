@@ -27,7 +27,8 @@
     outline: none;
   }
 
-  .menu-button, .user-profile-button {
+  .menu-button, .user-profile-button, .save-exit-button, 
+  .one-day-search-button, .auth-button {
     padding: .5rem;
     &:hover {
       color:$crayola-orange;

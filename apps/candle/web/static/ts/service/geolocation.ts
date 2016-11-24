@@ -1,10 +1,26 @@
 import {Observable as O} from 'rxjs'
 import Immutable = require('immutable')
 import {combineObj} from '../utils'
+import {getState} from '../states'
 import {geoToLngLat} from '../mapUtils'
 import deepEqual = require('deep-equal')
 
 import FactualGeotagService from '../thirdParty/FactualGeotagService'
+
+function geotagToCityState(geotag) {
+  return geotag ? {
+    city: geotag.locality.name,
+    state_abbr: getState(geotag.region.name)
+  } : undefined
+}
+
+function enrichWithCityState(x) {
+  const {geotag} = x
+  return {
+    ...x,
+    city_state: geotagToCityState(geotag)
+  }
+}
 
 // Taken from: http://stackoverflow.com/questions/11042212/ff-13-ie-9-json-stringify-geolocation-object
 function cloneAsObject(obj) {
@@ -55,6 +71,10 @@ export default function main(sources) {
   //.do(x => console.log(`geolocationWithGeotag:`, x))
   .publishReplay(1).refCount()
 
+  const geolocationWithGeotagAndCityState$ = geolocationWithGeotag$
+    .map(enrichWithCityState)
+    .publishReplay(1).refCount()
+
   const toStorageGeolocation$ = geolocation$
     //.do(x => console.log(`geolocation:`, x))
     .map(x => ({
@@ -101,6 +121,12 @@ export default function main(sources) {
     storageGeolocationWithGeotag$
   ).publishReplay(1).refCount()
 
+  const cachedGeolocationWithGeotagAndCityState$ = cachedGeolocationWithGeotag$
+    .map(enrichWithCityState)
+    .publishReplay(1).refCount()
+
+  // cachedGeolocationWithGeotag$.subscribe(x => console.log(`cachedWGeo`, x))
+
   return {
     HTTP: geotag$.switchMap(x => x.HTTP),
     Storage: O.merge(
@@ -110,8 +136,10 @@ export default function main(sources) {
     output: {
       geolocation$,
       geolocationWithGeotag$,
+      geolocationWithGeotagAndCityState$,
       cachedGeolocation$,
-      cachedGeolocationWithGeotag$
+      cachedGeolocationWithGeotag$,
+      cachedGeolocationWithGeotagAndCityState$
     }
   }
 }

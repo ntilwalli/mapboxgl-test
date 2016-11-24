@@ -5,7 +5,7 @@ defmodule Shared.ListingSession do
   @primary_key {:id, :id, autogenerate: true}
   schema "listing_sessions" do
     field :listing, :map
-    embeds_one :override_region, Shared.Model.Region
+    embeds_one :search_area, Shared.Model.Region
     field :current_step, :string
     belongs_to :user, Shared.User
     timestamps
@@ -18,7 +18,7 @@ defmodule Shared.ListingSession do
     schema
     |> cast(params, @allowed_fields)
     |> validate_required(@required_fields)
-    |> cast_embed(:override_region)
+    |> cast_embed(:search_area)
     |> assoc_constraint(:user)
   end
 end

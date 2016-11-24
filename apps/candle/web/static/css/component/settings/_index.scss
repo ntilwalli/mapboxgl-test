@@ -45,21 +45,7 @@
 
       .autocomplete {
         width: 100%;
-
-        .autocomplete-result {
-          line-height: 1rem;
-          padding: .2rem;
-          border: 1px solid lightgray;
-        }
-
-        .light-gray {
-          background-color: lightgray;
-        }
       }
-      /*&.disabled {
-        pointer-events: none;
-        opacity: .5;
-      }*/
     }
 
     .button-section {

@@ -1,7 +1,7 @@
 import {div, button, span, a, i} from '@cycle/dom'
 
 export function renderMenuButton() {
-  return i(`.appShowMenuButton.menu-button.fa.fa-bars.fa-1-2x`, [])
+  return i(`.menu-button.fa.fa-bars.fa-1-2x`, {class: {appShowMenuButton: true}}, [])
 }
 
 export function renderUserProfileButton() {
@@ -9,7 +9,7 @@ export function renderUserProfileButton() {
 }
 
 export function renderSearchCalendarButton() {
-  return i(`.user-profile-button.fa.fa-calendar.fa-1-2x`, {class: {appShowSearchCalendarButton: true}}, [])
+  return i(`.one-day-search-button.fa.fa-calendar.fa-1-2x`, {class: {appShowSearchCalendarButton: true}}, [])
 }
 
 export function renderLoginButton() {

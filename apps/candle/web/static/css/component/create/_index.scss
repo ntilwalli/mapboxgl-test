@@ -8,7 +8,9 @@
   .save-exit-button {
     margin-left: .5rem;
   }
-
+  .step-description {
+    margin-left: 1rem;
+  }
   .content {
     display: flex;
     height: 100%;
@@ -20,8 +22,12 @@
 
     .main-panel {
       position: relative;
-    }
 
+      .main-content {
+        margin: 1rem;
+        width: 100%;
+      }
+    }
 
     @media (min-width: 768px) {
       .main-panel {

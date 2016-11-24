@@ -5,19 +5,19 @@ import {combineObj} from '../utils'
 const foursquareClientId = "1JNLTA55YBKWF1GXHJEBBA0YKZVDDBHDDGSPK1NDI3DYGC3D"
 const foursquareClientSecret = "QCCBUXCGVW1CZN231TR5INZHXIDFD1YHGZRFIX2WW5U5XSCG"
 
-function toHTTP({props, partial, centerZoom}) {
+function toHTTP({props, partial, search_area}) {
   //console.log(`foursquare toHTTP`)
+  props = props || {}
   const parameters = []
-  const lat = centerZoom.center.lat
-  const lng = centerZoom.center.lng
-
+  const {lat, lng} = search_area.region.position
+  const radius = search_area.radius
   parameters.push([`query`, partial].join(`=`))
-  if (centerZoom) parameters.push([`ll`, `${lat},${lng}`].join(`=`))
+  parameters.push([`ll`, `${lat},${lng}`].join(`=`))
   parameters.push([`limit`, props.maxSuggestions || 5].join(`=`))
   parameters.push([`client_id`, foursquareClientId].join(`=`))
   parameters.push([`client_secret`, foursquareClientSecret].join(`=`))
   parameters.push([`v`, moment().format('YYYYMMDD')].join(`=`))
-  //parameters.push([`radius`, props.radius || 10000].join(`=`))
+  parameters.push([`radius`, radius].join(`=`))
 
 	const url = `https://api.foursquare.com/v2/venues/suggestcompletion?${parameters.join(`&`)}`
   //console.log(url)
@@ -33,23 +33,22 @@ function toHTTP({props, partial, centerZoom}) {
 
 function FoursquareSuggestVenues (sources, inputs) {
   const {HTTP} = sources
-  const {props$, input$, centerZoom$} = inputs
+  const {input$, search_area$} = inputs
+  const props$ = inputs.props$ || O.of({})
 
 
   const fromHttp$ = HTTP.select(`suggestVenues`)
-    // .do(x => console.log(`all responses...`, x))
-    // .filter(res$ => res$.request && res$.request.category === `suggestVenues`)
-    //.filter(res$ => res$.request.url.indexOf(`suggestcompletion`) > -1)
     .switchMap(res => {
       return res.map(res => {
         if (res.statusCode === 200) {
-          //console.log(`recieved HTTP response`)
+
+          //console.log(`received HTTP response`)
           return {
             type: `success`,
             data: res.body.response
           }
         } else {
-          //console.log(`recieved HTTP error`)
+          //console.log(`received HTTP error`)
           return {
             type: `error`,
             data: `Unsuccessful response from server`
@@ -72,47 +71,51 @@ function FoursquareSuggestVenues (sources, inputs) {
 
   const minivenues$ = validResponse$
     .map(res => res.minivenues)
-    .map(results => results.map(result =>({
-      source: `Foursquare`,
-      data: {
-        name: result.name,
-        address: [result.location.address, result.location.state, result.location.postalCode].join(`, `),
-        venueId: result.id,
-        lngLat: {lat: result.location.lat, lng: result.location.lng},
-        raw: result
-      }
-    })))
+    // .map(results => results.map(result =>({
+    //   source: `foursquare`,
+    //   data: result,
+    //   lng_lat: {lat: result.location.lat, lng: result.location.lng}
+    //   // {
+    //   //   name: result.name,
+    //   //   address: [result.location.address, result.location.state, result.location.postalCode].join(`, `),
+    //   //   venueId: result.id,
+    //   //   lngLat: {lat: result.location.lat, lng: result.location.lng},
+    //   //   raw: result
+    //   // }
+    // })))
 
   const sharedPartial$ = input$
-    .map(x => {
-      return x
-    })
+    //.do(x => console.log(`input$`, x))
     .publishReplay(1).refCount()
   const sendablePartial$ = sharedPartial$
+    //.do(x => console.log(`sendable$`, x))
     .filter(x => {
       return x.length >= 3
     })
     //.do(x => console.log('sendablePartial$...', x))
 
-  const unsendablePartial$ = sharedPartial$.filter(x => {
-    return x.length < 3
-  })
+  const unsendablePartial$ = sharedPartial$
+    //.do(x => console.log(`unsendable$`, x))
+    .filter(x => {
+      return x.length < 3
+    })
   const emptyResult$ = O.merge(invalidResponse$, unsendablePartial$)
     .map(() => [])//.do(makeLogger('emptyResult$...'))
 
   //const rProps$ = props$.publishReplay(1).refCount()
 
   const toHttp$ = sendablePartial$.withLatestFrom(
-    combineObj({props$, centerZoom$}),
-    (partial, info) => ({props: info.props, partial, centerZoom: info.centerZoom})
+    combineObj({props$, search_area$}),
+    (partial, info) => ({props: info.props, partial, search_area: info.search_area})
   ).map(toHTTP) // need to add cancellation
    .publishReplay(1).refCount()
 
   const results$ = O.merge(
-    minivenues$.map(venues => venues.map(x => {
-      x.type = `default`
-      return x
-    })),
+    minivenues$,
+      // .map(venues => venues.map(x => {
+      //   x.type = `default`
+      //   return x
+      // })),
     emptyResult$
   )
   .publish().refCount()
@@ -123,7 +126,7 @@ function FoursquareSuggestVenues (sources, inputs) {
       //.do(x => console.log(`toHTTP$`, x)),
     results$,
     //results$: O.never(),
-    isProcessing$: O.merge(
+    waiting$: O.merge(
       fromHttp$.map(() => false),
       toHttp$.map(() => true)
     ).startWith(false),

@@ -14,7 +14,7 @@ function main(sources, inputs) {
   const {Router} = sources
   const routing$ = Router.define(routes)
     .map(route => {
-      console.log(`route`, route)
+      //console.log(`route`, route)
       const data = route.value
       const component = data.info
       return component({
@@ -28,7 +28,7 @@ function main(sources, inputs) {
     .publishReplay(1).refCount()
 
   const out = componentify(routing$)
-  //out.MessageBus.subscribe(x => console.log(`MessageBus routing:`, x))
+  //out.HTTP.subscribe(x => console.log(`HTTP routing:`, x))
   return out
 }
 

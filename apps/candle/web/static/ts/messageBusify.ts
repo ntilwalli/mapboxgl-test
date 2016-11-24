@@ -6,7 +6,7 @@ export default function messageBusify(main) {
     const MessageBus = {
       address: function(selector) {
         const message$ = bridge$
-          .filter(x => {
+          .filter((x: any) => {
             //console.log(`to: `, x.to)
             //console.log(`selector: `, selector)
             return x.to === selector

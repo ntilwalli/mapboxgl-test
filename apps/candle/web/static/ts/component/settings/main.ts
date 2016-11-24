@@ -7,71 +7,8 @@ import {renderMenuButton, renderCircleSpinner, renderLoginButton, renderUserProf
 import ArcGISSuggest from '../../thirdParty/ArcGISSuggest'
 import ArcGISGetMagicKey from '../../thirdParty/ArcGISGetMagicKey'
 import AutocompleteInput from '../../library/autocompleteInput'
-
-
-function createRegionAutocomplete(sources, inputs, prop) {
-
-  const center$ = inputs.settings$.pluck(prop).pluck(`position`)
-  const itemConfigs = {
-    default: {
-      selectable: true,
-      renderer: (suggestion, index, highlighted) => {
-        return li(
-          `.autocomplete-result${highlighted ? '.light-gray' : ''}`,
-          {attrs: {'data-index': index}},
-          [
-            span(`.populated-place-info`, [suggestion.normalizedName])
-          ]
-        )
-      }
-    }
-  }
-
-  const results$ = createProxy()
-  const autocompleteInput = AutocompleteInput(sources, {
-    results$,
-    itemConfigs,
-    displayFunction: x => x.normalizedName,
-    placeholder: `Type city/state here...`,
-    styleClass: `.autocomplete-input`
-  })
-
-  const suggestionComponent = ArcGISSuggest(sources, {
-    props$: combineObj({
-      category: O.of('Populated+Place')
-    }),
-    center$: center$.distinctUntilChanged(),
-    input$: autocompleteInput.input$
-  })
-
-  results$.attach(suggestionComponent.results$)
-
-  const magicKeyComponent = ArcGISGetMagicKey(sources, {props$: O.of({category: `getGeocode`}), input$: autocompleteInput.selected$})
-
-  const output$ = magicKeyComponent.result$
-    .map(x => { 
-      return {
-        position: x.lngLat,
-        geotag: normalizeArcGISSingleLineToParts(x.address)
-      }
-    })
-    .publishReplay(1).refCount()
-
-  const waiting$ = combineObj({
-    suggestion: suggestionComponent.waiting$,
-    magicKey: magicKeyComponent.waiting$
-  }).map((info: any) => info.magicKey || info.suggestion)
-  
-  //waiting$.subscribe(x => console.log(`waiting`, x))
-
-  return {
-    ...mergeSinks(autocompleteInput, suggestionComponent, magicKeyComponent), 
-    DOM: autocompleteInput.DOM,
-    output$,
-    waiting$
-  }
-}
-
+import {createRegionAutocomplete} from '../../library/regionAutocomplete'
+import clone = require('clone')
 
 function intent(sources) {
   const {DOM} = sources
@@ -165,7 +102,7 @@ function model(actions, inputs) {
       return reducer$
         .startWith(Immutable.Map({
           authorization, 
-          settings, 
+          settings: clone(settings), 
           default_waiting: false, 
           is_valid: true, 
           save_waiting: false,
@@ -216,8 +153,8 @@ function renderDefaultRegion(info) {
   const {settings} = state
   const {default_region} = settings
   if (default_region) {
-    const {position, geotag} = default_region
-    const {city, state_abbr} = geotag
+    const {position, city_state} = default_region
+    const {city, state_abbr} = city_state
     return div(`.display`, [
       span([`${city}, ${state_abbr}`]),
       button(`.appClearDefaultRegion.clear-button`, [])
@@ -272,7 +209,7 @@ function view(state$, components) {
 function main(sources, inputs) {
   const actions = intent(sources)
 
-  const defaultAutocomplete = isolate(createRegionAutocomplete)(sources, inputs, `default_region`)
+  const defaultAutocomplete = isolate(createRegionAutocomplete)(sources, {...inputs, props$: inputs.settings$.pluck(`default_region`)})
   const save_waiting$ = createProxy()
   const state$ = model(actions, {
     ...inputs, 

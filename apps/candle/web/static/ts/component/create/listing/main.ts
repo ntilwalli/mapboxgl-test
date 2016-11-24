@@ -9,6 +9,16 @@ import {main as NextButton} from '../nextButton'
 import {main as BackNextButtons} from '../backNextButtons'
 
 
+function createDonde(sources, inputs) {
+  const content = Donde(sources, inputs)
+  return {
+    content,
+    controller: NextButton(sources, {...inputs, props$: O.of({next: 'cuando'}), valid$: content.valid$}),
+    instruction: getDondeInstruction()
+  }
+}
+
+
 function should_retrieve(val) {
   return typeof val === 'object' && val.type === 'retrieve'
 }
@@ -92,7 +102,6 @@ function reducers(actions, inputs: any) {
 }
 
 function model(actions, inputs) {
-  console.log(`create model`, inputs)
   const reducer$ = reducers(actions, inputs)
 
   return combineObj({
@@ -120,24 +129,49 @@ function renderSaveExitButton() {
   return button(`.appSaveExitButton.text-button.save-exit-button`, [`Save/Exit`])
 }
 
+function getStepHeadingLong(state) {
+  const {session} = state
+  const {current_step} = session
+
+  if (!current_step || current_step === `donde`) {
+    return `Step 1: Select the venue?`
+  } else {
+    return `Generic heading`
+  }
+}
+
+function getStepHeadingShort(state) {
+  const {session} = state
+  const {current_step} = session
+
+  if (!current_step || current_step === `donde`) {
+    return `Step 1: Venue`
+  } else {
+    return `Generic`
+  }
+}
+
 function renderNavigator(state: any) {
-  //const {authorization} = state
+  const {waiting} = state
   return div(`.navigator-section`, [
     div(`.section`, [
       renderMenuButton(),
-      span([`Create workflow`])
+      span(`.step-description`, [
+        span(`.show-lg`, [getStepHeadingLong(state)]),
+        span(`.show-sm`, [getStepHeadingShort(state)])
+      ])
     ]),
     div(`.section`, [
       div(`.buttons`, [
-        state.waiting ? renderCircleSpinner() : null,
+        waiting ? renderCircleSpinner() : null,
         renderSaveExitButton()
       ])
     ])
   ])
 }
 
-function renderContent(info: any) {
-  return div(`.content`, [
+function renderMainContent(info: any) {
+  return div(`.main-content`, [
     info.components.content
   ])
 }
@@ -200,7 +234,7 @@ function view(state$, components) {
       div(`.content-section`, [
         div(`.content`, [
           div(`.main-panel`, [
-            renderContent(info),
+            renderMainContent(info),
             renderController(info),
             renderMainPanelInstructionSection(info)
           ]),
@@ -211,10 +245,18 @@ function view(state$, components) {
   })
 }
 
+function getDondeInstruction() {
+  return {
+    DOM: O.of(div([`Set the event location`]))
+  }
+}
+
 function main(sources, inputs) {
   const actions = intent(sources)
   const {push_state$} = actions
-  const to_retrieve$ = push_state$.do(x => console.log(`push_state...`, x)).filter(should_retrieve)
+  const to_retrieve$ = push_state$
+    //.do(x => console.log(`push_state...`, x))
+    .filter(should_retrieve)
     .pluck(`data`)
     .map(val => {
       return {
@@ -233,31 +275,31 @@ function main(sources, inputs) {
 
   const component$ = to_render$
     .map(push_state => {
-      console.log(`push_state`, push_state)
+      //console.log(`push_state`, push_state)
       const {current_step} = push_state 
       if (current_step) {
         switch (current_step) {
           case "donde":
-            return {
-              content: Donde(sources, inputs),
-              controller: NextButton(sources, {...inputs, props$: O.of({next: 'cuando'})})
-            }
+            return createDonde(sources, inputs)
           default:
             throw new Error(`Invalid current step given: ${current_step}`)
         }
       } else {
-        console.log(`donde`)
-        return {
-          content: Donde(sources, inputs),
-          controller: NextButton(sources, {...inputs, props$: O.of({next: 'cuando'})})
-        }
+        return createDonde(sources, inputs)
       }
     }).publishReplay(1).refCount()
 
 
   const components = {
     content: component$.switchMap(x => x.content.DOM),
-    controller: component$.switchMap(x => x.controller.DOM)
+    controller: component$.switchMap(x => x.controller.DOM),
+    instruction: component$.switchMap(x => {
+      if (x.instruction) {
+        return x.instruction.DOM
+      } else {
+        return O.of(undefined)
+      }
+    })
   }
 
   const navigation$ = component$.switchMap(x => x.controller.navigation$)
@@ -297,13 +339,15 @@ function main(sources, inputs) {
     }
   })
 
-  return {
+  const out = {
      DOM: vtree$,
+     MapJSON: component$.switchMap(x => x.content.MapJSON).publish().refCount(),
      HTTP: O.merge(
        to_retrieve$, 
        to_new$,
-       to_save_exit$
-     ),
+       to_save_exit$,
+       component$.switchMap(x => x.content.HTTP)
+     ).publish().refCount(),
       //.do(x => console.log(`to http`, x)),
      Router: O.merge(
        actions.success_save$
@@ -366,6 +410,10 @@ function main(sources, inputs) {
          })
      )
   }
+
+  out.MapJSON.subscribe(x => console.log(`MapJSON`, x))
+
+  return out
 }
 
 export {
