@@ -11,7 +11,7 @@ function toHTTP({props, partial, search_area}) {
   const parameters = []
   const {lat, lng} = search_area.region.position
   const radius = search_area.radius
-  parameters.push([`query`, partial].join(`=`))
+  parameters.push([`query`, encodeURIComponent(partial)].join(`=`))
   parameters.push([`ll`, `${lat},${lng}`].join(`=`))
   parameters.push([`limit`, props.maxSuggestions || 5].join(`=`))
   parameters.push([`client_id`, foursquareClientId].join(`=`))

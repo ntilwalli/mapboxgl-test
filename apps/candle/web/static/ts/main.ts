@@ -12,7 +12,7 @@ import queryString = require('query-string')
 
 
 
-import {normalizeComponent, createProxy, spread} from './utils'
+import {normalizeComponent, createProxy, traceStartStop} from './utils'
 
 import routeFunction from './routeFunction'
 import SettingsService from  './service/settings'
@@ -94,7 +94,8 @@ function main(sources) {
 
   //out.MessageBus.subscribe(x => console.log(`toMessageBus root:`, x))
 
-  return spread(out, {
+  return {
+    ...out,
     DOM: vtree$,
     MapJSON: O.merge(out.MapJSON),
     Global: O.merge(out.Global, authorizationService.Global, fromModalGlobal),
@@ -107,8 +108,14 @@ function main(sources) {
     ),//.do(x => console.log(`main/http sink`, x)),
     Router: O.merge(out.Router, toRouter$, fromModalRouter),
     Storage: O.merge(out.Storage, settingsService.Storage, geoService.Storage, fromModalStorage),
-    MessageBus: O.merge(out.MessageBus, authorizationService.MessageBus, fromModalMessageBus)
-  })
+    MessageBus: O.merge(
+      out.MessageBus, 
+      settingsService.MessageBus,
+      authorizationService.MessageBus, 
+      fromModalMessageBus
+    )
+    //.letBind(traceStartStop(`main MessageBus trace`)), 
+  }
 }
 
 const wrappedMain = messageBusify(main)

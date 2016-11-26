@@ -8,20 +8,24 @@ import {toLngLatArray, createFeatureCollection} from '../../../../../mapUtils'
 import {createVenueAutocomplete} from '../../../../../library/venueAutocomplete'
 import {getVenueName, getVenueAddress, getVenueLngLat} from '../../../../../helpers/venue'
 
-function reducers(inputs) {
+function reducers(actions, inputs) {
   const {selected$} = inputs
   const selected_r = selected$.map(val => state => {
     return state.set(`venue`, val)
   })
 
+  const clear_r = actions.clear$.map(_ => state => {
+    return state.set(`venue`, undefined)
+  })
+
   return O.merge(
-    selected_r
+    selected_r, clear_r
   )
 }
 
-function model(inputs) {
+function model(action, inputs) {
   const {props$} = inputs
-  const reducer$ = reducers(inputs)
+  const reducer$ = reducers(action, inputs)
   return props$
     .take(1)
     .map(props => {
@@ -49,7 +53,18 @@ function view(state$, components) {
       const {venue_autocomplete} = components
       const {venue} = state
       return div(`.venue-input`, [
-        venue_autocomplete,
+        div(`.input-section`, [
+          venue ? div(`.display`, [
+            div(`.name-address-container`, [
+              span(`.venue-name`, [getVenueName(venue)]),
+              span([`,`]),
+              span(`.venue-address`, [getVenueAddress(venue)])
+            ]),
+            span(`.appClearVenueButton.clear-button`, [])
+          ]) : div(`.autocomplete`, [
+            venue_autocomplete
+          ])
+        ]),
         venue ? //null
           div(`.map`, [
             div(`.location-info`, [
@@ -133,7 +148,11 @@ export function main(sources, inputs) {
 
   const venue_autocomplete = createVenueAutocomplete(sources, {...inputs, props$})
 
-  const state$ = model({
+  const actions = {
+    clear$: sources.DOM.select(`.appClearVenueButton`).events(`click`)
+  }
+
+  const state$ = model(actions, {
     props$,
     selected$: venue_autocomplete.output$
   })

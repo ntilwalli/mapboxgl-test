@@ -170,6 +170,7 @@ defmodule User.Auth do
     cs = Shared.Settings.changeset(settings_cs, params)
     case cs.valid? do
       true ->
+        IO.puts "Saved settings"
         row = apply_changes(cs)
         on_conflict = from Shared.Settings, update: [set: [use_region: ^row.use_region, default_region: ^row.default_region]]
         {:ok, result} = Shared.Repo.insert(row, on_conflict: on_conflict, conflict_target: :user_id)

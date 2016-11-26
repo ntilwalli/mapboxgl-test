@@ -35,13 +35,16 @@ interface ProxyObservable<T> extends O<T> {
 export function createProxy(): ProxyObservable<any> {
   let start_up_token = "start up token"
   let upstream
+  let rand
   let sub
+  let active 
   const source = new Subject()
   const proxy = source
     .startWith(start_up_token)
     .do(x => {
       if (x === start_up_token) {
-        if (upstream && !sub) {
+        // This enables restart
+        if (upstream && !active) {
           sub = upstream.subscribe(source)
         }
       }
@@ -51,16 +54,51 @@ export function createProxy(): ProxyObservable<any> {
       if (sub) {
         sub.unsubscribe()
         sub = undefined
+        active = false
       }
     }).publish().refCount()
 
   ;(<ProxyObservable<any>> proxy).attach = (stream) => {
+    rand = Math.random()
     upstream = stream
+    active = true  // This must be set before subscribe so double subscription does not happen
     sub = upstream.subscribe(source)
   }
 
   return <ProxyObservable<any>> proxy
 }
+
+// export function createProxy(): ProxyObservable<any> {
+//   let start_up_token = "start up token"
+//   let upstream
+//   let sub
+//   const source = new Subject()
+//   const proxy = source
+//     .startWith(start_up_token)
+//     .do(x => {
+//       if (x === start_up_token) {
+//         if (upstream && !sub) {
+//           //console.log(`sub on start`)
+//           sub = upstream.subscribe(source)
+//         }
+//       }
+//     })
+//     .filter(x => x !== start_up_token)
+//     .finally(() => {
+//       if (sub) {
+//         sub.unsubscribe()
+//         sub = undefined
+//       }
+//     }).publish().refCount()
+
+//   ;(<ProxyObservable<any>> proxy).attach = (stream) => {
+//     upstream = stream
+//     //console.log(`sub on attach`)
+//     sub = upstream.subscribe(source)
+//   }
+
+//   return <ProxyObservable<any>> proxy
+// }
 
 // export function attrs (val, monoProps?) {
 //   if (monoProps) {

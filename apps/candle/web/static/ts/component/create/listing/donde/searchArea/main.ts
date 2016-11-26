@@ -86,8 +86,10 @@ function renderSearchAreaModalBody(info) {
   const {city_state} = region
   const {city, state_abbr} = city_state
   return div(`.change-search-area-modal`, [
-    components.autocomplete,
-    div(`.map.sub-section`, [
+    div(`.autocomplete`, [
+      components.autocomplete
+    ]),
+    div(`.map`, [
       div(`.location-info-section`, [`${city}, ${state_abbr}`]),
       div(`#changeSearchAreaMapAnchor`)
     ])
@@ -155,7 +157,7 @@ export default function main(sources, inputs) {
 
   const out = {
     DOM: vtree$,
-    MapJSON: mapview(state$),
+    MapJSON: mapview(state$).do(x => console.log(`mapjson`, x)).publish().refCount(),
     HTTP: O.merge(region_autocomplete.HTTP, actions.to_http$).publish().refCount(),
     output$: state$
   }

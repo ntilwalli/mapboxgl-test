@@ -4,6 +4,12 @@
 //   height: 3rem;
 // }
 
+@media (min-width: 768px) {
+  .login-modal, .signup-modal, .presignup-modal {
+    width: 25rem;
+  }
+}
+
 .alerts-area {
   color: red
 }

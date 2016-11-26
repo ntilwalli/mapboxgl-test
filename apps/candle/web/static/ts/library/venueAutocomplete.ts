@@ -4,7 +4,7 @@ import isolate from '@cycle/isolate'
 import {combineObj, createProxy, mergeSinks} from '../utils'
 import FoursquareSuggestVenues from '../thirdParty/FoursquareSuggestVenues'
 import AutocompleteInput from '../library/autocompleteInput'
-import {getVenueName, getVenueAddress} from '../helpers/venue'
+import {isValid, getVenueName, getVenueAddress} from '../helpers/venue'
 
 
 function toFoursquareVenueResults(results) {
@@ -13,7 +13,7 @@ function toFoursquareVenueResults(results) {
     source: `foursquare`,
     data: result,
     lng_lat: {lat: result.location.lat, lng: result.location.lng}
-  }))
+  })).filter(isValid)
 }
 
 export function createVenueAutocomplete(sources, inputs) {

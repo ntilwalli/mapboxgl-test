@@ -2,7 +2,7 @@ import {Observable as O} from 'rxjs'
 import {div, button, li, span, select, input, option} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 import Immutable = require('immutable')
-import {combineObj, createProxy, mergeSinks, processHTTP, onlyError, onlySuccess, normalizeArcGISSingleLineToParts} from '../../utils'
+import {combineObj, createProxy, mergeSinks, processHTTP, traceStartStop, onlyError, onlySuccess, normalizeArcGISSingleLineToParts} from '../../utils'
 import {renderMenuButton, renderCircleSpinner, renderLoginButton, renderUserProfileButton, renderSearchCalendarButton} from '../renderHelpers/navigator'
 import ArcGISSuggest from '../../thirdParty/ArcGISSuggest'
 import ArcGISGetMagicKey from '../../thirdParty/ArcGISGetMagicKey'
@@ -11,7 +11,7 @@ import {createRegionAutocomplete} from '../../library/regionAutocomplete'
 import clone = require('clone')
 
 function intent(sources) {
-  const {DOM} = sources
+  const {DOM, MessageBus} = sources
   const {success$, error$} = processHTTP(sources, `setApplicationSettings`)
   const show_menu$ = DOM.select(`.appShowMenuButton`).events(`click`)
 
@@ -27,10 +27,13 @@ function intent(sources) {
 
   const clear_default_region$ = DOM.select(`.appClearDefaultRegion`).events(`click`)
 
-  const save_changes$ = DOM.select(`.appSaveChanges`).events(`click`)
+  const save_changes$ = DOM.select(`.appSaveChanges`).events(`click`).publish().refCount()
+  const saved$ = MessageBus.address(`/component/settings`)
+    //.do(x => console.log(`saved$:`, x))
+    .publish().refCount()
 
   return {
-    success$,
+    success$: success$.publish().refCount(),
     error$,
     got_response$: O.merge(success$, error$),
     show_menu$,
@@ -39,7 +42,8 @@ function intent(sources) {
     show_search_calendar$,
     region_type$,
     clear_default_region$,
-    save_changes$
+    save_changes$,
+    saved$
   }
 }
 
@@ -60,7 +64,7 @@ function reducers(actions, inputs) {
     return state.set(`settings`, settings).set(`is_valid`, getValidity(settings))
   })
 
-  const default_waiting_r = inputs.default_waiting$.map(x => state => {
+  const default_waiting_r = inputs.default_waiting$.skip(1).map(x => state => {
     return state.set(`default_waiting`, x)
   })
 
@@ -70,8 +74,11 @@ function reducers(actions, inputs) {
     return state.set(`settings`, settings).set(`is_valid`, getValidity(settings))
   })
 
-  const success_r = actions.success$.map(x => state => {
-    return state.set(`save_status`, {type: `success`, data: `Settings saved`}).set(`save_waiting`, false)
+  const success_r = actions.saved$.map(x => state => {
+    return state
+      .set(`save_status`, {type: `success`, data: `Settings saved`})
+      .set(`save_waiting`, false)
+      .set(`settings`, x)
   })
 
   const error_r = actions.error$.map(x => state => {
@@ -84,8 +91,12 @@ function reducers(actions, inputs) {
 
   return O.merge(
     region_type_r, 
-    clear_default_region_r, default_waiting_r, default_region_r,
-    success_r, error_r, save_waiting_r
+    clear_default_region_r, 
+    default_waiting_r, 
+    default_region_r,
+    success_r, 
+    error_r, 
+    save_waiting_r
   )
 }
 
@@ -111,7 +122,8 @@ function model(actions, inputs) {
         .scan((acc, f: Function) => f(acc))
     })
     .map((x: any) => x.toJS())
-    //.do(x => console.log(`settings state`, x))
+    //.do(x => console.log(`component/settings state`, x))
+    //.letBind(traceStartStop(`component/settings state trace`))
     .publishReplay(1).refCount()
 }
 
@@ -209,7 +221,10 @@ function view(state$, components) {
 function main(sources, inputs) {
   const actions = intent(sources)
 
-  const defaultAutocomplete = isolate(createRegionAutocomplete)(sources, {...inputs, props$: inputs.settings$.pluck(`default_region`)})
+  const default_region$ = inputs.settings$
+    .pluck(`default_region`)
+
+  const defaultAutocomplete: any = isolate(createRegionAutocomplete)(sources, {...inputs, props$: default_region$})
   const save_waiting$ = createProxy()
   const state$ = model(actions, {
     ...inputs, 
@@ -218,6 +233,33 @@ function main(sources, inputs) {
     save_waiting$,
   })
 
+  const save_local$ = state$.filter((state: any) => !state.authorization)
+    .switchMap((state: any) => {
+      return actions.save_changes$
+        .map(_ => {
+          //console.log(`saving settings local`)
+          return state.settings
+        })
+    }).publish().refCount()
+
+  const save_cloud$ = state$.filter((state: any) => !!state.authorization)
+    .switchMap((state: any) => {
+      return actions.save_changes$
+        .map(_ => {
+          //console.log(`saving settings cloud`)
+          return {
+            url: `/api/user`,
+            method: `post`,
+            category: `setApplicationSettings`,
+            send: {
+              route: `/settings`,
+              data: state.settings
+            }
+          }
+        })
+    })
+    .publish().refCount()
+
   const components = {
     defaultAutocomplete$: defaultAutocomplete.DOM
   }
@@ -225,59 +267,55 @@ function main(sources, inputs) {
   const vtree$ = view(state$, components)
 
   const toMessageBus$ = O.merge(
-    actions.save_changes$.withLatestFrom(state$, (_, state) => {
-      if (!state.authorization) {
-        return {
-          to: `/settings`,
-          message: state.settings
-        }
-      } else {
-        return null
-      }
-    })
-    .filter(x => !!x),
-    actions.success$
-      //.withLatestFrom(state$, (_, state) => {
-      .map(settings => {
-        //console.log(`state`, settings)
-        return {
-          to: `/settings`,
-          message: settings
-        }
-      }),
-    actions.show_menu$.mapTo({to: `main`, message: `showLeftMenu`}),
-    actions.show_login$.mapTo({to: `main`, message: `showLogin`})
-  ).publish().refCount()
+      O.merge(
+        save_local$, 
+        actions.success$
+      )
+        //.withLatestFrom(state$, (_, state) => {
+        .map(settings => {
+          //console.log(`state`, settings)
+          return {
+            to: `/services/settings`,
+            message: settings
+          }
+        }),
+      actions.show_menu$.mapTo({to: `main`, message: `showLeftMenu`}),
+      actions.show_login$.mapTo({to: `main`, message: `showLogin`})
+    )
+    //.do(x => console.log(`toMessageBus:`, x))
+    .publish().refCount()
 
   //toMessageBus$.subscribe(x => console.log(`toMessageBus:`, x))
 
-  const toHTTP$ = actions.save_changes$.withLatestFrom(state$, (_, state) => {
-    if (state.authorization) {
-      return {
-        url: `/api/user`,
-        method: `post`,
-        category: `setApplicationSettings`,
-        send: {
-          route: `/settings`,
-          data: state.settings
-        }
-      }
-    } else {
-      return null
-    }
-  })
-  .filter(x => !!x)
-  .publish().refCount()
+  const toHTTP$ = save_cloud$
+  // .withLatestFrom(state$, (_, state) => {
+  //   if (state.authorization) {
+  //     return {
+  //       url: `/api/user`,
+  //       method: `post`,
+  //       category: `setApplicationSettings`,
+  //       send: {
+  //         route: `/settings`,
+  //         data: state.settings
+  //       }
+  //     }
+  //   } else {
+  //     return null
+  //   }
+  // })
+  // .filter(x => !!x)
+  // .publish().refCount()
 
   save_waiting$.attach(O.merge(toHTTP$))
 
-  return {
+  const out = {
     DOM: vtree$,
     HTTP: O.merge(
       toHTTP$,
       defaultAutocomplete.HTTP
-    ),
-    //.do(x => console.log(`suggester http`)),
+    )
+    //.do(x => console.log(`settings http`))
+    .publish().refCount(),
     Router: O.merge(
       actions.show_search_calendar$.mapTo({
         pathname: `/`,
@@ -290,6 +328,8 @@ function main(sources, inputs) {
     ),
     MessageBus: toMessageBus$
   }
+
+  return out
 }
 
 export {

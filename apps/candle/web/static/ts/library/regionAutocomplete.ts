@@ -9,6 +9,7 @@ import AutocompleteInput from '../library/autocompleteInput'
 
 export function createRegionAutocomplete(sources, inputs) {
   const center$ = inputs.props$
+    // .do(x => console.log(`region autocomplete center`, x))
     .pluck(`position`)
     .publishReplay(1).refCount()
 

@@ -55,8 +55,8 @@ function view(state$, components) {
   }).map((info: any) => {
     const {components} = info
     return div(`.donde`, [
-      renderModeInput(info),
       renderSearchArea(info),
+      renderModeInput(info),
       components.modal
     ])
   })
@@ -79,7 +79,7 @@ function main(sources, inputs) {
     .publishReplay(1).refCount()
 
   hide_modal$.attach(normalizeSink(modal$, `close$`))
-  search_area$.attach(normalizeSink(modal$, `output$`))
+  search_area$.attach(normalizeSink(modal$, `done$`))
 
   const input_component$ = state$.pluck(`mode`)
     .distinctUntilChanged()

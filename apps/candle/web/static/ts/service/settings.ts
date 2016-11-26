@@ -16,17 +16,22 @@ function intent(sources) {
     .take(1)
     .publishReplay(1).refCount()
 
+  const update$ = MessageBus.address(`/services/settings`)
+      //.do(x => console.log(`update$`, x))
+      //.letBind(traceStartStop(`update$ trace`))
+      .publish().refCount()
+
   return {
     success$,
     error$,
     storage_settings$,
-    update$: MessageBus.address(`/settings`)
+    update$
   }
 }
 
 function reducers(actions, inputs) {
   const update_r = actions.update$.map(new_settings => state => {
-    console.log(`new settings`, new_settings)
+    //console.log(`new settings`, new_settings)
     return new_settings
   })
 
@@ -46,7 +51,7 @@ function model(actions, inputs) {
             else return null
           })
       })
-      //.do(x => console.log(`get application settings`, x))
+      //.do(x => console.log(`services/settings state`, x))
       .take(1)
   )
 
@@ -119,19 +124,27 @@ function main(sources, inputs) {
       value: JSON.stringify(x)
     }))
     .skip(1)
-    .do(x => console.log(`set application settings`, x))
+    //.do(x => console.log(`set stored application settings`, x))
 
   return {
     HTTP: toHTTP$,
     Storage: toStorage$,
+    MessageBus: actions.update$.map(x => {
+        return {
+          to: `/component/settings`,
+          message: x
+        }
+      })
+      //.do(x => console.log(`services/settings MessageBus to component/settings`, x))
+      //.letBind(traceStartStop(`services/settings MessageBus trace`))
+      .publish().refCount(),
     output$: state$
       .distinctUntilChanged()
       //.do(x => console.log(`services/settings output`, x))
       .publishReplay(1).refCount(),
-    waiting$: O.never()
-    // O.merge(toHTTP$.mapTo(true), actions.success$.mapTo(false))
-    //   .startWith(false)
-    //   .publishReplay(1).refCount()
+    waiting$: O.merge(toHTTP$.mapTo(true), actions.success$.mapTo(false))
+      .startWith(false)
+      .publishReplay(1).refCount()
   }
 }
 

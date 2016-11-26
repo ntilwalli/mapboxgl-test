@@ -33,7 +33,15 @@ function reducers(actions, inputs) {
     })
   })
 
-  return O.merge(hide_modal_r, show_modal_r, donde_r)
+  const search_area_r = inputs.search_area$.map(search_area => state => {
+    return state.update(`session`, x => {
+        x.search_area = search_area
+        return x
+      })
+      .set(`modal`, undefined)
+  })
+
+  return O.merge(hide_modal_r, show_modal_r, donde_r, search_area_r)
 }
 
 function getBlankVenue() {
