@@ -5,6 +5,7 @@ import Immutable = require('immutable')
 
 import {renderMenuButton, renderCircleSpinner, renderLoginButton, renderSearchCalendarButton} from '../../renderHelpers/navigator'
 import {main as Donde} from './donde/main'
+import {main as Cuando} from './cuando/main'
 import {main as NextButton} from '../nextButton'
 import {main as BackNextButtons} from '../backNextButtons'
 
@@ -14,6 +15,15 @@ function createDonde(sources, inputs) {
   return {
     content,
     controller: NextButton(sources, {...inputs, props$: O.of({next: 'cuando'}), valid$: content.valid$}),
+    instruction: getDondeInstruction()
+  }
+}
+
+function createCuando(sources, inputs) {
+  const content = Cuando(sources, inputs)
+  return {
+    content,
+    controller: BackNextButtons(sources, {...inputs, props$: O.of({next: 'cuando'}), valid$: content.valid$}),
     instruction: getDondeInstruction()
   }
 }
@@ -92,6 +102,7 @@ function reducers(actions, inputs: any) {
   })
 
   const session_r = inputs.session$.map(session => state => {
+    console.log(`updated workflow session`, session)
     return state.set(`session`, session)
   })
 

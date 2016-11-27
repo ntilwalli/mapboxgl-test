@@ -3,12 +3,12 @@ import Immutable = require('immutable')
 import {combineObj, getPreferredRegion$} from '../../../../utils'
 import clone = require('clone')
 
-function venueToDonde(venue) {
-  return {
-    type: `venue`,
-    ...venue
-  }
-}
+// function venueToDonde(venue) {
+//   return {
+//     type: `venue`,
+//     ...venue
+//   }
+// }
 
 function reducers(actions, inputs) {
   const show_modal_r = actions.show_search_area_screen$
@@ -26,11 +26,12 @@ function reducers(actions, inputs) {
     const mode = state.get(`mode`)
     return state.update(`session`, session => {
       if (mode === `venue`) {
-        session.listing.donde = venueToDonde(donde)
+        session.listing.donde = donde
       }
 
       return session
-    })
+    }).set(`valid`, !!donde)
+
   })
 
   const search_area_r = inputs.search_area$.map(search_area => state => {
