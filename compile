@@ -1,6 +1,2 @@
-cd custom_deps/rrule
-npm install
-npm test
-cd ../..
 npm run deploy
 mix phoenix.digest
