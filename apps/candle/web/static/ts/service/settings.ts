@@ -56,11 +56,11 @@ function model(actions, inputs) {
   )
 
   return combineObj({
-    default_settings$: inputs.props$.take(1),
+    fallback_settings$: inputs.props$.take(1),
     retrieved_settings$: retrieved_settings$
   }).switchMap((info: any) => {
-      const {default_settings, retrieved_settings} = info
-      let init = retrieved_settings || default_settings
+      const {fallback_settings, retrieved_settings} = info
+      let init = retrieved_settings || fallback_settings
 
       return reducer$
         .startWith(init)

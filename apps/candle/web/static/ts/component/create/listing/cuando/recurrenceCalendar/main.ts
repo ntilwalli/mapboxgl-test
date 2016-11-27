@@ -1,6 +1,7 @@
 import {Observable as O} from 'rxjs'
 import {div} from '@cycle/dom'
 import moment = require('moment')
+import {RRule, rrulestr, RRuleSet} from 'rrule'
 
 function getStartMonth(cuando) {
   if (cuando && cuando.rrule && cuando.rrule.dtstart) {

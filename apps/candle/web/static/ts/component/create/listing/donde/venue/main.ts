@@ -80,7 +80,7 @@ function view(state$, components) {
 
 function mapview(state$) {
   return state$.map(state => {
-    console.log(`mapview`, state)
+    //console.log(`mapview`, state)
     const {venue} = state
 
 
@@ -166,7 +166,7 @@ export function main(sources, inputs) {
     output$: state$.map(state => state.venue).publishReplay(1).refCount()
   }
 
-  out.MapJSON.subscribe(x => console.log(`MapJSON`, x))
+  //out.MapJSON.subscribe(x => console.log(`MapJSON`, x))
 
   return out
 }

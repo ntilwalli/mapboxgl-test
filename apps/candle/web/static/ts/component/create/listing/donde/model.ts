@@ -22,7 +22,7 @@ function reducers(actions, inputs) {
     })
 
   const donde_r = inputs.donde$.map(donde => state => {
-    console.log(`donde r:`, donde)
+    //console.log(`donde r:`, donde)
     const mode = state.get(`mode`)
     return state.update(`session`, session => {
       if (mode === `venue`) {
@@ -36,7 +36,7 @@ function reducers(actions, inputs) {
 
   const search_area_r = inputs.search_area$.map(search_area => state => {
     return state.update(`session`, x => {
-        x.search_area = search_area
+        x.properties.search_area = search_area
         return x
       })
       .set(`modal`, undefined)
@@ -75,8 +75,12 @@ export function model(actions, inputs) {
         mode: `venue`
       }
 
-      if (!init.session.search_area) {
-        init.session[`search_area`] = {
+      if (!init.session.properties) {
+        init.session[`properties`] = {}
+      }
+
+      if (!init.session.properties.search_area) {
+        init.session[`properties`][`search_area`] = {
           region,
           radius: 30000
         }

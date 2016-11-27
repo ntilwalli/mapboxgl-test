@@ -8,6 +8,7 @@ import {main as Donde} from './donde/main'
 import {main as Cuando} from './cuando/main'
 import {main as NextButton} from '../nextButton'
 import {main as BackNextButtons} from '../backNextButtons'
+import clone = require('clone')
 
 
 function createDonde(sources, inputs) {
@@ -23,8 +24,8 @@ function createCuando(sources, inputs) {
   const content = Cuando(sources, inputs)
   return {
     content,
-    controller: BackNextButtons(sources, {...inputs, props$: O.of({next: 'cuando'}), valid$: content.valid$}),
-    instruction: getDondeInstruction()
+    controller: BackNextButtons(sources, {...inputs, props$: O.of({back: `donde`, next: 'description'}), valid$: content.valid$}),
+    instruction: getCuandoInstruction()
   }
 }
 
@@ -123,7 +124,7 @@ function model(actions, inputs) {
       const init = Immutable.Map({
         ...info,
         show_instruction: false,
-        waiting$: false
+        waiting: false
       })
       return reducer$.startWith(init).scan((acc, f: Function) => f(acc))
     })
@@ -262,6 +263,12 @@ function getDondeInstruction() {
   }
 }
 
+function getCuandoInstruction() {
+  return {
+    DOM: O.of(div([`Set the event time or recurrence`]))
+  }
+}
+
 function main(sources, inputs) {
   const actions = intent(sources)
   const {push_state$} = actions
@@ -289,9 +296,12 @@ function main(sources, inputs) {
       //console.log(`push_state`, push_state)
       const {current_step} = push_state 
       if (current_step) {
+        //console.log(`routing to step: `, current_step)
         switch (current_step) {
           case "donde":
             return createDonde(sources, inputs)
+          case "cuando":
+            return createCuando(sources, inputs)
           default:
             throw new Error(`Invalid current step given: ${current_step}`)
         }
@@ -352,7 +362,8 @@ function main(sources, inputs) {
 
   const out = {
      DOM: vtree$,
-     MapJSON: component$.switchMap(x => x.content.MapJSON).publish().refCount(),
+     MapJSON: component$.switchMap(x => x.content.MapJSON)
+      .publish().refCount(),
      HTTP: O.merge(
        to_retrieve$, 
        to_new$,
@@ -370,6 +381,8 @@ function main(sources, inputs) {
            }
          }),
        navigation$.withLatestFrom(state$, (nav, state) => {
+        //  const foo = clone({...state.session, current_step: nav})
+        //  console.log(`Got navigation click: `, foo)
          return {
            pathname: `/create/listing`,
            action: `replace`,
@@ -379,7 +392,14 @@ function main(sources, inputs) {
            }
          }
        }),
-       O.merge(actions.success_retrieve$, actions.success_create$)
+       O.merge(
+         actions.success_retrieve$, 
+         actions.success_create$.map(x => {
+          x.listing = undefined,
+          x.properties = undefined
+          x.current_step = "donde"
+          return x
+         }))
          .map(val => {
            return {
              pathname: `/create/listing`,
@@ -396,7 +416,7 @@ function main(sources, inputs) {
            action: `replace`
          }
        })
-     ).do(x => console.log(`to router`, x)),
+     ),//.do(x => console.log(`to router`, x)),
      MessageBus: O.merge(
        actions.show_menu$.mapTo({to: `main`, message: `showLeftMenu`}), 
        O.merge(actions.error_retrieve$, actions.error_save$, actions.error_create$)
@@ -422,7 +442,7 @@ function main(sources, inputs) {
      )
   }
 
-  out.MapJSON.subscribe(x => console.log(`MapJSON`, x))
+  //out.MapJSON.subscribe(x => console.log(`MapJSON`, x))
 
   return out
 }

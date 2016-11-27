@@ -15,14 +15,20 @@ function reducers(actions, inputs) {
 
 export default function model(actions, inputs) {
   const reducer$ = reducers(actions, inputs)
-  return inputs.session$.switchMap(session => {
-    const init = {
-      session,
-      valid: false,
-    }
+  return combineObj({
+      session$: actions.session$
+    })
+    .switchMap((info: any) => {
+      const {session} = info
+      const init = {
+        session,
+        valid: false,
+      }
 
-    return reducer$.startWith(init).scan((acc, f: Function) => f(acc))
-  })
-  .map((x: any) => x.toJS())
-  .publishReplay(1).refCount()
+      return reducer$
+        .startWith(Immutable.Map(init))
+        .scan((acc, f: Function) => f(acc))
+    })
+    .map((x: any) => x.toJS())
+    .publishReplay(1).refCount()
 }

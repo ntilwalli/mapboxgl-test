@@ -8,7 +8,7 @@ function intent(sources) {
     .publish().refCount()
 
   return {
-    navigation$: next$.mapTo(`next`)
+    navigation$: next$
   }
 }
 
@@ -28,8 +28,12 @@ function model(actions, inputs) {
     valid$: inputs.valid$.take(1)
   })
     .switchMap((info: any) => {
-      //console.log(`button info`, info)
-      return reducer$.startWith(info)
+      const {valid, props} = info
+      const init = {
+        valid,
+        ...props
+      }
+      return reducer$.startWith(init)
         .scan((acc, f: Function) => f(acc))
     })
     .publishReplay(1).refCount()
@@ -52,7 +56,8 @@ function main(sources, inputs) {
   return {
     DOM: vtree$,
     navigation$: O.merge(
-      actions.navigation$.withLatestFrom(state$, (nav, state: any) => {
+      actions.navigation$.withLatestFrom(state$, (_, state: any) => {
+        //console.log(`next button clicked: `, state)
         return state.next
       })
     )

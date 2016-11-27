@@ -1,7 +1,7 @@
 import {Observable as O} from 'rxjs'
 import {div, h5, span, button} from '@cycle/dom'
 import Immutable = require('immutable')
-import {combineObj, getPreferredRegion$, mergeSinks, normalizeSink, componentify, createProxy} from '../../../../utils'
+import {combineObj, getPreferredRegion$, mergeSinks, normalizeSink, normalizeComponent, componentify, createProxy} from '../../../../utils'
 import {renderMenuButton, renderCircleSpinner, renderLoginButton, renderSearchCalendarButton} from '../../../renderHelpers/navigator'
 import clone = require('clone')
 
@@ -24,7 +24,8 @@ function intent(sources) {
 function renderSearchArea(info) {
   const {state} = info
   const {session} = state
-  const {search_area} = session
+  const {properties} = session
+  const {search_area} = properties
   const {region} = search_area
   const {city_state} = region
   const {city, state_abbr} = city_state
@@ -87,7 +88,7 @@ function main(sources, inputs) {
       if (mode === `venue`) {
         const out = VenueInput(sources, {
           ...inputs, 
-          search_area$: state$.map((state: any) => state.session.search_area)
+          search_area$: state$.map((state: any) => state.session.properties.search_area)
         })
         //out.HTTP.subscribe(x => console.log(`HTTP blah`, x))
 
@@ -118,13 +119,14 @@ function main(sources, inputs) {
     HTTP: O.merge(modal$.switchMap((x: any) => x.HTTP), input_component$.switchMap((x: any) => x.HTTP)),
     MapJSON: O.merge(modal$.switchMap((x: any) => x.MapJSON), input_component$.switchMap((x: any) => x.MapJSON)).publish().refCount(), 
     Global: input_component$.switchMap((x: any) => x.Global), 
-    session$, valid$
   }
 
-  out.MapJSON.subscribe(x => console.log(`MapJSON donde main`, x))
+  const normalized = normalizeComponent(out)
+
+  //out.MapJSON.subscribe(x => console.log(`MapJSON donde main`, x))
 
   //console.log(out)
-  return out
+  return {...normalized, session$, valid$}
 }
 
 export {

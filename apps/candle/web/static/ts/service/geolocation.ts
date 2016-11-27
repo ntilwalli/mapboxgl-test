@@ -135,10 +135,10 @@ export default function main(sources) {
     ),
     output: {
       geolocation$,
-      geolocationWithGeotag$,
+      //geolocationWithGeotag$,
       geolocationWithGeotagAndCityState$,
       cachedGeolocation$,
-      cachedGeolocationWithGeotag$,
+      //cachedGeolocationWithGeotag$,
       cachedGeolocationWithGeotagAndCityState$
     }
   }
