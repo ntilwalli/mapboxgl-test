@@ -4,3 +4,6 @@
 [submodule "apps/candle/custom_deps/rrule"]
 	path = apps/candle/custom_deps/rrule
 	url = https://github.com/ntilwalli/rrule
+[submodule "custom_deps/cyclejs"]
+	path = custom_deps/cyclejs
+	url = https://github.com/ntilwalli/cyclejs
