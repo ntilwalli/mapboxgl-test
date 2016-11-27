@@ -297,7 +297,7 @@ function main(sources, inputs) {
       const {current_step} = push_state 
       if (current_step) {
         //console.log(`routing to step: `, current_step)
-        switch (current_step) {
+        switch (current_step) { 
           case "donde":
             return createDonde(sources, inputs)
           case "cuando":
