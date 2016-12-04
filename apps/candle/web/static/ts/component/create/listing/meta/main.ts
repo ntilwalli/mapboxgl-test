@@ -102,7 +102,7 @@ function view(state$, components) {
         div(`.body`, [
           div(`.input-section`, [
             div(`.sub-heading`, ['Type']),
-            div(`.input-area`, [
+            div(`.row-input-area`, [
               div(`.radio-input`, [
                 input(`.appTypeInput.title`, {attrs: {type: 'radio', name: 'listingType', value: 'single', checked: type === `single`}}, []),
                 span(`.title`, ['Single'])

@@ -12,10 +12,10 @@
       margin-bottom: 1rem;
     }
 
-    .column-input-section {
+    .row-input-section {
       display: flex;
       flex-flow: row wrap;
-      justify-content: space-around;
+      justify-content: center;
       margin-bottom: 1rem;  
     }
 
@@ -29,6 +29,12 @@
       display: flex;
       justify-content: center;
       flex-direction: column;
+    }
+
+    .row-input-area {
+      display: flex;
+      flex-flow: row wrap;
+      justify-content: center;
     }
   }
 
