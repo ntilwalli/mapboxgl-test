@@ -1,25 +1,60 @@
 import {Observable as O} from 'rxjs'
-import {div} from '@cycle/dom'
+import {div, span, input, textarea} from '@cycle/dom'
 import Immutable = require('immutable')
 import {combineObj} from '../../../../utils'
 
 function intent(sources) {
-  const {Router} = sources
+  const {DOM, Router} = sources
   const session$ = Router.history$
     .map(x => x.state.data)
     .publishReplay(1).refCount()
   
+  const type$ = DOM.select('.appTypeInput').events('click')
+    .map(ev => ev.target.value)
+  const title$ = DOM.select('.appTitleInput').events('input')
+    .map(ev => ev.target.value)
+  const description$ = DOM.select('.appDescriptionInput').events('input')
+    .map(ev => ev.target.value)
+
   return {
-    session$
+    session$,
+    type$,
+    title$,
+    description$
   }
 }
 
 function isValid(session) {
-  return false
+  const {listing} = session
+  return listing.type && listing.title && listing.description
 }
 
 function reducers(actions, inputs) {
-  return O.never()
+  const type_r = actions.type$.map(val => state => {
+    return state.update(`session`, session => {
+      const {listing} = session
+      listing.type = val
+      return session
+    })
+  })
+
+  const title_r = actions.title$.map(val => state => {
+    return state.update(`session`, session => {
+      const {listing} = session
+      listing.title = val
+      return session
+    })
+  })
+
+  const description_r = actions.description$.map(val => state => {
+    return state.update(`session`, session => {
+      const {listing} = session
+      listing.description = val
+      return session
+    })
+  })
+
+  return O.merge(type_r, title_r, description_r)
 }
 
 function model(actions, inputs) {
@@ -30,13 +65,19 @@ function model(actions, inputs) {
     .switchMap((info: any) => {
       const session = info.session
       const init = {
-        session,
-        valid: session ? isValid(session) : false
+        session
       }
 
-      return reducer$.startWith(Immutable.Map(init)).scan((acc, f: Function) => f(acc))
+      return reducer$
+        .startWith(Immutable.Map(init))
+        .scan((acc, f: Function) => f(acc))
     })
     .map((x: any) => x.toJS())
+    .map((x: any) => ({
+      ...x,
+      valid: isValid(x.session)
+    }))
+    .do(x => console.log(`meta state`, x))
     .publishReplay(1).refCount()
 }
 
@@ -46,9 +87,41 @@ function view(state$, components) {
     })
     .map((info: any) => {
       const {state} = info
+      const {session} = state
+      const {listing} = session
+      const {type, title, description} = listing
 
-      return div(`.meta`, [
-        'Hello'
+      return div(`.workflow-step`, [
+        div(`.heading`, []),
+        div(`.body`, [
+          div(`.input-section`, [
+            div(`.sub-heading`, ['Type']),
+            div(`.input-area`, [
+              div(`.radio-input`, [
+                input(`.appTypeInput.title`, {attrs: {type: 'radio', name: 'listingType', value: 'single', checked: type === `single`}}, []),
+                span(`.title`, ['Single'])
+              ]),
+              div(`.radio-input`, [
+                input(`.appTypeInput.title`, {attrs: {type: 'radio', name: 'listingType', value: 'recurring', checked: type === `recurring`}}, []),
+                span(`.title`, ['Recurring'])
+              ])
+            ])
+          ]),
+          div(`.input-section`, [
+            div(`.sub-heading`, ['Title']),
+            div(`.input`, [
+              input(`.appTitleInput.title`, {attrs: {type: 'text', value: title || ''}}, [])
+            ])
+          ]),
+          div(`.input-section`, [
+            div(`.sub-heading`, [`Description`]),
+            div(`.input-area`, [
+              textarea(`.appDescriptionInput`, [
+                description || ''
+              ])
+            ])
+          ])
+        ])
       ])
     })
 }

@@ -26,7 +26,7 @@ function model(actions, inputs) {
 
 function view(state$) {
   return state$.map(state => {
-    console.log(`button state`, state)
+    //console.log(`button state`, state)
     const {props, valid} = state
     return div(`.back-next`, [
       div(`.button-section.back-section`, [
