@@ -17,13 +17,19 @@ export function get12HourTime(time) {
 }
 
 function toMilitary(time) {
-  const {hour, minute, meridiem} = time
-  if (meridiem === 'AM' && hour === 12) {
-    return [0, minute]
-  } else if (meridiem === 'PM' && hour < 12) {
-    return [hour + 12, minute]
+  const {hour, minute, mode} = time
+  if (mode === 'AM') {
+    if (hour === 12) {
+      return [0, minute]
+    } else {
+      return [hour, minute]
+    }
   } else {
-    return [hour, minute]
+    if (hour === 12) {
+      return [hour, minute]
+    } else {
+      return [hour + 12, minute]
+    }
   }
 }
 

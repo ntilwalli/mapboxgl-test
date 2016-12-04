@@ -16,7 +16,6 @@
       display: flex;
       flex-flow: row wrap;
       justify-content: space-around;
-      //width: 100%;
       margin-bottom: 1rem;  
     }
 
@@ -29,7 +28,7 @@
     .input-area {
       display: flex;
       justify-content: center;
-      //flex-direction: column;
+      flex-direction: column;
     }
   }
 

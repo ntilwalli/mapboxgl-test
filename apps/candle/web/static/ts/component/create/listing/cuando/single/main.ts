@@ -143,19 +143,24 @@ function view(state$, components) {
       const {cuando} = listing
       const {begins, ends} = cuando
 
+      console.log(`begins, ends`, begins, ends)
+      const is_next_day = begins && ends && !begins.isSame(ends, 'day') ? true : false 
+      console.log(`next day?`, is_next_day)
       return div(`.workflow-step.cuando-single`, [
         div(`.heading`, []),
         div(`.body`, [
           div(`.input-section`, [
             div(`.sub-heading`, ['Date']),
-            div(`.input-area`, [,
-              div(`.calendar`, [
-                div(`.controller`, [
-                  div(`.appDecMonth.text-button.fa.fa-angle-left.fa-2x`, []),
-                  div(`.flex-center`, [moment([begins_year, begins_month]).format('MMM YYYY')]),
-                  div(`.appIncMonth.text-button.fa.fa-angle-right.fa-2x`, []) 
-                ]),
-                begins_date
+            div(`.input-area`, [
+              div(`.flex-center`, [
+                div(`.calendar`, [
+                  div(`.controller`, [
+                    div(`.appDecMonth.text-button.fa.fa-angle-left.fa-2x`, []),
+                    div(`.flex-center`, [moment([begins_year, begins_month]).format('MMM YYYY')]),
+                    div(`.appIncMonth.text-button.fa.fa-angle-right.fa-2x`, []) 
+                  ]),
+                  begins_date
+                ])
               ])
             ])
           ]),
@@ -168,7 +173,7 @@ function view(state$, components) {
           div(`.input-section`, [
             div(`.sub-heading`, ['End time']),
             div(`.input-area`, [
-              begins && ends && !begins.isSame(ends, 'day') ? span(`.next-day-message`, []) : null,
+              is_next_day ? span(`.next-day-message.flex-center`, ['(following day)']) : null,
               ends_time
             ])
           ])
