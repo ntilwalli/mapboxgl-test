@@ -5,37 +5,13 @@ import {combineObj, createProxy, traceStartStop} from '../../../../../utils'
 import moment = require('moment')
 import {RRule} from 'rrule'
 import {getActualRRule} from './helpers'
+import {getDatetime} from '../helpers'
 import clone = require('clone')
 
 import Calendar from './calendar/main'
 import TimeInput from '../../../../../library/timeInput/main'
 
 import getModal from './getModal'
-
-function getDatetime(date, time) {
-  if (date) {
-    if (time) {
-      const [hour, minute] = toMilitary(time)
-      return date.clone().hour(hour).minute(minute)
-    } else {
-      return date.clone().startOf('day')
-    }
-
-  } else {
-    return moment().startOf('day')
-  }
-}
-
-function toMilitary(time) {
-  const {hour, minute, meridiem} = time
-  if (meridiem === 'AM' && hour === 12) {
-    return [0, minute]
-  } else if (meridiem === 'PM' && hour < 12) {
-    return [hour + 12, minute]
-  } else {
-    return [hour, minute]
-  }
-}
 
 function getDuration(start_time, end_time) {
   const base = moment([2010, 1])
@@ -120,10 +96,8 @@ function syncRRuleWithSession(rrule, session) {
 //   session.properties.recurrence
 // }
 
-
-function inflateDates(container) {
+function inflateCuandoDates(container) {
   const {rrule, rdate, exdate} = container
-
 
   if (rrule && rrule.dtstart) {
     container.rrule.dtstart = moment(rrule.dtstart)
@@ -135,6 +109,50 @@ function inflateDates(container) {
 
   if (exdate.length) {
     container.exdate = container.exdate.map(x => moment(x))
+  }
+}
+
+function deflateCuandoDates(container) {
+  const {rrule, rdate, exdate} = container
+
+  if (rrule && rrule.dtstart) {
+    container.rrule.dtstart = rrule.dtstart.toDate().toISOString()
+  }
+
+  if (rdate.length) {
+    container.rdate = container.rdate.map(x => x.toDate().toISOString())
+  }
+
+  if (exdate.length) {
+    container.exdate = container.exdate.map(x => x.toDate().toISOString())
+  }
+}
+
+function inflateDates(session) {
+  const {properties, listing} = session
+  const {type} = listing
+
+  if (type === `recurring`) {
+    inflateCuandoDates(session.listing.cuando)
+    inflateCuandoDates(session.container.recurrence)
+  } else {
+    const {begins, ends} = listing.cuando
+    if (begins) { session.listing.cuando.begins = moment(begins) }
+    if (ends) { session.listing.cuando.ends = moment(ends) }
+  }
+}
+
+function deflateDates(session) {
+  const {properties, listing} = session
+  const {type} = listing
+
+  if (type === `recurring`) {
+    deflateCuandoDates(session.listing.cuando)
+    deflateCuandoDates(session.container.recurrence)
+  } else {
+    const {begins, ends} = listing.cuando
+    if (begins) { session.listing.cuando.begins = begins.toDate().toISOString() }
+    if (ends) { session.listing.cuando.ends = ends.toDate().toISOString() }
   }
 }
 
@@ -161,14 +179,9 @@ function intent(sources) {
         duration: undefined
       }
 
-      //console.log(`pre inflate`, JSON.stringify(session))
-      const {listing, properties} = session
-      inflateDates(properties.recurrence)
-      inflateDates(listing.cuando)
-      //console.log(`post inflate`, JSON.stringify(session))
-
       return session
     })
+    .map(inflateDates)
     .publishReplay(1).refCount()
 
   const change_start_time$ = DOM.select(`.appChangeStartTime`).events(`click`)

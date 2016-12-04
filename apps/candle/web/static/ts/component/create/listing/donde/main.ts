@@ -4,6 +4,7 @@ import Immutable = require('immutable')
 import {combineObj, getPreferredRegion$, mergeSinks, normalizeSink, normalizeComponent, componentify, createProxy} from '../../../../utils'
 import {renderMenuButton, renderCircleSpinner, renderLoginButton, renderSearchCalendarButton} from '../../../renderHelpers/navigator'
 import clone = require('clone')
+import {inflateDates} from '../helpers'
 
 import {model} from './model'
 import {main as getModal} from './getModal'
@@ -21,16 +22,17 @@ function intent(sources, inputs) {
     region$,
     session$: Router.history$.pluck(`state`).pluck(`data`)
   }).map((info: any) => {
-    const {region, session} = info
-    
-    session.listing.donde = session.listing.donde || undefined
-    session.properties.search_area = session.properties.search_area || {
-      region,
-      radius: 30000
-    }
+      const {region, session} = info
+      
+      session.listing.donde = session.listing.donde || undefined
+      session.properties.search_area = session.properties.search_area || {
+        region,
+        radius: 30000
+      }
 
-    return session
-  })
+      return session
+    })
+    .map(inflateDates)
   
   return {
     session$,

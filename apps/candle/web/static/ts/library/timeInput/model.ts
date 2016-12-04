@@ -85,26 +85,25 @@ function reducers(actions, inputs) {
     }
   })
 
-
   return O.merge(
     changeHourR,
     changeMinuteR,
     changeMeridiemR,
-    clear_r
+    clear_r,
+
   )
 }
 
 export default function model(actions, inputs) {
   const reducer$ = reducers(actions, inputs)
-  const initialState$ = inputs.props$ || O.of(undefined)
 
   return combineObj({
-    initialState$
-  })
-    .switchMap(({initialState}: any) => {
+      props$: inputs.props$.take(1)
+    })
+    .switchMap(({props}: any) => {
       //console.log(`initialState`, initialState)
       const init = {
-        currentTime: initialState
+        currentTime: props
       }
 
       return reducer$.startWith(Immutable.Map(init)).scan((acc, f: Function) => f(acc))

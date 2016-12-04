@@ -11,7 +11,8 @@ import {getTimeFromStateInfo} from './utils'
 function main(sources, inputs) {
 
   const actions = intent(sources)
-  const state$ = model(actions, inputs)
+  const props$ = inputs.props$ || O.of(undefined)
+  const state$ = model(actions, {...inputs, props$})
   const vtree$ = view(state$)
 
   return {

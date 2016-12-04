@@ -1,0 +1,36 @@
+.cuando-single {
+  .input-area {
+    /*display: flex;
+    justify-content: center;*/
+    .calendar {
+      $boxSize: 2rem;
+      $boxMargin: .1rem;
+      $numBoxes: 7;
+      $componentWidth: (1 + (($boxSize + $boxMargin) * ($numBoxes - 1)));
+
+      width: $componentWidth;
+      display: flex;
+      flex-flow: column nowrap;
+      justify-content: center;
+
+      .controller {
+        display: flex;
+        justify-content: space-around;
+      }
+    }
+
+    /*.change-month-button {
+
+    }
+
+    .month-year-display {
+
+    }*/
+
+    .next-day-message {
+      color: red;
+    }
+
+    @import './monthCalendar';
+  }
+}

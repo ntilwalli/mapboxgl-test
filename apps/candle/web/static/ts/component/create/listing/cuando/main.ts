@@ -5,13 +5,14 @@ import intent from './intent'
 
 
 import Recurrence from './recurrence/main'
+import Single from './single/main'
 //import RecurrenceCalendar from './recurrenceCalendar/main'
 
 export function main(sources, inputs) {
   const actions = intent(sources)
   const screen$ = actions.session$.map(session => {
     if (session.listing.type === `single`) {
-      throw new Error(`Invalid listing type`) 
+      return Single(sources, inputs)
     } else {
       return Recurrence(sources, inputs)
     }

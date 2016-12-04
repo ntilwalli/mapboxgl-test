@@ -1,6 +1,7 @@
 import {Observable as O} from 'rxjs'
 import {div, span, button, hr} from '@cycle/dom'
 import Immutable = require('immutable')
+import {deflateDates} from './helpers'
 
 import {
   combineObj, 
@@ -417,15 +418,13 @@ function main(sources, inputs) {
            }
          }),
        navigation$.withLatestFrom(state$, (nav, state) => {
-         console.log(`nav state session`, state.session)
-         //const foo = clone({...state.session, current_step: nav})
-         //console.log(`Got navigation click: `, foo)
+         const session = deflateDates(state.session)
          return {
            pathname: `/create/listing`,
            action: `replace`,
            state: {
              type: 'session',
-             data: {...state.session, current_step: nav}
+             data: {...session, current_step: nav}
            }
          }
        }),

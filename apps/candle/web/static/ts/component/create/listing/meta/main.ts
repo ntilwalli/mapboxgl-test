@@ -2,11 +2,13 @@ import {Observable as O} from 'rxjs'
 import {div, span, input, textarea} from '@cycle/dom'
 import Immutable = require('immutable')
 import {combineObj} from '../../../../utils'
+import {inflateDates} from '../helpers'
 
 function intent(sources) {
   const {DOM, Router} = sources
   const session$ = Router.history$
     .map(x => x.state.data)
+    .map(inflateDates)
     .publishReplay(1).refCount()
   
   const type$ = DOM.select('.appTypeInput').events('click')
@@ -25,6 +27,7 @@ function intent(sources) {
 }
 
 function isValid(session) {
+  console.log(`meta valid`, session)
   const {listing} = session
   return listing.type && listing.title && listing.description
 }
@@ -32,8 +35,10 @@ function isValid(session) {
 function reducers(actions, inputs) {
   const type_r = actions.type$.map(val => state => {
     return state.update(`session`, session => {
-      const {listing} = session
+      const {listing, properties} = session
       listing.type = val
+      properties.recurrence = undefined
+      listing.cuando = undefined
       return session
     })
   })
@@ -63,6 +68,7 @@ function model(actions, inputs) {
       session$: actions.session$.take(1)
     })
     .switchMap((info: any) => {
+      console.log(`meta init`, info)
       const session = info.session
       const init = {
         session
@@ -77,7 +83,7 @@ function model(actions, inputs) {
       ...x,
       valid: isValid(x.session)
     }))
-    .do(x => console.log(`meta state`, x))
+    //.do(x => console.log(`meta state`, x))
     .publishReplay(1).refCount()
 }
 
