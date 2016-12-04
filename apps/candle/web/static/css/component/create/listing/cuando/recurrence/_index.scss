@@ -1,0 +1,203 @@
+@import '../../../../../variables';
+.recurrence {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+
+  .sub-heading {
+    /*display: flex;
+    justify-content: center;*/
+    font-weight: bold;
+    margin-right: 1rem;
+  }
+
+  .edit-button {
+    margin-left: 1rem;
+    position: relative;
+    top: 2px;
+
+    &:hover {
+      color: $crayola-orange;
+      cursor: pointer;
+    }
+  } 
+
+  .rrule-section {
+    margin-top: 1rem;
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: center;
+
+    .not-specified {
+      display: flex;
+      justify-content: center;
+    }
+
+    .heading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      .text {
+        font-weight: bold;
+      }
+      
+    }
+
+    .value {
+      margin-top: .5rem;
+      display: flex;
+      justify-content: center;
+    }
+
+    .sub-heading {
+
+    }
+
+    .rule {
+
+    }
+
+    .start-date {
+
+    }
+
+    .end-date {
+
+    }
+  }
+
+  .start-time, .end-time {
+    margin-right: 1rem;
+    display: flex;
+    //flex-direction: column;
+    justify-content: center;
+    margin-top: 2rem;
+
+    .value {
+      
+    }
+
+    .edit-button {
+      margin-left: 1rem;
+      position: relative;
+      top: 1px;
+
+      &:hover {
+        color: $crayola-orange;
+        cursor: pointer;
+      }
+    } 
+  }
+
+  .time-section {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-around;
+  }
+
+  .recurrence-calendar-container {
+    display: flex;
+    justify-content: center;
+    .recurrence-calendar {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+
+      /*@media (max-width: 767px) {
+
+      } */
+
+      .controller {
+        padding-top: .5rem;
+        display: flex;
+        justify-content: space-around;
+        width: 70vw;
+        .change-month-button {
+          &:hover {
+            color: $crayola-orange;
+          }
+        }
+      }
+
+      .month-calendar {
+        width: 70vw;
+        .day-names {
+          display: flex;
+          justify-content: space-around;
+          width: 70vw;
+          .day-name {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: .1rem;
+            margin-bottom: .4rem;
+          }
+        }
+
+        .week {
+          display: flex;
+          justify-content: flex-end;
+          width: 70vw;
+          .day {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 10vw;
+            height: 10vw;
+            background-color: white;
+            margin-right: .1rem;
+            margin-bottom: .1rem;
+            color: lightgray;
+            border: 1px solid lightgray;
+            pointer-events: none;
+
+            &.selectable {
+              color: black;
+              border: 1px solid black;
+              pointer-events: auto
+            }
+
+            &.today {
+              background-color: white;
+              color: black;
+              border: 3px solid black;
+            }
+
+            &.selected {
+              background-color: $crayola-orange;
+              color: white;
+            }
+
+            &:hover {
+              border-width: 2px;
+            }
+          }
+        }
+      }
+
+      @media (min-width: 768px) {
+        .controller {
+          width: 100%;
+        }
+
+        .month-calendar {
+          width: 100%;
+          .day-names {
+            width: 100%;
+          }
+
+          .week {
+            width: 100%;
+            .day {
+              width: 4rem;
+              height: 4rem;
+            }
+          }
+        }
+      } 
+    }
+  }
+}
+
+@import 'rrule';

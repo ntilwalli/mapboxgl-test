@@ -30,7 +30,7 @@ function view(auth$) {
               `Hopscotch`
             ]),
             div(`.content`, [
-              button(`.item`, {class: {appShowCreateWorkflowButton: true}}, [`Add New Listing`]),
+              auth ? button(`.item`, {class: {appShowCreateWorkflowButton: true}}, [`Add New Listing`]) : null,
               button(`.item`, {class: {appShowSettingsButton: true}}, [`Settings`]),
               button(`.item`, {class: {appShowLogoutButton: !!auth, appShowLoginButton: !auth}}, [auth ? `Logout` : `Login`])
             ])

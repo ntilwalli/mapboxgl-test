@@ -5,55 +5,148 @@
   height: 3rem;
   bottom: 0;  
   left: 0;
-  display: flex;
+  /*display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: center;*/
   width: 100%;
+  /*border-style: solid;
+  border-width: 1px 0 0;
+  border-color: black;*/
 
-  .back-next-buttons-section {
+  .back-next {
     display: flex;
     justify-content: space-between;
-    .back, .next {
+    align-items: center;
+    height: 100%;
+    width: 100%;
+
+    /*.back, .next {
       display: flex;
+      align-items: center;
       &:hover {
         color: $crayola-orange;
       }
-    }
+    }*/
   }
 
-  .next-button-section {
+  hr {
+    height: 1px;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    color: lightgray;
+    background-color: lightgray;
+    opacity: .4;
+  }
+
+  .button-section {
     width: 100%;
     height: 100%;
     display: flex;
-    justify-content: center;
     align-items: center;
+    background-color: white;
 
-    .next {
-      border-width: 1px 0 0;
-      border-style: solid;
-      border-color: black;
-      width: 100%;
+    .text {
       display: flex;
       align-items: center;
-      justify-content: center;
-      height: 100%;
-      width: 100%;
-      background-color: white;
+      position: relative;
+      margin: 0 1rem;
+    }
 
-      &:hover {
-        //background-color: $crayola-orange;
-        border-color: $crayola-orange;
-        color: $crayola-orange;
-      }
+    .icon {
+
+    }
+  }
+
+  button {
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: white;
+
+    &:hover {
+      border-color: $crayola-orange;
+      color: $crayola-orange;
+    }
+
+    &.disabled {
+      border-color: lightgray;
+    }
+
+    &.disabled:hover {
+      color: lightgray;
+      border-color: lightgray;
+    }
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  @media (max-width: 767px) {
+    button {
+      width: 100%;
+      height: 100%;
+    }
+
+    .vertical-separator {
+      height: 60%;
+      width: 3px;
+      background-color: lightgray;
+    }
+
+    /*button.next {
+      border-width: 0 0 0 1px;
+      border-style: solid;
+      border-color: lightgray;
+    }
+
+    button.back {
+      border-width: 0 1px 0 0;
+      border-style: solid;
+      border-color: lightgray;
+    }*/
+
+    .back-section {
+      justify-content: center;
+    }
+
+    .next-section {
+      justify-content: center;
+    }
+  }
+
+  @media (min-width: 768px) {
+    button {
+      border-radius: .2rem;
+      border-style: solid;
+      border-color: black;
+      border-width: 1px;
 
       &.disabled {
         border-color: lightgray;
       }
-      &.disabled:hover {
-        //background-color: $crayola-orange;
-        /*border-color: lightgray;*/
-        color: lightgray;
-      }
+    }
+
+    .vertical-separator {
+      display: none;
+    }
+
+    button:hover {
+      border-color: $crayola-orange;
+    }
+
+    .back-section {
+      justify-content: flex-start;
+      padding-left: 1rem;
+    }
+
+    .next-section {
+      justify-content: flex-end;
+      padding-right: 1rem;
     }
   }
+
+
 }

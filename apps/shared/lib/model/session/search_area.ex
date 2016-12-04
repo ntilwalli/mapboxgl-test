@@ -1,11 +1,11 @@
-defmodule Shared.Model.SessionProperties do
+defmodule Shared.Model.Session.SearchArea do
   use Shared.Lib, :model
 
   @derive {Poison.Encoder, except: [:__meta__]}
   @primary_key false
   embedded_schema do
-    embeds_one :search_area, Shared.Model.SearchArea
-    field :rrule_string, :string
+    embeds_one :region, Shared.Model.Region
+    field :radius, :integer
   end
 
   @required_fields [:radius]

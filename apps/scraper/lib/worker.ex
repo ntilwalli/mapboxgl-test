@@ -12,7 +12,7 @@ defmodule Scraper.Worker do
 
   def handle_info(:work, state) do
     #IO.puts "Processing"
-    work()
+    #work()
     schedule_work(12 * 60 * 60)
     {:noreply, state}
   end

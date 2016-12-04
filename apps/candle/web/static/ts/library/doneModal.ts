@@ -22,7 +22,8 @@ function intent(sources) {
 function renderModal(info) {
   const {props, content} = info
   const title = props.title || ``
-  return div(`.modal-dialog`, [
+  const styleClass = props.styleClass || ``
+  return div(`.modal-dialog${styleClass}`, [
     div(`.modal-content`, [
       div(`.modal-header`, [
         div(`.modal-title.modal-header-text`, [title]),

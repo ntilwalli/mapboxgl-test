@@ -1,5 +1,5 @@
 import {Observable as O} from 'rxjs'
-import {div, span, button} from '@cycle/dom'
+import {div, span, button, hr} from '@cycle/dom'
 import {combineObj, processHTTP, mergeSinks, createProxy} from '../../../utils'
 import Immutable = require('immutable')
 
@@ -15,7 +15,7 @@ function createDonde(sources, inputs) {
   const content = Donde(sources, inputs)
   return {
     content,
-    controller: NextButton(sources, {...inputs, props$: O.of({next: 'cuando'}), valid$: content.valid$}),
+    controller: BackNextButtons(sources, {...inputs, props$: O.of({next: 'cuando'}), valid$: content.output$.pluck(`valid`)}),
     instruction: getDondeInstruction()
   }
 }
@@ -24,7 +24,7 @@ function createCuando(sources, inputs) {
   const content = Cuando(sources, inputs)
   return {
     content,
-    controller: BackNextButtons(sources, {...inputs, props$: O.of({back: `donde`, next: 'description'}), valid$: content.valid$}),
+    controller: BackNextButtons(sources, {...inputs, props$: O.of({back: `donde`, next: 'description'}), valid$: content.output$.pluck(`valid`)}),
     instruction: getCuandoInstruction()
   }
 }
@@ -103,7 +103,7 @@ function reducers(actions, inputs: any) {
   })
 
   const session_r = inputs.session$.map(session => state => {
-    console.log(`updated workflow session`, session)
+    //console.log(`updated workflow session`, session)
     return state.set(`session`, session)
   })
 
@@ -190,6 +190,7 @@ function renderMainContent(info: any) {
 
 function renderController(info: any) {
   return div(`.controller-buttons`, [
+    hr(`.separator`),
     info.components.controller
   ])
 }
@@ -310,7 +311,6 @@ function main(sources, inputs) {
       }
     }).publishReplay(1).refCount()
 
-
   const components = {
     content: component$.switchMap(x => x.content.DOM),
     controller: component$.switchMap(x => x.controller.DOM),
@@ -325,16 +325,12 @@ function main(sources, inputs) {
 
   const navigation$ = component$.switchMap(x => x.controller.navigation$)
   const session$ = component$.switchMap(x => {
-    return x.content.session$
+    return x.content.output$.pluck(`session`)
   })
 
-  //session$.subscribe()
+
   const state$ = model(actions, {...inputs, session$})
-
-
   const vtree$ = view(state$, components)
-
-  
 
   const to_new$ = push_state$.filter(should_create_new)
     .map(val => {
@@ -381,8 +377,9 @@ function main(sources, inputs) {
            }
          }),
        navigation$.withLatestFrom(state$, (nav, state) => {
-        //  const foo = clone({...state.session, current_step: nav})
-        //  console.log(`Got navigation click: `, foo)
+         console.log(`nav state session`, state.session)
+         //const foo = clone({...state.session, current_step: nav})
+         //console.log(`Got navigation click: `, foo)
          return {
            pathname: `/create/listing`,
            action: `replace`,
@@ -394,19 +391,23 @@ function main(sources, inputs) {
        }),
        O.merge(
          actions.success_retrieve$, 
-         actions.success_create$.map(x => {
-          x.listing = undefined,
-          x.properties = undefined
-          x.current_step = "donde"
-          return x
-         }))
+         actions.success_create$
          .map(val => {
+           const session = {
+             ...val, 
+             listing: {
+             }, 
+             properties: {
+             }, 
+             current_step: `donde`
+           }
+
            return {
              pathname: `/create/listing`,
              action: `replace`,
              state: {
                type: 'session',
-               data: val
+               data: session
              }
            }
          }),
@@ -415,7 +416,7 @@ function main(sources, inputs) {
            pathname: `/create`,
            action: `replace`
          }
-       })
+       }))
      ),//.do(x => console.log(`to router`, x)),
      MessageBus: O.merge(
        actions.show_menu$.mapTo({to: `main`, message: `showLeftMenu`}), 

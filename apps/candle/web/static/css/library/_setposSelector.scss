@@ -1,0 +1,52 @@
+@import '../variables';
+$boxSizeLarge: 2rem;
+$boxSizeSmall: 2rem;
+$boxMarginRight: .2rem;
+$numBoxes: 5;
+$componentWidthLarge: (1 + (($boxSizeLarge + $boxMarginRight) * ($numBoxes - 1)));
+$componentWidthSmall: $numBoxes * $boxSizeSmall;
+
+.bysetpos-selector {
+  display: flex;
+
+  .pos {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: white;
+    margin-right: $boxMarginRight;
+    color: black;
+    border: 1px solid black;
+
+    &.selected {
+      background-color: $crayola-orange;
+      color: white;
+    }
+
+    &:hover {
+      color: black;
+      border-width: 2px;
+      cursor: pointer;
+    }
+  }
+}
+
+@media (min-width: 768px) {
+  .bysetpos-selector {
+    width: $componentWidthLarge;
+    .pos {
+      width: $boxSizeLarge;
+      height: $boxSizeLarge;
+    }
+  }
+}
+
+@media (max-width: 767px) {
+  .bysetpos-selector {
+    width: $componentWidthSmall;
+    .pos {
+      width: $boxSizeSmall;
+      height: $boxSizeSmall;
+    }
+  }
+}

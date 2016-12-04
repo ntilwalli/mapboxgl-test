@@ -22,7 +22,6 @@ function reducers(actions, inputs) {
     })
 
   const donde_r = inputs.donde$.map(donde => state => {
-    //console.log(`donde r:`, donde)
     const mode = state.get(`mode`)
     return state.update(`session`, session => {
       if (mode === `venue`) {
@@ -65,39 +64,38 @@ export function model(actions, inputs) {
     })
     .switchMap((info: any) => {
       const {region, session, authorization} = info
-      const cloned_session = clone(session)
 
       const init = {
         session: clone(session),
         authorization,
         modal: undefined,
-        valid: false,
+        valid: !!(session.listing.donde),
         mode: `venue`
       }
 
-      if (!init.session.properties) {
-        init.session[`properties`] = {}
-      }
+      // if (!init.session.properties) {
+      //   init.session[`properties`] = {}
+      // }
 
-      if (!init.session.properties.search_area) {
-        init.session[`properties`][`search_area`] = {
-          region,
-          radius: 30000
-        }
-      }
+      // if (!init.session.properties.search_area) {
+      //   init.session[`properties`][`search_area`] = {
+      //     region,
+      //     radius: 30000
+      //   }
+      // }
 
-      if (!init.session.current_step) {
-        init.session[`current_step`] = `donde`
-      }
+      // if (!init.session.current_step) {
+      //   init.session[`current_step`] = `donde`
+      // }
 
-      if (!init.session.listing) {
-        init.session.listing = {
-        }
-      }
+      // if (!init.session.listing) {
+      //   init.session.listing = {
+      //   }
+      // }
 
-      if (!init.session.listing) {
-        init.session.listing.donde = undefined
-      }
+      // if (!init.session.listing) {
+      //   init.session.listing.donde = undefined
+      // }
 
       return reducer$
         .startWith(Immutable.Map(init))

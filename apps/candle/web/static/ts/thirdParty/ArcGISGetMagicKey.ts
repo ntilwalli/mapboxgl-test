@@ -7,7 +7,7 @@ import Immutable = require('immutable')
 import {getState} from '../states'
 
 
-const geocodeUrlPrefix = `http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates`
+const geocodeUrlPrefix = `https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates`
 const defaultCategory = `ArgGISGetMagicKey`
 
 function toRequest({category}, {name, magicKey}) {

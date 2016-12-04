@@ -3,7 +3,7 @@ import moment = require('moment')
 import {combineObj, clean, normalizeArcGISSingleLineToString} from '../utils'
 import Immutable = require('immutable')
 
-const suggestUrlPrefix = `http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/suggest`
+const suggestUrlPrefix = `https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/suggest`
 const defaultCategory = "ArgGISSuggest"
 
 function toRequest({props, input, center}) {

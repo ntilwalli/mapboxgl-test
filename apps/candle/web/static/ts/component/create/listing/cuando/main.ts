@@ -1,29 +1,38 @@
 import {Observable as O} from 'rxjs'
 import {div} from '@cycle/dom'
-import {normalizeComponent} from '../../../../utils'
+import {normalizeComponent, componentify} from '../../../../utils'
 import intent from './intent'
-import model from './model'
-import view from './view'
 
-import RecurrenceInput from './recurrenceInput/main'
-import RecurrenceCalendar from './recurrenceCalendar/main'
+
+import Recurrence from './recurrence/main'
+//import RecurrenceCalendar from './recurrenceCalendar/main'
 
 export function main(sources, inputs) {
   const actions = intent(sources)
-  const cuando$ = O.never()
-  const state$ = model(actions, {...inputs, cuando$})
-  const components = {}
-  const vtree$ = view(state$, components)
+  const screen$ = actions.session$.map(session => {
+    if (session.listing.type === `single`) {
+      throw new Error(`Invalid listing type`) 
+    } else {
+      return Recurrence(sources, inputs)
+    }
+  }).publishReplay(1).refCount()
+
+  const components = {
+    screen$: screen$.switchMap(x => {
+      return x.DOM
+    })
+  }
 
   const out = {
-    DOM: vtree$,
+    DOM: screen$.switchMap(screen => screen.DOM)
   }
 
   const normalized = normalizeComponent(out)
 
   return {
     ...normalized, 
-    session$: state$.pluck(`session`), 
-    valid$: state$.pluck(`valid`).distinctUntilChanged()
+    output$:  screen$.switchMap(screen => {
+      return screen.output$
+    })
   }
 }

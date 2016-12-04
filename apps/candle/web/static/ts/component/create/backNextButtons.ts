@@ -1,5 +1,6 @@
 import {Observable as O} from 'rxjs'
-import {div, button} from '@cycle/dom'
+import {div, span, button} from '@cycle/dom'
+import {combineObj} from '../../utils'
 
 function intent(sources) {
   const {DOM} = sources
@@ -16,19 +17,31 @@ function intent(sources) {
 }
 
 function model(actions, inputs) {
-  return inputs.props$
-    .switchMap(props => {
-      return O.never().startWith(props)
-        .scan((acc, f: Function) => f(acc))
+  return combineObj({
+      props$: inputs.props$,
+      valid$: inputs.valid$
     })
     .publishReplay(1).refCount()
 }
 
 function view(state$) {
   return state$.map(state => {
-    return div(`.back-next-buttons`, [
-      button(`.appBackButton.back`, [`Back`]),
-      button(`.appNextButton.next`, [`Next`])
+    console.log(`button state`, state)
+    const {props, valid} = state
+    return div(`.back-next`, [
+      div(`.button-section.back-section`, [
+        props.back ? button(`.appBackButton.back`, [
+          span(`.icon.fa.fa-angle-left.fa-2x`),
+          span(`.text`, [`Back`]),
+        ]) : null
+      ]),
+      span(`.vertical-separator`, []),
+      div(`.button-section.next-section`, [
+        props.next ? button(`.appNextButton.next`, {class: {disabled: !valid}}, [
+          span(`.text`, [`Next`]),
+          span(`.icon.fa.fa-angle-right.fa-2x`)
+        ]) : null
+      ])
     ])
   })
 }
@@ -43,9 +56,9 @@ function main(sources, inputs) {
     navigation$: O.merge(
       actions.navigation$.withLatestFrom(state$, (nav, state: any) => {
         if (nav === `back`) {
-          return state.back
+          return state.props.back
         } else {
-          return state.next
+          return state.props.next
         }
       })
     )

@@ -1,0 +1,167 @@
+@import '../../../../../variables';
+.rrule-modal {
+  //height: 34rem;
+  width: 36rem;
+  padding-bottom: 2rem;
+}
+
+.interval-input {
+  width: 2rem;
+}
+
+.advanced-rrule {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  overflow-y: scroll;
+
+  .date-section {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-around;
+    //margin-top: .5rem;
+  }
+
+  .vertical-section {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 .15rem;
+
+    .heading {
+      margin-bottom: .5rem;
+      display: flex;
+      justify-content: center;
+      //font-weight: bold;
+    }
+  }
+
+  .controller {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: .5rem;
+  }
+
+  @media (min-width: 768px) {
+
+    .rrule-modal {
+      height: 38rem;
+      width: 36rem;
+    }
+
+    .section {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      margin-bottom: .5rem;
+
+      .heading {
+        margin-bottom: .5rem;
+        display: flex;
+        justify-content: center;
+        //font-weight: bold;
+      }
+    }
+  }
+
+  @media (max-width: 767px) {
+
+    .rrule-modal {
+      height: 38rem;
+      //width: 36rem;
+    }
+
+    .section {
+      display: flex;
+      //flex-direction: column;
+      //justify-content: center;
+      align-items: center;
+      margin-bottom: .5rem;
+
+      .heading {
+        margin-right: 1rem;
+        display: flex;
+        justify-content: center;
+        //font-weight: bold;
+      }
+    }
+  }
+
+
+
+  .input {
+    display: flex;
+    justify-content: center;
+  }
+
+  .frequency-input {
+    .text {
+      margin-right: 1rem;
+      margin-left: .5rem;
+    }
+  }
+
+  /*.month-calendar {
+    width: (1.3rem + (1.4rem * 6));
+    .day-names {
+      display: flex;
+      justify-content: space-around;
+      width: (1.3rem + (1.4rem * 6));
+      .day-name {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-right: .1rem;
+        margin-bottom: .4rem;
+      }
+    }
+
+    .week {
+      display: flex;
+      justify-content: flex-end;
+      width: (1.3rem + (1.4rem * 6));
+      .day {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 1.3rem;
+        height: 1.3rem;
+        background-color: white;
+        margin-right: .1rem;
+        margin-bottom: .1rem;
+        color: lightgray;
+        border: 1px solid lightgray;
+        pointer-events: none;
+
+        &.selectable {
+          color: black;
+          border: 1px solid black;
+          pointer-events: auto
+        }
+
+        &.today {
+          background-color: white;
+          color: black;
+          border: 3px solid black;
+        }
+
+        &.selected {
+          background-color: $crayola-orange;
+          color: white;
+        }
+
+        &:hover {
+          border-width: 2px;
+        }
+      }
+    }
+  }*/
+  
+      
+
+
+
+
+
+}

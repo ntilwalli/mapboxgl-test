@@ -12,7 +12,7 @@ export function main(sources, inputs, {modal, session}) {
       ...inputs,
       content: (sources, inputs) => SearchArea(sources, inputs),
       props$: O.of({title: `Change Search Area`, styleClass: `.sign-up-height`}),
-      initialState$: O.of(session.search_area).publishReplay(1).refCount()
+      initialState$: O.of(session.properties.search_area).publishReplay(1).refCount()
     })
 
     return out

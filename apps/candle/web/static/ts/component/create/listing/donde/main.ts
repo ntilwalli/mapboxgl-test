@@ -11,11 +11,29 @@ import DoneModal from '../../../../library/doneModal'
 import SearchArea from './searchArea/main'
 import {main as VenueInput} from './venue/main'
 
-function intent(sources) {
+function intent(sources, inputs) {
   const {DOM, Router} = sources
+
+  const region$ = getPreferredRegion$(inputs)
   const show_search_area_screen$ = DOM.select(`.appChangeSearchAreaButton`).events(`click`)
+  
+  const session$ = combineObj({
+    region$,
+    session$: Router.history$.pluck(`state`).pluck(`data`)
+  }).map((info: any) => {
+    const {region, session} = info
+    
+    session.listing.donde = session.listing.donde || undefined
+    session.properties.search_area = session.properties.search_area || {
+      region,
+      radius: 30000
+    }
+
+    return session
+  })
+  
   return {
-    session$: Router.history$.pluck(`state`).pluck(`data`),
+    session$,
       //.do(x => console.log(`session`, x)),
     show_search_area_screen$
   }
@@ -65,7 +83,7 @@ function view(state$, components) {
 
 // This component manages auto-saving
 function main(sources, inputs) {
-  const actions = intent(sources)
+  const actions = intent(sources, inputs)
   const hide_modal$ = createProxy()
   const search_area$ = createProxy()
   const donde$ = createProxy()
@@ -88,17 +106,15 @@ function main(sources, inputs) {
       if (mode === `venue`) {
         const out = VenueInput(sources, {
           ...inputs, 
-          search_area$: state$.map((state: any) => state.session.properties.search_area)
+          search_area$: state$.map((state: any) => state.session.properties.search_area),
+          props$: state$.map((state: any) => state.session.listing.donde)
         })
-        //out.HTTP.subscribe(x => console.log(`HTTP blah`, x))
 
         return out
       } else {
         throw new Error(`Invalid mode ${mode}`)
       }
     }).publishReplay(1).refCount()
-
-    //input_component$.switch
 
   donde$.attach(input_component$.switchMap(x => x.output$)) 
  
@@ -108,8 +124,6 @@ function main(sources, inputs) {
   }
 
   const vtree$ = view(state$, components)
-  const session$ = state$.pluck(`session`).publishReplay(1).refCount()
-  const valid$ = state$.pluck(`valid`).publishReplay(1).refCount()
   const local = {
     DOM: vtree$,
   }
@@ -123,10 +137,7 @@ function main(sources, inputs) {
 
   const normalized = normalizeComponent(out)
 
-  //out.MapJSON.subscribe(x => console.log(`MapJSON donde main`, x))
-
-  //console.log(out)
-  return {...normalized, session$, valid$}
+  return {...normalized, output$: state$}
 }
 
 export {
