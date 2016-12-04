@@ -217,7 +217,8 @@ export function mergeSinks(...components) {
 }
 
 export function normalizeComponent(component) {
-  return spread(component, {
+  return {
+    ...component, 
     DOM: defaultNever(component, `DOM`).publish().refCount(),
     MapJSON: defaultNever(component, 'MapJSON').publish().refCount(),
     Router: defaultNever(component, `Router`).publish().refCount(),
@@ -226,7 +227,7 @@ export function normalizeComponent(component) {
     HTTP: defaultNever(component, `HTTP`).publish().refCount(),
     // Heartbeat: defaultNever(component, `Heartbeat`).publish().refCount(),
     MessageBus: defaultNever(component, `MessageBus`).publish().refCount()
-  })
+  }
 }
 
 export function componentify(component$) {

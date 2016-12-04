@@ -1,9 +1,23 @@
 import {Observable as O} from 'rxjs'
 import {div, span, button, hr} from '@cycle/dom'
-import {combineObj, processHTTP, mergeSinks, createProxy} from '../../../utils'
 import Immutable = require('immutable')
 
-import {renderMenuButton, renderCircleSpinner, renderLoginButton, renderSearchCalendarButton} from '../../renderHelpers/navigator'
+import {
+  combineObj, 
+  processHTTP, 
+  mergeSinks, 
+  createProxy,
+  normalizeComponent
+} from '../../../utils'
+
+import {
+  renderMenuButton, 
+  renderCircleSpinner, 
+  renderLoginButton, 
+  renderSearchCalendarButton
+} from '../../renderHelpers/navigator'
+
+import {main as Meta} from './meta/main'
 import {main as Donde} from './donde/main'
 import {main as Cuando} from './cuando/main'
 import {main as NextButton} from '../nextButton'
@@ -11,11 +25,20 @@ import {main as BackNextButtons} from '../backNextButtons'
 import clone = require('clone')
 
 
+function createMeta(sources, inputs) {
+  const content = Meta(sources, inputs)
+  return {
+    content,
+    controller: BackNextButtons(sources, {...inputs, props$: O.of({next: 'donde'}), valid$: content.output$.pluck(`valid`)}),
+    instruction: getMetaInstruction()
+  }
+}
+
 function createDonde(sources, inputs) {
   const content = Donde(sources, inputs)
   return {
     content,
-    controller: BackNextButtons(sources, {...inputs, props$: O.of({next: 'cuando'}), valid$: content.output$.pluck(`valid`)}),
+    controller: BackNextButtons(sources, {...inputs, props$: O.of({back: `meta`, next: 'cuando'}), valid$: content.output$.pluck(`valid`)}),
     instruction: getDondeInstruction()
   }
 }
@@ -141,25 +164,25 @@ function renderSaveExitButton() {
   return button(`.appSaveExitButton.text-button.save-exit-button`, [`Save/Exit`])
 }
 
-function getStepHeadingLong(state) {
+function getStepHeading(state) {
   const {session} = state
+  const {listing} = session
+  const {type} = listing
   const {current_step} = session
 
-  if (!current_step || current_step === `donde`) {
-    return `Step 1: Select the venue?`
-  } else {
-    return `Generic heading`
-  }
-}
-
-function getStepHeadingShort(state) {
-  const {session} = state
-  const {current_step} = session
-
-  if (!current_step || current_step === `donde`) {
-    return `Step 1: Venue`
-  } else {
-    return `Generic`
+  switch (current_step) {
+    case 'meta':
+      return 'Step 1: Title + type?'
+    case 'donde':
+      return 'Step 2: Set the venue'
+    case 'cuando':
+      if (type === 'recurring') {
+        return 'Step 3: Set the recurrence'
+      } else {
+        return 'Step 3: Select the date'
+      }
+    default:
+      return `Generic heading`
   }
 }
 
@@ -169,8 +192,8 @@ function renderNavigator(state: any) {
     div(`.section`, [
       renderMenuButton(),
       span(`.step-description`, [
-        span(`.show-lg`, [getStepHeadingLong(state)]),
-        span(`.show-sm`, [getStepHeadingShort(state)])
+        span(`.show-lg`, [getStepHeading(state)]),
+        span(`.show-sm`, [getStepHeading(state)])
       ])
     ]),
     div(`.section`, [
@@ -258,6 +281,12 @@ function view(state$, components) {
   })
 }
 
+function getMetaInstruction() {
+  return {
+    DOM: O.of(div([`Title + type`]))
+  }
+}
+
 function getDondeInstruction() {
   return {
     DOM: O.of(div([`Set the event location`]))
@@ -299,6 +328,8 @@ function main(sources, inputs) {
       if (current_step) {
         //console.log(`routing to step: `, current_step)
         switch (current_step) { 
+          case "meta":
+            return createMeta(sources, inputs)
           case "donde":
             return createDonde(sources, inputs)
           case "cuando":
@@ -309,7 +340,15 @@ function main(sources, inputs) {
       } else {
         return createDonde(sources, inputs)
       }
-    }).publishReplay(1).refCount()
+    })
+    .map(x => {
+      return {
+        ...x,
+        content: normalizeComponent(x.content)
+      }
+    })
+    .do(x => console.log(`component$...`, x))
+    .publishReplay(1).refCount()
 
   const components = {
     content: component$.switchMap(x => x.content.DOM),
@@ -358,7 +397,8 @@ function main(sources, inputs) {
 
   const out = {
      DOM: vtree$,
-     MapJSON: component$.switchMap(x => x.content.MapJSON)
+     MapJSON: component$
+      .switchMap(x => x.content.MapJSON)
       .publish().refCount(),
      HTTP: O.merge(
        to_retrieve$, 
@@ -399,7 +439,7 @@ function main(sources, inputs) {
              }, 
              properties: {
              }, 
-             current_step: `donde`
+             current_step: `meta`
            }
 
            return {
