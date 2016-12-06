@@ -49,14 +49,25 @@ function renderInPersonInput(performer_signup, components) {
   const index = performer_signup.findIndex(x => x.type === 'in-person')
   if (index >= 0) {
     const props = performer_signup[index].data
-    console.log('in person props', props)
-    return div('.column', [
-      div('.row', [
-        span('.sub-heading', ['Begins']),
-        renderInPersonBeginsComboBox(props, {})
+    const styles = props.styles
+    return div('.column.margin-bottom', [
+      div('.row.align-center.small-margin-bottom', [
+        span('.sub-heading.align-center', ['Begins']),
+        span('.item', [components.in_person_begins]),
+        span('.item.align-center', ['minutes before event start'])
       ]),
-      div([`There`])
-    ])
+      div('.row.align-center', [
+          span('.sub-heading.align-center', ['Style']),
+          div('.checkbox-input', [
+            input('.appInPersonStyleInput', {attrs: {type: 'checkbox', name: 'in-person-style', value: 'bucket', checked: styles.some(x => x === 'bucket')}}, []),
+            span('.title', ['Bucket'])
+          ]),
+          div('.checkbox-input', [
+            input('.appInPersonStyleInput', {attrs: {type: 'checkbox', name: 'in-person-style', value: 'list', checked: styles.some(x => x === 'list')}}, []),
+            span(`.title`, ['List'])
+          ])
+        ])
+      ])
   } else {
     return null
   }  
@@ -64,7 +75,6 @@ function renderInPersonInput(performer_signup, components) {
 
 function renderRegistrationInput(performer_signup) {
   const index = performer_signup.findIndex(x => x.type === 'registration')
-  console.log(performer_signup)
   let registration_input = null
   let registration_type = undefined
   if (index >= 0) {

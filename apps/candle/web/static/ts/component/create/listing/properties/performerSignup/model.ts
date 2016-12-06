@@ -25,14 +25,34 @@ function getInPersonDefault() {
       type: 'minutes-before-event-start',
       data: 15
     },
-    types: ['bucket']
+    styles: ['bucket']
   }
 }
 
+function getInPersonIndex(arr) {
+  return arr.findIndex(x => x.type === 'in-person')
+}
+
+function getRegistrationIndex(arr) {
+  return arr.findIndex(x => x.type === 'registration')
+}
+
+function hasInPerson(arr) {
+  if (getInPersonIndex(arr) >= 0) return true
+
+  return false
+}
+
+function hasRegistration(arr) {
+  if (getInPersonIndex(arr) >= 0) return true
+
+  return false
+}
+
 function reducers(actions, inputs) {
-  const type_r = actions.type$.map(msg => state => {
+  const type_r = actions.type$.map(msg => state => { 
+    const {value, checked} = msg   
     return state.update(`performer_signup`, performer_signup => {
-      const {value, checked} = msg
       const index = performer_signup.findIndex(x => x.type === value)
       if (index >= 0) {
         performer_signup.splice(index, 1)
@@ -53,10 +73,63 @@ function reducers(actions, inputs) {
       }
 
       return performer_signup
+    }).update('errors_map', errors_map => {
+      errors_map[value] = []
+      return errors_map
     })
   })
 
-  return O.merge(type_r)
+  const in_person_style_r = actions.in_person_style$.map(msg => state => {
+
+    return state.update(`performer_signup`, performer_signup => {
+
+      let index = performer_signup.findIndex(x => x.type === 'in-person')
+      const styles = performer_signup[index].data.styles
+      index = styles.findIndex(x => x === msg.type)
+      if (index >= 0) {
+        styles.splice(index, 1)
+      } else {
+        styles.push(msg.type)
+      }
+
+      return performer_signup
+    })
+  })
+
+  const in_person_input_r = inputs.in_person_input$.map(msg => state => {
+    //console.log('in person input msg', msg)
+    return state.update('errors_map', errors_map => {
+      errors_map['in-person'] = msg.errors
+      return errors_map
+    }).update(`performer_signup`, performer_signup => {
+
+      let index = performer_signup.findIndex(x => x.type === 'in-person')
+      if (msg.valid) {
+        performer_signup[index].data.begins.data = msg.value
+      } else {
+        performer_signup[index].data.begins.data = undefined
+      }
+
+      return performer_signup
+    })
+
+    // return state.update(`performer_signup`, performer_signup => {
+
+    //   let index = performer_signup.findIndex(x => x.type === 'in-person')
+    //   const styles = performer_signup[index].data.styles
+    //   index = styles.findIndex(x => x.type === msg.type)
+    //   if (index >= 0) {
+    //     styles.splice(index, 1)
+    //   } else {
+    //     styles.push(msg.type)
+    //   }
+
+    //   return performer_signup
+    // })
+  })
+
+
+  return O.merge(type_r, in_person_style_r, in_person_input_r)
 }
 
 export default function model(actions, inputs) {
@@ -66,11 +139,13 @@ export default function model(actions, inputs) {
     //.distinctUntilChanged((x, y) => deepEqual(x, y))
     .switchMap(props => {
       const init = {
-        performer_signup: props || []
+        performer_signup: props || [],
+        errors_map: {}
       }
 
       return reducer$.startWith(Immutable.Map(init)).scan((acc, f: Function) => f(acc))
     })
+    .debounceTime(0)
     .map((x: any) => x.toJS())
     .do(x => console.log(`performerSignup state`, x))
     .publishReplay(1).refCount()

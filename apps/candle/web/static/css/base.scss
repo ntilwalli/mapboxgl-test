@@ -33,6 +33,12 @@ html, body {
   //font-family: 'Fixedsys Excelsior 3.01';//'Akkurat Regular';//"Corona4Typewriter";
 }
 
+input[type="text"] {
+  border-style: solid;
+  border-color: lightgray;
+  line-height: 2rem;
+}
+
 /*.fa {
   font-size: 1rem;
 }*/

@@ -58,13 +58,16 @@ function intent(sources) {
 
 function reducers(actions, inputs) {
   const properties_output_r = inputs.properties_output$.map(message => state => {
-    console.log(`properties message`, message)
+    //console.log(`properties message`, message)
     return state.update('session', session => {
         session.listing.meta[message.type] = message.data.prop
         return session
       }).update(`valid_flags`, valid_flags => {
         valid_flags[message.type] = message.data.valid
         return valid_flags
+      }).update('errors_map', errors_map => {
+        errors_map[message.type] = message.data.errors
+        return errors_map
       })
   })
 
@@ -80,7 +83,8 @@ function model(actions, inputs) {
     .switchMap((info: any) => {
       const init = {
         session: info.session,
-        valid_flags: new Object()
+        valid_flags: {},
+        errors_map: {}
         //authorization: info.authorization,
       }
 
@@ -96,13 +100,22 @@ function model(actions, inputs) {
         valid: Object.keys(x.valid_flags).every(prop => x.valid_flags[prop])
       }
     })
-    //.do(x => console.log('properties state', x))
+    .do(x => console.log('properties state', x))
     .publishReplay(1).refCount()
 }
 
-function view(children$) {
-  return children$.map(children => {
+function view(state$, children$) {
+  return combineObj({
+    state$,
+    children$
+  }).map((info: any) => {
+    const {state, children} = info
+    const {errors_map} = state
+    const errors = 
+      Object.keys(errors_map).reduce((acc, val) => acc.concat(errors_map[val]), [])
+
     return div(`.workflow-step`, [
+      errors.length ? div('.errors', errors.map(x => div([x]))) : null,
       div(`.body`, children)
     ])
   })
@@ -133,7 +146,7 @@ export function main(sources, inputs) {
   const state$ = model(actions, {...inputs, properties_output$})
   const properties_dom$ = property_components$.switchMap(x => x.DOM)
   return {
-    DOM: view(properties_dom$),
+    DOM: view(state$, properties_dom$),
     output$: state$
   }
 }
