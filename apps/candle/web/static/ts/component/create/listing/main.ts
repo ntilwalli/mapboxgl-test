@@ -192,7 +192,7 @@ function getStepHeading(state) {
       } else {
         return 'Step 3: Select the date'
       }
-    case 'cuando':
+    case 'properties':
       return 'Step 4: Set the listing properties'
     default:
       return `Generic heading`

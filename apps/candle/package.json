@@ -26,7 +26,7 @@
     "@cycle/dom": "^14.1.0",
     "@cycle/http": "^11.2.0",
     "@cycle/isolate": "^1.4.0",
-    "@cycle/rxjs-run": "^3.0.3",
+    "@cycle/rxjs-run": "^3.1.0",
     "@cycle/storage": "3.0.0-rc3",
     "clone": "^2.0.0",
     "cycle-mapboxgl": "0.0.9",
@@ -47,7 +47,7 @@
     "rrule": "file:custom_deps/rrule",
     "rxjs": "^5.0.0-rc.3",
     "validator": "^5.2.0",
-    "xstream": "^7.0.0"
+    "xstream": "^9.0.0"
   },
   "devDependencies": {
     "@types/chai": "^3.4.34",
