@@ -7,6 +7,7 @@ import {RRule} from 'rrule'
 import {getActualRRule} from './helpers'
 import {getDatetime} from '../helpers'
 import clone = require('clone')
+import {inflateDates} from '../../helpers'
 
 import Calendar from './calendar/main'
 import TimeInput from '../../../../../library/timeInput/main'
@@ -89,70 +90,6 @@ function syncRRuleWithSession(rrule, session) {
     session.listing.cuando.rrule = the_rrule
   } else {
     session.listing.cuando.rrule = undefined
-  }
-}
-
-// function inflate(session) {
-//   session.properties.recurrence
-// }
-
-function inflateCuandoDates(container) {
-  const {rrule, rdate, exdate} = container
-
-  if (rrule && rrule.dtstart) {
-    container.rrule.dtstart = moment(rrule.dtstart)
-  }
-
-  if (rdate.length) {
-    container.rdate = container.rdate.map(x => moment(x))
-  }
-
-  if (exdate.length) {
-    container.exdate = container.exdate.map(x => moment(x))
-  }
-}
-
-function deflateCuandoDates(container) {
-  const {rrule, rdate, exdate} = container
-
-  if (rrule && rrule.dtstart) {
-    container.rrule.dtstart = rrule.dtstart.toDate().toISOString()
-  }
-
-  if (rdate.length) {
-    container.rdate = container.rdate.map(x => x.toDate().toISOString())
-  }
-
-  if (exdate.length) {
-    container.exdate = container.exdate.map(x => x.toDate().toISOString())
-  }
-}
-
-function inflateDates(session) {
-  const {properties, listing} = session
-  const {type} = listing
-
-  if (type === `recurring`) {
-    inflateCuandoDates(session.listing.cuando)
-    inflateCuandoDates(session.container.recurrence)
-  } else {
-    const {begins, ends} = listing.cuando
-    if (begins) { session.listing.cuando.begins = moment(begins) }
-    if (ends) { session.listing.cuando.ends = moment(ends) }
-  }
-}
-
-function deflateDates(session) {
-  const {properties, listing} = session
-  const {type} = listing
-
-  if (type === `recurring`) {
-    deflateCuandoDates(session.listing.cuando)
-    deflateCuandoDates(session.container.recurrence)
-  } else {
-    const {begins, ends} = listing.cuando
-    if (begins) { session.listing.cuando.begins = begins.toDate().toISOString() }
-    if (ends) { session.listing.cuando.ends = ends.toDate().toISOString() }
   }
 }
 
@@ -252,7 +189,7 @@ function reducers(actions, inputs) {
       const the_date = getDatetime(date, recurrence.start_time)
 
       if (rrule) {
-        console.log(`rrule + date`, rrule, the_date)
+        //console.log(`rrule + date`, rrule, the_date)
         const the_rule = getActualRRule(rrule)
         const start = the_date.clone().startOf('day').toDate()
         const end = the_date.clone().endOf('day').toDate()
@@ -262,12 +199,12 @@ function reducers(actions, inputs) {
           toggleRDate(the_date, session.listing.cuando.rdate, session.properties.recurrence.rdate, session)
         }
       } else {
-        console.log(`date`, date)
+        //console.log(`date`, date)
         toggleRDate(the_date, session.listing.cuando.rdate, session.properties.recurrence.rdate, session)
       }
 
 
-      console.log(`session`, session)
+      //console.log(`session`, session)
       return session
     })
   })
@@ -291,7 +228,6 @@ function reducers(actions, inputs) {
             throw new Error(`Invalid modal type`)
         }
 
-        console.log(`session blah`, session)
         return session
       })
   })
@@ -326,6 +262,12 @@ function model(actions, inputs) {
       })).scan((acc, f: Function) => f(acc))
     })
     .map((x: any) => x.toJS())
+    .map(state => {
+      return {
+        ...state,
+        valid: isValid(state.session)
+      }
+    })
     //.do(x => console.log(`rrule main state`, x))
     .publishReplay(1).refCount()
 }

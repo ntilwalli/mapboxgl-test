@@ -21,6 +21,7 @@ import {
 import {main as Meta} from './meta/main'
 import {main as Donde} from './donde/main'
 import {main as Cuando} from './cuando/main'
+import {main as Properties} from './properties/main'
 import {main as NextButton} from '../nextButton'
 import {main as BackNextButtons} from '../backNextButtons'
 import clone = require('clone')
@@ -48,8 +49,17 @@ function createCuando(sources, inputs) {
   const content = Cuando(sources, inputs)
   return {
     content,
-    controller: BackNextButtons(sources, {...inputs, props$: O.of({back: `donde`, next: 'description'}), valid$: content.output$.pluck(`valid`)}),
+    controller: BackNextButtons(sources, {...inputs, props$: O.of({back: `donde`, next: 'properties'}), valid$: content.output$.pluck(`valid`)}),
     instruction: getCuandoInstruction()
+  }
+}
+
+function createProperties(sources, inputs) {
+  const content = Properties(sources, inputs)
+  return {
+    content,
+    controller: BackNextButtons(sources, {...inputs, props$: O.of({back: 'cuando', next: 'foo'}), valid$: content.output$.pluck(`valid`)}),
+    instruction: getPropertiesInstruction()
   }
 }
 
@@ -182,6 +192,8 @@ function getStepHeading(state) {
       } else {
         return 'Step 3: Select the date'
       }
+    case 'cuando':
+      return 'Step 4: Set the listing properties'
     default:
       return `Generic heading`
   }
@@ -300,6 +312,12 @@ function getCuandoInstruction() {
   }
 }
 
+function getPropertiesInstruction() {
+  return {
+    DOM: O.of(div([`Set the listing properties`]))
+  }
+}
+
 function main(sources, inputs) {
   const actions = intent(sources)
   const {push_state$} = actions
@@ -335,6 +353,8 @@ function main(sources, inputs) {
             return createDonde(sources, inputs)
           case "cuando":
             return createCuando(sources, inputs)
+          case "properties":
+            return createProperties(sources, inputs)
           default:
             throw new Error(`Invalid current step given: ${current_step}`)
         }
@@ -348,7 +368,7 @@ function main(sources, inputs) {
         content: normalizeComponent(x.content)
       }
     })
-    .do(x => console.log(`component$...`, x))
+    //.do(x => console.log(`component$...`, x))
     .publishReplay(1).refCount()
 
   const components = {

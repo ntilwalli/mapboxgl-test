@@ -14,18 +14,21 @@
 
     .row-input-section {
       display: flex;
-      flex-flow: row wrap;
-      justify-content: center;
-      margin-bottom: 1rem;  
+      flex-flow: row nowrap;
+      justify-content: flex-start;
+      margin-bottom: 1rem;
     }
 
-    .sub-heading {
+    .left-row-input-section {
       display: flex;
-      justify-content: center;
-      margin-bottom: .7rem;
+      flex-flow: column nowrap;
+      justify-content: flex-start;
+      margin-bottom: 1rem;
     }
+
 
     .input-area {
+      position: relative;
       display: flex;
       justify-content: center;
       flex-direction: column;
@@ -36,9 +39,26 @@
       flex-flow: row wrap;
       justify-content: center;
     }
+
+    .indented {
+      margin-left: 2rem;
+    }
+
+    .sub-heading {
+      display: flex;
+      justify-content: center;
+      margin-bottom: .7rem;
+    }
+
+    .left-sub-heading {
+      // display: flex;
+      // justify-content: center;
+      margin-bottom: .7rem;
+    }
+
   }
 
-  .radio-input {
+  .radio-input, .checkbox-input {
     margin-right: 1rem;
     .title {
       margin-right: .7rem;
@@ -49,11 +69,18 @@
     width: 100%;
   }
 
+  input[type='radio'], input[type='checkbox'] {
+    //position: relative;
+    //top: -1px;
+    margin-right: .5rem;
+  }
+
   textarea {
     width: 100%;
     height: 5rem;
   }
 }
 
+@import 'properties/index';
 @import 'donde/index';
 @import 'cuando/index';
