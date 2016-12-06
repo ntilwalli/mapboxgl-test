@@ -149,8 +149,8 @@ function view(state$, components) {
       return div(`.workflow-step.cuando-single`, [
         div(`.heading`, []),
         div(`.body`, [
-          div(`.input-section`, [
-            div(`.sub-heading`, ['Date']),
+          div(`.column.center.margin-bottom`, [
+            div(`.sub-heading.center`, ['Date']),
             div(`.input-area`, [
               div(`.flex-center`, [
                 div(`.calendar`, [
@@ -164,14 +164,14 @@ function view(state$, components) {
               ])
             ])
           ]),
-          div(`.input-section`, [
-            div(`.sub-heading`, ['Start time']),
+          div(`.column.center.margin-bottom`, [
+            div(`.sub-heading.center`, ['Start time']),
             div(`.input-area`, [
               begins_time
             ])
           ]),
-          div(`.input-section`, [
-            div(`.sub-heading`, ['End time']),
+          div(`.column.center`, [
+            div(`.sub-heading.center`, ['End time']),
             div(`.input-area`, [
               is_next_day ? span(`.next-day-message.flex-center`, ['(following day)']) : null,
               ends_time

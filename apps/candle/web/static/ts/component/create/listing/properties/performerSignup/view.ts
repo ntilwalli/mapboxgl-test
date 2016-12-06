@@ -1,26 +1,61 @@
 import {Observable as O} from 'rxjs'
-import {div, span, input} from '@cycle/dom'
+import {div, span, input, select, option} from '@cycle/dom'
 import Immutable = require('immutable')
 import {combineObj} from '../../../../../utils'
 
-function renderTypeWebsite(data) {
+
+function renderRegistrationTypeWebsite(data) {
   return null
 }
 
-function renderTypeEmail(data) {
+function renderRegistrationTypeEmail(data) {
   return null
 }
 
-function renderTypeApp(data) {
+function renderRegistrationTypeApp(data) {
   return null
 }
 
-function renderInPersonInput(performer_signup) {
-  const index = performer_signup.find(x => x.type === 'in-person')
+function renderInPersonBeginsComboBox(props, components) {
+  const {begins} = props
+  const {type, data} = begins
 
+  return div(`.item`, [
+    input({attrs: {type: 'text'}}), span(['before event'])
+    // select(`.appInPersonBegins`, [
+    //   option({
+    //       attrs: {
+    //         value: undefined, 
+    //         selected: !type
+    //       }
+    //     }, [``]),
+    //   option({
+    //       attrs: {
+    //         value: `weekly`,
+    //         selected: type === `weekly`
+    //       }
+    //     }, [`Weekly`]),
+    //   option({
+    //       attrs: {
+    //         value: `monthly`, 
+    //         selected: freq === `monthly`
+    //       }
+    //     }, [`Monthly`])
+    // ])
+  ])
+}
+
+function renderInPersonInput(performer_signup, components) {
+  const index = performer_signup.findIndex(x => x.type === 'in-person')
   if (index >= 0) {
-    return div('.input-section', [
-      'Hello'
+    const props = performer_signup[index].data
+    console.log('in person props', props)
+    return div('.column', [
+      div('.row', [
+        span('.sub-heading', ['Begins']),
+        renderInPersonBeginsComboBox(props, {})
+      ]),
+      div([`There`])
     ])
   } else {
     return null
@@ -28,35 +63,39 @@ function renderInPersonInput(performer_signup) {
 }
 
 function renderRegistrationInput(performer_signup) {
-  const index = performer_signup.find(x => x.type === 'register')
-  let registration_input
-  if (index) {
-    const {type, data} = performer_signup[index].data
-    if (type === 'app') {
-      registration_input = renderTypeApp(data)
-    } else if (type === 'email') {
-      registration_input = renderTypeEmail(data)
-    } else if (type === 'website') {
-      registration_input = renderTypeWebsite(data)
-    } else {
-      throw new Error(`Invalid registration input type: ${type}`)
+  const index = performer_signup.findIndex(x => x.type === 'registration')
+  console.log(performer_signup)
+  let registration_input = null
+  let registration_type = undefined
+  if (index >= 0) {
+    const item = performer_signup[index].data
+    if (item) {
+      const {type, data} = item
+      const registration_type = type
+      if (registration_type === 'app') {
+        registration_input = renderRegistrationTypeApp(data)
+      } else if (registration_type === 'email') {
+        registration_input = renderRegistrationTypeEmail(data)
+      } else if (registration_type === 'website') {
+        registration_input = renderRegistrationTypeWebsite(data)
+      } else {
+        throw new Error(`Invalid registration input type: ${type}`)
+      }
     }
-  } else {
-    return null
   }
 
-  return div('.input-section', [
-    div('.row-input-section', [
+  return div('.column', [
+    div('.row', [
       div('.radio-input', [
-        input('.appRegistrationTypeInput', {attrs: {type: 'radio', name: 'registration-type', value: 'app', checked: performer_signup.some(x => x.type === 'app')}}, []),
-        span('.title', ['App'])
+        input('.appRegistrationTypeInput', {attrs: {type: 'radio', name: 'registration-type', value: 'app', checked: registration_type === 'app'}}, []),
+        span('.title', ['Enable in-app'])
       ]),
       div('.radio-input', [
-        input('.appRegistrationTypeInput', {attrs: {type: 'radio', name: 'registration-type', value: 'email', checked: performer_signup.some(x => x.type === 'email')}}, []),
+        input('.appRegistrationTypeInput', {attrs: {type: 'radio', name: 'registration-type', value: 'email', checked: registration_type === 'email'}}, []),
         span(`.title`, ['E-mail'])
       ]),
       div('.radio-input', [
-        input('.appRegistrationTypeInput', {attrs: {type: 'radio', name: 'registration-type', value: 'website', checked: performer_signup.some(x => x.type === 'website')}}, []),
+        input('.appRegistrationTypeInput', {attrs: {type: 'radio', name: 'registration-type', value: 'website', checked: registration_type === 'website'}}, []),
         span('.title', ['Website'])
       ])
     ]),
@@ -66,34 +105,32 @@ function renderRegistrationInput(performer_signup) {
 
 export default function view(state$, components) {
   return combineObj({
-      state$//,
-      //components: combineObj(components)
+      state$,
+      components: combineObj(components)
     }).map((info: any) => {
-      const {state} = info
+      const {state, components} = info
       const {performer_signup} = state
 
-      const types = performer_signup.map(x => x.type)
-      const registration_checked = types.some(x => x === 'registration')
-      const in_person_checked = types.some(x => x === 'in-person')
+      const registration_checked = performer_signup.some(x => x.type === 'registration')
+      const in_person_checked = performer_signup.some(x => x.type === 'in-person')
 
-      return div('.left-row-input-section', [
-        div('.left-sub-heading', ['Performer sign-up']),        
-        div('.input-area', [
+      return div('.column', [
+        div('.sub-heading', ['Performer sign-up']),        
+        div('.column', [
           div('.checkbox-input', [
             input('.appTypeInput', {attrs: {type: 'checkbox', name: 'signup-type', value: 'in-person', checked: in_person_checked}}, []),
             span('.title', ['In person'])
           ]),
-          div('.indented.input-area', [
-            renderInPersonInput(performer_signup),
+          div('.indented.column', [
+            renderInPersonInput(performer_signup, components),
             !in_person_checked ? div('.disabled-cover', []) : null
           ]),
           div('.checkbox-input', [
             input('.appTypeInput', {attrs: {type: 'checkbox', name: 'signup-type', value: 'registration', checked: registration_checked}}, []),
             span('.title', ['Allow pre-registration'])
           ]),
-          div('.indented.input-area', [
-            renderRegistrationInput(performer_signup),
-            !registration_checked ? div('.disabled-cover', []) : null
+          div('.indented.column', {class: {"disabled-cover": !registration_checked}}, [
+            renderRegistrationInput(performer_signup)
           ])
         ])
       ])

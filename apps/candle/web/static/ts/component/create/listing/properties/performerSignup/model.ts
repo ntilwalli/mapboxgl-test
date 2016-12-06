@@ -3,22 +3,26 @@ import Immutable = require('immutable')
 import {combineObj} from '../../../../../utils'
 import deepEqual = require('deep-equal')
 
-function getRegistrationDefault() {
-  return [{
-    type: 'app',
+function getInAppDefault() {
+  return {
+    type: 'in-app',
     data: {
-      begins: undefined,
+      begins: {
+        type: 'upon-posting', //'days-before-event-start', 'minutes-before-event-start', 'previous-weekday-at-time
+        data: undefined
+      },
       ends: {
-        type: 'start-of-event'
+        type: 'event-start', // 'minutes-after-event-start', 'minutes-before-event-end', 'event-end'
+        data: undefined
       }
     }
-  }]
+  }
 }
 
 function getInPersonDefault() {
   return {
     begins: {
-      type: 'before-event',
+      type: 'minutes-before-event-start',
       data: 15
     },
     types: ['bucket']
@@ -36,7 +40,7 @@ function reducers(actions, inputs) {
         if (value === 'registration') {
           performer_signup.push({
             type: value,
-            data: getRegistrationDefault()
+            data: undefined
           })
         } else if (value === 'in-person') {
           performer_signup.push({

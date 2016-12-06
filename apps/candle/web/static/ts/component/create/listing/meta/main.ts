@@ -153,9 +153,9 @@ function view(state$, components) {
       return div(`.workflow-step`, [
         div(`.heading`, []),
         div(`.body`, [
-          div(`.input-section`, [
+          div(`.column.margin-bottom`, [
             div(`.sub-heading`, ['Listing type']),
-            div(`.row-input-area`, [
+            div(`.row`, [
               div(`.radio-input`, [
                 input(`.appTypeInput`, {attrs: {type: 'radio', name: 'listingType', value: 'single', checked: type === `single`}}, []),
                 span(`.title`, ['Single'])
@@ -166,23 +166,21 @@ function view(state$, components) {
               ])
             ])
           ]),
-          div(`.input-section`, [
+          div(`.column.margin-bottom`, [
             div(`.sub-heading`, ['Title']),
             div(`.input`, [
               input(`.appTitleInput.title`, {attrs: {type: 'text', value: title || ''}}, [])
             ])
           ]),
-          div(`.input-section`, [
+          div(`.column.margin-bottom`, [
             div(`.sub-heading`, [`Description`]),
-            div(`.input-area`, [
-              textarea(`.appDescriptionInput`, [
-                description || ''
-              ])
+            textarea(`.appDescriptionInput`, [
+              description || ''
             ])
           ]),
-          div(`.input-section`, [
+          div(`.column.margin-bottom`, [
             div(`.sub-heading`, ['Event types']),
-            div(`.row-input-area`, [
+            div(`.row`, [
               div(`.checkbox-input`, [
                 input(`.appEventTypeInput`, {attrs: {type: 'checkbox', name: 'event_types', value: 'open-mic', checked: event_types.some(x => x === 'open-mic')}}, []),
                 span(`.title`, ['open-mic'])
@@ -193,9 +191,9 @@ function view(state$, components) {
               ])
             ])
           ]),
-          div(`.input-section`, [
+          div(`.column.margin-bottom`, [
             div(`.sub-heading`, ['Categories']),
-            div(`.row-input-area`, [
+            div(`.row`, [
               div(`.checkbox-input`, [
                 input(`.appCategoriesInput`, {attrs: {type: 'checkbox', name: 'categories', value: 'comedy', checked: categories.some(x => x === 'comedy')}}, []),
                 span(`.title`, ['comedy'])

@@ -1,5 +1,5 @@
 export default function intent(sources) {
-  const {DOM} = sources
+  const {DOM} = sources  
   const type$ = DOM.select('.appTypeInput').events('click')
     .map(ev => {
       return {
@@ -7,8 +7,14 @@ export default function intent(sources) {
         checked: ev.target.checked
       }
     })
+
+   const registration_type$ = DOM.select('.appRegistrationTypeInput').events('click')
+     .map(ev => {
+       return ev.target.value
+     })
     
   return {
-    type$
+    type$,
+    registration_type$
   }
 }

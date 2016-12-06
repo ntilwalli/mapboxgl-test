@@ -4,56 +4,74 @@
   }
 
   .body {
-    .input-section {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      //width: 100%;
-      margin-bottom: 1rem;
-    }
+    // .input-section {
+    //   display: flex;
+    //   flex-direction: column;
+    //   //justify-content: center;
+    //   //width: 100%;
+    //   margin-bottom: 1rem;
+    // }
 
-    .row-input-section {
-      display: flex;
-      flex-flow: row nowrap;
-      justify-content: flex-start;
-      margin-bottom: 1rem;
-    }
+    // .row-input-section {
+    //   display: flex;
+    //   flex-flow: row nowrap;
+    //   //justify-content: flex-start;
+    //   margin-bottom: 1rem;
+    // }
 
-    .left-row-input-section {
-      display: flex;
-      flex-flow: column nowrap;
-      justify-content: flex-start;
-      margin-bottom: 1rem;
-    }
+    // .left-row-input-section {
+    //   display: flex;
+    //   flex-flow: column nowrap;
+    //   //justify-content: flex-start;
+    //   margin-bottom: 1rem;
+    // }
 
 
-    .input-area {
+    .column{
       position: relative;
       display: flex;
-      justify-content: center;
       flex-direction: column;
+
+      .sub-heading {
+        display: flex;
+        margin-bottom: .7rem;
+      }
+
+      .item {
+        margin-bottom: .5rem;
+      }
     }
 
-    .row-input-area {
+    .row {
       display: flex;
       flex-flow: row wrap;
-      justify-content: center;
+      //justify-content: center;
+
+      .sub-heading {
+        margin-right: .5rem;
+      }
+
+      .item {
+        margin-right: .5rem;
+      }
+    }
+
+    .center {
+      justify-content: center
+    }
+
+    .margin-bottom {
+      margin-bottom: 1rem;
     }
 
     .indented {
-      margin-left: 2rem;
+      margin-left: 1.5rem;
+      margin-top: .5rem;
     }
 
-    .sub-heading {
-      display: flex;
-      justify-content: center;
-      margin-bottom: .7rem;
-    }
-
-    .left-sub-heading {
-      // display: flex;
-      // justify-content: center;
-      margin-bottom: .7rem;
+    .disabled-cover {
+      pointer-events: none;
+      opacity: .3;
     }
 
   }
@@ -67,6 +85,7 @@
 
   input[type='text'] {
     width: 100%;
+    line-height: 2rem;
   }
 
   input[type='radio'], input[type='checkbox'] {

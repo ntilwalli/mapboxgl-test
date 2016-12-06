@@ -364,7 +364,7 @@ function view(state$, components) {
       //console.log(`info`, info)
       const {state, components} = info
       const {rrule, calendar, modal} = components
-      return div(`.recurrence`, [
+      return div(`.workflow-step.recurrence`, [
         calendar,
         renderRRule(info),
         renderTime(state),

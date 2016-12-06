@@ -51,11 +51,11 @@ function renderSearchArea(info) {
   const {city, state_abbr} = city_state
   const sa = `${city}, ${state_abbr}`
 
-  return div(`.search-area.section`, [
-    div(`.heading`, [`Search area`]),
-    div(`.content`, [
-      span([sa]),
-      span(`.change-button`, [
+  return div(`.column.margin-bottom`, [
+    div(`.sub-heading`, [`Search area`]),
+    div(`.row`, [
+      span(`.item`, [sa]),
+      span([
         button(`.appChangeSearchAreaButton.text-button`, [`change`])
       ])  
     ])
@@ -64,7 +64,8 @@ function renderSearchArea(info) {
 
 function renderModeInput(info) {
   const {components} = info
-  return div(`.mode-input.section`, [
+  return div(`.mode-input.column`, [
+    div(`.sub-heading`, [`Venue`]),
     components.input_component
   ])
 }
@@ -75,10 +76,12 @@ function view(state$, components) {
     components$: combineObj(components)
   }).map((info: any) => {
     const {components} = info
-    return div(`.donde`, [
-      renderSearchArea(info),
-      renderModeInput(info),
-      components.modal
+    return div(`.donde.workflow-step`, [
+      div(`.body`, [
+        renderSearchArea(info),
+        renderModeInput(info),
+        components.modal
+      ])
     ])
   })
 }
