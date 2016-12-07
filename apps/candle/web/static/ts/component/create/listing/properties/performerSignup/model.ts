@@ -2,20 +2,19 @@ import {Observable as O} from 'rxjs'
 import Immutable = require('immutable')
 import {combineObj} from '../../../../../utils'
 import deepEqual = require('deep-equal')
-import {getTimeOptionDefault} from './helpers'
+import {getTimeOptionDefault} from '../helpers'
 
 function getInAppDefault() {
   return {
-    type: 'in-app',
-    data: {
-      begins: {
-        type: 'upon-posting', //'days-before-event-start', 'minutes-before-event-start', 'previous-weekday-at-time
-        data: undefined
-      },
-      ends: {
-        type: 'event-start', // 'minutes-after-event-start', 'minutes-before-event-end', 'event-end'
-        data: undefined
-      }
+    type: 'app',
+    data: undefined,
+    begins: {
+      type: 'upon-posting', //'days-before-event-start', 'minutes-before-event-start', 'previous-weekday-at-time
+      data: undefined
+    },
+    ends: {
+      type: 'event-start', // 'minutes-after-event-start', 'minutes-before-event-end', 'event-end'
+      data: undefined
     }
   }
 }
@@ -65,7 +64,7 @@ function reducers(actions, inputs) {
         if (value === 'registration') {
           performer_signup.push({
             type: value,
-            data: undefined
+            data: getInAppDefault()
           })
         } else if (value === 'in-person') {
           performer_signup.push({
@@ -140,7 +139,7 @@ function reducers(actions, inputs) {
   })
 
   const in_person_ends_time_type_input_r = inputs.in_person_ends_time_type_input$.map(msg => state => {
-    console.log('in person time type msg', msg)
+    //console.log('in person time type msg', msg)
     return state.update(`performer_signup`, performer_signup => {
       let index = performer_signup.findIndex(x => x.type === 'in-person')
       let data
@@ -151,9 +150,108 @@ function reducers(actions, inputs) {
     })
   })
 
+  const registration_begins_input_r = inputs.registration_begins_input$.map(msg => state => {
+    //console.log('registration_begins_input_r', msg)
+    return state.update('errors_map', errors_map => {
+      errors_map['registration-begins-input'] = msg.errors
+      return errors_map
+    }).update(`performer_signup`, performer_signup => {
+
+      let index = performer_signup.findIndex(x => x.type === 'registration')
+      if (msg.valid) {
+        performer_signup[index].data.begins.data = msg.value
+      } else {
+        performer_signup[index].data.begins.data = undefined
+      }
+
+      return performer_signup
+    })
+  })
+
+  const registration_begins_time_type_input_r = inputs.registration_begins_time_type_input$.map(msg => state => {
+    //console.log('registration_begins_time_type_input_r', msg)
+    return state.update(`performer_signup`, performer_signup => {
+      let index = performer_signup.findIndex(x => x.type === 'registration')
+      let data
+
+      performer_signup[index].data.begins = { type: msg, data: msg.length ? getTimeOptionDefault(msg) : undefined }
+
+      return performer_signup
+    })
+  })
+
+
+  const registration_ends_input_r = inputs.registration_ends_input$.map(msg => state => {
+    //console.log('registration_ends_input_r', msg)
+    return state.update('errors_map', errors_map => {
+      errors_map['registration-ends-input'] = msg.errors
+      return errors_map
+    }).update(`performer_signup`, performer_signup => {
+
+      let index = performer_signup.findIndex(x => x.type === 'registration')
+      if (msg.valid) {
+        performer_signup[index].data.ends.data = msg.value
+      } else {
+        performer_signup[index].data.ends.data = undefined
+      }
+
+      return performer_signup
+    })
+  })
+
+  const registration_ends_time_type_input_r = inputs.registration_ends_time_type_input$.map(msg => state => {
+    //console.log('registration_ends_time_type_input_r', msg)
+    return state.update(`performer_signup`, performer_signup => {
+      let index = performer_signup.findIndex(x => x.type === 'registration')
+      let data
+
+      performer_signup[index].data.ends = { type: msg, data: msg.length ? getTimeOptionDefault(msg) : undefined }
+
+      return performer_signup
+    })
+  })
+
+  const registration_type_r = actions.registration_type$.map(msg => state => {
+    //console.log('registration_info_input_r', msg)
+    return state.update(`performer_signup`, performer_signup => {
+      let index = performer_signup.findIndex(x => x.type === 'registration')
+      const item = performer_signup[index]
+
+      item.data.type = msg
+      item.data.data = undefined
+
+      return performer_signup
+    }).update('errors_map', errors_map => {
+      const reg_exp = new RegExp(`^registration-info.*$`)
+      const keys = Object.keys(errors_map).filter(x => x.match(reg_exp))
+      keys.forEach(x => errors_map[x] = [])
+      return errors_map
+    })
+  })
+
+  const registration_info_input_r = inputs.registration_info_input$.map(msg => state => {
+    //console.log('registration_info_input_r', msg)
+    return state.update(`performer_signup`, performer_signup => {
+      let index = performer_signup.findIndex(x => x.type === 'registration')
+      const item = performer_signup[index]
+      if (msg.valid) {
+        performer_signup[index].data.data = msg.value
+      } else {
+        performer_signup[index].data.data = undefined
+      }
+
+      return performer_signup
+    }).update('errors_map', errors_map => {
+      errors_map['registration-info'] = msg.errors
+      return errors_map
+    })
+  })
+
+
   return O.merge(
-    type_r, in_person_style_r, 
-    in_person_begins_input_r, in_person_ends_input_r, in_person_ends_time_type_input_r
+    type_r, in_person_style_r, in_person_begins_input_r, in_person_ends_input_r, in_person_ends_time_type_input_r,
+    registration_begins_input_r, registration_ends_input_r, registration_begins_time_type_input_r, 
+    registration_ends_time_type_input_r, registration_info_input_r, registration_type_r
   )
 }
 
@@ -172,6 +270,6 @@ export default function model(actions, inputs) {
     })
     .debounceTime(0)
     .map((x: any) => x.toJS())
-    .do(x => console.log(`performerSignup state`, x))
+    //.do(x => console.log(`performerSignup state`, x))
     .publishReplay(1).refCount()
 }

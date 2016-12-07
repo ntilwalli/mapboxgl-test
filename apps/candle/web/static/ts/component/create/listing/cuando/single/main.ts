@@ -5,9 +5,7 @@ import Immutable = require('immutable')
 import {combineObj, createProxy} from '../../../../../utils'
 import moment = require('moment')
 import {inflateDates} from '../../helpers'
-import {getDatetime} from '../helpers'
-
-import {get12HourTime} from '../helpers'
+import {getDatetime, to12HourTimeFromMoment} from '../../../../../helpers/time'
 
 import SmartMonthCalendar from '../../../../../library/smartMonthCalendar'
 import TimeInput from '../../../../../library/timeInput/main'
@@ -113,8 +111,8 @@ function model(actions, inputs) {
         begins_month: begins ? begins.month() : moment().month(),
         begins_year: begins ? begins.year() : moment().year(),
         begins_date: begins,
-        begins_time: begins ? get12HourTime(begins) : undefined,
-        ends_time: ends ? get12HourTime(ends) : undefined
+        begins_time: begins ? to12HourTimeFromMoment(begins) : undefined,
+        ends_time: ends ? to12HourTimeFromMoment(ends) : undefined
       }
 
       return reducer$

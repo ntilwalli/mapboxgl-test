@@ -1,3 +1,19 @@
 .performer-signup {
-  
+  input[type="text"] {
+    line-height: 1rem;
+  }
+
+  .time-input {
+    width: 2rem;
+  }
+  .email-input {
+    width: 16rem;
+  }
+  .website-input {
+    width: 16rem;
+  }
+
+  .day-time-input {
+    width: 20rem;
+  }
 }

@@ -6,8 +6,8 @@ import moment = require('moment')
 import {combineObj, createProxy, blankComponentUndefinedDOM} from '../../../../../../utils'
 
 import Advanced from './advanced/main'
-import Weekly from './weekly/main'
-import Monthly from './monthly/main'
+// import Weekly from './weekly/main'
+// import Monthly from './monthly/main'
 import TimeInput from '../../../../../../library/timeInput/main'
 import WeekdaySelector from '../../../../../../library/weekdaySelector'
 
