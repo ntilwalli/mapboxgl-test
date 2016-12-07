@@ -110,7 +110,7 @@ export default function view(state$, components) {
 
       //console.log('components', components)
       return div('.column.performer-signup', [
-        div('.sub-heading', ['Performer sign-up']),        
+        div('.sub-heading.section-heading ', ['Performer sign-up']),        
         div('.column', [
           div('.checkbox-input', [
             input('.appTypeInput', {attrs: {type: 'checkbox', name: 'signup-type', value: 'in-person', checked: in_person_checked}}, []),

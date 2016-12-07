@@ -130,17 +130,17 @@ function createTimeValidator(message): (string) => SmartTextInputValidation  {
   }
 }
 
-const timeInputProps = O.of({
+const numberInputProps = O.of({
   placeholder: ``,
   name: `in-person-begins`,
-  styleClass: `.time-input`,
+  styleClass: `.number-input`,
   emptyIsError: true
 })
 
-function TimeInputComponent(sources, initialText$, errorMessage) {
+export function NumberInputComponent(sources, initialText$, errorMessage) {
   const out = TextInput(sources, {
     validator: createTimeValidator(errorMessage),
-    props$: timeInputProps,
+    props$: numberInputProps,
     initialText$
   })
 
@@ -186,6 +186,7 @@ export function TimeTypeComboBox(sources, options, props$, styleClass?) {
               return ev.target.value
             })
           const state$ = O.merge(O.of(props), click$).publishReplay(1).refCount()
+
 
           const vtree$ = state$.map(state => {
             return div(`.select-container`, [
@@ -289,7 +290,7 @@ export function TimeOptionComponent(sources, component_id, props$) {
     .map(([type, props]) => {
       switch (type) {
         case 'time':
-          return TimeInputComponent(sources, O.of(props.toString()), component_id + ': Invalid number')
+          return NumberInputComponent(sources, O.of(props.toString()), component_id + ': Invalid number')
         case 'day_time':
           return isolate(DayOfWeekTimeComponent)(sources, O.of(props), component_id + ': Date and time must be set')
         default:

@@ -2,6 +2,7 @@ import {Observable as O} from 'rxjs'
 import {div} from '@cycle/dom'
 import Immutable = require('immutable')
 import PerformerSignup from './performerSignup/main'
+import CheckIn from './checkin/main'
 import {getSessionStream} from '../helpers'
 import {combineObj} from '../../../../utils'
 
@@ -19,8 +20,8 @@ function arrayUnique(array) {
 
 
 const event_type_to_properties = {
-  'open-mic': ['performer_signup'],
-  'show': []
+  'open-mic': ['check_in', 'performer_signup'],
+  'show': ['check_in']
 }
 
 function wrapOutput(component, component_type, meta, sources, inputs) {
@@ -41,6 +42,9 @@ function toComponent(type, meta, sources, inputs) {
   switch (type) {
     case 'performer_signup':
       component = PerformerSignup
+      break
+    case 'check_in':
+      component = CheckIn
       break
     default:
       throw new Error(`Invalid property component type: ${type}`)
@@ -116,7 +120,7 @@ function view(state$, children$) {
 
     return div(`.workflow-step`, [
       errors.length ? div('.errors', errors.map(x => div([x]))) : null,
-      div(`.body`, children)
+      div(`.body`, children.map(x => div(`.large-margin-bottom`, [x])))
     ])
   })
 }
@@ -130,11 +134,11 @@ export function main(sources, inputs) {
 
       const foo_components = event_types.reduce((acc, val) => acc.concat(event_type_to_properties[val]), [])
       const component_types = arrayUnique(foo_components)
-      const components = component_types.map(x => toComponent(x, meta, sources, inputs))
+      const components = component_types.map(type => toComponent(type, meta, sources, inputs))
       //console.log('component',components)
-      const DOM = O.combineLatest(...components.map(x => x.DOM))
+      const DOM = O.combineLatest(...components.map(c => c.DOM))
       
-      const output$ = O.merge(...components.map(x => x.output$))
+      const output$ = O.merge(...components.map(c => c.output$))
 
       return {
         DOM, output$

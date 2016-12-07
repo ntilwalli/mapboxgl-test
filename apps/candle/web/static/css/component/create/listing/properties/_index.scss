@@ -1,16 +1,24 @@
 .workflow-step {
-  // .time-input {
-  //   display: flex;
-  //   justify-content: center;
-  //   width: 2.4rem;
-  //   padding-left: .2rem;
-  //   padding-right: .2rem;
-  //   padding-top: .1rem;
-  //   padding-bottom: .1rem;
-  // }
+  .section-heading {
+    text-decoration: underline;
+  }
 
+  .number-input {
+    width: 2rem;
+  } 
+  .email-input {
+    width: 16rem;
+  }
+  .website-input {
+    width: 16rem;
+  }
 
-@import './performerSignup/index';
+  .day-time-input {
+    width: 20rem;
+  }
+
+@import 'performerSignup';
+@import 'checkin';
 }
 
 
