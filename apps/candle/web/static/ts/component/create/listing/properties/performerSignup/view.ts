@@ -16,7 +16,7 @@ function renderRegistrationTypeApp(data) {
   return null
 }
 
-function renderInPersonBeginsComboBox(props, components) {
+function renderTimeComboBox(props, components) {
   const {begins} = props
   const {type, data} = begins
 
@@ -54,7 +54,12 @@ function renderInPersonInput(performer_signup, components) {
       div('.row.align-center.small-margin-bottom', [
         span('.sub-heading.align-center', ['Begins']),
         span('.item', [components.in_person_begins]),
-        span('.item.align-center', ['minutes before event start'])
+        span('.item.align-center', ['minutes before event start']),
+      ]),
+      div('.row.align-center.small-margin-bottom', [
+        span('.sub-heading.align-center', ['Ends']),
+        span(`.item`, [components.in_person_ends_time_type]),
+        components.in_person_ends
       ]),
       div('.row.align-center', [
           span('.sub-heading.align-center', ['Style']),

@@ -169,7 +169,7 @@ function view(state$, components) {
           div(`.column.margin-bottom`, [
             div(`.sub-heading`, ['Title']),
             div(`.input`, [
-              input(`.appTitleInput.title`, {attrs: {type: 'text', value: title || ''}}, [])
+              input(`.appTitleInput.full-width`, {attrs: {type: 'text', value: title || ''}}, [])
             ])
           ]),
           div(`.column.margin-bottom`, [

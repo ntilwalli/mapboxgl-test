@@ -2,6 +2,7 @@ import {Observable as O} from 'rxjs'
 import Immutable = require('immutable')
 import {combineObj} from '../../../../../utils'
 import deepEqual = require('deep-equal')
+import {getTimeOptionDefault} from './helpers'
 
 function getInAppDefault() {
   return {
@@ -23,6 +24,10 @@ function getInPersonDefault() {
   return {
     begins: {
       type: 'minutes-before-event-start',
+      data: 15
+    },
+    ends: {
+      type: 'event-start',
       data: 15
     },
     styles: ['bucket']
@@ -74,7 +79,9 @@ function reducers(actions, inputs) {
 
       return performer_signup
     }).update('errors_map', errors_map => {
-      errors_map[value] = []
+      const reg_exp = new RegExp(`^${value}.*$`)
+      const keys = Object.keys(errors_map).filter(x => x.match(reg_exp))
+      keys.forEach(x => errors_map[x] = [])
       return errors_map
     })
   })
@@ -96,10 +103,10 @@ function reducers(actions, inputs) {
     })
   })
 
-  const in_person_input_r = inputs.in_person_input$.map(msg => state => {
+  const in_person_begins_input_r = inputs.in_person_begins_input$.map(msg => state => {
     //console.log('in person input msg', msg)
     return state.update('errors_map', errors_map => {
-      errors_map['in-person'] = msg.errors
+      errors_map['in-person-begins-input'] = msg.errors
       return errors_map
     }).update(`performer_signup`, performer_signup => {
 
@@ -112,24 +119,42 @@ function reducers(actions, inputs) {
 
       return performer_signup
     })
-
-    // return state.update(`performer_signup`, performer_signup => {
-
-    //   let index = performer_signup.findIndex(x => x.type === 'in-person')
-    //   const styles = performer_signup[index].data.styles
-    //   index = styles.findIndex(x => x.type === msg.type)
-    //   if (index >= 0) {
-    //     styles.splice(index, 1)
-    //   } else {
-    //     styles.push(msg.type)
-    //   }
-
-    //   return performer_signup
-    // })
   })
 
+  const in_person_ends_input_r = inputs.in_person_ends_input$.map(msg => state => {
+    //console.log('in person input msg', msg)
+    return state.update('errors_map', errors_map => {
+      errors_map['in-person-ends-input'] = msg.errors
+      return errors_map
+    }).update(`performer_signup`, performer_signup => {
 
-  return O.merge(type_r, in_person_style_r, in_person_input_r)
+      let index = performer_signup.findIndex(x => x.type === 'in-person')
+      if (msg.valid) {
+        performer_signup[index].data.ends.data = msg.value
+      } else {
+        performer_signup[index].data.ends.data = undefined
+      }
+
+      return performer_signup
+    })
+  })
+
+  const in_person_ends_time_type_input_r = inputs.in_person_ends_time_type_input$.map(msg => state => {
+    console.log('in person time type msg', msg)
+    return state.update(`performer_signup`, performer_signup => {
+      let index = performer_signup.findIndex(x => x.type === 'in-person')
+      let data
+
+      performer_signup[index].data.ends = { type: msg, data: msg.length ? getTimeOptionDefault(msg) : undefined }
+
+      return performer_signup
+    })
+  })
+
+  return O.merge(
+    type_r, in_person_style_r, 
+    in_person_begins_input_r, in_person_ends_input_r, in_person_ends_time_type_input_r
+  )
 }
 
 export default function model(actions, inputs) {

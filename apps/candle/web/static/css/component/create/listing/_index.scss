@@ -3,7 +3,7 @@
     color: red;
     margin-bottom: 1rem;
   }
-  
+
   .heading {
 
   }
@@ -85,6 +85,10 @@
       justify-content: center
     }
 
+    .flex {
+      display: flex;
+    }
+    
     .align-center {
       align-items: center;
     }
@@ -104,6 +108,10 @@
     .disabled-cover {
       pointer-events: none;
       opacity: .3;
+    }
+
+    .full-width {
+      width: 100%;
     }
 
   }

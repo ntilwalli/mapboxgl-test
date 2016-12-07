@@ -7,6 +7,8 @@ import model from './model'
 import view from './view'
 import deepEqual = require('deep-equal')
 import {createProxy, blankComponentUndefinedDOM} from '../../../../../utils'
+import {getTimeOptionComponent, createTimeTypeSelect} from './helpers'
+import {RelativeTimeOptions as opts} from '../helpers'
 
 import {default as TextInput, SmartTextInputValidation} from '../../../../../library/SmarterTextInput'
 
@@ -64,7 +66,7 @@ function createTimeValidator(message): (string) => SmartTextInputValidation  {
   }
 }
 
-function getInPersonBeginsComponent(performer_signup$, sources, inputs) {
+function getInPersonComponents(performer_signup$, sources, inputs) {
   const in_person$ = performer_signup$.map(items => {
     const index = items.findIndex(item => item.type === 'in-person')
     if (index >= 0) {
@@ -79,49 +81,81 @@ function getInPersonBeginsComponent(performer_signup$, sources, inputs) {
   const begins$ = valid_in_person$.pluck('begins')
     .map(begins => {
       if (begins.type === 'minutes-before-event-start') {
-        return begins.data
+        //return begins.data
+        return begins
       } else {
         throw new Error('Invalid begins type')
       }
     })
 
-  const invalid_in_person$ = in_person$.filter(x => !x)//.switchMap(x => O.never())
+  const ends$ = valid_in_person$.pluck('ends')
 
-  return O.merge(begins$, invalid_in_person$)
-    .distinctUntilChanged(x => !!x)
-    .map(val => {
-      if (val) {
-        return TextInput(sources, {
-          validator: createTimeValidator('In-person sign-up start invalid'),
-          props$: timeInputProps, 
-          initialText$: O.of(val).map(x => x.toString())
-        })
-      } else {
-        return {
-          DOM: O.of(undefined),
-          output$: O.never()
-        }
-      }
-    }).publishReplay(1).refCount()
+  const invalid_in_person$ = in_person$.filter(x => !x).publishReplay(1).refCount()//.switchMap(x => O.never())
+
+  // return O.merge(begins$, invalid_in_person$)
+  //   .distinctUntilChanged(x => !!x)
+  //   .map(val => {
+  //     if (val) {
+  //       return TextInput(sources, {
+  //         validator: createTimeValidator('In-person sign-up start invalid'),
+  //         props$: timeInputProps, 
+  //         initialText$: O.of(val).map(x => x.toString())
+  //       })
+  //     } else {
+  //       return {
+  //         DOM: O.of(undefined),
+  //         output$: O.never()
+  //       }
+  //     }
+  //   }).publishReplay(1).refCount()
+
+  const begins_props$ = O.merge(begins$, invalid_in_person$)
+  const ends_props$ = O.merge(ends$, invalid_in_person$).publishReplay(1).refCount()
+
+  const options = [
+    //opts.BLANK,
+    opts.EVENT_START,
+    opts.MINUTES_BEFORE_EVENT_START,
+    opts.MINUTES_BEFORE_EVENT_END,
+    opts.EVENT_END
+  ]
+
+  return [
+    getTimeOptionComponent('In-person sign-up begins', begins_props$, sources),
+    getTimeOptionComponent('In-person sign-up ends', ends_props$, sources),
+    createTimeTypeSelect(options, ends_props$.map((x: any) => !!x ? x.type : undefined), sources)
+  ]
 }
 
 export default function main(sources, inputs) {
   const actions = intent(sources)
-  const in_person_input$ = createProxy()
+  const in_person_begins_input$ = createProxy()
+  const in_person_ends_input$ = createProxy()
+  const in_person_ends_time_type_input$ = createProxy()
   const state$ = model(actions, {
     ...inputs,
-    in_person_input$
+    in_person_begins_input$,
+    in_person_ends_input$,
+    in_person_ends_time_type_input$
   })
 
   const performers_signup$ = state$.pluck('performer_signup')
     .publishReplay(1).refCount()
   
-  const in_person_begins_input$ = getInPersonBeginsComponent(performers_signup$, sources, inputs)
+  const [
+    in_person_begins_component$, 
+    in_person_ends_component$, 
+    in_person_ends_time_type_component$
+  ] = getInPersonComponents(performers_signup$, sources, inputs)
 
-  in_person_input$.attach(in_person_begins_input$.switchMap(x => x.output$))
+  in_person_begins_input$.attach(in_person_begins_component$.switchMap(x => x.output$))
+  in_person_ends_input$.attach(in_person_ends_component$.switchMap(x => x.output$))
+  in_person_ends_time_type_input$.attach(in_person_ends_time_type_component$.switchMap(x => x.output$))
 
   const components = {
-    in_person_begins: in_person_begins_input$.switchMap(x => x.DOM)
+    in_person_begins: in_person_begins_component$.switchMap(x => x.DOM),
+    in_person_ends: in_person_ends_component$.switchMap(x => x.DOM),
+    in_person_ends_time_type: in_person_ends_time_type_component$.switchMap(x => x.DOM)
   }
 
   const vtree$ = view(state$, components)
