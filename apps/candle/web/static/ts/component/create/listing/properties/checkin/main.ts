@@ -130,7 +130,7 @@ export default function main(sources, inputs) {
     output$: state$.map(x => {
       const errors = Object.keys(x.errors_map).reduce((acc, val) => acc.concat(x.errors_map[val]), [])
       return {
-        value: x.check_in,
+        data: x.check_in,
         valid: errors.length === 0,
         errors
       }

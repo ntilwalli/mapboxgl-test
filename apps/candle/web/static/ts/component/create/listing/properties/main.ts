@@ -5,6 +5,7 @@ import PerformerSignup from './performerSignup/main'
 import CheckIn from './checkin/main'
 import PerformerCost from './performerCost/main'
 import Collection from './collection/main'
+//import StageTimeRound from './stageTimeRound/main'
 import {getSessionStream} from '../helpers'
 import {combineObj, createProxy} from '../../../../utils'
 
@@ -17,7 +18,7 @@ function StubComponent(sources, inputs) {
     //   type: 'update',
     //   index: 1,
     //   data: {
-    //     value: 'Hello',
+    //     data: 'Hello',
     //     valid: false,
     //     errors: ['Some error']
     //   }
@@ -28,7 +29,7 @@ function StubComponent(sources, inputs) {
 function getDefault() {
   return {
     data: {
-      value: 'Hello',
+      data: 'Hello',
       valid: true,
       errors: []
     }
@@ -99,7 +100,7 @@ function reducers(actions, inputs) {
   const properties_output_r = inputs.properties_output$.map(message => state => {
     //console.log(`properties message`, message)
     return state.update('session', session => {
-        session.listing.meta[message.type] = message.data.value
+        session.listing.meta[message.type] = message.data.data
         return session
       }).update(`valid_flags`, valid_flags => {
         valid_flags[message.type] = message.data.valid

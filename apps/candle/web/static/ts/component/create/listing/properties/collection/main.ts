@@ -54,7 +54,7 @@ function reducers(actions, inputs) {
   })
 
   const change_r = inputs.change$.map(msg => state => {
-    return state.set(msg.index, Immutable.fromJS(msg.value))
+    return state.set(msg.index, Immutable.fromJS(msg.data))
   })
 
   return O.merge(add_r, subtract_r, change_r)
@@ -83,7 +83,7 @@ export default function main(sources, inputs) {
     .distinctUntilChanged((x, y) => x.length === y.length)
     .map(my_state => {
       const state = JSON.parse(JSON.stringify(my_state));
-      const components = state.map((props, index) => inputs.item(sources, {...inputs, props$: O.of(props.value), index}))
+      const components = state.map((props, index) => inputs.item(sources, {...inputs, props$: O.of(props.data), index}))
       const components_dom = components.map(x => x.DOM)
       const components_output = components.map(x => x.output$)
 
@@ -104,7 +104,7 @@ export default function main(sources, inputs) {
     DOM: vtree$,
     output$: state$.map(state => {
       return {
-        value: state.map(x => x.value),
+        data: state.map(x => x.data),
         valid: state.every(x => x.valid === true),
         errors: state.reduce((acc, item) => acc.concat(item.errors), [])
       }
