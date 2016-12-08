@@ -4,6 +4,7 @@ import Immutable = require('immutable')
 import PerformerSignup from './performerSignup/main'
 import CheckIn from './checkin/main'
 import PerformerCost from './performerCost/main'
+import StageTime from './stageTime/main'
 import {getSessionStream} from '../helpers'
 import {combineObj, createProxy} from '../../../../utils'
 
@@ -21,7 +22,7 @@ function arrayUnique(array) {
 
 
 const event_type_to_properties = {
-  'open-mic': ['check_in', 'performer_signup', 'performer_cost'],
+  'open-mic': ['check_in', 'performer_signup', 'performer_cost', 'stage_time'],
   'show': ['check_in']
 }
 
@@ -49,6 +50,9 @@ function toComponent(type, meta, session$, sources, inputs) {
     case 'performer_cost':
       component = PerformerCost
       break
+    case 'stage_time':
+      component = StageTime
+      break
     default:
       throw new Error(`Invalid property component type: ${type}`)
   }
@@ -67,7 +71,7 @@ function reducers(actions, inputs) {
   const properties_output_r = inputs.properties_output$.map(message => state => {
     //console.log(`properties message`, message)
     return state.update('session', session => {
-        session.listing.meta[message.type] = message.data.prop
+        session.listing.meta[message.type] = message.data.value
         return session
       }).update(`valid_flags`, valid_flags => {
         valid_flags[message.type] = message.data.valid

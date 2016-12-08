@@ -3,19 +3,47 @@ import {div, span, input, select, option} from '@cycle/dom'
 import Immutable = require('immutable')
 import {combineObj} from '../../../../../utils'
 
+/*
 function render(cost, components) {
+  const both = components.cover && components.minimum_purchase
+  return both ? div('.column', [
+    span('.item', [components.type]),
+    div('.row.align-center.small-margin-bottom', [
+      span('.sub-sub-heading.align-center', ['Cover']),
+      span(`.row`, [
+        span('.item', [components.cover]),
+        span(`.item.flex.align-center`, ['dollars'])
+      ]),
+    ]),
+    div('.row.align-center', [
+      span('.sub-sub-heading.align-center', ['Minimum purchase']),
+      span('.item', [components.minimum_purchase])
+    ])
+  ]) : div('.row', [
+    span('.item', [components.type]),
+    span(`.item`, [
+      components.cover ? span(`.row`, [
+        span('.item', [components.cover]),
+        span(`.item.flex.align-center`, ['dollars'])
+      ]) : components.minimum_purchase
+    ])
+  ])
+}
+*/
 
-    return div('.column.margin-bottom', [
-      span('.item', [components.type]),
-      components.cover ? div('.row.align-center.small-margin-bottom', [
-        span('.sub-heading.align-center', ['Cover']),
-        span(`.item.number-input`, [components.cover])
-      ]) : null,
-      components.minimum_purchase ? div('.row.align-center', [
-        span('.sub-heading.align-center', ['Minimum purchase']),
-        span('.item', [components.minimum_purchase]),
-      ]) : null
-    ]) 
+function render(cost, components) {
+  const both = components.cover && components.minimum_purchase
+  return div({class: {row: !both, column: both}}, [
+    span('.item', [components.type]),
+    components.cover ? div(`.row.align-center.small-margin-bottom`, [
+      both ? span('.sub-sub-heading.align-center', ['Cover']) : null,
+      span(`.item`, [span('.row', [span('.item', [components.cover]), span('.item.flex.align-center', ['dollars'])])])
+    ]) : null,
+    components.minimum_purchase ? div('.row.align-center', [
+      both ? span('.sub-sub-heading.align-center', ['Minimum purchase']) : null,
+      span('.item', [components.minimum_purchase]),
+    ]) : null
+  ]) 
 }
 
 export default function view(state$, components) {
@@ -32,7 +60,7 @@ export default function view(state$, components) {
       const {cost} = state
       //console.log('components', components)
       return div('.column.cost', [
-        div('.sub-heading.section-heading ', ['Cost']),        
+        div('.sub-heading.section-heading ', ['Performer cost']),        
         div('.column', [
           render(cost, components)
         ])

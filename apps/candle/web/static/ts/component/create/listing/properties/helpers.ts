@@ -14,6 +14,42 @@ import TimeInput from '../../../../library/timeInput/main'
 
 const {isEmail} = validator
 
+export const MinutesTypeOptions = {
+  MAX: 'max',
+  RANGE: 'range'
+}
+
+
+export function ComboBox(sources, options, props$, styleClass?) {
+  const shared$ = props$.publishReplay(1).refCount()
+  const click$ = sources.DOM.select(`.appComboBoxSelect`).events('change')
+    .map(ev => {
+      return ev.target.value
+    })
+  const state$ = O.merge(shared$, click$).publishReplay(1).refCount()
+  const vtree$ = shared$.map(state => {
+    return div(`.select-container`, [
+      select(`.appComboBoxSelect`, options.map(opt => {
+        return option({attrs: {value: opt, selected: state === opt}}, [
+          (opt.substring(0, 1).toUpperCase() + opt.substring(1)).replace(/-/g, ' ').replace(/and/g, '+')
+        ])
+      }))
+    ])
+  })
+
+  return {
+    DOM: vtree$,
+    output$: state$
+  }
+} 
+
+
+export const StageTimeOptions = {
+  MINUTES: 'minutes',
+  SONGS: 'songs',
+  MINUTES_OR_SONGS: 'minutes-or-songs'
+}
+
 export const RelativeTimeOptions = {
   //BLANK: 'blank',
   UPON_POSTING: 'upon-posting',

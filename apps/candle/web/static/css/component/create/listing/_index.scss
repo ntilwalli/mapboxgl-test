@@ -1,3 +1,4 @@
+@import '../../../variables';
 .workflow-step {
   .errors {
     color: red;
@@ -32,7 +33,7 @@
     // }
 
 
-    .column{
+    .column {
       position: relative;
       display: flex;
       flex-direction: column;
@@ -133,6 +134,26 @@
   .number-input {
     line-height: 1rem;
     width: 2rem;
+  }
+
+  .list-button {
+    position: relative;
+    background-color: transparent;
+    border: none;
+    border: 1px solid black;
+    border-radius: 3px;
+    padding: 2px 2px 0;
+    color: black;
+    //padding: 2px 2px 1px;
+  }
+
+  .list-button:hover {
+    color: $crayola-orange;
+    border-color: $crayola-orange
+  }
+
+  .list-button:active {
+    outline: none;
   }
 
 

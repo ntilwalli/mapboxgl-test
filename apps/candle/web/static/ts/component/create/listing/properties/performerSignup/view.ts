@@ -23,17 +23,17 @@ function renderInPersonInput(performer_signup, components) {
     const styles = props.styles
     return div('.column.margin-bottom', [
       div('.row.align-center.small-margin-bottom', [
-        span('.sub-heading.align-center', ['Begins']),
+        span('.sub-sub-heading.align-center', ['Begins']),
         span('.item', [components.in_person_begins]),
         span('.item.align-center', ['minutes before event start']),
       ]),
       div('.row.align-center.small-margin-bottom', [
-        span('.sub-heading.align-center', ['Ends']),
+        span('.sub-sub-heading.align-center', ['Ends']),
         span(`.item`, [components.in_person_ends_time_type]),
         components.in_person_ends
       ]),
       div('.row.align-center', [
-          span('.sub-heading.align-center', ['Style']),
+          span('.sub-sub-heading.align-center', ['Style']),
           div('.checkbox-input', [
             input('.appInPersonStyleInput', {attrs: {type: 'checkbox', name: 'in-person-style', value: 'bucket', checked: styles.some(x => x === 'bucket')}}, []),
             span('.title', ['Bucket'])
@@ -80,13 +80,13 @@ function renderRegistrationInput(performer_signup, components) {
       ])
     ]),
     div('.row.align-center.margin-bottom', [
-      span('.sub-heading.align-center', ['Begins']),
+      span('.sub-sub-heading.align-center', ['Begins']),
       span(`.item`, [components.registration_begins_time_type]),
       renderBeginsNextLine ? null : span('.item.margin-bottom', [components.registration_begins])
     ]),
     !renderBeginsNextLine ? null : div(`.column.day-time-input.margin-bottom`, [components.registration_begins]),
     div('.row.align-center.margin-bottom', [
-      span('.sub-heading.align-center', ['Ends']),
+      span('.sub-sub-heading.align-center', ['Ends']),
       span(`.item`, [components.registration_ends_time_type]),
       renderEndsNextLine ? null : span('.item.margin-bottom', [components.registration_ends])
     ]),

@@ -5,19 +5,19 @@ import {combineObj} from '../../../../../utils'
 
 function render(check_in, components) {
 
-    return div('.column.margin-bottom', [
+    return div('.column', [
       div('.row.align-center.small-margin-bottom', [
-        span('.sub-heading.align-center', ['Begins']),
+        span('.sub-sub-heading.align-center', ['Begins']),
         span('.item', [components.begins]),
         span('.item.align-center', ['minutes before event start']),
       ]),
       div('.row.align-center.small-margin-bottom', [
-        span('.sub-heading.align-center', ['Ends']),
+        span('.sub-sub-heading.align-center', ['Ends']),
         span(`.item`, [components.ends_time_type]),
         components.ends
       ]),
       div('.row.align-center', [
-        span('.sub-heading.align-center', ['Radius']),
+        span('.sub-sub-heading.align-center', ['Radius']),
         span('.item', [components.radius]),
         span('.item', ['meters'])
       ])
