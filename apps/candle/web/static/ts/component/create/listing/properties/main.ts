@@ -3,8 +3,9 @@ import {div} from '@cycle/dom'
 import Immutable = require('immutable')
 import PerformerSignup from './performerSignup/main'
 import CheckIn from './checkin/main'
+import PerformerCost from './performerCost/main'
 import {getSessionStream} from '../helpers'
-import {combineObj} from '../../../../utils'
+import {combineObj, createProxy} from '../../../../utils'
 
 function arrayUnique(array) {
     var a = array.concat();
@@ -20,13 +21,12 @@ function arrayUnique(array) {
 
 
 const event_type_to_properties = {
-  'open-mic': ['check_in', 'performer_signup'],
+  'open-mic': ['check_in', 'performer_signup', 'performer_cost'],
   'show': ['check_in']
 }
 
-function wrapOutput(component, component_type, meta, sources, inputs) {
-  const prop = meta[component_type]
-  const c = component(sources, {...inputs, props$: O.of(prop)})
+function wrapOutput(component, component_type, meta, session$, sources, inputs) {
+  const c = component(sources, {...inputs, props$: O.of(meta[component_type]), session$})
   return {
     ...c,
     output$: c.output$.map(out => ({
@@ -36,7 +36,7 @@ function wrapOutput(component, component_type, meta, sources, inputs) {
   }
 }
 
-function toComponent(type, meta, sources, inputs) {
+function toComponent(type, meta, session$, sources, inputs) {
   let component
 
   switch (type) {
@@ -46,11 +46,14 @@ function toComponent(type, meta, sources, inputs) {
     case 'check_in':
       component = CheckIn
       break
+    case 'performer_cost':
+      component = PerformerCost
+      break
     default:
       throw new Error(`Invalid property component type: ${type}`)
   }
 
-  return wrapOutput(component, type, meta, sources, inputs)
+  return wrapOutput(component, type, meta, session$, sources, inputs)
 }
 
 function intent(sources) {
@@ -127,6 +130,7 @@ function view(state$, children$) {
 
 export function main(sources, inputs) {
   const actions = intent(sources)
+  const session$ = createProxy()
   const property_components$ = actions.session$
     .map(session => {
       const {listing} = session
@@ -134,7 +138,7 @@ export function main(sources, inputs) {
 
       const foo_components = event_types.reduce((acc, val) => acc.concat(event_type_to_properties[val]), [])
       const component_types = arrayUnique(foo_components)
-      const components = component_types.map(type => toComponent(type, meta, sources, inputs))
+      const components = component_types.map(type => toComponent(type, meta, session$, sources, inputs))
       //console.log('component',components)
       const DOM = O.combineLatest(...components.map(c => c.DOM))
       

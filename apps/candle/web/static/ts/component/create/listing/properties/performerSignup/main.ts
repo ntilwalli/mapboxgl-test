@@ -158,7 +158,7 @@ function getRegistrationComponents(performer_signup$, sources, inputs) {
       .publishReplay(1).refCount(), `registration-start`),
     TimeTypeComboBox(sources, ends_options, ends_props$.map((x: any) => !!x ? x.type : undefined)
       .publishReplay(1).refCount(), `.registration-end`),
-    RegistrationInfoComponent(sources, 'Pre-registration website', registration_props$)
+    RegistrationInfoComponent(sources, 'Pre-registration info', registration_props$)
   ]
 }
 

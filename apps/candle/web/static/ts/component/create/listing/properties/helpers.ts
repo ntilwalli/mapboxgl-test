@@ -26,7 +26,80 @@ export const RelativeTimeOptions = {
   EVENT_END: 'event-end'
 }
 
-const opts = RelativeTimeOptions
+const rt_opts = RelativeTimeOptions
+
+export const CostOptions = {
+  FREE: 'free',
+  COVER: 'cover',
+  MINUMUM_PURCHASE: 'minimum-purchase',
+  COVER_AND_MINIMUM_PURCHASE: 'cover-and-minimum-purchase',
+  COVER_OR_MINIMUM_PURCHASE: 'cover-or-minimum-purchase',
+}
+
+const CostOptionsDisplay = {
+  FREE: 'Free',
+  COVER: 'Cover',
+  MINUMUM_PURCHASE: 'Minimum purchase',
+  COVER_AND_MINIMUM_PURCHASE: 'Cover + minimum purchace',
+  COVER_OR_MINIMUM_PURCHASE: 'Cover or minimum purchase',
+}
+
+
+export function CostTypeComboBox(sources, options, props$, styleClass?) {
+  const shared$ = props$.publishReplay(1).refCount()
+  const click$ = sources.DOM.select(`.appCostTypeSelect`).events('change')
+    .map(ev => {
+      return ev.target.value
+    })
+  const state$ = O.merge(shared$, click$).publishReplay(1).refCount()
+
+
+  const vtree$ = shared$.map(state => {
+    return div(`.select-container`, [
+      select(`.appCostTypeSelect`, options.map(opt => {
+        return option({attrs: {value: opt, selected: state === opt}}, [
+          (opt.substring(0, 1).toUpperCase() + opt.substring(1)).replace(/-/g, ' ').replace(/and/g, '+')
+        ])
+      }))
+    ])
+  })
+
+  return {
+    DOM: vtree$,
+    output$: state$
+  }
+} 
+
+export const PurchaseTypeOptions = {
+  DRINK: 'drink',
+  ITEM: 'item',
+  DOLLARS: 'dollars'
+}
+
+
+export function PurchaseTypeComboBox(sources, options, props$, styleClass?) {
+  const shared$ = props$.publishReplay(1).refCount()
+  const click$ = sources.DOM.select(`.appPurchaseTypeSelect`).events('change')
+    .map(ev => {
+      return ev.target.value
+    })
+  const state$ = O.merge(shared$, click$).publishReplay(1).refCount()
+
+
+  const vtree$ = shared$.map(state => {
+    return div(`.select-container`, [
+      select(`.appPurchaseTypeSelect`, options.map(opt => {
+        return option({attrs: {value: opt, selected: state === opt}}, [opt.substring(0,1).toUpperCase() + opt.substring(1)])
+      }))
+    ])
+  })
+
+  return {
+    DOM: vtree$,
+    output$: state$
+  }
+} 
+
 
 
 export function DayOfWeekTimeComponent(sources, props$, message) {
@@ -107,7 +180,7 @@ export function DayOfWeekTimeComponent(sources, props$, message) {
 // } 
 
 
-function BlankComponent() {
+export function BlankComponent() {
   return {
     DOM: O.of(undefined),
     output$: O.never()
@@ -149,23 +222,23 @@ export function NumberInputComponent(sources, initialText$, errorMessage) {
 
 function getTimeTypeDisplay(type) {
   switch (type) {
-    case opts.UPON_POSTING:
+    case rt_opts.UPON_POSTING:
       return "Upon posting"
-    case opts.DAYS_BEFORE_EVENT_START:
+    case rt_opts.DAYS_BEFORE_EVENT_START:
       return "Days before event start"
-    case opts.MINUTES_BEFORE_EVENT_START:
+    case rt_opts.MINUTES_BEFORE_EVENT_START:
       return "Minutes before event start"
-    case opts.EVENT_START:
+    case rt_opts.EVENT_START:
       return "Event start"
-    case opts.MINUTES_AFTER_EVENT_START:
+    case rt_opts.MINUTES_AFTER_EVENT_START:
       return "Minutes after event start"
-    case opts.MINUTES_BEFORE_EVENT_END:
+    case rt_opts.MINUTES_BEFORE_EVENT_END:
       return "Minutes before event end"
-    case opts.EVENT_END:
+    case rt_opts.EVENT_END:
       return "Event end"
-    case opts.PREVIOUS_WEEKDAY_AT_TIME:
+    case rt_opts.PREVIOUS_WEEKDAY_AT_TIME:
       return "Previous weekday at time"
-    // case opts.BLANK:
+    // case rt_opts.BLANK:
     //   return ""
     default:
       throw new Error('Invalid time option type: ' + type)
@@ -238,18 +311,18 @@ function createDayTimeComponent(sources, initialValue$) {
 
 export function getTimeOptionDefault(type) {
   switch (type) {
-    case opts.DAYS_BEFORE_EVENT_START:
+    case rt_opts.DAYS_BEFORE_EVENT_START:
       return 1
-    case opts.MINUTES_BEFORE_EVENT_START:
-    case opts.MINUTES_AFTER_EVENT_START:
-    case opts.MINUTES_BEFORE_EVENT_END:
+    case rt_opts.MINUTES_BEFORE_EVENT_START:
+    case rt_opts.MINUTES_AFTER_EVENT_START:
+    case rt_opts.MINUTES_BEFORE_EVENT_END:
       return 15
-    case opts.EVENT_START:
-    case opts.EVENT_END:
-    case opts.UPON_POSTING:
-    //case opts.BLANK:
+    case rt_opts.EVENT_START:
+    case rt_opts.EVENT_END:
+    case rt_opts.UPON_POSTING:
+    //case rt_opts.BLANK:
       return undefined
-    case opts.PREVIOUS_WEEKDAY_AT_TIME:
+    case rt_opts.PREVIOUS_WEEKDAY_AT_TIME:
       return {
         day: undefined,
         time: undefined
@@ -263,17 +336,17 @@ function toTimeTypeSelector(props) {
   if (props) {
     const {type, data} = props
     switch (type) {
-      case opts.DAYS_BEFORE_EVENT_START:
-      case opts.MINUTES_BEFORE_EVENT_START:
-      case opts.MINUTES_AFTER_EVENT_START:
-      case opts.MINUTES_BEFORE_EVENT_END:
+      case rt_opts.DAYS_BEFORE_EVENT_START:
+      case rt_opts.MINUTES_BEFORE_EVENT_START:
+      case rt_opts.MINUTES_AFTER_EVENT_START:
+      case rt_opts.MINUTES_BEFORE_EVENT_END:
         return ['time', props.data]
-      case opts.EVENT_START:
-      case opts.EVENT_END:
-      case opts.UPON_POSTING:
-      //case opts.BLANK:
+      case rt_opts.EVENT_START:
+      case rt_opts.EVENT_END:
+      case rt_opts.UPON_POSTING:
+      //case rt_opts.BLANK:
         return ['blank', undefined]
-      case opts.PREVIOUS_WEEKDAY_AT_TIME:
+      case rt_opts.PREVIOUS_WEEKDAY_AT_TIME:
         return ['day_time', props.data]
       default:
         throw new Error('Invalid time option type: ' + type)
@@ -314,7 +387,8 @@ const emailInputProps = O.of({
   emptyIsError: true
 })
 
-function emailValidator(input): SmartTextInputValidation {
+function makeEmailValidator(message): (string) => SmartTextInputValidation {
+  return function (input) {
     if (input && input.length && isEmail(input)) {
       return {
         value: input,
@@ -323,9 +397,10 @@ function emailValidator(input): SmartTextInputValidation {
     } else {
       return {
         value: input,
-        errors: ['Invalid email address']
+        errors: [message]
       }
     }
+  }
 }
 
 const urlInputProps = O.of({
@@ -363,7 +438,7 @@ export function RegistrationInfoComponent(sources, component_id, props$) {
       switch (type) {
         case 'email':
           return TextInput(sources, {
-            validator: emailValidator,
+            validator: makeEmailValidator(component_id + ': Invalid e-mail'),
             props$: emailInputProps,
             initialText$: O.of(data)
           })
