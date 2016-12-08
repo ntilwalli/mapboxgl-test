@@ -4,49 +4,11 @@ import Immutable = require('immutable')
 import {combineObj, createProxy} from '../../../../../utils'
 import clone = require('clone')
 
-function StubComponent(sources, inputs) {
-  return {
-    DOM: O.of(div(['Hello'])),
-    output$: O.never()//
-    // O.of({
-    //   type: 'update',
-    //   index: 1,
-    //   data: {
-    //     value: 'Hello',
-    //     valid: false,
-    //     errors: ['Some error']
-    //   }
-    // })
-  }
-}
 
-function getDefault() {
-  return {
-    data: {
-      value: 'Hello',
-      valid: false,
-      errors: ['something']
-    }
-  }
-}
+// How to use: include 'itemHeading', 'item' and 'itemDefault' in inputs object
+//{...inputs, itemHeading: 'Host', item: some component, itemDefault: some component value default function}
 
-// function getDefault() {
-//   return {
-//     value: {
-//       type: StageTimeOptions.MINUTES
-//       data: {
-//         type: MinutesTypeOptions.MAX,
-//         data: {
-//           max: 5
-//         }
-//       }
-//     },
-//     valid: true,
-//     errors: []
-//   }
-// }
-
-function render(state) {
+function render(state, itemHeading) {
   let children
   if (state.length === 0) {
     children = [div('.item', ['Click plus to add item'])]
@@ -55,7 +17,7 @@ function render(state) {
   } else {
     children = state.map((x, index) => div('.column.small-margin-bottom', [
       div('.row', [
-        span('.sub-sub-heading.item', [`Round ${index + 1}`]), 
+        span('.sub-sub-heading.item', [`${itemHeading} ${index + 1}`]), 
         span('.appSubtractButton.list-button.fa.fa-minus', {attrs: {'data-index': index}}, [])
       ]),
       div('.item.indented', [x])
@@ -84,7 +46,7 @@ function intent(sources) {
 
 function reducers(actions, inputs) {
   const add_r = actions.add$.map(_ => state => {
-    return state.push(Immutable.fromJS(getDefault()))
+    return state.push(Immutable.fromJS(inputs.itemDefault()))
   })
 
   const subtract_r = actions.subtract$.map(index => state => {
@@ -104,7 +66,7 @@ function model(actions, inputs) {
   return inputs.props$
     .switchMap(props => {
       // should be
-      const init = props || [getDefault()]
+      const init = props || [inputs.itemDefault()]//[getDefault()]
 
       return reducer$.startWith(Immutable.fromJS(init)).scan((acc, f: Function) => f(acc))
     })
@@ -121,7 +83,7 @@ export default function main(sources, inputs) {
     .distinctUntilChanged((x, y) => x.length === y.length)
     .map(my_state => {
       const state = JSON.parse(JSON.stringify(my_state));
-      const components = state.map((props, index) => StubComponent(sources, {...inputs, props$: O.of(props.value), index}))
+      const components = state.map((props, index) => inputs.item(sources, {...inputs, props$: O.of(props.value), index}))
       const components_dom = components.map(x => x.DOM)
       const components_output = components.map(x => x.output$)
 
@@ -136,7 +98,7 @@ export default function main(sources, inputs) {
 
   change$.attach(components_output$)
 
-  const vtree$ = components_dom$.map(render)
+  const vtree$ = components_dom$.map(x => render(x, inputs.itemHeading || 'Round'))
 
   return {
     DOM: vtree$,

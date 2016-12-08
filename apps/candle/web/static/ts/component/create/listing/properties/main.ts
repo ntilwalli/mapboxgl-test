@@ -4,9 +4,37 @@ import Immutable = require('immutable')
 import PerformerSignup from './performerSignup/main'
 import CheckIn from './checkin/main'
 import PerformerCost from './performerCost/main'
-import StageTime from './stageTime/main'
+import Collection from './collection/main'
 import {getSessionStream} from '../helpers'
 import {combineObj, createProxy} from '../../../../utils'
+
+
+function StubComponent(sources, inputs) {
+  return {
+    DOM: O.of(div(['Hello'])),
+    output$: O.never()//
+    // O.of({
+    //   type: 'update',
+    //   index: 1,
+    //   data: {
+    //     value: 'Hello',
+    //     valid: false,
+    //     errors: ['Some error']
+    //   }
+    // })
+  }
+}
+
+function getDefault() {
+  return {
+    data: {
+      value: 'Hello',
+      valid: true,
+      errors: []
+    }
+  }
+}
+
 
 function arrayUnique(array) {
     var a = array.concat();
@@ -51,7 +79,7 @@ function toComponent(type, meta, session$, sources, inputs) {
       component = PerformerCost
       break
     case 'stage_time':
-      component = StageTime
+      component = (sources, inputs) => Collection(sources, {...inputs, item: StubComponent, itemDefault: getDefault})
       break
     default:
       throw new Error(`Invalid property component type: ${type}`)
