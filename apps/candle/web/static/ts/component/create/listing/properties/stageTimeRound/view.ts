@@ -25,7 +25,7 @@ function render(cost, components) {
   const songs_heading = !!both ? span('.sub-sub-heading.align-center', ['Songs']) : null
   return div({class: {row: !both, column: both}}, [
     span('.item', [components.type]),
-    components.minutes ? div(`.row.align-center.small-margin-bottom`, [
+    components.minutes ? div(`.row.align-center`, [
       minutes_heading, 
         span('.row', [
           components.minutes

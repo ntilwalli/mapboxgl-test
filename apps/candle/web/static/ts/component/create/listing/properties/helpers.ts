@@ -14,8 +14,6 @@ import TimeInput from '../../../../library/timeInput/main'
 
 const {isEmail} = validator
 
-
-
 export function ComboBox(sources, options, props$, styleClass?) {
   const shared$ = props$
     .map(x => {
@@ -42,6 +40,12 @@ export function ComboBox(sources, options, props$, styleClass?) {
     output$: state$
   }
 } 
+
+export const PerformerLimitOptions = {
+  NO_LIMIT: 'no-limit',
+  LIMIT: 'limit',
+  LIMIT_BY_SIGNUP_TYPE: 'limit-by-signup-type'
+}
 
 export const StageTimeOptions = {
   MINUTES: 'in-minutes',
@@ -194,6 +198,25 @@ export function BlankComponent() {
     output$: O.never()
   }
 }
+
+export function BlankUndefined() {
+  return {
+    DOM: O.of(null),
+    output$: O.of(undefined)
+  }
+}
+
+export function BlankStructuredUndefined() {
+  return {
+    DOM: O.of(null),
+    output$: O.of({
+      data: undefined,
+      valid: true, 
+      errors: []
+    })
+  }
+}
+          
 
 function createTimeValidator(message): (string) => SmartTextInputValidation  {
   return function(input): SmartTextInputValidation {

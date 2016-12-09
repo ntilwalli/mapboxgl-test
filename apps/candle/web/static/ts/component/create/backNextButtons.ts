@@ -28,18 +28,22 @@ function view(state$) {
   return state$.map(state => {
     //console.log(`button state`, state)
     const {props, valid} = state
-    return div(`.back-next`, [
+    return div(`.buttons`, [
       div(`.button-section.back-section`, [
-        props.back ? button(`.appBackButton.back`, [
-          span(`.icon.fa.fa-angle-left.fa-2x`),
-          span(`.text`, [`Back`]),
-        ]) : null
+        props.back ? button(`.appBackButton`, [
+          div(`.back`, [
+            span(`.icon.fa.fa-angle-left.fa-2x`),
+            span(`.text`, [`Back`]),
+          ]) 
+        ]): null
       ]),
-      span(`.vertical-separator`, []),
+      div(`.vertical-separator`, []),
       div(`.button-section.next-section`, [
-        props.next ? button(`.appNextButton.next`, {class: {disabled: !valid}}, [
-          span(`.text`, [`Next`]),
-          span(`.icon.fa.fa-angle-right.fa-2x`)
+        props.next ? button(`.appNextButton`, {class: {disabled: !valid}}, [
+          div(`.next`, [
+            span(`.text`, [`Next`]),
+            span(`.icon.fa.fa-angle-right.fa-2x`)
+          ])
         ]) : null
       ])
     ])

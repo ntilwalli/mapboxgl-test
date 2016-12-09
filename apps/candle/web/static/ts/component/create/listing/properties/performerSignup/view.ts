@@ -9,13 +9,13 @@ function renderInPersonInput(performer_signup, components) {
   if (index >= 0) {
     const props = performer_signup[index].data
     const styles = props.styles
-    return div('.column.margin-bottom', [
-      div('.row.align-center.small-margin-bottom', [
+    return div('.column', [
+      div('.row.align-center', [
         span('.sub-sub-heading.align-center', ['Begins']),
         span('.item', [components.in_person_begins]),
         span('.item.align-center', ['minutes before event start']),
       ]),
-      div('.row.align-center.small-margin-bottom', [
+      div('.row.align-center', [
         span('.sub-sub-heading.align-center', ['Ends']),
         span(`.item`, [components.in_person_ends_time_type]),
         components.in_person_ends
@@ -67,19 +67,19 @@ function renderRegistrationInput(performer_signup, components) {
         span('.title', ['Website'])
       ])
     ]),
-    div('.row.align-center.margin-bottom', [
+    div('.row.align-center', [
       span('.sub-sub-heading.align-center', ['Begins']),
       span(`.item`, [components.registration_begins_time_type]),
       renderBeginsNextLine ? null : span('.item.margin-bottom', [components.registration_begins])
     ]),
     !renderBeginsNextLine ? null : div(`.column.day-time-input.margin-bottom`, [components.registration_begins]),
-    div('.row.align-center.margin-bottom', [
+    div('.row.align-center.small-margin-top', [
       span('.sub-sub-heading.align-center', ['Ends']),
       span(`.item`, [components.registration_ends_time_type]),
       renderEndsNextLine ? null : span('.item.margin-bottom', [components.registration_ends])
     ]),
-    !renderEndsNextLine ? null : div(`.column.day-time-input.margin-bottom`, [components.registration_ends]),
-    components.registration_info ? div(`.item.email-address`, [components.registration_info]) : null,
+    !renderEndsNextLine ? null : div(`.column.day-time-input.small-margin-top`, [components.registration_ends]),
+    components.registration_info ? div(`.item.small-margin-top`, [components.registration_info]) : null,
   ])
 }
 
@@ -103,7 +103,7 @@ export default function view(state$, components) {
             input('.appTypeInput', {attrs: {type: 'checkbox', name: 'signup-type', value: 'in-person', checked: in_person_checked}}, []),
             span('.title', ['In person'])
           ]),
-          div('.indented.column', [
+          div('.indented.column..small-margin-top.margin-bottom', [
             renderInPersonInput(performer_signup, components),
             !in_person_checked ? div('.disabled-cover', []) : null
           ]),
@@ -111,7 +111,7 @@ export default function view(state$, components) {
             input('.appTypeInput', {attrs: {type: 'checkbox', name: 'signup-type', value: 'registration', checked: registration_checked}}, []),
             span('.title', ['Allow pre-registration'])
           ]),
-          registration_checked ? div('.indented.column', {class: {"disabled-cover": !registration_checked}}, [
+          registration_checked ? div('.indented.column.small-margin-top', {class: {"disabled-cover": !registration_checked}}, [
             renderRegistrationInput(performer_signup, components)
           ]) : null
         ])

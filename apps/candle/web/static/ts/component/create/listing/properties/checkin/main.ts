@@ -73,8 +73,8 @@ function getCheckInComponents(check_in$, sources, inputs) {
   const radius$ = shared$.pluck('radius')
   const options = [
     //opts.BLANK,
-    opts.EVENT_START,
     opts.MINUTES_BEFORE_EVENT_START,
+    opts.EVENT_START,
     opts.MINUTES_AFTER_EVENT_START,
     opts.MINUTES_BEFORE_EVENT_END,
     opts.EVENT_END

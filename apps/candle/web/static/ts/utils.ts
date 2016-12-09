@@ -32,13 +32,13 @@ interface ProxyObservable<T> extends O<T> {
   attach: (Observable) => void
 }
 
-export function createProxy(): ProxyObservable<any> {
+export function createProxy(type = 'regular'): ProxyObservable<any> {
   let start_up_token = "start up token"
   let upstream
   let rand
   let sub
   let active 
-  const source = new Subject()
+  const source = type === 'replay' ? new ReplaySubject(1) : new Subject()
   const proxy = source
     .startWith(start_up_token)
     .do(x => {

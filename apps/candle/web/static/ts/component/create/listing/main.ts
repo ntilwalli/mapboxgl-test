@@ -225,7 +225,7 @@ function renderMainContent(info: any) {
 }
 
 function renderController(info: any) {
-  return div(`.controller-buttons`, [
+  return div(`.controller`, [
     hr(`.separator`),
     info.components.controller
   ])

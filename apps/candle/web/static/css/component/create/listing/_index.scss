@@ -1,5 +1,10 @@
 @import '../../../variables';
 .workflow-step {
+  // span {
+  //   display: flex;
+  //   align-items: center;
+  // }
+
   .errors {
     color: red;
     margin-bottom: 1rem;
@@ -10,6 +15,7 @@
   }
 
   .body {
+    margin-bottom: 4rem;
     // .input-section {
     //   display: flex;
     //   flex-direction: column;
@@ -32,6 +38,13 @@
     //   margin-bottom: 1rem;
     // }
 
+    .column > .row:not(:last-child) {
+      margin-bottom: .5rem;
+    }
+
+    .column > .column:not(:last-child) {
+      margin-bottom: 1rem;
+    }
 
     .column {
       position: relative;
@@ -55,7 +68,7 @@
       >.item {
         //display: flex;
         //align-items: center;
-        margin-bottom: .5rem;
+        //margin-bottom: .5rem;
       }
     }
 
@@ -104,13 +117,17 @@
       margin-bottom: .5rem;
     }
 
+    .small-margin-top {
+      margin-top: .5rem;
+    }
+
     .bold {
       font-weight: bold;
     }
 
     .indented {
       margin-left: 1.5rem;
-      margin-top: .5rem;
+      //margin-top: .5rem;
     }
 
     .disabled-cover {
@@ -125,6 +142,7 @@
   }
 
   .radio-input, .checkbox-input {
+    display: flex;
     margin-right: 1rem;
     .title {
       margin-right: .7rem;
@@ -145,6 +163,7 @@
     padding: 2px 2px 0;
     color: black;
     //padding: 2px 2px 1px;
+    cursor: pointer;
   }
 
   .list-button:hover {

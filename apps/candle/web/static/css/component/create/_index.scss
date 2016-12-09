@@ -22,6 +22,7 @@
 
     .main-panel {
       position: relative;
+      padding-bottom: 6rem;
 
       .main-content {
         margin: 1rem;
@@ -32,7 +33,7 @@
     @media (min-width: 768px) {
       .main-panel {
         display: flex;
-        flex: 1 1 calc(100vw * 0.6);
+        width: calc(100vw * 0.6);
 
 
         .instruction-section {
@@ -42,10 +43,12 @@
       }
 
       .instruction-panel {
-        position: relative;
-        //display: flex;
-        justify-content: flex-start;
-        flex: 1 1 calc(100vw * 0.4);
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        right: 0;
+
+        width: calc(100vw * 0.4);
         background-color: hsla(200, 0, 90, 1);
 
         .instruction-section {

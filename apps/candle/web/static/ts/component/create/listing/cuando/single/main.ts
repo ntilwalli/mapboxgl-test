@@ -124,7 +124,7 @@ function model(actions, inputs) {
       ...x,
       valid: isValid(x.session)
     }))
-    .do(x => console.log(`meta state`, x))
+    //.do(x => console.log(`single state`, x))
     .publishReplay(1).refCount()
 }
 
@@ -141,16 +141,16 @@ function view(state$, components) {
       const {cuando} = listing
       const {begins, ends} = cuando
 
-      console.log(`begins, ends`, begins, ends)
+      //console.log(`begins, ends`, begins, ends)
       const is_next_day = begins && ends && !begins.isSame(ends, 'day') ? true : false 
-      console.log(`next day?`, is_next_day)
+      //console.log(`next day?`, is_next_day)
       return div(`.workflow-step.cuando-single`, [
         div(`.heading`, []),
         div(`.body`, [
           div(`.column.justify-center.margin-bottom`, [
-            div(`.sub-heading.center`, ['Date']),
+            div(`.sub-heading.flex.justify-center`, ['Date']),
             div(`.input-area`, [
-              div(`.flex-center`, [
+              div(`.flex.justify-center`, [
                 div(`.calendar`, [
                   div(`.controller`, [
                     div(`.appDecMonth.text-button.fa.fa-angle-left.fa-2x`, []),
@@ -163,13 +163,13 @@ function view(state$, components) {
             ])
           ]),
           div(`.column.justify-center.margin-bottom`, [
-            div(`.sub-heading.center`, ['Start time']),
+            div(`.sub-heading.flex.justify-center`, ['Start time']),
             div(`.input-area`, [
               begins_time
             ])
           ]),
           div(`.column.justify-center`, [
-            div(`.sub-heading.center`, ['End time']),
+            div(`.sub-heading.flex.justify-center`, ['End time']),
             div(`.input-area`, [
               is_next_day ? span(`.next-day-message.flex-center`, ['(following day)']) : null,
               ends_time

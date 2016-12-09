@@ -7,7 +7,7 @@ import {combineObj} from '../../../../../utils'
 function render(cost, components) {
   const both = components.cover && components.minimum_purchase
   return div({class: {row: !both, column: both}}, [
-    span('.item', [components.type]),
+    span(`.item`, {class: {'small-margin-bottom': both}}, [components.type]),
     components.cover ? div(`.row.align-center.small-margin-bottom`, [
       both ? span('.sub-sub-heading.align-center', ['Cover']) : null,
       span(`.item`, [span('.row', [span('.item', [components.cover]), span('.item.flex.align-center', ['dollars'])])])
@@ -34,9 +34,7 @@ export default function view(state$, components) {
       //console.log('components', components)
       return div('.column.cost', [
         div('.sub-heading.section-heading ', ['Performer cost']),        
-        div('.column', [
-          render(cost, components)
-        ])
+        render(cost, components)
       ])
     })
 }

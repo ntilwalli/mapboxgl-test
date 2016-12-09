@@ -12,11 +12,11 @@ import clone = require('clone')
 function render(state, component_id, item_heading) {
   let children
   if (state.length === 0) {
-    children = [div('.item', ['Click plus to add item'])]
+    children = ['Click plus to add item']
   } else if (state.length === 1) {
-    children = [div(`.item`, state)]
+    children = state
   } else {
-    children = state.map((x, index) => div('.column.small-margin-bottom', [
+    children = state.map((x, index) => div('.column', [
       div('.row', [
         span('.sub-sub-heading.item', [`${item_heading} ${index + 1}`]), 
         span('.appSubtractButton.list-button.fa.fa-minus', {attrs: {'data-index': index}}, [])
@@ -26,7 +26,7 @@ function render(state, component_id, item_heading) {
   }
 
   return div('.column', [
-    div('.row.small-margin-bottom', [
+    div('.row', [
       div('.sub-heading.section-heading', [component_id]),
       button('.appAddButton.list-button.item.flex.align-center.fa.fa-plus', [])
     ]),
@@ -67,7 +67,11 @@ function model(actions, inputs) {
   return inputs.props$
     .switchMap(props => {
       // should be
-      const init = props || [inputs.itemDefault()]//[getDefault()]
+      const init = props ? props.map(x => ({
+        data: x,
+        errors: [],
+        valid: true
+      })) : [inputs.itemDefault()]//[getDefault()]
 
       return reducer$.startWith(Immutable.fromJS(init)).scan((acc, f: Function) => f(acc))
     })

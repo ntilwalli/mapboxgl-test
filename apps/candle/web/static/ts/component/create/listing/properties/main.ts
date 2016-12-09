@@ -6,8 +6,9 @@ import CheckIn from './checkin/main'
 import PerformerCost from './performerCost/main'
 import Collection from './collection/main'
 import StageTimeRound from './stageTimeRound/main'
+import PerformerLimit from './performerLimit/main'
 import {getSessionStream} from '../helpers'
-import {combineObj, createProxy} from '../../../../utils'
+import {combineObj, createProxy, traceStartStop} from '../../../../utils'
 import {getCollectionDefault as getStageTimeDefault} from './stageTimeRound/model'
 
 
@@ -52,7 +53,7 @@ function arrayUnique(array) {
 
 
 const event_type_to_properties = {
-  'open-mic': ['performer_signup', 'check_in', 'performer_cost', 'stage_time'],
+  'open-mic': ['performer_signup', 'check_in', 'performer_cost', 'stage_time', 'performer_limit'],
   'show': ['check_in']
 }
 
@@ -88,6 +89,9 @@ function toComponent(type, meta, session$, sources, inputs) {
         item_heading: 'Round', 
         itemDefault: getStageTimeDefault
       })
+      break
+    case 'performer_limit':
+      component = PerformerLimit
       break
     default:
       throw new Error(`Invalid property component type: ${type}`)
@@ -147,7 +151,7 @@ function model(actions, inputs) {
         valid: Object.keys(x.valid_flags).every(prop => x.valid_flags[prop])
       }
     })
-    .do(x => console.log('properties state', x))
+    //.do(x => console.log('properties state', x))
     .publishReplay(1).refCount()
 }
 
@@ -171,14 +175,19 @@ function view(state$, children$) {
 export function main(sources, inputs) {
   const actions = intent(sources)
   const session$ = createProxy()
-  const property_components$ = actions.session$
-    .map(session => {
+  const replay_session$ = session$
+    //.letBind(traceStartStop('replay_session trace'))
+    .publishReplay(1).refCount()
+  const shunted_session$ = replay_session$
+    .filter(x => false)
+  const property_components$ = O.merge(actions.session$, shunted_session$) //  create permanent subscriber to circular session so session can be fed back to components
+    .map((session: any) => {
       const {listing} = session
       const {event_types, meta} = listing
 
       const foo_components = event_types.reduce((acc, val) => acc.concat(event_type_to_properties[val]), [])
       const component_types = arrayUnique(foo_components)
-      const components = component_types.map(type => toComponent(type, meta, session$, sources, inputs))
+      const components = component_types.map(type => toComponent(type, meta, replay_session$, sources, inputs))
       //console.log('component',components)
       const DOM = O.combineLatest(...components.map(c => c.DOM))
       
@@ -193,6 +202,9 @@ export function main(sources, inputs) {
   const properties_output$ = property_components$.switchMap(x => x.output$)
   const state$ = model(actions, {...inputs, properties_output$})
   const properties_dom$ = property_components$.switchMap(x => x.DOM)
+
+  session$.attach(state$.pluck('session'))
+
   return {
     DOM: view(state$, properties_dom$),
     output$: state$
