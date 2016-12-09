@@ -42,9 +42,7 @@ function MaxMinutesComponent(sources, props$, component_id = '') {
     max: max_input.DOM,
   }).map((components: any) => {
     const {max} = components
-    return div('.row', [
-      span('.item', [max])
-    ])
+    return max
   })
 
   const output$ = max_input.output$.map(max => {
@@ -86,7 +84,7 @@ function RangeMinutesComponent(sources, props$, component_id) {
         span('.sub-sub-heading.item.flex.align-center', ['Min']),
         span('.item', [min]),
         span('.sub-sub-heading.item.flex.align-center', ['Max']),
-        span('.item', [max])
+        span([max])
       ])
     ])
   })
@@ -143,7 +141,7 @@ function MinutesComponent(sources, props$, component_id) {
     return div('.col', [
       div('.row', [
         span('.item', [type]),
-        span('.item', [data]),
+        data,
       ])
     ])
   })

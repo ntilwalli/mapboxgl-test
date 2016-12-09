@@ -27,19 +27,15 @@ function render(cost, components) {
     span('.item', [components.type]),
     components.minutes ? div(`.row.align-center.small-margin-bottom`, [
       minutes_heading, 
-      span(`.item`, [
         span('.row', [
-          span('.item', [components.minutes])
+          components.minutes
         ])
-      ])
     ]) : null,
     components.songs ? div('.row.align-center', [
       songs_heading,
-      span(`.item`, [
         span('.row', [
-          span('.item', [components.songs])
+          components.songs
         ])
-      ])
     ]) : null
   ]) 
 }
