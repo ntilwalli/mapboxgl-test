@@ -68,55 +68,9 @@ export function createProxy(): ProxyObservable<any> {
   return <ProxyObservable<any>> proxy
 }
 
-// export function createProxy(): ProxyObservable<any> {
-//   let start_up_token = "start up token"
-//   let upstream
-//   let sub
-//   const source = new Subject()
-//   const proxy = source
-//     .startWith(start_up_token)
-//     .do(x => {
-//       if (x === start_up_token) {
-//         if (upstream && !sub) {
-//           //console.log(`sub on start`)
-//           sub = upstream.subscribe(source)
-//         }
-//       }
-//     })
-//     .filter(x => x !== start_up_token)
-//     .finally(() => {
-//       if (sub) {
-//         sub.unsubscribe()
-//         sub = undefined
-//       }
-//     }).publish().refCount()
-
-//   ;(<ProxyObservable<any>> proxy).attach = (stream) => {
-//     upstream = stream
-//     //console.log(`sub on attach`)
-//     sub = upstream.subscribe(source)
-//   }
-
-//   return <ProxyObservable<any>> proxy
-// }
-
-// export function attrs (val, monoProps?) {
-//   if (monoProps) {
-//     if (monoProps.some(x => x === `checked`)) {
-//       val.checked = `checked`
-//     }
-
-//     if (monoProps.some(x => x === `disabled`)) {
-//       val.disabled = `disabled`
-//     }
-
-//     if (monoProps.some(x => x === `hidden`)) {
-//       val.hidden = `hidden`
-//     }
-//   }
-
-//   return {attrs: val}
-// }
+export function isInteger(x) {
+  return x % 1 === 0;
+}
 
 export function targetIsOwner(ev) {
   return ev.target === ev.ownerTarget

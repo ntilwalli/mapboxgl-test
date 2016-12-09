@@ -1,3 +1,4 @@
+import {isInteger} from '../utils'
 import moment = require('moment')
 
 export function to12HourTimeFromMoment(time) {
@@ -41,9 +42,7 @@ export function to12HourTime(time) {
   }
 }
 
-function isInteger(x) {
-  return x % 1 === 0;
-}
+
 
 export function toMilitaryTime(time) {
   if (time) {

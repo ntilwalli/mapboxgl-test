@@ -2,93 +2,94 @@ import {Observable as O} from 'rxjs'
 import Immutable = require('immutable')
 import {combineObj} from '../../../../../utils'
 import deepEqual = require('deep-equal')
-import {StageTimeOptions, MinutesTypeOptions} from '../../helpers'
+import {StageTimeOptions, MinutesTypeOptions} from '../helpers'
 import clone = require('clone')
+
+function getMinutesDefault() {
+  return {
+    type: MinutesTypeOptions.MAX,
+    data: {
+      max: 5
+    }
+  }
+}
+
+function getSongsDefault() {
+  return 2
+}
 
 function getDefault() {
   return {
-    type: StageTimeOptions.MINUTES
+    type: StageTimeOptions.MINUTES,
     data: {
-      type: MinutesTypeOptions.MAX,
-      data: {
-        max: 5
-      }
+      minutes: getMinutesDefault()
     }
+  }
+}
+
+export function getCollectionDefault() {
+  return {
+    data: getDefault(),
+    valid: true,
+    errors: []
   }
 }
 
 function reducers(actions, inputs) {
 
-  const type_input_r = actions.add_round$.map(msg => state => {
+  const type_input_r = inputs.type_input$.map(msg => state => {
 
-    return state.update(`stage_time`, performer_cost => {
-      performer_cost.type = msg
+    return state.update('stage_time', stage_time => {
+      stage_time.type = msg
       switch (msg) {
-        case CostOptions.COVER:
-          performer_cost.data = {
-            cover: 5
+        case StageTimeOptions.MINUTES:
+          stage_time.data = {
+            minutes: getMinutesDefault()
           }
           break
-        case CostOptions.MINUMUM_PURCHASE:
-          performer_cost.data = {
-            minimum_purchase: {
-              type: PurchaseTypeOptions.DRINK,
-              data: 1
-            }
+        case StageTimeOptions.SONGS:
+          stage_time.data = {
+            songs: getSongsDefault()
           }
           break
-        case CostOptions.COVER_AND_MINIMUM_PURCHASE:
-        case CostOptions.COVER_OR_MINIMUM_PURCHASE:
-          performer_cost.data = {
-            cover: 5,
-            minimum_purchase: {
-              type: PurchaseTypeOptions.DRINK,
-              data: 1
-            }
+        //case StageTimeOptions.MINUTES_OR_SONGS:
+        case StageTimeOptions.MINUTES_OR_SONGS:
+          stage_time.data = {
+            minutes: getMinutesDefault(),
+            songs: getSongsDefault()
           }
-          break;
+          break
         default:
-          performer_cost.data = undefined
-          break
+          throw new Error('Invalid stage time type: ' + msg)
       }
 
-      return performer_cost
+      return stage_time
     })
   })
 
-  const cover_input_r = inputs.cover_input$.map(msg => state => {
+  const minutes_input_r = inputs.minutes_input$.map(msg => state => {
     //console.log('in person input msg', msg)
     return state.update('errors_map', errors_map => {
-      errors_map['cover-input'] = msg.errors
+      errors_map['minutes-input'] = msg.errors
       return errors_map
-    }).update(`performer_cost`, performer_cost => {
-      if (msg.valid) {
-        performer_cost.data.cover = msg.value
-      } else {
-        performer_cost.data.cover = undefined
-      }
-
-      return performer_cost
+    }).update('stage_time', stage_time => {
+      stage_time.data.minutes = msg.valid ? msg.data : undefined
+      return stage_time
     })
   })
 
-  const minimum_purchase_input_r = inputs.minimum_purchase_input$.map(msg => state => {
+  const songs_input_r = inputs.songs_input$.map(msg => state => {
     //console.log('in person input msg', msg)
     return state.update('errors_map', errors_map => {
-      errors_map['minimum-purchase-input'] = msg.errors
+      errors_map['songs-input'] = msg.errors
       return errors_map
-    }).update(`performer_cost`, performer_cost => {
-      if (msg.valid) {
-        performer_cost.data.minimum_purchase = msg.value
-      } else {
-        performer_cost.data.minimum_purchase = undefined
-      }
-
-      return performer_cost
+    }).update('stage_time', stage_time => {
+      stage_time.data.songs = msg.valid ? msg.data : undefined
+      return stage_time
     })
   })
 
-  return O.merge(O.never())
+  return O.merge(type_input_r, minutes_input_r, songs_input_r)
 }
 
 export default function model(actions, inputs) {
@@ -96,11 +97,11 @@ export default function model(actions, inputs) {
   return inputs.props$.take(1)
     .switchMap(props => {
       const init = {
-        performer_cost: props || [getDefault()],
+        stage_time: props || getDefault(),
         errors_map: {}
       }
 
-      return reducer$.startWith(Immutable.fromJS(init)).scan((acc, f: Function) => f(acc))
+      return reducer$.startWith(Immutable.Map(init)).scan((acc, f: Function) => f(acc))
     })
     .debounceTime(0)
     .map((x: any) => clone(x.toJS()))

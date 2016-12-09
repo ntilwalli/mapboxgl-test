@@ -9,7 +9,6 @@ import view from './view'
 import deepEqual = require('deep-equal')
 import {combineObj, createProxy, blankComponentUndefinedDOM} from '../../../../../utils'
 import {CostOptions, PurchaseTypeOptions, BlankComponent, CostTypeComboBox, PurchaseTypeComboBox, NumberInputComponent} from '../helpers'
-import {default as TextInput, SmartTextInputValidation} from '../../../../../library/smarterTextInput'
 import clone = require('clone')
 
 const opts = CostOptions
@@ -43,8 +42,8 @@ function MinimumPurchaseComponent(sources, props$, component_id) {
   }).map((info: any) => {
     const {data, type} = info
     return {
-      value: {
-        data: data.value,
+      data: {
+        data: data.data,
         type
       },
       valid: data.valid,

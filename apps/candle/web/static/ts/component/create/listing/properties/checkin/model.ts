@@ -26,11 +26,8 @@ function reducers(actions, inputs) {
       errors_map['radius'] = msg.errors
       return errors_map
     }).update(`check_in`, check_in => {
-      if (msg.valid) {
-        check_in.radius = msg.value
-      } else {
-        check_in.radius = undefined
-      }
+
+        check_in.radius = msg.valid ? msg.data : undefined
 
       return check_in
     })
@@ -42,11 +39,8 @@ function reducers(actions, inputs) {
       errors_map['begins-input'] = msg.errors
       return errors_map
     }).update(`check_in`, check_in => {
-      if (msg.valid) {
-        check_in.begins.data = msg.value
-      } else {
-        check_in.begins.data = undefined
-      }
+        check_in.begins.data = msg.valid ? msg.data : undefined
+
 
       return check_in
     })
@@ -58,11 +52,9 @@ function reducers(actions, inputs) {
       errors_map['ends-input'] = msg.errors
       return errors_map
     }).update(`check_in`, check_in => {
-      if (msg.valid) {
-        check_in.ends.data = msg.value
-      } else {
-        check_in.ends.data = undefined
-      }
+
+        check_in.ends.data = msg.valid ? msg.data : undefined
+
 
       return check_in
     })

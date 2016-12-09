@@ -56,11 +56,8 @@ function reducers(actions, inputs) {
       errors_map['cover-input'] = msg.errors
       return errors_map
     }).update(`performer_cost`, performer_cost => {
-      if (msg.valid) {
-        performer_cost.data.cover = msg.value
-      } else {
-        performer_cost.data.cover = undefined
-      }
+      performer_cost.data.cover = msg.valid ? msg.data : undefined
+
 
       return performer_cost
     })
@@ -72,11 +69,8 @@ function reducers(actions, inputs) {
       errors_map['minimum-purchase-input'] = msg.errors
       return errors_map
     }).update(`performer_cost`, performer_cost => {
-      if (msg.valid) {
-        performer_cost.data.minimum_purchase = msg.value
-      } else {
-        performer_cost.data.minimum_purchase = undefined
-      }
+      performer_cost.data.minimum_purchase = msg.valid ? msg.data : undefined
+
 
       return performer_cost
     })

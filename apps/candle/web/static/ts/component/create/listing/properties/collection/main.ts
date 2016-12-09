@@ -1,14 +1,15 @@
 import {Observable as O} from 'rxjs'
 import {div, span, button} from '@cycle/dom'
+import isolate from '@cycle/isolate'
 import Immutable = require('immutable')
 import {combineObj, createProxy} from '../../../../../utils'
 import clone = require('clone')
 
 
 // How to use: include 'itemHeading', 'item' and 'itemDefault' in inputs object
-//{...inputs, itemHeading: 'Host', item: some component, itemDefault: some component value default function}
+//{...inputs, sectionHeading: 'Stage time', itemHeading: 'Host', item: some component, itemDefault: some component value default function}
 
-function render(state, itemHeading) {
+function render(state, component_id, item_heading) {
   let children
   if (state.length === 0) {
     children = [div('.item', ['Click plus to add item'])]
@@ -17,7 +18,7 @@ function render(state, itemHeading) {
   } else {
     children = state.map((x, index) => div('.column.small-margin-bottom', [
       div('.row', [
-        span('.sub-sub-heading.item', [`${itemHeading} ${index + 1}`]), 
+        span('.sub-sub-heading.item', [`${item_heading} ${index + 1}`]), 
         span('.appSubtractButton.list-button.fa.fa-minus', {attrs: {'data-index': index}}, [])
       ]),
       div('.item.indented', [x])
@@ -26,7 +27,7 @@ function render(state, itemHeading) {
 
   return div('.column', [
     div('.row.small-margin-bottom', [
-      div('.sub-heading.section-heading', ['Stage time']),
+      div('.sub-heading.section-heading', [component_id]),
       button('.appAddButton.list-button.item.flex.align-center.fa.fa-plus', [])
     ]),
     div('.column', children)
@@ -70,7 +71,7 @@ function model(actions, inputs) {
 
       return reducer$.startWith(Immutable.fromJS(init)).scan((acc, f: Function) => f(acc))
     })
-    .map((x: any) => x.toJS().map(x => x.data))
+    .map((x: any) => x.toJS())//.map(x => x.data))
     .publishReplay(1).refCount()
 }
 
@@ -81,15 +82,18 @@ export default function main(sources, inputs) {
 
   const components$ = state$
     .distinctUntilChanged((x, y) => x.length === y.length)
-    .map(my_state => {
-      const state = JSON.parse(JSON.stringify(my_state));
-      const components = state.map((props, index) => inputs.item(sources, {...inputs, props$: O.of(props.data), index}))
+    .map(state => {
+      //const state = JSON.parse(JSON.stringify(my_state));
+      const components = state.map((props, index) => {
+        return isolate(inputs.item)(sources, {...inputs, props$: O.of(props.data), component_index: index})
+      })
+      
       const components_dom = components.map(x => x.DOM)
       const components_output = components.map(x => x.output$)
 
       return {
         DOM: O.combineLatest(...components_dom),
-        output$: O.combineLatest(...components_output)
+        output$: O.merge(...components_output)
       }
     }).publishReplay(1).refCount()
 
@@ -98,7 +102,7 @@ export default function main(sources, inputs) {
 
   change$.attach(components_output$)
 
-  const vtree$ = components_dom$.map(x => render(x, inputs.itemHeading || 'Round'))
+  const vtree$ = components_dom$.map(x => render(x, inputs.component_id || 'Component id not supplied', inputs.item_heading || 'Item heading not supplied'))
 
   return {
     DOM: vtree$,

@@ -14,14 +14,14 @@ import TimeInput from '../../../../library/timeInput/main'
 
 const {isEmail} = validator
 
-export const MinutesTypeOptions = {
-  MAX: 'max',
-  RANGE: 'range'
-}
 
 
 export function ComboBox(sources, options, props$, styleClass?) {
-  const shared$ = props$.publishReplay(1).refCount()
+  const shared$ = props$
+    .map(x => {
+      return x
+    })
+    .publishReplay(1).refCount()
   const click$ = sources.DOM.select(`.appComboBoxSelect`).events('change')
     .map(ev => {
       return ev.target.value
@@ -43,11 +43,15 @@ export function ComboBox(sources, options, props$, styleClass?) {
   }
 } 
 
-
 export const StageTimeOptions = {
-  MINUTES: 'minutes',
-  SONGS: 'songs',
-  MINUTES_OR_SONGS: 'minutes-or-songs'
+  MINUTES: 'in-minutes',
+  SONGS: 'in-songs',
+  MINUTES_OR_SONGS: 'in-minutes-or-songs'
+}
+
+export const MinutesTypeOptions = {
+  MAX: 'max',
+  RANGE: 'range'
 }
 
 export const RelativeTimeOptions = {
@@ -184,38 +188,6 @@ export function DayOfWeekTimeComponent(sources, props$, message) {
   }
 }
 
-
-// export function DayOfWeekComboBox(sources, props$, styleClass?) {
-
-//   const click$ = sources.DOM.select(`.appDayOfWeekSelect${styleClass}`).events('change')
-//     .map(ev => {
-//       return ev.target.value
-//     })
-//   const state$ = O.merge(props$, click$).publishReplay(1).refCount()
-//   const options = [
-//     'sunday',
-//     'monday',
-//     'tuesday',
-//     'wednesday',
-//     'thursday',
-//     'friday',
-//     'saturday'
-//   ]
-//   const vtree$ = state$.map(state => {
-//     return div(`.select-container`, [
-//       select(`.appTimeTypeSelect${styleClass}`, options.map(opt => {
-//         return option({attrs: {value: opt, selected: state === opt}}, [opt.substring(0, 1).toUpperCase() + opt.substring(1)])
-//       }))
-//     ])
-//   })
-
-//   return {
-//     DOM: vtree$,
-//     output$: state$.map(value => ({valid: true, value}))
-//   }
-// } 
-
-
 export function BlankComponent() {
   return {
     DOM: O.of(undefined),
@@ -253,7 +225,14 @@ export function NumberInputComponent(sources, initialText$, errorMessage) {
     initialText$
   })
 
-  return out
+  return {
+    ...out,
+    output$: out.output$.map(x => ({
+      data: x.value,
+      errors: x.errors,
+      valid: x.valid
+    }))
+  }
 }
 
 function getTimeTypeDisplay(type) {

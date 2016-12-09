@@ -33,6 +33,13 @@ function getInPersonDefault() {
   }
 }
 
+function getDefault() {
+  return {
+    type: 'in-person',
+    data: getInPersonDefault()
+  }
+}
+
 function getInPersonIndex(arr) {
   return arr.findIndex(x => x.type === 'in-person')
 }
@@ -108,14 +115,8 @@ function reducers(actions, inputs) {
       errors_map['in-person-begins-input'] = msg.errors
       return errors_map
     }).update(`performer_signup`, performer_signup => {
-
       let index = performer_signup.findIndex(x => x.type === 'in-person')
-      if (msg.valid) {
-        performer_signup[index].data.begins.data = msg.value
-      } else {
-        performer_signup[index].data.begins.data = undefined
-      }
-
+      performer_signup[index].data.begins.data = msg.valid ? msg.data : undefined
       return performer_signup
     })
   })
@@ -128,11 +129,7 @@ function reducers(actions, inputs) {
     }).update(`performer_signup`, performer_signup => {
 
       let index = performer_signup.findIndex(x => x.type === 'in-person')
-      if (msg.valid) {
-        performer_signup[index].data.ends.data = msg.value
-      } else {
-        performer_signup[index].data.ends.data = undefined
-      }
+      performer_signup[index].data.ends.data = msg.valid ? msg.data : undefined
 
       return performer_signup
     })
@@ -158,11 +155,7 @@ function reducers(actions, inputs) {
     }).update(`performer_signup`, performer_signup => {
 
       let index = performer_signup.findIndex(x => x.type === 'registration')
-      if (msg.valid) {
-        performer_signup[index].data.begins.data = msg.value
-      } else {
-        performer_signup[index].data.begins.data = undefined
-      }
+      performer_signup[index].data.begins.data = msg.valid ? msg.data : undefined
 
       return performer_signup
     })
@@ -189,11 +182,7 @@ function reducers(actions, inputs) {
     }).update(`performer_signup`, performer_signup => {
 
       let index = performer_signup.findIndex(x => x.type === 'registration')
-      if (msg.valid) {
-        performer_signup[index].data.ends.data = msg.value
-      } else {
-        performer_signup[index].data.ends.data = undefined
-      }
+      performer_signup[index].data.ends.data = msg.valid ? msg.data : undefined
 
       return performer_signup
     })
@@ -234,11 +223,7 @@ function reducers(actions, inputs) {
     return state.update(`performer_signup`, performer_signup => {
       let index = performer_signup.findIndex(x => x.type === 'registration')
       const item = performer_signup[index]
-      if (msg.valid) {
-        performer_signup[index].data.data = msg.value
-      } else {
-        performer_signup[index].data.data = undefined
-      }
+      performer_signup[index].data.data = msg.valid ? msg.data : undefined
 
       return performer_signup
     }).update('errors_map', errors_map => {
@@ -262,7 +247,7 @@ export default function model(actions, inputs) {
     //.distinctUntilChanged((x, y) => deepEqual(x, y))
     .switchMap(props => {
       const init = {
-        performer_signup: props || [],
+        performer_signup: props || [getDefault()],
         errors_map: {}
       }
 

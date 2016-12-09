@@ -5,36 +5,37 @@ import PerformerSignup from './performerSignup/main'
 import CheckIn from './checkin/main'
 import PerformerCost from './performerCost/main'
 import Collection from './collection/main'
-//import StageTimeRound from './stageTimeRound/main'
+import StageTimeRound from './stageTimeRound/main'
 import {getSessionStream} from '../helpers'
 import {combineObj, createProxy} from '../../../../utils'
+import {getCollectionDefault as getStageTimeDefault} from './stageTimeRound/model'
 
 
-function StubComponent(sources, inputs) {
-  return {
-    DOM: O.of(div(['Hello'])),
-    output$: O.never()//
-    // O.of({
-    //   type: 'update',
-    //   index: 1,
-    //   data: {
-    //     data: 'Hello',
-    //     valid: false,
-    //     errors: ['Some error']
-    //   }
-    // })
-  }
-}
+// function StubComponent(sources, inputs) {
+//   return {
+//     DOM: O.of(div(['Hello'])),
+//     output$: O.never()//
+//     // O.of({
+//     //   type: 'update',
+//     //   index: 1,
+//     //   data: {
+//     //     data: 'Hello',
+//     //     valid: false,
+//     //     errors: ['Some error']
+//     //   }
+//     // })
+//   }
+// }
 
-function getDefault() {
-  return {
-    data: {
-      data: 'Hello',
-      valid: true,
-      errors: []
-    }
-  }
-}
+// function getDefault() {
+//   return {
+//     data: {
+//       data: 'Hello',
+//       valid: true,
+//       errors: []
+//     }
+//   }
+// }
 
 
 function arrayUnique(array) {
@@ -51,7 +52,7 @@ function arrayUnique(array) {
 
 
 const event_type_to_properties = {
-  'open-mic': ['check_in', 'performer_signup', 'performer_cost', 'stage_time'],
+  'open-mic': ['performer_signup', 'check_in', 'performer_cost', 'stage_time'],
   'show': ['check_in']
 }
 
@@ -80,7 +81,13 @@ function toComponent(type, meta, session$, sources, inputs) {
       component = PerformerCost
       break
     case 'stage_time':
-      component = (sources, inputs) => Collection(sources, {...inputs, item: StubComponent, itemDefault: getDefault})
+      component = (sources, inputs) => Collection(sources, {
+        ...inputs, 
+        item: StageTimeRound, 
+        component_id: 'Stage time', 
+        item_heading: 'Round', 
+        itemDefault: getStageTimeDefault
+      })
       break
     default:
       throw new Error(`Invalid property component type: ${type}`)

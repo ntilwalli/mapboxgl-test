@@ -1,25 +1,14 @@
 import {Observable as O} from 'rxjs'
 import isolate from '@cycle/isolate'
 import {div, span, input} from '@cycle/dom'
-// import Immutable = require('immutable')
-// import {combineObj} from '../../../../../utils'
 import intent from './intent'
 import model from './model'
 import view from './view'
 import deepEqual = require('deep-equal')
-import {combineObj, createProxy} from '../../../../../utils'
-import {MinutesTypeOptions, StageTimeOptions, ComboBox, BlankComponent, NumberInputComponent} from '../../helpers'
+import {combineObj, createProxy, isInteger} from '../../../../../utils'
+import {MinutesTypeOptions, StageTimeOptions, ComboBox, BlankComponent, NumberInputComponent} from '../helpers'
 import clone = require('clone')
 
-
-function MinutesTypeComboBox(sources, props$) {
-  const options = [
-    MinutesTypeOptions.MAX,
-    MinutesTypeOptions.RANGE
-  ]
-
-  return isolate(ComboBox)(sources, options, props$)
-}
 
 function StageTimeTypeComboBox(sources, props$) {
   const options = [
@@ -31,10 +20,23 @@ function StageTimeTypeComboBox(sources, props$) {
   return isolate(ComboBox)(sources, options, props$)
 }
 
+function MinutesTypeComboBox(sources, props$) {
+  const options = [
+    MinutesTypeOptions.MAX,
+    MinutesTypeOptions.RANGE
+  ]
+
+  return isolate(ComboBox)(sources, options, props$)
+}
+
 function MaxMinutesComponent(sources, props$, component_id = '') {
-  const shared$ = props$.publishReplay(1).refCount()
-  const max_message = component_id.length ? compnent_id + ' minutes: Invalid number' : 'Minutes: Invalid number'
-  const max_input = NumberInputComponent(sources, props$.map(x => x.data.max.toString()), max_message)
+  const shared$ = props$
+      .map(x => {
+      return x
+    })
+    .publishReplay(1).refCount()
+  const max_message = component_id + ': Invalid number'
+  const max_input = NumberInputComponent(sources, shared$.pluck('max').map(x => x ? x.toString() : undefined), max_message)
 
   const vtree$ = combineObj({
     max: max_input.DOM,
@@ -45,12 +47,14 @@ function MaxMinutesComponent(sources, props$, component_id = '') {
     ])
   })
 
-  const output$ = max_input.output$.map(max => ({
-    ...max,
-    value: {
-      max: max.value
+  const output$ = max_input.output$.map(max => {
+    return {
+      ...max,
+      data: {
+        max: max.valid ? max.data : undefined
+      }
     }
-  }))
+  })
 
   return {
     DOM: vtree$,
@@ -58,12 +62,19 @@ function MaxMinutesComponent(sources, props$, component_id = '') {
   }
 }
 
-function RangeMinutesComponent(sources, props$, component_id = '') {
-  const shared$ = props$.publishReplay(1).refCount()
-  const max_message = component_id.length ? compnent_id + ' max minutes: Invalid number' : 'Max minutes: Invalid number'
-  const max_input = NumberInputComponent(sources, props$.map(x => x.data.max.toString()), max_message)
-  const min_message = component_id.length ? compnent_id + ' min minutes: Invalid number' : 'Min minutes: Invalid number'
-  const min_input = NumberInputComponent(sources, props$.map(x => x.data.min.toString()), min_message)
+function RangeMinutesComponent(sources, props$, component_id) {
+  const shared$ = props$
+    .map(x => {
+      return {
+        min: x.min || 3,
+        max: x.max || 5
+      }
+    })
+    .publishReplay(1).refCount()
+  const max_message = component_id + ': Invalid max number'
+  const max_input = NumberInputComponent(sources, shared$.map(x => x.max.toString()), max_message)
+  const min_message = component_id + ': Invalid min number'
+  const min_input = NumberInputComponent(sources, shared$.map(x => x.min.toString()), min_message)
 
   const vtree$ = combineObj({
     max: max_input.DOM,
@@ -72,11 +83,9 @@ function RangeMinutesComponent(sources, props$, component_id = '') {
     const {max, min} = components
     return div('.col', [
       div('.row', [
-        span('.sub-sub-heading.item', ['Min'])
+        span('.sub-sub-heading.item.flex.align-center', ['Min']),
         span('.item', [min]),
-      ]),
-      div('.row', [
-        span('.sub-sub-heading.item', ['Max'])
+        span('.sub-sub-heading.item.flex.align-center', ['Max']),
         span('.item', [max])
       ])
     ])
@@ -87,11 +96,12 @@ function RangeMinutesComponent(sources, props$, component_id = '') {
     min: min_input.output$
   }).map((components: any) => {
     const {max, min} = components
+    const valid = min.valid && max.valid
     return {
-      value: {
-        min: min.value,
-        max: max.value,
-      },
+      data: valid ? {
+        min: min.data,
+        max: max.data,
+      } : undefined,
       valid: min.valid && max.valid,
       errors: min.errors.concat(max.errors)
     }
@@ -103,11 +113,15 @@ function RangeMinutesComponent(sources, props$, component_id = '') {
   }
 }
 
-function MinutesComponent(sources, props$, component_id = '') {
-  const shared$ = props$.publishReplay(1).refCount()
+function MinutesComponent(sources, props$, component_id) {
+  const shared$ = props$
+    .map(x => {
+      return x
+    })
+    .publishReplay(1).refCount()
   const type$ = shared$.pluck('type').publishReplay(1).refCount()
   const type_component = MinutesTypeComboBox(sources, type$)
-  const data_component$ = type$.map(type => {
+  const data_component$ = O.merge(type_component.output$, type$).map(type => {
     switch (type) {
       case MinutesTypeOptions.MAX:
         return MaxMinutesComponent(sources, shared$.pluck('data'), component_id)
@@ -117,11 +131,9 @@ function MinutesComponent(sources, props$, component_id = '') {
   }).publishReplay(1).refCount()
 
   const data_component = {
-    DOM: minutes_component$.switchMap(x => x.DOM),
-    output$: minutes_component$.switchMap(x => x.output$)
+    DOM: data_component$.switchMap(x => x.DOM),
+    output$: data_component$.switchMap(x => x.output$)
   }
-
-  const min_input = NumberInputComponent(sources, shared$.map(x => x.data.min.toString()), min_message)
 
   const vtree$ = combineObj({
     type: type_component.DOM,
@@ -130,7 +142,6 @@ function MinutesComponent(sources, props$, component_id = '') {
     const {type, data} = components
     return div('.col', [
       div('.row', [
-        span('.sub-sub-heading.item', ['Minutes'])
         span('.item', [type]),
         span('.item', [data]),
       ])
@@ -144,9 +155,9 @@ function MinutesComponent(sources, props$, component_id = '') {
     const {type, data} = components
     return {
       ...data,
-      value: {
+      data: {
         type,
-        data
+        data: data.valid ? data.data : undefined
       }
     }
   })
@@ -157,16 +168,14 @@ function MinutesComponent(sources, props$, component_id = '') {
   }
 }
 
-function SongsComponent(sources, props$, component_id = '') {
+function SongsComponent(sources, props$, component_id) {
   const shared$ = props$.publishReplay(1).refCount()
-  const message = component_id.length ? compnent_id + ' songs: Invalid number' : 'Songs: Invalid number'
-  const songs_input = NumberInputComponent(sources, shared$.map(x => x.songs.toString()), message)
+  const message = component_id + ': Invalid number'
+  const songs_input = NumberInputComponent(sources, shared$.map(x => x.toString()), message)
 
   const vtree$ = songs_input.DOM.map(songs => {
-    const  = components
     return div('.col', [
       div('.row', [
-        span('.sub-sub-heading.item', ['Songs'])
         span('.item', [songs])
       ])
     ])
@@ -174,11 +183,11 @@ function SongsComponent(sources, props$, component_id = '') {
 
   return {
     DOM: vtree$,
-    output$: songs_input.outpu$
+    output$: songs_input.output$
   }
 }
 
-function getComponents(stage_time$, sources, inputs) {
+function getComponents(stage_time$, sources, inputs, component_id) {
   const shared$ = stage_time$
     .map(x => {
       return clone(x)
@@ -192,82 +201,73 @@ function getComponents(stage_time$, sources, inputs) {
     switch (stage_time.type) {
       case StageTimeOptions.MINUTES:
       case StageTimeOptions.MINUTES_OR_SONGS:
-        return MinutesComponent(sources, O.of(stage_time.data), 'Cover charge: Invalid number')
+        return MinutesComponent(sources, O.of(stage_time.data.minutes), component_id + ' minutes')
       default:
         return BlankComponent()
 
     }
   }).publishReplay(1).refCount()
 
-  const cover_input_component = {
-    DOM: cover_input_component$.switchMap(x => x.DOM),
-    output$: cover_input_component$.switchMap(x => x.output$)
+  const minutes_component = {
+    DOM: minutes_component$.switchMap(x => x.DOM),
+    output$: minutes_component$.switchMap(x => x.output$)
   }
 
-  const minimum_purchase_input_component$ = shared$.map((performer_cost: any) => {
-    switch (performer_cost.type) {
-      case opts.MINUMUM_PURCHASE:
-      case opts.COVER_OR_MINIMUM_PURCHASE:
-      case opts.COVER_AND_MINIMUM_PURCHASE:
-        return MinimumPurchaseComponent(sources, O.of(performer_cost.data.minimum_purchase), 'Minimum purchase: Invalid number')
+  const songs_component$ = shared$.map((stage_time: any) => {
+    switch (stage_time.type) {
+      case StageTimeOptions.SONGS:
+      case StageTimeOptions.MINUTES_OR_SONGS:
+        return SongsComponent(sources, O.of(stage_time.data.songs), component_id + ' songs')
       default:
         return BlankComponent()
 
     }
   }).publishReplay(1).refCount()
 
-  const minimum_purchase_input_component = {
-    DOM: minimum_purchase_input_component$.switchMap(x => x.DOM),
-    output$: minimum_purchase_input_component$.switchMap(x => x.output$)
+  const songs_component = {
+    DOM: songs_component$.switchMap(x => x.DOM),
+    output$: songs_component$.switchMap(x => x.output$)
   }
 
   return [
-    cover_input_component,
-    minimum_purchase_input_component
+    minutes_component,
+    songs_component
   ]
-
 }
 
 export default function main(sources, inputs) {
   const actions = intent(sources)
 
   const type_input$ = createProxy()
-  const cover_input$ = createProxy()
-  const minimum_purchase_input$ = createProxy()
+  const minutes_input$ = createProxy()
+  const songs_input$ = createProxy()
 
-  const options = [
-    opts.FREE,
-    opts.COVER,
-    opts.MINUMUM_PURCHASE,
-    opts.COVER_AND_MINIMUM_PURCHASE,
-    opts.COVER_OR_MINIMUM_PURCHASE
-  ]
 
   const state$ = model(actions, {
     ...inputs,
     type_input$,
-    cover_input$,
-    minimum_purchase_input$
+    minutes_input$,
+    songs_input$
   })
 
-  const performer_cost$ = state$.pluck('performer_cost')
+  const stage_time$ = state$.pluck('stage_time')
     .publishReplay(1).refCount()
   
-  const [
-    cover_input_component,
-    minimum_purchase_input_component
-  ] = getComponents(performer_cost$, sources, inputs)
+  const type_component = StageTimeTypeComboBox(sources, stage_time$.pluck('type').take(1))
 
-  const type_component = CostTypeComboBox(sources, options, performer_cost$.pluck('type').take(1))
+  const [
+    minutes_component,
+    songs_component
+  ] = getComponents(stage_time$, sources, inputs, inputs.component_id)
 
   type_input$.attach(type_component.output$)
-  cover_input$.attach(cover_input_component.output$)
-  minimum_purchase_input$.attach(minimum_purchase_input_component.output$)
+  minutes_input$.attach(minutes_component.output$)
+  songs_input$.attach(songs_component.output$)
 
   const components = {
     type: type_component.DOM,
-    cover: cover_input_component.DOM,
-    minimum_purchase: minimum_purchase_input_component.DOM,
+    songs: songs_component.DOM,
+    minutes: minutes_component.DOM,
   }
 
   const vtree$ = view(state$, components)
@@ -276,10 +276,15 @@ export default function main(sources, inputs) {
     DOM: vtree$,
     output$: state$.map(x => {
       const errors = Object.keys(x.errors_map).reduce((acc, val) => acc.concat(x.errors_map[val]), [])
-      return {
-        prop: x.performer_cost,
-        valid: errors.length === 0,
+      const valid = errors.length === 0 
+      const data = {
+        data: valid ? x.stage_time : undefined,
+        valid,
         errors
+      }
+      return {
+        data, 
+        index: inputs.component_index
       }
     })
   }

@@ -33,7 +33,6 @@ export default function view(state$, components) {
     .map((info: any) => {
       const {state, components} = info
       const {check_in} = state
-      //console.log('components', components)
       return div('.column.check-in', [
         div('.sub-heading.section-heading ', ['Check-in']),        
         div('.column', [

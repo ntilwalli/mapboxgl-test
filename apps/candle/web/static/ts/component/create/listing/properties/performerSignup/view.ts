@@ -4,18 +4,6 @@ import Immutable = require('immutable')
 import {combineObj} from '../../../../../utils'
 import {RelativeTimeOptions as opts} from '../helpers'
 
-function renderRegistrationTypeWebsite(data) {
-  return null
-}
-
-function renderRegistrationTypeEmail(data) {
-  return null
-}
-
-function renderRegistrationTypeApp(data) {
-  return null
-}
-
 function renderInPersonInput(performer_signup, components) {
   const index = performer_signup.findIndex(x => x.type === 'in-person')
   if (index >= 0) {
@@ -108,7 +96,6 @@ export default function view(state$, components) {
       const registration_checked = performer_signup.some(x => x.type === 'registration')
       const in_person_checked = performer_signup.some(x => x.type === 'in-person')
 
-      //console.log('components', components)
       return div('.column.performer-signup', [
         div('.sub-heading.section-heading ', ['Performer sign-up']),        
         div('.column', [

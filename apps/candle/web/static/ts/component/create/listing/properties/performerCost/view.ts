@@ -3,33 +3,6 @@ import {div, span, input, select, option} from '@cycle/dom'
 import Immutable = require('immutable')
 import {combineObj} from '../../../../../utils'
 
-/*
-function render(cost, components) {
-  const both = components.cover && components.minimum_purchase
-  return both ? div('.column', [
-    span('.item', [components.type]),
-    div('.row.align-center.small-margin-bottom', [
-      span('.sub-sub-heading.align-center', ['Cover']),
-      span(`.row`, [
-        span('.item', [components.cover]),
-        span(`.item.flex.align-center`, ['dollars'])
-      ]),
-    ]),
-    div('.row.align-center', [
-      span('.sub-sub-heading.align-center', ['Minimum purchase']),
-      span('.item', [components.minimum_purchase])
-    ])
-  ]) : div('.row', [
-    span('.item', [components.type]),
-    span(`.item`, [
-      components.cover ? span(`.row`, [
-        span('.item', [components.cover]),
-        span(`.item.flex.align-center`, ['dollars'])
-      ]) : components.minimum_purchase
-    ])
-  ])
-}
-*/
 
 function render(cost, components) {
   const both = components.cover && components.minimum_purchase
