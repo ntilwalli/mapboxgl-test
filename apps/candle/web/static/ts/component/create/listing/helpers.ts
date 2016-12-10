@@ -5,6 +5,12 @@ export const EventTypeToProperties = {
   'show': ['hosts', 'performers', 'check_in', 'audience_cost']
 }
 
+export const PerformerSignupOptions = {
+  IN_PERSON: 'in_person',
+  PRE_REGISTRATION: 'pre-registration',
+  IN_PERSON_AND_PRE_REGISTRATION: 'in-person-and-pre-registration'
+}
+
 export const PerformerLimitOptions = {
   NO_LIMIT: 'no-limit',
   LIMIT: 'limit',

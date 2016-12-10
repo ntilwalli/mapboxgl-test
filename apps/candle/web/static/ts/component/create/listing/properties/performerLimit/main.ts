@@ -2,7 +2,7 @@ import {Observable as O} from 'rxjs'
 import isolate from '@cycle/isolate'
 import {div, span, input} from '@cycle/dom'
 import {combineObj, createProxy, traceStartStop} from '../../../../../utils'
-import {PerformerLimitOptions, ComboBox, BlankUndefined, BlankStructuredUndefined, NumberInputComponent} from '../helpers'
+import {PerformerSignupOptions, PerformerLimitOptions, ComboBox, BlankUndefined, BlankStructuredUndefined, NumberInputComponent} from '../helpers'
 import clone = require('clone')
 
 
@@ -329,9 +329,13 @@ export default function main(sources, inputs) {
 
   const in_app_enabled$ = inputs.session$
     .map(session => {
-      return !!(session.listing.meta.performer_signup && session.listing.meta.performer_signup.some(x => {
-        return x.type === 'registration' && x.data.type === 'app'
-      }))
+      const performer_signup = session.listing.meta.performer_signup 
+      return !!(
+        performer_signup && 
+        (performer_signup.type === PerformerSignupOptions.PRE_REGISTRATION || 
+          performer_signup.type === PerformerSignupOptions.IN_PERSON_AND_PRE_REGISTRATION) && 
+        performer_signup.data.pre_registration.type === 'app'
+      )
     })
     .distinctUntilChanged()
     .letBind(traceStartStop('in_app_enabled trace'))

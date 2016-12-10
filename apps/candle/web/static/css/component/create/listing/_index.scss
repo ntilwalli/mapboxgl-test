@@ -43,7 +43,7 @@
     }
 
     .column > .column:not(:last-child) {
-      margin-bottom: 1rem;
+      margin-bottom: .5rem;
     }
 
     .column {
@@ -55,14 +55,14 @@
         font-weight: bold;
         //display: flex;
         //align-items: center;
-        margin-bottom: .7rem;
+        margin-bottom: .5rem;
       }
 
       >.sub-sub-heading {
         font-style: italic;
         //display: flex;
         //align-items: center;
-        margin-bottom: .7rem;
+        margin-bottom: .5rem;
       }
 
       >.item {

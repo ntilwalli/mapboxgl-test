@@ -8,7 +8,7 @@ import model from './model'
 import view from './view'
 import deepEqual = require('deep-equal')
 import {combineObj, createProxy, blankComponentUndefinedDOM} from '../../../../../utils'
-import {CostOptions, PurchaseTypeOptions, BlankComponent, CostTypeComboBox, PurchaseTypeComboBox, NumberInputComponent} from '../helpers'
+import {PerformerSignupOptions, CostOptions, PurchaseTypeOptions, BlankComponent, CostTypeComboBox, PurchaseTypeComboBox, NumberInputComponent} from '../helpers'
 import clone = require('clone')
 
 const opts = CostOptions

@@ -1,11 +1,12 @@
 import {Observable as O} from 'rxjs'
 import {div, span, select, option, textarea} from '@cycle/dom'
 import isolate from '@cycle/isolate'
-import {default as TextInput, SmartTextInputValidation} from '../../../../library/smarterTextInput'
+import {default as TextInput, SmartTextInputValidation} from '../../../../library/standardTextInput'
 import validator = require('validator')
 import validUrl = require('valid-url')
 import clone = require('clone')
 import {
+  PerformerSignupOptions,
   PerformerLimitOptions, 
   StageTimeOptions,
   MinutesTypeOptions,
@@ -58,6 +59,20 @@ export function NotesInput(sources, {props$}, styleClass?) {
   }
 } 
 
+function getTextFromOption(opt) {
+  switch (opt) {
+    case PerformerSignupOptions.IN_PERSON:
+      return 'In-person only'
+    case PerformerSignupOptions.PRE_REGISTRATION:
+      return 'Pre-registration only'
+    case PerformerSignupOptions.IN_PERSON_AND_PRE_REGISTRATION:
+      return 'In-person + pre-registration'
+    default:
+      return (opt.substring(0, 1).toUpperCase() + opt.substring(1)).replace(/-/g, ' ').replace(/and/g, '+')
+  }
+
+}
+
 export function ComboBox(sources, options, props$, styleClass?) {
   const shared$ = props$
     .map(x => {
@@ -73,7 +88,7 @@ export function ComboBox(sources, options, props$, styleClass?) {
     return div(`.select-container`, [
       select(`.appComboBoxSelect`, options.map(opt => {
         return option({attrs: {value: opt, selected: state === opt}}, [
-          (opt.substring(0, 1).toUpperCase() + opt.substring(1)).replace(/-/g, ' ').replace(/and/g, '+')
+          getTextFromOption(opt)
         ])
       }))
     ])
@@ -136,53 +151,6 @@ export function PurchaseTypeComboBox(sources, options, props$, styleClass?) {
 } 
 
 
-
-export function DayOfWeekTimeComponent(sources, props$, message) {
-  const shared$ = props$.publishReplay(1).refCount()
-  const weekday_radio = WeekdayRadio(sources, {
-    props$: shared$.map(x => x.day)
-  })
-  const time_selector = TimeInput(sources, {
-    props$: shared$
-      .map(x => to12HourTime(x.time))
-  })
-
-  const state$ = combineObj({
-    day: weekday_radio.output$,
-    time: time_selector.output$.map(toMilitaryTime)
-  })
-
-  const vtree$ = combineObj({
-    day: weekday_radio.DOM,
-    time: time_selector.DOM
-  }).map((components: any) => {
-    return div([
-        div(`.item.flex.justify-center.margin-bottom`, [components.day]),
-        div(`.item.flex.justify-center.bold`, ['@']),
-        div(`.item`, [components.time])
-    ])
-  })
-
-//{style: {position: "relative", top: "-1rem"}},
-
-  return {
-    DOM: vtree$,
-    output$: state$.map((state: any) => {
-      let errors = [message] 
-      let valid = false
-      if (state.day && state.time) {
-        valid = true
-        errors = []
-      }
-      return {
-        errors,
-        valid,
-        value: state
-      }
-    })
-  }
-}
-
 export function BlankComponent() {
   return {
     DOM: O.of(undefined),
@@ -239,14 +207,7 @@ export function NumberInputComponent(sources, initialText$, errorMessage) {
     initialText$
   })
 
-  return {
-    ...out,
-    output$: out.output$.map(x => ({
-      data: x.value,
-      errors: x.errors,
-      valid: x.valid
-    }))
-  }
+  return out
 }
 
 function createTextValidator(message, empty_is_error = true): (string) => SmartTextInputValidation  {
@@ -280,14 +241,8 @@ export function NameInputComponent(sources, initialText$, errorMessage) {
     initialText$
   })
 
-  return {
-    ...out,
-    output$: out.output$.map(x => ({
-      data: x.value,
-      errors: x.errors,
-      valid: x.valid
-    }))
-  }
+  return out
+
 }
 
 export function TextInputComponent(sources, initialText$, errorMessage, props) {
@@ -297,16 +252,7 @@ export function TextInputComponent(sources, initialText$, errorMessage, props) {
     initialText$
   })
 
-  return {
-    ...out,
-    output$: out.output$.map(x => {
-      return {
-        data: x.value,
-        errors: x.errors,
-        valid: x.valid
-      }
-    })
-  }
+  return out
 }
 
 
@@ -378,27 +324,7 @@ export function TimeTypeComboBox(sources, options, props$, styleClass?) {
   }
 } 
 
-function createDayTimeComponent(sources, initialValue$) {
-  // const out = TextInput(sources, {
-  //   validator: createTimeValidator(errorMessage),
-  //   props$: timeInputProps,
-  //   initialText$
-  // })
 
-  // const sharedInitialValue$
-
-  // const initialDay$
-
-  return {
-    // DOM: out.DOM.map(x => {
-    //   return div(`.row`, [
-    //     span(`.item`, [x]),
-    //     span(`.item.flex.align-center`, [text])
-    //   ])
-    // }),
-    // output$: out.output$
-  }
-}
 
 export function getTimeOptionDefault(type) {
   switch (type) {
@@ -447,6 +373,51 @@ function toTimeTypeSelector(props) {
   }
 }
 
+export function DayOfWeekTimeComponent(sources, props$, message) {
+  const shared$ = props$.publishReplay(1).refCount()
+  const weekday_radio = WeekdayRadio(sources, {
+    props$: shared$.map(x => x.day)
+  })
+  const time_selector = TimeInput(sources, {
+    props$: shared$
+      .map(x => to12HourTime(x.time))
+  })
+
+  const state$ = combineObj({
+    day: weekday_radio.output$,
+    time: time_selector.output$.map(toMilitaryTime)
+  })
+
+  const vtree$ = combineObj({
+    day: weekday_radio.DOM,
+    time: time_selector.DOM
+  }).map((components: any) => {
+    return div([
+        div(`.item.flex.justify-center.margin-bottom`, [components.day]),
+        div(`.item.flex.justify-center.bold`, ['@']),
+        div(`.item`, [components.time])
+    ])
+  })
+  
+  return {
+    DOM: vtree$,
+    output$: state$.map((state: any) => {
+      let errors = [message] 
+      let valid = false
+      if (state.day && state.time) {
+        valid = true
+        errors = []
+      }
+      return {
+        errors,
+        valid,
+        value: state
+      }
+    })
+  }
+}
+
+
 export function TimeOptionComponent(sources, component_id, props$) {
   const out$ = props$
     .map(toTimeTypeSelector)
@@ -458,7 +429,7 @@ export function TimeOptionComponent(sources, component_id, props$) {
         case 'day_time':
           return isolate(DayOfWeekTimeComponent)(sources, O.of(props), component_id + ': Date and time must be set')
         default:
-          return BlankComponent()
+          return BlankStructuredUndefined()
       }
     })
     .publishReplay(1).refCount()
@@ -467,7 +438,6 @@ export function TimeOptionComponent(sources, component_id, props$) {
     DOM: out$.switchMap(x => x.DOM),
     output$: out$.switchMap(x => x.output$)
   }
-
 }
 
 
@@ -517,11 +487,43 @@ function makeUrlValidator(message): (string) => SmartTextInputValidation {
     }
 }
 
-export function RegistrationInfoComponent(sources, component_id, props$) {
+// export function RegistrationInfoComponent(sources, component_id, props$) {
+//   const out$ = props$
+//     .map(props => {
+//       return !props ? {type: 'blank'} : clone(props)
+//     })
+//     .distinctUntilChanged((x, y) => {
+//       return x.type === y.type
+//     })
+//     .map(({type, data}) => {
+//       switch (type) {
+//         case 'email':
+//           return TextInput(sources, {
+//             validator: makeEmailValidator(component_id + ': Invalid e-mail'),
+//             props$: emailInputProps,
+//             initialText$: O.of(data)
+//           })
+//         case 'website':
+//           return TextInput(sources, {
+//             validator: makeUrlValidator(component_id + ": Invalid url"),
+//             props$: urlInputProps,
+//             initialText$: O.of(data)
+//           })
+//         default:
+//           return BlankUndefined()
+//       }
+//     })
+//     .publishReplay(1).refCount()
+
+//   return {
+//     DOM: out$.switchMap(x => x.DOM),
+//     output$: out$.switchMap(x => x.output$)
+//   }
+
+// }
+
+export function PreRegistrationInfoComponent(sources, props$, component_id) {
   const out$ = props$
-    .map(props => {
-      return !props ? {type: 'blank'} : clone(props)
-    })
     .distinctUntilChanged((x, y) => {
       return x.type === y.type
     })
@@ -540,7 +542,7 @@ export function RegistrationInfoComponent(sources, component_id, props$) {
             initialText$: O.of(data)
           })
         default:
-          return BlankComponent()
+          return BlankStructuredUndefined()
       }
     })
     .publishReplay(1).refCount()
@@ -552,7 +554,9 @@ export function RegistrationInfoComponent(sources, component_id, props$) {
 
 }
 
+
 export {
+  PerformerSignupOptions,
   PerformerLimitOptions, 
   StageTimeOptions,
   MinutesTypeOptions,
