@@ -1,43 +1,18 @@
 import {Observable as O} from 'rxjs'
 import {div} from '@cycle/dom'
+import isolate from '@cycle/isolate'
 import Immutable = require('immutable')
 import PerformerSignup from './performerSignup/main'
 import CheckIn from './checkin/main'
 import PerformerCost from './performerCost/main'
+import CollapseCollection from './collapseCollection/main'
 import Collection from './collection/main'
 import StageTimeRound from './stageTimeRound/main'
 import PerformerLimit from './performerLimit/main'
+import PersonName from './personName/main'
 import {getSessionStream} from '../helpers'
 import {combineObj, createProxy, traceStartStop} from '../../../../utils'
 import {getCollectionDefault as getStageTimeDefault} from './stageTimeRound/model'
-
-
-// function StubComponent(sources, inputs) {
-//   return {
-//     DOM: O.of(div(['Hello'])),
-//     output$: O.never()//
-//     // O.of({
-//     //   type: 'update',
-//     //   index: 1,
-//     //   data: {
-//     //     data: 'Hello',
-//     //     valid: false,
-//     //     errors: ['Some error']
-//     //   }
-//     // })
-//   }
-// }
-
-// function getDefault() {
-//   return {
-//     data: {
-//       data: 'Hello',
-//       valid: true,
-//       errors: []
-//     }
-//   }
-// }
-
 
 function arrayUnique(array) {
     var a = array.concat();
@@ -51,10 +26,9 @@ function arrayUnique(array) {
     return a;
 }
 
-
 const event_type_to_properties = {
-  'open-mic': ['performer_signup', 'check_in', 'performer_cost', 'stage_time', 'performer_limit'],
-  'show': ['check_in']
+  'open-mic': ['performer_signup', 'check_in', 'performer_cost', 'stage_time', 'performer_limit', 'hosts'],
+  'show': ['check_in', 'hosts']
 }
 
 function wrapOutput(component, component_type, meta, session$, sources, inputs) {
@@ -68,7 +42,7 @@ function wrapOutput(component, component_type, meta, session$, sources, inputs) 
   }
 }
 
-function toComponent(type, meta, session$, sources, inputs) {
+function toComponent(type, meta, session$, sources, inputs, authorization) {
   let component
 
   switch (type) {
@@ -82,7 +56,7 @@ function toComponent(type, meta, session$, sources, inputs) {
       component = PerformerCost
       break
     case 'stage_time':
-      component = (sources, inputs) => Collection(sources, {
+      component = (sources, inputs) => isolate(CollapseCollection)(sources, {
         ...inputs, 
         item: StageTimeRound, 
         component_id: 'Stage time', 
@@ -92,6 +66,23 @@ function toComponent(type, meta, session$, sources, inputs) {
       break
     case 'performer_limit':
       component = PerformerLimit
+      break
+    case 'hosts':
+      component = (sources, inputs) => isolate(Collection)(sources, {
+        ...inputs, 
+        item: PersonName, 
+        component_id: 'Hosts', 
+        itemDefault: () => ({
+          data: '',
+          valid: true,
+          errors: []
+        }),
+        initDefault: () => ({
+          data: authorization.name,
+          valid: true,
+          errors: []
+        })
+      })
       break
     default:
       throw new Error(`Invalid property component type: ${type}`)
@@ -129,14 +120,13 @@ function model(actions, inputs) {
   const reducer$ = reducers(actions, inputs)
   return combineObj({
     session$: actions.session$,
-    //authorization$: inputs.Authorization.status$
+    authorization$: inputs.Authorization.status$
   })
     .switchMap((info: any) => {
       const init = {
         session: info.session,
         valid_flags: {},
         errors_map: {}
-        //authorization: info.authorization,
       }
 
       return reducer$
@@ -180,14 +170,18 @@ export function main(sources, inputs) {
     .publishReplay(1).refCount()
   const shunted_session$ = replay_session$
     .filter(x => false)
-  const property_components$ = O.merge(actions.session$, shunted_session$) //  create permanent subscriber to circular session so session can be fed back to components
-    .map((session: any) => {
+  const property_components$ = combineObj({
+      session: O.merge(actions.session$, shunted_session$), //  create permanent subscriber to circular session so session can be fed back to components
+      authorization: inputs.Authorization.status$
+    })
+    .map((info: any) => {
+      const {session, authorization} = info
       const {listing} = session
       const {event_types, meta} = listing
 
       const foo_components = event_types.reduce((acc, val) => acc.concat(event_type_to_properties[val]), [])
       const component_types = arrayUnique(foo_components)
-      const components = component_types.map(type => toComponent(type, meta, replay_session$, sources, inputs))
+      const components = component_types.map(type => toComponent(type, meta, replay_session$, sources, inputs, authorization))
       //console.log('component',components)
       const DOM = O.combineLatest(...components.map(c => c.DOM))
       

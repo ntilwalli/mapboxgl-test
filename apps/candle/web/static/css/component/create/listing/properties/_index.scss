@@ -14,9 +14,14 @@
     width: 20rem;
   }
 
+  input[type='text'] {
+    line-height: 1rem;
+  }
+
 @import 'performerSignup';
 @import 'checkin';
 @import 'stageTime';
+@import 'hosts';
 }
 
 

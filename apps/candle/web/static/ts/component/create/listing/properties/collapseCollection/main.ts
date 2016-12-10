@@ -9,16 +9,19 @@ import clone = require('clone')
 // How to use: include 'itemHeading', 'item' and 'itemDefault' in inputs object
 //{...inputs, sectionHeading: 'Stage time', itemHeading: 'Host', item: some component, itemDefault: some component value default function}
 
-function render(state, component_id) {
+function render(state, component_id, item_heading) {
   let children
   if (state.length === 0) {
     children = ['Click plus to add item']
+  } else if (state.length === 1) {
+    children = state
   } else {
     children = state.map((x, index) => div('.column', [
       div('.row', [
-        div('.item', [x]),
+        span('.sub-sub-heading.item', [`${item_heading} ${index + 1}`]), 
         span('.appSubtractButton.list-button.fa.fa-minus', {attrs: {'data-index': index}}, [])
-      ])
+      ]),
+      div('.item.indented', [x])
     ]))
   }
 
@@ -48,9 +51,7 @@ function reducers(actions, inputs) {
   })
 
   const subtract_r = actions.subtract$.map(index => state => {
-    const out = state.delete(index)
-    const blah = out.toJS()
-    return out
+    return state.delete(index)
   })
 
   const change_r = inputs.change$.map(msg => state => {
@@ -70,16 +71,11 @@ function model(actions, inputs) {
         data: x,
         errors: [],
         valid: true
-      })) : [inputs.initDefault ? inputs.initDefault() : inputs.itemDefault()]
+      })) : [inputs.itemDefault()]//[getDefault()]
 
       return reducer$.startWith(Immutable.fromJS(init)).scan((acc, f: Function) => f(acc))
     })
-    .map((x: any) => {
-      return x.toJS()
-    })
-    .map(x => {
-      return x
-    })
+    .map((x: any) => x.toJS())//.map(x => x.data))
     .publishReplay(1).refCount()
 }
 
@@ -89,22 +85,19 @@ export default function main(sources, inputs) {
   const state$ = model(actions, {...inputs, change$})
 
   const components$ = state$
-    .map(x => clone(x))
-    .distinctUntilChanged((x, y) => {
-      return x.length === y.length
-    })
+    .distinctUntilChanged((x, y) => x.length === y.length)
     .map(state => {
+      //const state = JSON.parse(JSON.stringify(my_state));
       const components = state.map((props, index) => {
         return isolate(inputs.item)(sources, {...inputs, props$: O.of(props.data), component_index: index})
       })
       
       const components_dom = components.map(x => x.DOM)
       const components_output = components.map(x => x.output$)
-      const length = components.length
 
       return {
-        DOM: length ? O.combineLatest(...components_dom) : O.of([]),
-        output$: length ? O.merge(...components_output) : O.never()
+        DOM: O.combineLatest(...components_dom),
+        output$: O.merge(...components_output)
       }
     }).publishReplay(1).refCount()
 
@@ -113,20 +106,16 @@ export default function main(sources, inputs) {
 
   change$.attach(components_output$)
 
-  const vtree$ = components_dom$.map(x => {
-    return render(x, inputs.component_id || 'Component id not supplied')
-  })
+  const vtree$ = components_dom$.map(x => render(x, inputs.component_id || 'Component id not supplied', inputs.item_heading || 'Item heading not supplied'))
 
   return {
     DOM: vtree$,
     output$: state$.map(state => {
-      return state.length ? {
-        data: state.map(x => {
-          return x.data
-        }),
+      return {
+        data: state.map(x => x.data),
         valid: state.every(x => x.valid === true),
         errors: state.reduce((acc, item) => acc.concat(item.errors), [])
-      } : {data: [], valid: true, errors: []}
+      }
     })
   }
 }

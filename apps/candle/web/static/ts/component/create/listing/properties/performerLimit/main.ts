@@ -384,8 +384,8 @@ export default function main(sources, inputs) {
   }).debounceTime(0).map((components: any) => {
     return div('.column', [
       div('.sub-heading.section-heading', ['Performer limit']),
-      div('.small-margin-bottom', [components.limit_type]),
-      components.input
+      components.limit_type,
+      components.input ? span(`.small-margin-top`, [components.input]) : null
     ])
   })
 

@@ -258,6 +258,48 @@ export function NumberInputComponent(sources, initialText$, errorMessage) {
   }
 }
 
+function createNameValidator(message): (string) => SmartTextInputValidation  {
+  return function(input): SmartTextInputValidation {
+    //if (input && input.match(/^[a-zA-Z .]+$/)) {
+    if (input && input.length) {
+      return {
+        value: input,
+        errors: []
+      }
+    } else {
+      return {
+        value: input,
+        errors: [message]
+      }
+    }
+  }
+}
+
+const nameInputProps = O.of({
+  placeholder: `Type name`,
+  name: `name-input`,
+  styleClass: `.name-input`,
+  emptyIsError: false
+})
+
+export function NameInputComponent(sources, initialText$, errorMessage) {
+  const out = TextInput(sources, {
+    validator: createNameValidator(errorMessage),
+    props$: nameInputProps,
+    initialText$
+  })
+
+  return {
+    ...out,
+    output$: out.output$.map(x => ({
+      data: x.value,
+      errors: x.errors,
+      valid: x.valid
+    }))
+  }
+}
+
+
 function getTimeTypeDisplay(type) {
   switch (type) {
     case rt_opts.UPON_POSTING:

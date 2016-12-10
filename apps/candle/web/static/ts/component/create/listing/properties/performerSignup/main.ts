@@ -42,13 +42,6 @@ function isValid(performer_signup) {
     return false
   }
 }
-
-const timeInputProps = O.of({
-  placeholder: ``,
-  name: `in-person-begins`,
-  styleClass: `.time-input`,
-  emptyIsError: true
-})
   
 function createTimeValidator(message): (string) => SmartTextInputValidation  {
   return function(input): SmartTextInputValidation {
