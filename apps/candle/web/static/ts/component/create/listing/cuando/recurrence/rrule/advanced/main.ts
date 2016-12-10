@@ -23,8 +23,8 @@ function intent(sources) {
       DOM.select(`.appDecrementStartMonth`).events(`click`).mapTo(-1)
     ),
     change_end_month$: O.merge(
-      DOM.select(`.appIncrementEndMonth`).events(`click`).mapTo(1),
-      DOM.select(`.appDecrementEndMonth`).events(`click`).mapTo(-1)
+      DOM.select(`.appIncrementUntilMonth`).events(`click`).mapTo(1),
+      DOM.select(`.appDecrementUntilMonth`).events(`click`).mapTo(-1)
     ), 
     clear_dtstart$: DOM.select(`.appClearDTStart`).events(`click`),
     clear_until$: DOM.select(`.appClearUntil`).events(`click`),
@@ -213,7 +213,7 @@ function renderCalendar(year, month, component, type, title, style_class = '') {
   const cased_type = `${type.substring(0, 1).toUpperCase() + type.substring(1)}`
   return div(`.${type}-date-section.vertical-section${style_class}`, [
     div(`.heading`, [title]),
-    div(`.controller`, [
+    div(`.calendar-controller`, [
       button(`.appDecrement${cased_type}Month.text-button.fa.fa-angle-left.fa-1-5x`),
       span(`.flex-center`, [moment([year, month]).format('MMM YYYY')]),
       button(`.appIncrement${cased_type}Month.text-button.fa.fa-angle-right.fa-1-5x`)

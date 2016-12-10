@@ -61,6 +61,10 @@ function inflateCuandoDates(container) {
     container.rrule.dtstart = moment(rrule.dtstart)
   }
 
+  if (rrule && rrule.until) {
+    container.rrule.until = moment(rrule.until)
+  }
+  
   if (rdate.length) {
     container.rdate = container.rdate.map(x => moment(x))
   }
@@ -76,6 +80,10 @@ function deflateCuandoDates(container) {
   if (rrule && rrule.dtstart) {
     container.rrule.dtstart = rrule.dtstart.toDate().toISOString()
   }
+
+  if (rrule && rrule.dtstart) {
+    container.rrule.until = rrule.until.toDate().toISOString()
+  }  
 
   if (rdate && rdate.length) {
     container.rdate = container.rdate.map(x => x.toDate().toISOString())

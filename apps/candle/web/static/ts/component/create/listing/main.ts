@@ -22,6 +22,7 @@ import {main as Meta} from './meta/main'
 import {main as Donde} from './donde/main'
 import {main as Cuando} from './cuando/main'
 import {main as Properties} from './properties/main'
+import {main as Preview} from './preview/main'
 import {main as NextButton} from '../nextButton'
 import {main as BackNextButtons} from '../backNextButtons'
 import clone = require('clone')
@@ -58,8 +59,17 @@ function createProperties(sources, inputs) {
   const content = Properties(sources, inputs)
   return {
     content,
-    controller: BackNextButtons(sources, {...inputs, props$: O.of({back: 'cuando', next: 'foo'}), valid$: content.output$.pluck(`valid`)}),
+    controller: BackNextButtons(sources, {...inputs, props$: O.of({back: 'cuando', next: 'preview'}), valid$: content.output$.pluck(`valid`)}),
     instruction: getPropertiesInstruction()
+  }
+}
+
+function createPreview(sources, inputs) {
+  const content = Preview(sources, inputs)
+  return {
+    content,
+    controller: BackNextButtons(sources, {...inputs, props$: O.of({back: 'properties'}), valid$: content.output$.pluck(`valid`)}),
+    instruction: getPreviewInstruction()
   }
 }
 
@@ -183,17 +193,19 @@ function getStepHeading(state) {
 
   switch (current_step) {
     case 'meta':
-      return 'Step 1: Title + type?'
+      return 'Step 1/5: Title + type?'
     case 'donde':
-      return 'Step 2: Set the venue'
+      return 'Step 2/5: Set the venue'
     case 'cuando':
       if (type === 'recurring') {
-        return 'Step 3: Set the recurrence'
+        return 'Step 3/5: Set the recurrence'
       } else {
-        return 'Step 3: Select the date and time'
+        return 'Step 3/5: Select the date and time'
       }
     case 'properties':
-      return 'Step 4: Set the listing properties'
+      return 'Step 4/5: Set the listing properties'
+    case 'preview':
+      return 'Step 5/5: Preview and post '
     default:
       return `Generic heading`
   }
@@ -318,6 +330,12 @@ function getPropertiesInstruction() {
   }
 }
 
+function getPreviewInstruction() {
+  return {
+    DOM: O.of(div([`Confirm all the information or go back and update`]))
+  }
+}
+
 function main(sources, inputs) {
   const actions = intent(sources)
   const {push_state$} = actions
@@ -355,6 +373,8 @@ function main(sources, inputs) {
             return createCuando(sources, inputs)
           case "properties":
             return createProperties(sources, inputs)
+          case "preview":
+            return createPreview(sources, inputs)
           default:
             throw new Error(`Invalid current step given: ${current_step}`)
         }

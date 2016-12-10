@@ -1,5 +1,5 @@
 import {Observable as O} from 'rxjs'
-import {div, span, input, textarea} from '@cycle/dom'
+import {div, pre, span, input, button} from '@cycle/dom'
 import Immutable = require('immutable')
 import {combineObj} from '../../../../utils'
 import {inflateDates, fromCheckbox} from '../helpers'
@@ -11,93 +11,16 @@ function intent(sources) {
     .map(inflateDates)
     .publishReplay(1).refCount()
   
-  const type$ = DOM.select('.appTypeInput').events('click')
-    .map(ev => ev.target.value)
-  const title$ = DOM.select('.appTitleInput').events('input')
-    .map(ev => ev.target.value)
-  const description$ = DOM.select('.appDescriptionInput').events('input')
-    .map(ev => ev.target.value)
-
-  const event_type$ = DOM.select('.appEventTypeInput').events('click')
-    .map(fromCheckbox)
-
-  const category$ = DOM.select('.appCategoriesInput').events('click')
-    .map(fromCheckbox)
+  const attempt_post$ = DOM.select('.appPostButton').events('click')
 
   return {
     session$,
-    type$,
-    title$,
-    description$,
-    event_type$,
-    category$
+    attempt_post$
   }
-}
-
-function processCheckboxArray(msg, arr) {
-  const {type, data} = msg
-  const index = arr.indexOf(msg.value)
-  if (index >= 0) {
-    arr.splice(index, 1)
-  } else {
-    arr.push(msg.value)
-  }
-
-  return arr
-}
-
-function isValid(session) {
-  //console.log(`meta valid`, session)
-  const {listing} = session
-  return listing.meta.type && listing.meta.title && listing.meta.description &&
-    listing.event_types.length && listing.categories.length
 }
 
 function reducers(actions, inputs) {
-  const type_r = actions.type$.map(val => state => {
-    return state.update(`session`, session => {
-      const {listing, properties} = session
-      listing.type = val
-      properties.recurrence = undefined
-      listing.cuando = undefined
-      return session
-    })
-  })
-
-  const title_r = actions.title$.map(val => state => {
-    return state.update('session', session => {
-      const {listing} = session
-      listing.meta.title = val
-      return session
-    })
-  })
-
-  const description_r = actions.description$.map(val => state => {
-    return state.update('session', session => {
-      const {listing} = session
-      listing.meta.description = val
-      return session
-    })
-  })
-
-  const event_types_r = actions.event_type$.map(val => state => {
-    return state.update('session', session => {
-      const {listing} = session
-      listing.event_types = processCheckboxArray(val, listing.event_types)
-      return session
-    })
-  })
-
-  const category_r = actions.category$.map(val => state => {
-    return state.update('session', session => {
-      //console.log(`category`, val)
-      const {listing} = session
-      listing.categories = processCheckboxArray(val, listing.categories)
-      return session
-    })
-  })
-
-  return O.merge(type_r, title_r, description_r, event_types_r, category_r)
+  return O.merge(O.never())
 }
 
 function model(actions, inputs) {
@@ -119,9 +42,9 @@ function model(actions, inputs) {
     .map((x: any) => x.toJS())
     .map((x: any) => ({
       ...x,
-      valid: isValid(x.session)
+      valid: true
     }))
-    //.do(x => console.log(`meta state`, x))
+    //.do(x => console.log(`preview state`, x))
     .publishReplay(1).refCount()
 }
 
@@ -136,65 +59,14 @@ function view(state$, components) {
       const {type, meta, event_types, categories} = listing
       const {title, description} = meta
 
-      return div(`.workflow-step`, [
-        div(`.heading`, []),
+      return div(`.workflow-step.preview`, [
+        div(`.heading`, ['Preview listing']),
         div(`.body`, [
-          div(`.column.margin-bottom`, [
-            div(`.sub-heading`, ['Listing type']),
-            div(`.row`, [
-              div(`.radio-input`, [
-                input(`.appTypeInput`, {attrs: {type: 'radio', name: 'listingType', value: 'single', checked: type === `single`}}, []),
-                span(`.title`, ['Single'])
-              ]),
-              div(`.radio-input`, [
-                input(`.appTypeInput`, {attrs: {type: 'radio', name: 'listingType', value: 'recurring', checked: type === `recurring`}}, []),
-                span(`.title`, ['Recurring'])
-              ])
-            ])
-          ]),
-          div(`.column.margin-bottom`, [
-            div(`.sub-heading`, ['Title']),
-            div(`.input`, [
-              input(`.appTitleInput.full-width`, {attrs: {type: 'text', value: title || ''}}, [])
-            ])
-          ]),
-          div(`.column.margin-bottom`, [
-            div(`.sub-heading`, [`Description`]),
-            textarea(`.appDescriptionInput`, [
-              description || ''
-            ])
-          ]),
-          div(`.column.margin-bottom`, [
-            div(`.sub-heading`, ['Event types']),
-            div(`.row`, [
-              div(`.checkbox-input`, [
-                input(`.appEventTypeInput`, {attrs: {type: 'checkbox', name: 'event_types', value: 'open-mic', checked: event_types.some(x => x === 'open-mic')}}, []),
-                span(`.title`, ['open-mic'])
-              ]),
-              div(`.checkbox-input`, [
-                input(`.appEventTypeInput`, {attrs: {type: 'checkbox', name: 'event_types', value: 'show', checked: event_types.some(x => x === 'show')}}, []),
-                span(`.title`, ['show'])
-              ])
-            ])
-          ]),
-          div(`.column.margin-bottom`, [
-            div(`.sub-heading`, ['Categories']),
-            div(`.row`, [
-              div(`.checkbox-input`, [
-                input(`.appCategoriesInput`, {attrs: {type: 'checkbox', name: 'categories', value: 'comedy', checked: categories.some(x => x === 'comedy')}}, []),
-                span(`.title`, ['comedy'])
-              ]),
-              div(`.checkbox-input`, [
-                input(`.appCategoriesInput`, {attrs: {type: 'checkbox', name: 'categories', value: 'music', checked: event_types.some(x => x === 'music')}}, []),
-                span(`.title`, ['music'])
-              ]),
-              div(`.checkbox-input`, [
-                input(`.appCategoriesInput`, {attrs: {type: 'checkbox', name: 'categories', value: 'poetry', checked: categories.some(x => x === 'poetry')}}, []),
-                span(`.title`, ['poetry'])
-              ]),
-              div(`.checkbox-input`, [
-                input(`.appCategoriesInput`, {attrs: {type: 'checkbox', name: 'categories', value: 'storytelling', checked: event_types.some(x => x === 'storytelling')}}, []),
-                span(`.title`, ['storytelling'])
+          pre('.column', [JSON.stringify(listing, null, 2)]),
+          div('.column', [
+            button('.appPostButton.outline-button.medium', [
+              div('.flex.align-center', [
+                'Post'
               ])
             ])
           ])

@@ -36,6 +36,11 @@ function syncStartTimeWithSession(start_time, session) {
   if (cuando.rrule) {
     properties.recurrence.rrule.dtstart = getDatetime(recurrence.rrule.dtstart, start_time)
     listing.cuando.rrule.dtstart = recurrence.rrule.dtstart.clone()
+
+    if (cuando.rrule.until) {
+      properties.recurrence.rrule.until = getDatetime(recurrence.rrule.until, start_time)
+      listing.cuando.rrule.until = recurrence.rrule.dtstart.clone()      
+    }
   }
 
   if (cuando.rdate.length) {

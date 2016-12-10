@@ -96,23 +96,26 @@
     justify-content: space-around;
   }
 
-  .recurrence-calendar-container {
+  .recurrence-calendar {
     display: flex;
     justify-content: center;
-    .recurrence-calendar {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
+    flex-direction: column;
+    width: 100%;
+
+    // .recurrence-calendar {
+    //   display: flex;
+    //   flex-direction: column;
+    //   justify-content: center;
 
       /*@media (max-width: 767px) {
 
       } */
 
-      .controller {
+      .calendar-controller {
         padding-top: .5rem;
         display: flex;
         justify-content: space-around;
-        width: 70vw;
+        width: 100%;
         .change-month-button {
           &:hover {
             color: $crayola-orange;
@@ -121,11 +124,11 @@
       }
 
       .month-calendar {
-        width: 70vw;
+
         .day-names {
           display: flex;
           justify-content: space-around;
-          width: 70vw;
+          //width: 70vw;
           .day-name {
             display: flex;
             justify-content: center;
@@ -135,42 +138,52 @@
           }
         }
 
-        .week {
-          display: flex;
-          justify-content: flex-end;
-          width: 70vw;
-          .day {
+        .weeks {
+          .week:not(:last-child) {
+            justify-content: flex-end;
+          }
+
+          .week:last-child {
+            justify-content: flex-start;
+          }
+
+          .week {
             display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 10vw;
-            height: 10vw;
-            background-color: white;
-            margin-right: .1rem;
-            margin-bottom: .1rem;
-            color: lightgray;
-            border: 1px solid lightgray;
-            pointer-events: none;
 
-            &.selectable {
-              color: black;
-              border: 1px solid black;
-              pointer-events: auto
-            }
-
-            &.today {
+            //width: 70vw;
+            .day {
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              width: 14.2857%;
+              //height: 14%;
               background-color: white;
-              color: black;
-              border: 3px solid black;
-            }
+              margin-right: .1rem;
+              margin-bottom: .1rem;
+              color: lightgray;
+              border: 1px solid lightgray;
+              pointer-events: none;
 
-            &.selected {
-              background-color: $crayola-orange;
-              color: white;
-            }
+              &.selectable {
+                color: black;
+                border: 1px solid black;
+                pointer-events: auto
+              }
 
-            &:hover {
-              border-width: 2px;
+              &.today {
+                background-color: white;
+                color: black;
+                border: 3px solid black;
+              }
+
+              &.selected {
+                background-color: $crayola-orange;
+                color: white;
+              }
+
+              &:hover {
+                border-width: 2px;
+              }
             }
           }
         }
@@ -190,13 +203,35 @@
           .week {
             width: 100%;
             .day {
+              //width: 4rem;
+              height: 4rem;
+            }
+          }
+        }
+      } 
+
+      @media (max-width: 767px) {
+        .controller {
+          width: 100%;
+        }
+
+        .month-calendar {
+          width: 100%;
+          .day-names {
+            width: 100%;
+          }
+
+          .week {
+            width: 100%;
+            .day {
               width: 4rem;
               height: 4rem;
             }
           }
         }
       } 
-    }
+
+    //}
   }
 }
 

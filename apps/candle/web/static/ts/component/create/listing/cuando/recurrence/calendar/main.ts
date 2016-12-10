@@ -94,7 +94,7 @@ function model(actions, inputs) {
 
 function renderController(state) {
   const {year, month} = state
-  return div(`.controller`, [
+  return div(`.calendar-controller`, [
     div(`.appDecMonth.change-month-button.fa.fa-angle-left.fa-2x`, []),
     div(`.month-year-display`, [moment([year, month]).format('MMM YYYY')]),
     div(`.appIncMonth.change-month-button.fa.fa-angle-right.fa-2x`, [])
@@ -108,12 +108,12 @@ function view(state$, components) {
     })
     .map((info: any) => {
       const {state, components} = info
-      return div(`.recurrence-calendar-container`, [
-        div(`.recurrence-calendar`, [
+      return div('.recurrence-calendar', [
+        //div(`.recurrence-calendar`, [
           renderController(state),
           components.calendar
         ])
-      ])
+      //])
     })
 }
 
