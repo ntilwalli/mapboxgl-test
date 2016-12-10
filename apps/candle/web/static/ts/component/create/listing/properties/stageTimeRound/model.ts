@@ -97,7 +97,7 @@ export default function model(actions, inputs) {
   return inputs.props$.take(1)
     .switchMap(props => {
       const init = {
-        stage_time: props || getDefault(),
+        stage_time: props.data || getDefault(),
         errors_map: {}
       }
 

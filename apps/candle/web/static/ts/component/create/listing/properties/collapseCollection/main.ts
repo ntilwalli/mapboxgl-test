@@ -89,7 +89,7 @@ export default function main(sources, inputs) {
     .map(state => {
       //const state = JSON.parse(JSON.stringify(my_state));
       const components = state.map((props, index) => {
-        return isolate(inputs.item)(sources, {...inputs, props$: O.of(props.data), component_index: index})
+        return isolate(inputs.item)(sources, {...inputs, props$: O.of(props), component_index: index})
       })
       
       const components_dom = components.map(x => x.DOM)

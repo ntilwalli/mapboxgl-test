@@ -9,10 +9,10 @@ import clone = require('clone')
 // How to use: include 'itemHeading', 'item' and 'itemDefault' in inputs object
 //{...inputs, sectionHeading: 'Stage time', itemHeading: 'Host', item: some component, itemDefault: some component value default function}
 
-function render(state, component_id) {
+function render(state, component_id, item_heading) {
   let children
   if (state.length === 0) {
-    children = ['Click plus to add item']
+    children = [`Click plus to add ${item_heading}`]
   } else {
     children = state.map((x, index) => div('.column', [
       div('.row', [
@@ -95,7 +95,7 @@ export default function main(sources, inputs) {
     })
     .map(state => {
       const components = state.map((props, index) => {
-        return isolate(inputs.item)(sources, {...inputs, props$: O.of(props.data), component_index: index})
+        return isolate(inputs.item)(sources, {...inputs, props$: O.of(props), component_index: index})
       })
       
       const components_dom = components.map(x => x.DOM)
@@ -114,7 +114,7 @@ export default function main(sources, inputs) {
   change$.attach(components_output$)
 
   const vtree$ = components_dom$.map(x => {
-    return render(x, inputs.component_id || 'Component id not supplied')
+    return render(x, inputs.component_id || 'Component id not supplied', inputs.item_heading || 'item')
   })
 
   return {

@@ -11,7 +11,7 @@ import StageTimeRound from './stageTimeRound/main'
 import PerformerLimit from './performerLimit/main'
 import PersonName from './personName/main'
 import PersonNameTitle from './personNameTitle/main'
-import {getSessionStream} from '../helpers'
+import {getSessionStream, EventTypeToProperties} from '../helpers'
 import {NotesInput} from './helpers'
 import {combineObj, createProxy, traceStartStop} from '../../../../utils'
 import {getCollectionDefault as getStageTimeDefault} from './stageTimeRound/model'
@@ -26,11 +26,6 @@ function arrayUnique(array) {
     }
 
     return a;
-}
-
-const event_type_to_properties = {
-  'open-mic': ['performer_signup', 'check_in', 'performer_cost', 'stage_time', 'performer_limit', 'hosts', 'notes'],
-  'show': ['hosts', 'performers', 'check_in']
 }
 
 function wrapOutput(component, component_type, meta, session$, sources, inputs) {
@@ -73,6 +68,7 @@ function toComponent(type, meta, session$, sources, inputs, authorization) {
       component = (sources, inputs) => isolate(Collection)(sources, {
         ...inputs, 
         item: PersonName, 
+        item_heading: 'host',
         component_id: 'Hosts', 
         itemDefault: () => ({
           data: '',
@@ -93,10 +89,14 @@ function toComponent(type, meta, session$, sources, inputs, authorization) {
       component = (sources, inputs) => isolate(Collection)(sources, {
         ...inputs, 
         initEmpty: true,
+        item_heading: 'performer',
         item: PersonNameTitle, 
         component_id: 'Performers', 
         itemDefault: () => ({
-          data: '',
+          data: {
+            name: '',
+            title: ''
+          },
           valid: true,
           errors: []
         })
@@ -197,7 +197,7 @@ export function main(sources, inputs) {
       const {listing} = session
       const {event_types, meta} = listing
 
-      const foo_components = event_types.reduce((acc, val) => acc.concat(event_type_to_properties[val]), [])
+      const foo_components = event_types.reduce((acc, val) => acc.concat(EventTypeToProperties[val]), [])
       const component_types = arrayUnique(foo_components)
       const components = component_types.map(type => toComponent(type, meta, replay_session$, sources, inputs, authorization))
       //console.log('component',components)

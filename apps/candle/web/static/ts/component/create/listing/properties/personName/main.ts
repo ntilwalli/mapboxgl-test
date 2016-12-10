@@ -3,13 +3,13 @@ import {TextInputComponent} from '../helpers'
 export default function main(sources, inputs) {
   const out = TextInputComponent(
     sources, 
-    inputs.props$, 
+    inputs.props$.pluck('data'), 
     inputs.component_id + ': Invalid name',
     {
-      placeholder: `Type name`,
+      placeholder: `Name`,
       name: `name-input`,
       styleClass: `.name-input`,
-      emptyIsError: false
+      emptyIsError: true
     })
   return {
     DOM: out.DOM,

@@ -104,7 +104,7 @@ function model(actions, inputs) {
         value: props,
         validatedValue: validation.value,
         errors: validation.errors,
-        isValid: !!(validation.value && validation.errors.length === 0),
+        isValid: validation.errors.length === 0,
         disabled
       })
     })

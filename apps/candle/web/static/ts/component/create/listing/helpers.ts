@@ -1,5 +1,53 @@
 import moment = require('moment')
 
+export const EventTypeToProperties = {
+  'open-mic': ['performer_signup', 'check_in', 'performer_cost', 'stage_time', 'performer_limit', 'hosts', 'notes'],
+  'show': ['hosts', 'performers', 'check_in']
+}
+
+export const PerformerLimitOptions = {
+  NO_LIMIT: 'no-limit',
+  LIMIT: 'limit',
+  LIMIT_BY_SIGNUP_TYPE: 'limit-by-signup-type'
+}
+
+export const StageTimeOptions = {
+  MINUTES: 'in-minutes',
+  SONGS: 'in-songs',
+  MINUTES_OR_SONGS: 'in-minutes-or-songs'
+}
+
+export const MinutesTypeOptions = {
+  MAX: 'max',
+  RANGE: 'range'
+}
+
+export const RelativeTimeOptions = {
+  //BLANK: 'blank',
+  UPON_POSTING: 'upon-posting',
+  DAYS_BEFORE_EVENT_START: 'days-before-event-start',
+  MINUTES_BEFORE_EVENT_START: 'minutes-before-event-start',
+  PREVIOUS_WEEKDAY_AT_TIME: 'previous-weekday-at-time',
+  EVENT_START: 'event-start',
+  MINUTES_AFTER_EVENT_START: 'minutes-after-event-start',
+  MINUTES_BEFORE_EVENT_END: 'minutes-before-event-end',
+  EVENT_END: 'event-end'
+}
+
+export const CostOptions = {
+  FREE: 'free',
+  COVER: 'cover',
+  MINUMUM_PURCHASE: 'minimum-purchase',
+  COVER_AND_MINIMUM_PURCHASE: 'cover-and-minimum-purchase',
+  COVER_OR_MINIMUM_PURCHASE: 'cover-or-minimum-purchase',
+}
+
+export const PurchaseTypeOptions = {
+  DRINK: 'drink',
+  ITEM: 'item',
+  DOLLARS: 'dollars'
+}
+
 function inflateCuandoDates(container) {
   const {rrule, rdate, exdate} = container
 

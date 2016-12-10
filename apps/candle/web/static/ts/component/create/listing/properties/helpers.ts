@@ -5,6 +5,14 @@ import {default as TextInput, SmartTextInputValidation} from '../../../../librar
 import validator = require('validator')
 import validUrl = require('valid-url')
 import clone = require('clone')
+import {
+  PerformerLimitOptions, 
+  StageTimeOptions,
+  MinutesTypeOptions,
+  RelativeTimeOptions, 
+  CostOptions,
+  PurchaseTypeOptions
+} from '../helpers'
 
 import {to12HourTime, toMilitaryTime} from '../../../../helpers/time'
 import {combineObj} from '../../../../utils'
@@ -13,6 +21,10 @@ import WeekdayRadio from '../../../../library/weekdayRadio'
 import TimeInput from '../../../../library/timeInput/main'
 
 const {isEmail} = validator
+
+
+const rt_opts = RelativeTimeOptions
+
 
 export function NotesInput(sources, {props$}, styleClass?) {
   const shared$ = props$
@@ -73,53 +85,6 @@ export function ComboBox(sources, options, props$, styleClass?) {
   }
 } 
 
-export const PerformerLimitOptions = {
-  NO_LIMIT: 'no-limit',
-  LIMIT: 'limit',
-  LIMIT_BY_SIGNUP_TYPE: 'limit-by-signup-type'
-}
-
-export const StageTimeOptions = {
-  MINUTES: 'in-minutes',
-  SONGS: 'in-songs',
-  MINUTES_OR_SONGS: 'in-minutes-or-songs'
-}
-
-export const MinutesTypeOptions = {
-  MAX: 'max',
-  RANGE: 'range'
-}
-
-export const RelativeTimeOptions = {
-  //BLANK: 'blank',
-  UPON_POSTING: 'upon-posting',
-  DAYS_BEFORE_EVENT_START: 'days-before-event-start',
-  MINUTES_BEFORE_EVENT_START: 'minutes-before-event-start',
-  PREVIOUS_WEEKDAY_AT_TIME: 'previous-weekday-at-time',
-  EVENT_START: 'event-start',
-  MINUTES_AFTER_EVENT_START: 'minutes-after-event-start',
-  MINUTES_BEFORE_EVENT_END: 'minutes-before-event-end',
-  EVENT_END: 'event-end'
-}
-
-const rt_opts = RelativeTimeOptions
-
-export const CostOptions = {
-  FREE: 'free',
-  COVER: 'cover',
-  MINUMUM_PURCHASE: 'minimum-purchase',
-  COVER_AND_MINIMUM_PURCHASE: 'cover-and-minimum-purchase',
-  COVER_OR_MINIMUM_PURCHASE: 'cover-or-minimum-purchase',
-}
-
-const CostOptionsDisplay = {
-  FREE: 'Free',
-  COVER: 'Cover',
-  MINUMUM_PURCHASE: 'Minimum purchase',
-  COVER_AND_MINIMUM_PURCHASE: 'Cover + minimum purchace',
-  COVER_OR_MINIMUM_PURCHASE: 'Cover or minimum purchase',
-}
-
 
 export function CostTypeComboBox(sources, options, props$, styleClass?) {
   const shared$ = props$.publishReplay(1).refCount()
@@ -145,12 +110,6 @@ export function CostTypeComboBox(sources, options, props$, styleClass?) {
     output$: state$
   }
 } 
-
-export const PurchaseTypeOptions = {
-  DRINK: 'drink',
-  ITEM: 'item',
-  DOLLARS: 'dollars'
-}
 
 
 export function PurchaseTypeComboBox(sources, options, props$, styleClass?) {
@@ -290,10 +249,10 @@ export function NumberInputComponent(sources, initialText$, errorMessage) {
   }
 }
 
-function createTextValidator(message): (string) => SmartTextInputValidation  {
+function createTextValidator(message, empty_is_error = true): (string) => SmartTextInputValidation  {
   return function(input): SmartTextInputValidation {
     //if (input && input.match(/^[a-zA-Z .]+$/)) {
-    if (input && input.length) {
+    if (!empty_is_error || (input && input.length)) {
       return {
         value: input,
         errors: []
@@ -333,18 +292,20 @@ export function NameInputComponent(sources, initialText$, errorMessage) {
 
 export function TextInputComponent(sources, initialText$, errorMessage, props) {
   const out = TextInput(sources, {
-    validator: createTextValidator(errorMessage),
+    validator: createTextValidator(errorMessage, props.emptyIsError),
     props$: O.of(props),
     initialText$
   })
 
   return {
     ...out,
-    output$: out.output$.map(x => ({
-      data: x.value,
-      errors: x.errors,
-      valid: x.valid
-    }))
+    output$: out.output$.map(x => {
+      return {
+        data: x.value,
+        errors: x.errors,
+        valid: x.valid
+      }
+    })
   }
 }
 
@@ -590,3 +551,12 @@ export function RegistrationInfoComponent(sources, component_id, props$) {
   }
 
 }
+
+export {
+  PerformerLimitOptions, 
+  StageTimeOptions,
+  MinutesTypeOptions,
+  RelativeTimeOptions, 
+  CostOptions,
+  PurchaseTypeOptions
+} from '../helpers'

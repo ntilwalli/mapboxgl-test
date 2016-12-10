@@ -5,18 +5,18 @@ import {combineObj} from '../../../../../utils'
 export default function main(sources, inputs) {
   const name = TextInputComponent(
     sources, 
-    inputs.props$, 
+    inputs.props$.pluck('data').pluck('name'), 
     inputs.component_id + ': Invalid name',
     {
       placeholder: `Name`,
       name: `name-input`,
       styleClass: `.name-input`,
-      emptyIsError: false
+      emptyIsError: true
     })
 
   const title = TextInputComponent(
     sources, 
-    inputs.props$, 
+    inputs.props$.pluck('data').pluck('title'), 
     inputs.component_id + ': Invalid title',
     {
       placeholder: `Title (optional)`,
