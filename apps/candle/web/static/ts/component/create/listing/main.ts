@@ -190,7 +190,7 @@ function getStepHeading(state) {
       if (type === 'recurring') {
         return 'Step 3: Set the recurrence'
       } else {
-        return 'Step 3: Select the date'
+        return 'Step 3: Select the date and time'
       }
     case 'properties':
       return 'Step 4: Set the listing properties'

@@ -8,20 +8,6 @@ function intent(sources) {
   const {DOM, Router} = sources
   const session$ = Router.history$
     .map(x => x.state.data)
-    .map(session => {
-      //console.log(`meta session pre`, session)
-      session.listing.type = session.listing.type || undefined
-      session.listing.event_types = session.listing.event_types || []
-      session.listing.categories = session.listing.categories || []
-      session.listing.meta = session.listing.meta || {
-        type: 'standard',
-        title: undefined,
-        description: undefined,
-        short_description: undefined
-      }
-
-      return session
-    })
     .map(inflateDates)
     .publishReplay(1).refCount()
   
@@ -63,7 +49,7 @@ function processCheckboxArray(msg, arr) {
 function isValid(session) {
   //console.log(`meta valid`, session)
   const {listing} = session
-  return listing.type && listing.meta.title && listing.meta.description &&
+  return listing.meta.type && listing.meta.title && listing.meta.description &&
     listing.event_types.length && listing.categories.length
 }
 

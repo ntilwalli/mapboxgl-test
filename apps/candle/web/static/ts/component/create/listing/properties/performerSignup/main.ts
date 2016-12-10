@@ -308,14 +308,6 @@ function InPersonComponent(sources, props$, component_id) {
   })
   .publishReplay(1).refCount()
 
-  const radios_component = PreRegistrationRadios(sources, shared$.pluck('type'))
-
-  const radios_output$ = radios_component.output$.publishReplay(1).refCount()
-  const input_props$ = O.merge(
-    shared$,
-    radios_output$.map(type => ({type, data: undefined}))
-  )
-
   const begins_component = NumberInputComponent(sources, shared$.map(props => {
     return props ? props.begins.data.minutes.toString() : undefined
   }), component_id + ' begins: Invalid number')
@@ -346,13 +338,11 @@ function InPersonComponent(sources, props$, component_id) {
   const styles_component = InPersonStyleComponent(sources, shared$.pluck('styles'))
 
   const vtree$ = combineObj({
-    type: radios_component.DOM,
     begins: begins_component_normalized.DOM,
     ends: ends_component.DOM,
     styles: styles_component.DOM
   }).debounceTime(0).map((components: any) => {
     return div('.column', [
-      components.type,
       div('.row', [
         span('.sub-heading.item.flex.align-center', ['Begins']),
         span('.item', [components.begins]),
@@ -364,17 +354,15 @@ function InPersonComponent(sources, props$, component_id) {
   })
 
   const output$ = combineObj({
-    type: radios_output$,
     begins: begins_component_normalized.output$,
     ends: ends_component.output$,
     styles: styles_component.output$
   }).debounceTime(0).map((components: any) => {
-    const {type, begins, ends, styles} = components
+    const {begins, ends, styles} = components
     const errors = [].concat(ends.errors).concat(begins.errors)
     const valid = !!(ends.valid && begins.valid)
     return {
       data: {
-        type,
         styles,
         begins: begins.data,
         ends: ends.data
@@ -575,15 +563,6 @@ export default function main(sources, inputs): SinksType {
     output$: in_person_component$.switchMap(x => x.output$)
   }
 
-  // const in_person_component = {
-  //   DOM: O.of(div(['in-person'])),
-  //   output$: O.of({
-  //     data: getInPersonDefault(),
-  //     errors: [],
-  //     valid: true
-  //   })
-  // }
-
   const pre_registration_component$ = input_props$.map((props: any) => {
     switch (props.type) {
       case PerformerSignupOptions.PRE_REGISTRATION:
@@ -598,16 +577,6 @@ export default function main(sources, inputs): SinksType {
     DOM: pre_registration_component$.switchMap(x => x.DOM),
     output$: pre_registration_component$.switchMap(x => x.output$)
   }
-
-  // const pre_registration_component = {
-  //   DOM: O.of(div(['pre-registration'])),
-  //   output$: O.of({
-  //     data: getPreRegistrationDefault(),
-  //     errors: [],
-  //     valid: true
-  //   }) 
-  // }
-
 
   const vtree$ = combineObj({
     signup_type: signup_type_component.DOM,

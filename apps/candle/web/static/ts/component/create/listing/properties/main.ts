@@ -64,7 +64,7 @@ function toComponent(type, meta, session$, sources, inputs, authorization) {
     case 'performer_limit':
       component = PerformerLimit
       break
-    case 'hosts':
+    case 'listed_hosts':
       component = (sources, inputs) => isolate(Collection)(sources, {
         ...inputs, 
         item: PersonName, 
@@ -85,7 +85,7 @@ function toComponent(type, meta, session$, sources, inputs, authorization) {
     case 'notes':
       component = NotesInput
       break;
-    case 'performers':
+    case 'listed_performers':
       component = (sources, inputs) => isolate(Collection)(sources, {
         ...inputs, 
         initEmpty: true,

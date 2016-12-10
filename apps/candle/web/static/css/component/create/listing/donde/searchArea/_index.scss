@@ -1,4 +1,11 @@
-.change-search-area-modal { 
+.change-search-area-modal {
+  @media (min-width: 768px) {
+    width: 25rem; 
+  }
+
+  // @media (max-width: 767px) {
+  // }
+
   .map {
     position: relative;
     //height: 15rem;
