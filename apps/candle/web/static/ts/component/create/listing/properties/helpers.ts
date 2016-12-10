@@ -1,5 +1,5 @@
 import {Observable as O} from 'rxjs'
-import {div, span, select, option} from '@cycle/dom'
+import {div, span, select, option, textarea} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 import {default as TextInput, SmartTextInputValidation} from '../../../../library/smarterTextInput'
 import validator = require('validator')
@@ -13,6 +13,38 @@ import WeekdayRadio from '../../../../library/weekdayRadio'
 import TimeInput from '../../../../library/timeInput/main'
 
 const {isEmail} = validator
+
+export function NotesInput(sources, {props$}, styleClass?) {
+  const shared$ = props$
+    .map(x => {
+      return x || ''
+    })
+    .publishReplay(1).refCount()
+  const text$ = sources.DOM.select(`.appTextareaInput`).events('input')
+    .map(ev => {
+      return ev.target.value
+    })
+  const state$ = O.merge(shared$, text$).publishReplay(1).refCount()
+  const vtree$ = shared$.map(state => {
+    return div('.column', [
+      div('.row', [
+        div('.sub-heading.section-heading', ['Notes'])
+      ]),
+      div('.column', [
+        textarea(`.appTextareaInput.notes-input`, [state])
+      ])
+    ])
+  })
+
+  return {
+    DOM: vtree$,
+    output$: state$.map(x => ({
+      data: x,
+      valid: true, 
+      errors: []
+    }))
+  }
+} 
 
 export function ComboBox(sources, options, props$, styleClass?) {
   const shared$ = props$

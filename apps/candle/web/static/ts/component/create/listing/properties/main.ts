@@ -11,6 +11,7 @@ import StageTimeRound from './stageTimeRound/main'
 import PerformerLimit from './performerLimit/main'
 import PersonName from './personName/main'
 import {getSessionStream} from '../helpers'
+import {NotesInput} from './helpers'
 import {combineObj, createProxy, traceStartStop} from '../../../../utils'
 import {getCollectionDefault as getStageTimeDefault} from './stageTimeRound/model'
 
@@ -27,7 +28,7 @@ function arrayUnique(array) {
 }
 
 const event_type_to_properties = {
-  'open-mic': ['performer_signup', 'check_in', 'performer_cost', 'stage_time', 'performer_limit', 'hosts'],
+  'open-mic': ['performer_signup', 'check_in', 'performer_cost', 'stage_time', 'performer_limit', 'hosts', 'notes'],
   'show': ['check_in', 'hosts']
 }
 
@@ -84,6 +85,9 @@ function toComponent(type, meta, session$, sources, inputs, authorization) {
         })
       })
       break
+    case 'notes':
+      component = NotesInput
+      break;
     default:
       throw new Error(`Invalid property component type: ${type}`)
   }
