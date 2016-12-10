@@ -10,6 +10,7 @@ import Collection from './collection/main'
 import StageTimeRound from './stageTimeRound/main'
 import PerformerLimit from './performerLimit/main'
 import PersonName from './personName/main'
+import PersonNameTitle from './personNameTitle/main'
 import {getSessionStream} from '../helpers'
 import {NotesInput} from './helpers'
 import {combineObj, createProxy, traceStartStop} from '../../../../utils'
@@ -29,7 +30,7 @@ function arrayUnique(array) {
 
 const event_type_to_properties = {
   'open-mic': ['performer_signup', 'check_in', 'performer_cost', 'stage_time', 'performer_limit', 'hosts', 'notes'],
-  'show': ['check_in', 'hosts']
+  'show': ['hosts', 'performers', 'check_in']
 }
 
 function wrapOutput(component, component_type, meta, session$, sources, inputs) {
@@ -88,6 +89,19 @@ function toComponent(type, meta, session$, sources, inputs, authorization) {
     case 'notes':
       component = NotesInput
       break;
+    case 'performers':
+      component = (sources, inputs) => isolate(Collection)(sources, {
+        ...inputs, 
+        initEmpty: true,
+        item: PersonNameTitle, 
+        component_id: 'Performers', 
+        itemDefault: () => ({
+          data: '',
+          valid: true,
+          errors: []
+        })
+      })
+      break
     default:
       throw new Error(`Invalid property component type: ${type}`)
   }

@@ -290,7 +290,7 @@ export function NumberInputComponent(sources, initialText$, errorMessage) {
   }
 }
 
-function createNameValidator(message): (string) => SmartTextInputValidation  {
+function createTextValidator(message): (string) => SmartTextInputValidation  {
   return function(input): SmartTextInputValidation {
     //if (input && input.match(/^[a-zA-Z .]+$/)) {
     if (input && input.length) {
@@ -316,7 +316,7 @@ const nameInputProps = O.of({
 
 export function NameInputComponent(sources, initialText$, errorMessage) {
   const out = TextInput(sources, {
-    validator: createNameValidator(errorMessage),
+    validator: createTextValidator(errorMessage),
     props$: nameInputProps,
     initialText$
   })
@@ -330,6 +330,24 @@ export function NameInputComponent(sources, initialText$, errorMessage) {
     }))
   }
 }
+
+export function TextInputComponent(sources, initialText$, errorMessage, props) {
+  const out = TextInput(sources, {
+    validator: createTextValidator(errorMessage),
+    props$: O.of(props),
+    initialText$
+  })
+
+  return {
+    ...out,
+    output$: out.output$.map(x => ({
+      data: x.value,
+      errors: x.errors,
+      valid: x.valid
+    }))
+  }
+}
+
 
 
 function getTimeTypeDisplay(type) {

@@ -70,7 +70,7 @@ function model(actions, inputs) {
         data: x,
         errors: [],
         valid: true
-      })) : [inputs.initDefault ? inputs.initDefault() : inputs.itemDefault()]
+      })) : inputs.initEmpty ? [] : [inputs.initDefault ? inputs.initDefault() : inputs.itemDefault()]
 
       return reducer$.startWith(Immutable.fromJS(init)).scan((acc, f: Function) => f(acc))
     })
