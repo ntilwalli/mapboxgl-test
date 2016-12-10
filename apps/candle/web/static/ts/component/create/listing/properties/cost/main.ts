@@ -139,7 +139,7 @@ export default function main(sources, inputs) {
     minimum_purchase_input_component
   ] = getComponents(performer_cost$, sources, inputs)
 
-  const type_component = CostTypeComboBox(sources, options, performer_cost$.pluck('type').take(1))
+  const type_component = isolate(CostTypeComboBox)(sources, options, performer_cost$.pluck('type').take(1))
 
   type_input$.attach(type_component.output$)
   cover_input$.attach(cover_input_component.output$)
@@ -151,7 +151,7 @@ export default function main(sources, inputs) {
     minimum_purchase: minimum_purchase_input_component.DOM,
   }
 
-  const vtree$ = view(state$, components)
+  const vtree$ = view(state$, components, inputs.heading_text)
 
   return {
     DOM: vtree$,

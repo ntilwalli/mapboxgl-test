@@ -19,7 +19,7 @@ function render(cost, components) {
   ]) 
 }
 
-export default function view(state$, components) {
+export default function view(state$, components, heading_text) {
   return combineObj({
       state$,
       components: combineObj(components)
@@ -33,7 +33,7 @@ export default function view(state$, components) {
       const {cost} = state
       //console.log('components', components)
       return div('.column.cost', [
-        div('.sub-heading.section-heading ', ['Performer cost']),        
+        div('.sub-heading.section-heading ', [heading_text]),        
         render(cost, components)
       ])
     })

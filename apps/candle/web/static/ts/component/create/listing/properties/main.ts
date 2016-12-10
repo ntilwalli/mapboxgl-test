@@ -4,7 +4,7 @@ import isolate from '@cycle/isolate'
 import Immutable = require('immutable')
 import PerformerSignup from './performerSignup/main'
 import CheckIn from './checkin/main'
-import PerformerCost from './performerCost/main'
+import Cost from './cost/main'
 import CollapseCollection from './collapseCollection/main'
 import Collection from './collection/main'
 import StageTimeRound from './stageTimeRound/main'
@@ -50,7 +50,7 @@ function toComponent(type, meta, session$, sources, inputs, authorization) {
       component = CheckIn
       break
     case 'performer_cost':
-      component = PerformerCost
+      component = (sources, inputs) => isolate(Cost)(sources, {...inputs, heading_text: 'Performer cost'})
       break
     case 'stage_time':
       component = (sources, inputs) => isolate(CollapseCollection)(sources, {
@@ -101,6 +101,9 @@ function toComponent(type, meta, session$, sources, inputs, authorization) {
           errors: []
         })
       })
+      break
+    case 'audience_cost':
+      component = (sources, inputs) => isolate(Cost)(sources, {...inputs, heading_text: 'Audience cost'})
       break
     default:
       throw new Error(`Invalid property component type: ${type}`)

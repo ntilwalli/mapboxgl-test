@@ -104,14 +104,14 @@ export default function main(sources, inputs) {
 
       return {
         DOM: length ? O.combineLatest(...components_dom) : O.of([]),
-        output$: length ? O.merge(...components_output) : O.never()
+        output$: length ? O.combineLatest(...components_output) : O.of([])
       }
     }).publishReplay(1).refCount()
 
   const components_dom$ = components$.switchMap(x => x.DOM)
   const components_output$ = components$.switchMap(x => x.output$)
 
-  change$.attach(components_output$)
+  //change$.attach(components_output$)
 
   const vtree$ = components_dom$.map(x => {
     return render(x, inputs.component_id || 'Component id not supplied', inputs.item_heading || 'item')
@@ -119,7 +119,9 @@ export default function main(sources, inputs) {
 
   return {
     DOM: vtree$,
-    output$: state$.map(state => {
+    output$: components_output$.map(x => {
+      return x.map(item => item.data)
+    }).map(state => {
       return state.length ? {
         data: state.map(x => {
           return x.data
