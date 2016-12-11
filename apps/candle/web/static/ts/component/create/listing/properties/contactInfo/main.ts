@@ -64,7 +64,6 @@ export default function main(sources, inputs) {
     facebook: facebook_component.DOM,
     instagram: instagram_component.DOM
   }).debounceTime(0).map((components: any) => {
-    console.log('Hello')
     return div('.column', [
       div('.sub-heading.section-heading', ['Contact info']),
       div('.row', [

@@ -101,7 +101,6 @@ export function ComboBox(sources, options, props$, styleClass?) {
   }
 } 
 
-
 export function CostTypeComboBox(sources, options, props$, styleClass?) {
   const shared$ = props$.publishReplay(1).refCount()
   const click$ = sources.DOM.select(`.appCostTypeSelect`).events('change')
@@ -127,7 +126,6 @@ export function CostTypeComboBox(sources, options, props$, styleClass?) {
   }
 } 
 
-
 export function PurchaseTypeComboBox(sources, options, props$, styleClass?) {
   const shared$ = props$.publishReplay(1).refCount()
   const click$ = sources.DOM.select(`.appPurchaseTypeSelect`).events('change')
@@ -150,7 +148,6 @@ export function PurchaseTypeComboBox(sources, options, props$, styleClass?) {
     output$: state$
   }
 } 
-
 
 export function BlankComponent() {
   return {

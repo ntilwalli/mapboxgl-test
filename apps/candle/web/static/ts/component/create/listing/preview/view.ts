@@ -343,13 +343,39 @@ function getCuandoSummary(type, cuando) {
   }
 }
 
+function getContactInfoSummary(info) {
+  const {email, twitter, facebook, instagram} = info
+  if ([email, twitter, facebook, instagram].every(x => !x)) return ''
+
+  let out = 'Contact info:'
+  if (info.email) {
+    out += `\n  E-mail: ${email}`
+  }
+
+  if (info.twitter) {
+    out += `\n  Twitter: ${twitter}`
+  }
+
+  if (info.facebook) {
+    out += `\n  Facebook: ${facebook}`
+  }
+
+  if (info.instagram) {
+    out += `\n  Instagram: ${instagram}`
+  }
+
+  return out
+}
+
+
 function renderSummary(state) {
   const {session} = state
   const {listing} = session
   const {type, meta, donde, cuando, event_types, categories} = listing
   const {
     title, description, performer_signup, check_in, performer_cost, 
-    stage_time, performer_limit, listed_hosts, listed_performers, audience_cost} = meta
+    stage_time, performer_limit, listed_hosts, listed_performers, 
+    audience_cost, contact_info} = meta
 
   return div(`.column.listing-summary`, [
     pre([
@@ -368,6 +394,7 @@ ${event_types.some(x => x === 'open-mic') ? getPerformerLimitSummary(performer_l
 ${getListedHostsSummary(listed_hosts)}\
 ${event_types.some(x => x === 'show') ? getListedPerformersSummary(listed_performers) : ''}\n\
 ${event_types.some(x => x === 'show') ? getAudienceCostSummary(audience_cost) : ''}\n\
+${getContactInfoSummary(contact_info)}\
 `
     ])
   ])
@@ -430,8 +457,7 @@ export default function view(state$, components) {
             ])
           ]),
           renderSummary(state),
-          renderListingCard(state),
-          pre('.column', [JSON.stringify(listing, null, 2)]),
+          renderListingCard(state)
         ])
       ])
     })
