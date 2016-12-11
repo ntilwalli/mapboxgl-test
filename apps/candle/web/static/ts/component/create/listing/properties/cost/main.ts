@@ -87,7 +87,7 @@ function getComponents(performer_cost$, sources, inputs) {
 
   const minimum_purchase_input_component$ = shared$.map((performer_cost: any) => {
     switch (performer_cost.type) {
-      case opts.MINUMUM_PURCHASE:
+      case opts.MINIMUM_PURCHASE:
       case opts.COVER_OR_MINIMUM_PURCHASE:
       case opts.COVER_AND_MINIMUM_PURCHASE:
         return MinimumPurchaseComponent(sources, O.of(performer_cost.data.minimum_purchase), 'Minimum purchase: Invalid number')
@@ -119,7 +119,7 @@ export default function main(sources, inputs) {
   const options = [
     opts.FREE,
     opts.COVER,
-    opts.MINUMUM_PURCHASE,
+    opts.MINIMUM_PURCHASE,
     opts.COVER_AND_MINIMUM_PURCHASE,
     opts.COVER_OR_MINIMUM_PURCHASE
   ]

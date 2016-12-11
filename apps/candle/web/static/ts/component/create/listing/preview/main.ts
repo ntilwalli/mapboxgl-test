@@ -1,7 +1,7 @@
 import {Observable as O} from 'rxjs'
-import {div, pre, span, input, button} from '@cycle/dom'
 import Immutable = require('immutable')
 import {combineObj} from '../../../../utils'
+import view from './view'
 import {inflateDates, fromCheckbox} from '../helpers'
 
 function intent(sources) {
@@ -46,33 +46,6 @@ function model(actions, inputs) {
     }))
     //.do(x => console.log(`preview state`, x))
     .publishReplay(1).refCount()
-}
-
-function view(state$, components) {
-  return combineObj({
-      state$
-    })
-    .map((info: any) => {
-      const {state} = info
-      const {session} = state
-      const {listing} = session
-      const {type, meta, event_types, categories} = listing
-      const {title, description} = meta
-
-      return div(`.workflow-step.preview`, [
-        div(`.heading`, ['Preview listing']),
-        div(`.body`, [
-          pre('.column', [JSON.stringify(listing, null, 2)]),
-          div('.column', [
-            button('.appPostButton.outline-button.medium', [
-              div('.flex.align-center', [
-                'Post'
-              ])
-            ])
-          ])
-        ])
-      ])
-    })
 }
 
 export function main(sources, inputs) {

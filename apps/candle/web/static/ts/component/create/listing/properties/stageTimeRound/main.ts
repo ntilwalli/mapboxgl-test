@@ -6,7 +6,7 @@ import model from './model'
 import view from './view'
 import deepEqual = require('deep-equal')
 import {combineObj, createProxy, isInteger} from '../../../../../utils'
-import {MinutesTypeOptions, StageTimeOptions, ComboBox, BlankComponent, NumberInputComponent} from '../helpers'
+import {MinutesTypeOptions, StageTimeOptions, ComboBox, BlankComponent, FloatInputComponent, NumberInputComponent} from '../helpers'
 import clone = require('clone')
 
 
@@ -36,7 +36,7 @@ function MaxMinutesComponent(sources, props$, component_id = '') {
     })
     .publishReplay(1).refCount()
   const max_message = component_id + ': Invalid number'
-  const max_input = NumberInputComponent(sources, shared$.pluck('max').map(x => x ? x.toString() : undefined), max_message)
+  const max_input = FloatInputComponent(sources, shared$.pluck('max').map(x => x ? x.toString() : undefined), max_message)
 
   const vtree$ = combineObj({
     max: max_input.DOM,
@@ -70,9 +70,9 @@ function RangeMinutesComponent(sources, props$, component_id) {
     })
     .publishReplay(1).refCount()
   const max_message = component_id + ': Invalid max number'
-  const max_input = NumberInputComponent(sources, shared$.map(x => x.max.toString()), max_message)
+  const max_input = FloatInputComponent(sources, shared$.map(x => x.max.toString()), max_message)
   const min_message = component_id + ': Invalid min number'
-  const min_input = NumberInputComponent(sources, shared$.map(x => x.min.toString()), min_message)
+  const min_input = FloatInputComponent(sources, shared$.map(x => x.min.toString()), min_message)
 
   const vtree$ = combineObj({
     max: max_input.DOM,

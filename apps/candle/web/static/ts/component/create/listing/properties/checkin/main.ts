@@ -1,139 +1,249 @@
 import {Observable as O} from 'rxjs'
 import isolate from '@cycle/isolate'
-// import {div, span, input} from '@cycle/dom'
-// import Immutable = require('immutable')
-// import {combineObj} from '../../../../../utils'
-import intent from './intent'
-import model from './model'
-import view from './view'
-import deepEqual = require('deep-equal')
-import {createProxy, blankComponentUndefinedDOM} from '../../../../../utils'
-import {RelativeTimeOptions as opts, TimeOptionComponent, TimeTypeComboBox, NumberInputComponent} from '../helpers'
-import {default as TextInput, SmartTextInputValidation} from '../../../../../library/smarterTextInput'
+import {div, span, input, VNode} from '@cycle/dom'
+import {combineObj, createProxy, traceStartStop} from '../../../../../utils'
+import {
+  PerformerSignupOptions, 
+  RelativeTimeOptions, 
+  DayOfWeekTimeComponent,
+  PreRegistrationInfoComponent, 
+  ComboBox, 
+  RelativeTimeComponent,
+  // TimeOptionComponent, 
+  // TimeTypeComboBox, 
+  BlankUndefined, 
+  BlankStructuredUndefined, 
+  NumberInputComponent
+} from '../helpers'
+import clone = require('clone')
 
+const rt_opts = RelativeTimeOptions
 
-function validateItem(item) {
-  const {type, data} = item
-  if (type === 'registration') {
-    if (data) {
-      const r_type = data.type
-      const r_data = data.data
-      if (r_type === 'email' && !r_data) {
-        return false
-      } else if (r_type === 'website' && !r_data) {
-        return false
-      }
-
-      return true
-    } else {
-      return false
-    }
-  } else if (type === 'in-person') {
-    return data.begins && data.styles.length
-  }
-
-  throw new Error('Invalid signup type: ' + type)
+interface OutputType {
+  data: Object
+  errors: string[]
+  valid: boolean
 }
 
-function isValid(performer_signup) {
-  if(!!performer_signup.length) {
-    return performer_signup.every(validateItem)
-  } else {
-    return false
-  }
+interface SinksType {
+  DOM: O<VNode>
+  output$: O<OutputType>
 }
 
-const timeInputProps = O.of({
-  placeholder: ``,
-  name: `in-person-begins`,
-  styleClass: `.time-input`,
-  emptyIsError: true
-})
-  
-function createTimeValidator(message): (string) => SmartTextInputValidation  {
-  return function(input): SmartTextInputValidation {
-    if (input && input.match(/^\d+$/)) {
-      return {
-        value: parseInt(input),
-        errors: []
+function getDefault() {
+  return {
+    radius: 50,
+    begins: {
+      type: RelativeTimeOptions.MINUTES_BEFORE_EVENT_START,
+      data: {
+        minutes: 15
       }
-    } else {
-      return {
-        value: input,
-        errors: [message]
+    },
+    ends: {
+      type: RelativeTimeOptions.MINUTES_AFTER_EVENT_START,
+      data: {
+        minutes: 15
       }
     }
   }
 }
 
-function getCheckInComponents(check_in$, sources, inputs) {
-  const shared$ = check_in$.publishReplay(1).refCount()
-  const begins$ = shared$.pluck('begins')
-  const ends$ = shared$.pluck('ends').publishReplay(1).refCount()
-  const radius$ = shared$.pluck('radius')
-  const options = [
-    //opts.BLANK,
-    opts.MINUTES_BEFORE_EVENT_START,
-    opts.EVENT_START,
-    opts.MINUTES_AFTER_EVENT_START,
-    opts.MINUTES_BEFORE_EVENT_END,
-    opts.EVENT_END
-  ]
-
-  return [
-    TimeOptionComponent(sources, 'Check-in begins', begins$),
-    TimeOptionComponent(sources, 'Check-in ends', ends$),
-    TimeTypeComboBox(sources, options, ends$.map((x: any) => !!x ? x.type : undefined).publishReplay(1).refCount(), `.in-person-ends`),
-    NumberInputComponent(sources, radius$.map(x => x ? x.toString() : undefined), 'Check-in radius: Invalid number')
-  ]
-}
 
 export default function main(sources, inputs) {
-  const actions = intent(sources)
-  const begins_input$ = createProxy()
-  const ends_input$ = createProxy()
-  const ends_time_type_input$ = createProxy()
-  const radius_input$ = createProxy()
-  const state$ = model(actions, {
-    ...inputs,
-    begins_input$,
-    ends_input$,
-    ends_time_type_input$,
-    radius_input$
+  const component_id = 'Check-in'
+
+  const shared$ = inputs.props$
+  .map(x => {
+    return x || getDefault()
   })
+  .publishReplay(1).refCount()
 
-  const check_in$ = state$.pluck('check_in')
-    .publishReplay(1).refCount()
-  
-  const [
-    begins_component, 
-    ends_component, 
-    ends_time_type_component,
-    radius_component
-  ] = getCheckInComponents(check_in$, sources, inputs)
+  const begins_component = NumberInputComponent(sources, shared$.map(props => {
+    return props ? props.begins.data.minutes.toString() : undefined
+  }), component_id + ' begins: Invalid number')
 
-  begins_input$.attach(begins_component.output$)
-  ends_input$.attach(ends_component.output$)
-  ends_time_type_input$.attach(ends_time_type_component.output$)
-  radius_input$.attach(radius_component.output$)
-  const components = {
-    begins: begins_component.DOM,
-    ends: ends_component.DOM,
-    ends_time_type: ends_time_type_component.DOM,
-    radius: radius_component.DOM,
-  }
-
-  const vtree$ = view(state$, components)
-
-  return {
-    DOM: vtree$,
-    output$: state$.map(x => {
-      const errors = Object.keys(x.errors_map).reduce((acc, val) => acc.concat(x.errors_map[val]), [])
+  const begins_component_normalized = {
+    DOM: begins_component.DOM,
+    output$: begins_component.output$.map(x => {
       return {
-        data: x.check_in,
-        valid: errors.length === 0,
-        errors
+        ...x,
+        data: {
+          type: RelativeTimeOptions.MINUTES_BEFORE_EVENT_START,
+          data: {
+            minutes: x.data
+          }
+        }
       }
     })
   }
+
+  const ends_options = [
+    RelativeTimeOptions.MINUTES_BEFORE_EVENT_START,
+    RelativeTimeOptions.EVENT_START,
+    RelativeTimeOptions.MINUTES_AFTER_EVENT_START,
+    RelativeTimeOptions.MINUTES_BEFORE_EVENT_END,
+    RelativeTimeOptions.EVENT_END
+  ]
+
+  const ends_component = RelativeTimeComponent(sources, shared$.pluck('ends'), ends_options, component_id + ' ends', 'Ends', '.sub-sub-heading')
+
+  const radius_component = NumberInputComponent(
+    sources, 
+    shared$.pluck('radius').map(radius => {
+      return radius ? radius.toString() : undefined
+    }), component_id + ' radius: Invalid number'
+  )
+
+  const vtree$ = combineObj({
+    begins: begins_component_normalized.DOM,
+    ends: ends_component.DOM,
+    radius: radius_component.DOM
+  }).debounceTime(0).map((components: any) => {
+    return div('.column.check-in', [
+      div('.sub-heading.section-heading ', ['Check-in']),
+      div('.row', [
+        span('.sub-sub-heading.item.flex.align-center', ['Begins']),
+        span('.item', [components.begins]),
+        span('flex.align-center', ['minutes before event start'])
+      ]),
+      components.ends,
+      div('.row.align-center', [
+        span('.sub-sub-heading.align-center', ['Radius']),
+        span('.item', [components.radius]),
+        span('.item', ['meters'])
+      ])
+    ])
+  })
+
+  const output$ = combineObj({
+    begins: begins_component_normalized.output$,
+    ends: ends_component.output$,
+    radius: radius_component.output$
+  }).debounceTime(0).map((components: any) => {
+    const {begins, ends, radius} = components
+    const errors = [].concat(radius.errors).concat(ends.errors).concat(begins.errors)
+    const valid = !!(ends.valid && begins.valid && radius.valid)
+    return {
+      data: {
+        radius: radius.data,
+        begins: begins.data,
+        ends: ends.data
+      },
+      valid,
+      errors
+    }
+  })
+
+  return {
+    DOM: vtree$,
+    output$
+  }
 }
+
+// export default function main(sources, inputs): SinksType {
+//   const shared$ = inputs.props$.take(1)
+//     .map(props => {
+//       return props || getDefault()
+//     })
+//     .publishReplay(1).refCount()
+
+
+//   const signup_type_component = PerformerSignupComboBox(sources, shared$.pluck('type'))
+//   const signup_type$ = signup_type_component.output$
+//     .publishReplay(1).refCount()
+
+//   const input_props$ = O.merge(
+//     shared$,
+//     signup_type$.skip(1).map((type) => {
+//       if (type === PerformerSignupOptions.IN_PERSON) {
+//         return {
+//           type,
+//           data: getInPersonDefault()
+//         }
+//       } else if (type === PerformerSignupOptions.PRE_REGISTRATION) {
+//         return {
+//           type,
+//           data: getPreRegistrationDefault()
+//         } 
+//       } else if (type === PerformerSignupOptions.IN_PERSON_AND_PRE_REGISTRATION) {
+//         return {
+//           type,
+//           data: getInPersonAndPreRegistrationDefault()
+//         }
+//       } 
+//     })
+//   )
+
+ 
+//   const in_person_component$ = input_props$.map((props: any) => {
+//     switch (props.type) {
+//       case PerformerSignupOptions.IN_PERSON:
+//       case PerformerSignupOptions.IN_PERSON_AND_PRE_REGISTRATION:
+//         return InPersonComponent(sources, O.of(props.data.in_person), 'In-person signup')
+//       default:
+//         return BlankStructuredUndefined()
+//     }
+//   }).publishReplay(1).refCount()
+
+//   const in_person_component = {
+//     DOM: in_person_component$.switchMap(x => x.DOM),
+//     output$: in_person_component$.switchMap(x => x.output$)
+//   }
+
+//   const pre_registration_component$ = input_props$.map((props: any) => {
+//     switch (props.type) {
+//       case PerformerSignupOptions.PRE_REGISTRATION:
+//       case PerformerSignupOptions.IN_PERSON_AND_PRE_REGISTRATION:
+//         return PreRegistrationComponent(sources, O.of(props.data.pre_registration), 'Pre-registration signup')
+//       default:
+//         return BlankStructuredUndefined()
+//     }
+//   }).publishReplay(1).refCount()
+
+//   const pre_registration_component = {
+//     DOM: pre_registration_component$.switchMap(x => x.DOM),
+//     output$: pre_registration_component$.switchMap(x => x.output$)
+//   }
+
+//   const vtree$ = combineObj({
+//     signup_type: signup_type_component.DOM,
+//     in_person: in_person_component.DOM,
+//     pre_registration: pre_registration_component.DOM
+//   }).debounceTime(0).map((components: any) => {
+//     const {signup_type, in_person, pre_registration} = components
+//     return div('.column', [
+//       div('.sub-heading.section-heading', ['Performer signup']),
+//       signup_type,
+//       in_person ? div('.sub-sub-heading.small-margin-top', ['In-person']) : null,
+//       in_person ? div('.indented', [in_person]) : null,
+//       pre_registration ? div('.sub-sub-heading.small-margin-top', ['Pre-registration']) : null,
+//       pre_registration ? div('.indented', [pre_registration]) : null
+//     ])
+//   })
+
+//   const output$ = combineObj({
+//     type$: signup_type$,
+//     in_person$: in_person_component.output$,
+//     pre_registration$: pre_registration_component.output$
+//   }).debounceTime(0).map((info: any) => {
+//     const {type, in_person, pre_registration} = info
+//     const errors = in_person.errors.concat(pre_registration.errors)
+//     const valid = in_person.valid && pre_registration.valid
+//     return {
+//       errors,
+//       valid,
+//       data: {
+//         type: type,
+//         data: {
+//           in_person: in_person.data,
+//           pre_registration: pre_registration.data
+//         }
+//       }
+//     }
+//   })
+
+//   return {
+//     DOM: vtree$,
+//     output$
+//   }
+// }

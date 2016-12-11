@@ -195,8 +195,8 @@ function createTimeValidator(message): (string) => SmartTextInputValidation  {
 
 const numberInputProps = O.of({
   placeholder: ``,
-  name: `in-person-begins`,
-  styleClass: `.number-input`,
+  name: `number-input`,
+  styleClass: `.number-input.float-input`,
   emptyIsError: true
 })
 
@@ -209,6 +209,40 @@ export function NumberInputComponent(sources, initialText$, errorMessage) {
 
   return out
 }
+
+function createFloatValidator(message): (string) => SmartTextInputValidation  {
+  return function(input): SmartTextInputValidation {
+    if (input && input.match(/^\d+.?\d*$/)) {
+      return {
+        value: parseFloat(input),
+        errors: []
+      }
+    } else {
+      return {
+        value: input,
+        errors: [message]
+      }
+    }
+  }
+}
+
+const floatInputProps = O.of({
+  placeholder: ``,
+  name: `float-input`,
+  styleClass: `.number-input`,
+  emptyIsError: true
+})
+
+export function FloatInputComponent(sources, initialText$, errorMessage) {
+  const out = TextInput(sources, {
+    validator: createFloatValidator(errorMessage),
+    props$: numberInputProps,
+    initialText$
+  })
+
+  return out
+}
+
 
 function createTextValidator(message, empty_is_error = true): (string) => SmartTextInputValidation  {
   return function(input): SmartTextInputValidation {
@@ -255,124 +289,6 @@ export function TextInputComponent(sources, initialText$, errorMessage, props) {
   return out
 }
 
-
-
-function getTimeTypeDisplay(type) {
-  switch (type) {
-    case rt_opts.UPON_POSTING:
-      return "Upon posting"
-    case rt_opts.DAYS_BEFORE_EVENT_START:
-      return "Days before event start"
-    case rt_opts.MINUTES_BEFORE_EVENT_START:
-      return "Minutes before event start"
-    case rt_opts.EVENT_START:
-      return "Event start"
-    case rt_opts.MINUTES_AFTER_EVENT_START:
-      return "Minutes after event start"
-    case rt_opts.MINUTES_BEFORE_EVENT_END:
-      return "Minutes before event end"
-    case rt_opts.EVENT_END:
-      return "Event end"
-    case rt_opts.PREVIOUS_WEEKDAY_AT_TIME:
-      return "Previous weekday at time"
-    // case rt_opts.BLANK:
-    //   return ""
-    default:
-      throw new Error('Invalid time option type: ' + type)
-  }
-}
-
-
-
-export function TimeTypeComboBox(sources, options, props$, styleClass?) {
-  const out$ = props$
-    .distinctUntilChanged((x, y) => !!x === !!y)
-    .map(props => {
-      if (!!props) {
-
-        const out = (sources) => {
-          const click$ = sources.DOM.select(`.appTimeTypeSelect`).events('change')
-            .map(ev => {
-              return ev.target.value
-            })
-          const state$ = O.merge(O.of(props), click$).publishReplay(1).refCount()
-
-
-          const vtree$ = state$.map(state => {
-            return div(`.select-container`, [
-              select(`.appTimeTypeSelect`, options.map(opt => {
-                return option({attrs: {value: opt, selected: state === opt}}, [getTimeTypeDisplay(opt)])
-              }))
-            ])
-          })
-
-          return {
-            DOM: vtree$,
-            output$: state$
-          }
-        }
-
-        return isolate(out)(sources)
-      } else {
-        return BlankComponent()
-      }
-    }).publishReplay(1).refCount()
-
-  return {
-    DOM: out$.switchMap(x => x.DOM),
-    output$: out$.switchMap(x => x.output$)
-  }
-} 
-
-
-
-export function getTimeOptionDefault(type) {
-  switch (type) {
-    case rt_opts.DAYS_BEFORE_EVENT_START:
-      return 1
-    case rt_opts.MINUTES_BEFORE_EVENT_START:
-    case rt_opts.MINUTES_AFTER_EVENT_START:
-    case rt_opts.MINUTES_BEFORE_EVENT_END:
-      return 15
-    case rt_opts.EVENT_START:
-    case rt_opts.EVENT_END:
-    case rt_opts.UPON_POSTING:
-    //case rt_opts.BLANK:
-      return undefined
-    case rt_opts.PREVIOUS_WEEKDAY_AT_TIME:
-      return {
-        day: undefined,
-        time: undefined
-      }
-    default:
-      throw new Error('Invalid time option type: ' + type)
-  }
-}
-
-function toTimeTypeSelector(props) {
-  if (props) {
-    const {type, data} = props
-    switch (type) {
-      case rt_opts.DAYS_BEFORE_EVENT_START:
-      case rt_opts.MINUTES_BEFORE_EVENT_START:
-      case rt_opts.MINUTES_AFTER_EVENT_START:
-      case rt_opts.MINUTES_BEFORE_EVENT_END:
-        return ['time', props.data]
-      case rt_opts.EVENT_START:
-      case rt_opts.EVENT_END:
-      case rt_opts.UPON_POSTING:
-      //case rt_opts.BLANK:
-        return ['blank', undefined]
-      case rt_opts.PREVIOUS_WEEKDAY_AT_TIME:
-        return ['day_time', props.data]
-      default:
-        throw new Error('Invalid time option type: ' + type)
-    }
-  } else {
-    return ['blank', undefined]
-  }
-}
-
 export function DayOfWeekTimeComponent(sources, props$, message) {
   const shared$ = props$.publishReplay(1).refCount()
   const weekday_radio = WeekdayRadio(sources, {
@@ -417,15 +333,25 @@ export function DayOfWeekTimeComponent(sources, props$, message) {
   }
 }
 
-
-export function TimeOptionComponent(sources, component_id, props$) {
+export function RelativeTimeDataComponent(sources, props$, component_id) {
   const out$ = props$
-    .map(toTimeTypeSelector)
+    .map(toRelativeTimeTypeSelector)
     .distinctUntilChanged((x, y) => x[0] === y[0])
     .map(([type, props]) => {
       switch (type) {
         case 'time':
-          return NumberInputComponent(sources, O.of(props.toString()), component_id + ': Invalid number')
+          const out = NumberInputComponent(sources, O.of(props.minutes.toString()), component_id + ': Invalid number')
+          return {
+            ...out,
+            output$: out.output$.map(x => {
+              return {
+                ...x,
+                data: {
+                  minutes: x.data
+                }
+              }
+            })
+          }
         case 'day_time':
           return isolate(DayOfWeekTimeComponent)(sources, O.of(props), component_id + ': Date and time must be set')
         default:
@@ -440,6 +366,112 @@ export function TimeOptionComponent(sources, component_id, props$) {
   }
 }
 
+
+export function getRelativeTimeDefault(type) {
+  switch (type) {
+    // case rt_opts.DAYS_BEFORE_EVENT_START:
+    //   return {days: 1}
+    case rt_opts.MINUTES_BEFORE_EVENT_START:
+    case rt_opts.MINUTES_AFTER_EVENT_START:
+    case rt_opts.MINUTES_BEFORE_EVENT_END:
+      return {minutes: 15}
+    case rt_opts.EVENT_START:
+    case rt_opts.EVENT_END:
+    case rt_opts.UPON_POSTING:
+    //case rt_opts.BLANK:
+      return undefined
+    case rt_opts.PREVIOUS_WEEKDAY_AT_TIME:
+      return {
+        day: undefined,
+        time: undefined
+      }
+    default:
+      throw new Error('Invalid time option type: ' + type)
+  }
+}
+
+function toRelativeTimeTypeSelector(props) {
+  if (props) {
+    const {type, data} = props
+    switch (type) {
+      //case rt_opts.DAYS_BEFORE_EVENT_START:
+      case rt_opts.MINUTES_BEFORE_EVENT_START:
+      case rt_opts.MINUTES_AFTER_EVENT_START:
+      case rt_opts.MINUTES_BEFORE_EVENT_END:
+        return ['time', props.data]
+      case rt_opts.EVENT_START:
+      case rt_opts.EVENT_END:
+      case rt_opts.UPON_POSTING:
+      //case rt_opts.BLANK:
+        return ['blank', undefined]
+      case rt_opts.PREVIOUS_WEEKDAY_AT_TIME:
+        return ['day_time', props.data]
+      default:
+        throw new Error('Invalid time option type: ' + type)
+    }
+  } else {
+    return ['blank', undefined]
+  }
+}
+
+export function RelativeTimeComponent(sources, props$, options, component_id, heading_title, style_class = '.sub-heading') {
+  const shared$ = props$
+    .map(x => {
+      return x
+    })
+    .publishReplay(1).refCount()
+
+  const relative_type_component = isolate(ComboBox)(sources, options, shared$.pluck('type'))
+  const relative_type$ = relative_type_component.output$
+    .map(x => {
+      return x
+    })
+    .publishReplay(1).refCount()
+
+  const input_props$ = relative_type$.map(type => {
+      return {type, data: getRelativeTimeDefault(type)}
+    })
+  const data_component = RelativeTimeDataComponent(sources, input_props$, component_id)
+
+   const vtree$ = combineObj({
+    relative_type: relative_type$,
+    type: relative_type_component.DOM,
+    data: data_component.DOM
+  }).debounceTime(0).map((components: any) => {
+    const {relative_type, type, data} = components
+    const same_line = relative_type !== RelativeTimeOptions.PREVIOUS_WEEKDAY_AT_TIME 
+    return div('.column', [
+      span('.row', [
+        div(`${style_class}.item.flex.align-center`, [heading_title]), 
+        span({class: {item: same_line}}, [type]),
+        same_line ? data : null
+      ]),
+      !same_line? span('.column', {style: {width: "20rem"}}, [data]) : null
+    ])
+  })
+
+  const output$ = combineObj({
+    type: relative_type$,
+    data: data_component.output$
+  }).debounceTime(0).map((components: any) => {
+    const {type, data} = components
+    const errors = [].concat(data.errors)
+    const valid = !!(data.valid)
+    return {
+      data: {
+        type,
+        data: data.data
+      },
+      valid,
+      errors
+    }
+  })
+
+  return {
+    DOM: vtree$,
+    output$
+  }
+}
 
 const emailInputProps = O.of({
   placeholder: `E-mail address`,

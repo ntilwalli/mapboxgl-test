@@ -6,10 +6,9 @@ import {
   PerformerSignupOptions, 
   RelativeTimeOptions, 
   DayOfWeekTimeComponent,
+  RelativeTimeComponent,
   PreRegistrationInfoComponent, 
   ComboBox, 
-  TimeOptionComponent, 
-  TimeTypeComboBox, 
   BlankUndefined, 
   BlankStructuredUndefined, 
   NumberInputComponent
@@ -39,39 +38,6 @@ function PerformerSignupComboBox(sources, props$) {
 
   return isolate(ComboBox)(sources, options, props$)
 }
-
-function InPersonEndsComboBox(sources, props$) {
-  const options = [
-    RelativeTimeOptions.EVENT_START,
-    RelativeTimeOptions.MINUTES_BEFORE_EVENT_START,
-    RelativeTimeOptions.MINUTES_BEFORE_EVENT_END,
-    RelativeTimeOptions.EVENT_END
-  ]
-
-  return isolate(ComboBox)(sources, options, props$)
-}
-
-function PreRegistrationBeginsComboBox(sources, props$) {
-  const options = [
-    RelativeTimeOptions.UPON_POSTING,
-    RelativeTimeOptions.PREVIOUS_WEEKDAY_AT_TIME,
-    RelativeTimeOptions.MINUTES_BEFORE_EVENT_START
-  ]
-
-  return isolate(ComboBox)(sources, options, props$)
-}
-
-// function RelativeTimeComboBox(sources, props$, options) {
-//   const options = [
-//     RelativeTimeOptions.EVENT_START,
-//     RelativeTimeOptions.PREVIOUS_WEEKDAY_AT_TIME,
-//     RelativeTimeOptions.MINUTES_BEFORE_EVENT_START,
-//     RelativeTimeOptions.MINUTES_BEFORE_EVENT_END,
-//     RelativeTimeOptions.EVENT_END
-//   ]
-
-//   return isolate(ComboBox)(sources, options, props$)
-// }
 
 function PreRegistrationRadios(sources, props$) {
   const shared$ = props$
@@ -159,147 +125,6 @@ function InPersonStyleComponent(sources, props$) {
     output$: state$
   }
 }
-
-export function getRelativeTimeDefault(type) {
-  switch (type) {
-    // case rt_opts.DAYS_BEFORE_EVENT_START:
-    //   return {days: 1}
-    case rt_opts.MINUTES_BEFORE_EVENT_START:
-    case rt_opts.MINUTES_AFTER_EVENT_START:
-    case rt_opts.MINUTES_BEFORE_EVENT_END:
-      return {minutes: 15}
-    case rt_opts.EVENT_START:
-    case rt_opts.EVENT_END:
-    case rt_opts.UPON_POSTING:
-    //case rt_opts.BLANK:
-      return undefined
-    case rt_opts.PREVIOUS_WEEKDAY_AT_TIME:
-      return {
-        day: undefined,
-        time: undefined
-      }
-    default:
-      throw new Error('Invalid time option type: ' + type)
-  }
-}
-
-function toRelativeTimeTypeSelector(props) {
-  if (props) {
-    const {type, data} = props
-    switch (type) {
-      //case rt_opts.DAYS_BEFORE_EVENT_START:
-      case rt_opts.MINUTES_BEFORE_EVENT_START:
-      case rt_opts.MINUTES_AFTER_EVENT_START:
-      case rt_opts.MINUTES_BEFORE_EVENT_END:
-        return ['time', props.data]
-      case rt_opts.EVENT_START:
-      case rt_opts.EVENT_END:
-      case rt_opts.UPON_POSTING:
-      //case rt_opts.BLANK:
-        return ['blank', undefined]
-      case rt_opts.PREVIOUS_WEEKDAY_AT_TIME:
-        return ['day_time', props.data]
-      default:
-        throw new Error('Invalid time option type: ' + type)
-    }
-  } else {
-    return ['blank', undefined]
-  }
-}
-
-
-export function RelativeTimeDataComponent(sources, props$, component_id) {
-  const out$ = props$
-    .map(toRelativeTimeTypeSelector)
-    .distinctUntilChanged((x, y) => x[0] === y[0])
-    .map(([type, props]) => {
-      switch (type) {
-        case 'time':
-          const out = NumberInputComponent(sources, O.of(props.minutes.toString()), component_id + ': Invalid number')
-          return {
-            ...out,
-            output$: out.output$.map(x => {
-              return {
-                ...x,
-                data: {
-                  minutes: x.data
-                }
-              }
-            })
-          }
-        case 'day_time':
-          return isolate(DayOfWeekTimeComponent)(sources, O.of(props), component_id + ': Date and time must be set')
-        default:
-          return BlankStructuredUndefined()
-      }
-    })
-    .publishReplay(1).refCount()
-
-  return {
-    DOM: out$.switchMap(x => x.DOM),
-    output$: out$.switchMap(x => x.output$)
-  }
-}
-
-
-function RelativeTimeComponent(sources, props$, options, component_id, heading_title) {
-  const shared$ = props$
-    .map(x => {
-      return x
-    })
-    .publishReplay(1).refCount()
-
-  const relative_type_component = isolate(ComboBox)(sources, options, shared$.pluck('type'))
-  const relative_type$ = relative_type_component.output$
-    .map(x => {
-      return x
-    })
-    .publishReplay(1).refCount()
-
-  const input_props$ = relative_type$.map(type => {
-      return {type, data: getRelativeTimeDefault(type)}
-    })
-  const data_component = RelativeTimeDataComponent(sources, input_props$, component_id)
-
-   const vtree$ = combineObj({
-    relative_type: relative_type$,
-    type: relative_type_component.DOM,
-    data: data_component.DOM
-  }).debounceTime(0).map((components: any) => {
-    const {relative_type, type, data} = components
-    const same_line = relative_type !== RelativeTimeOptions.PREVIOUS_WEEKDAY_AT_TIME 
-    return div('.column', [
-      span('.row', [
-        div('.sub-heading.item.flex.align-center', [heading_title]), 
-        span({class: {item: same_line}}, [type]),
-        same_line ? data : null
-      ]),
-      !same_line? span('.column', {style: {width: "20rem"}}, [data]) : null
-    ])
-  })
-
-  const output$ = combineObj({
-    type: relative_type$,
-    data: data_component.output$
-  }).debounceTime(0).map((components: any) => {
-    const {type, data} = components
-    const errors = [].concat(data.errors)
-    const valid = !!(data.valid)
-    return {
-      data: {
-        type
-      },
-      valid,
-      errors
-    }
-  })
-
-  return {
-    DOM: vtree$,
-    output$
-  }
-}
-
 
 function InPersonComponent(sources, props$, component_id) {
   const shared$ = props$

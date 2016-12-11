@@ -2,7 +2,7 @@ import {Observable as O} from 'rxjs'
 import Immutable = require('immutable')
 import {combineObj} from '../../../../../utils'
 import deepEqual = require('deep-equal')
-import {CostOptions, PurchaseTypeOptions, getTimeOptionDefault} from '../helpers'
+import {CostOptions, PurchaseTypeOptions} from '../helpers'
 
 function getDefault() {
   return {
@@ -23,7 +23,7 @@ function reducers(actions, inputs) {
             cover: 5
           }
           break
-        case CostOptions.MINUMUM_PURCHASE:
+        case CostOptions.MINIMUM_PURCHASE:
           performer_cost.data = {
             minimum_purchase: {
               type: PurchaseTypeOptions.DRINK,

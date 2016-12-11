@@ -43,7 +43,7 @@ export const RelativeTimeOptions = {
 export const CostOptions = {
   FREE: 'free',
   COVER: 'cover',
-  MINUMUM_PURCHASE: 'minimum-purchase',
+  MINIMUM_PURCHASE: 'minimum-purchase',
   COVER_AND_MINIMUM_PURCHASE: 'cover-and-minimum-purchase',
   COVER_OR_MINIMUM_PURCHASE: 'cover-or-minimum-purchase',
 }
