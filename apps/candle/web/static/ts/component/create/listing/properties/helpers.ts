@@ -4,6 +4,7 @@ import isolate from '@cycle/isolate'
 import {default as TextInput, SmartTextInputValidation} from '../../../../library/standardTextInput'
 import validator = require('validator')
 import validUrl = require('valid-url')
+import {validate as twitterValidate} from 'twitter-validate'
 import clone = require('clone')
 import {
   PerformerSignupOptions,
@@ -175,11 +176,124 @@ export function BlankStructuredUndefined() {
     })
   }
 }
+
+function genericValidator(input, f, empty_is_error) {
+  return (!input && !empty_is_error) || (input && ((!input.length && !empty_is_error) || (input.length && f(input))))
+}
+
+const emailTest = isEmail
+const urlTest = validUrl.isWebUri
+const twitterTest = twitterValidate
+const naturalNumberTest = input => input.match(/^\d+$/)
+const floatTest = input => input.match(/^\d+.?\d*$/)
+const passTest = input => true
+
+function makeEmailValidator(message, empty_is_error = true): (string) => SmartTextInputValidation  {
+  return function(input): SmartTextInputValidation {
+    //if (input && input.match(/^[a-zA-Z .]+$/)) {
+    if (genericValidator(input, emailTest, empty_is_error)) {
+      return {
+        value: input,
+        errors: []
+      }
+    } else {
+      return {
+        value: input,
+        errors: [message]
+      }
+    }
+  }
+}
+
+const email_input_props = {
+  placeholder: `E-mail address`,
+  name: `registration-email`,
+  styleClass: `.email-input`,
+  emptyIsError: true
+}
+
+export function EmailInputComponent(sources, initialText$, errorMessage, props = email_input_props) {
+  const out = isolate(TextInput)(sources, {
+    validator: makeEmailValidator(errorMessage, props.emptyIsError),
+    props$: O.of(props),
+    initialText$
+  })
+
+  return out
+}
+
+function makeURLValidator(message, empty_is_error = true): (string) => SmartTextInputValidation  {
+  return function(input): SmartTextInputValidation {
+    //if (input && input.match(/^[a-zA-Z .]+$/)) {
+    if (genericValidator(input, urlTest, empty_is_error)) {
+      return {
+        value: input,
+        errors: []
+      }
+    } else {
+      return {
+        value: input,
+        errors: [message]
+      }
+    }
+  }
+}
+
+const url_input_props = {
+  placeholder: `URL`,
+  name: `website-input`,
+  styleClass: `.website-input`,
+  emptyIsError: true
+}
+
+export function URLInputComponent(sources, initialText$, errorMessage, props = url_input_props) {
+  const out = isolate(TextInput)(sources, {
+    validator: makeURLValidator(errorMessage, props.emptyIsError),
+    props$: O.of(props),
+    initialText$
+  })
+
+  return out
+}
+
+function makeTwitterValidator(message, empty_is_error = true): (string) => SmartTextInputValidation  {
+  return function(input): SmartTextInputValidation {
+    //if (input && input.match(/^[a-zA-Z .]+$/)) {
+    if (genericValidator(input, twitterTest, empty_is_error)) {
+      return {
+        value: input,
+        errors: []
+      }
+    } else {
+      return {
+        value: input,
+        errors: [message]
+      }
+    }
+  }
+}
+
+const twitter_input_props = {
+  placeholder: `Twitter handle`,
+  name: `twitter-input`,
+  styleClass: `.twitter-input`,
+  emptyIsError: true
+}
+
+export function TwitterInputComponent(sources, initialText$, errorMessage, props = url_input_props) {
+  const out = isolate(TextInput)(sources, {
+    validator: makeTwitterValidator(errorMessage, props.emptyIsError),
+    props$: O.of(props),
+    initialText$
+  })
+
+  return out
+}
           
 
-function createTimeValidator(message): (string) => SmartTextInputValidation  {
+function createNaturalNumberValidator(message, empty_is_error = true): (string) => SmartTextInputValidation  {
   return function(input): SmartTextInputValidation {
-    if (input && input.match(/^\d+$/)) {
+    if (genericValidator(input, naturalNumberTest, empty_is_error)) {
       return {
         value: parseInt(input),
         errors: []
@@ -202,7 +316,7 @@ const numberInputProps = O.of({
 
 export function NumberInputComponent(sources, initialText$, errorMessage) {
   const out = TextInput(sources, {
-    validator: createTimeValidator(errorMessage),
+    validator: createNaturalNumberValidator(errorMessage),
     props$: numberInputProps,
     initialText$
   })
@@ -210,9 +324,9 @@ export function NumberInputComponent(sources, initialText$, errorMessage) {
   return out
 }
 
-function createFloatValidator(message): (string) => SmartTextInputValidation  {
+function createFloatValidator(message, empty_is_error = true): (string) => SmartTextInputValidation  {
   return function(input): SmartTextInputValidation {
-    if (input && input.match(/^\d+.?\d*$/)) {
+    if (genericValidator(input, floatTest, empty_is_error)) {
       return {
         value: parseFloat(input),
         errors: []
@@ -247,7 +361,7 @@ export function FloatInputComponent(sources, initialText$, errorMessage) {
 function createTextValidator(message, empty_is_error = true): (string) => SmartTextInputValidation  {
   return function(input): SmartTextInputValidation {
     //if (input && input.match(/^[a-zA-Z .]+$/)) {
-    if (!empty_is_error || (input && input.length)) {
+    if (genericValidator(input, passTest, empty_is_error)) {
       return {
         value: input,
         errors: []
@@ -473,86 +587,6 @@ export function RelativeTimeComponent(sources, props$, options, component_id, he
   }
 }
 
-const emailInputProps = O.of({
-  placeholder: `E-mail address`,
-  name: `registration-email`,
-  styleClass: `.email-input`,
-  emptyIsError: true
-})
-
-function makeEmailValidator(message): (string) => SmartTextInputValidation {
-  return function (input) {
-    if (input && input.length && isEmail(input)) {
-      return {
-        value: input,
-        errors: []
-      }
-    } else {
-      return {
-        value: input,
-        errors: [message]
-      }
-    }
-  }
-}
-
-const urlInputProps = O.of({
-  placeholder: `URL`,
-  name: `registration-website`,
-  styleClass: `.website-input`,
-  emptyIsError: true
-})
-
-function makeUrlValidator(message): (string) => SmartTextInputValidation {
-    return function(input) {
-      if (input && input.length && validUrl.isWebUri(input)) {
-        return {
-          value: input,
-          errors: []
-        }
-      } else {
-        return {
-          value: input,
-          errors: [message]
-        }
-      }
-    }
-}
-
-// export function RegistrationInfoComponent(sources, component_id, props$) {
-//   const out$ = props$
-//     .map(props => {
-//       return !props ? {type: 'blank'} : clone(props)
-//     })
-//     .distinctUntilChanged((x, y) => {
-//       return x.type === y.type
-//     })
-//     .map(({type, data}) => {
-//       switch (type) {
-//         case 'email':
-//           return TextInput(sources, {
-//             validator: makeEmailValidator(component_id + ': Invalid e-mail'),
-//             props$: emailInputProps,
-//             initialText$: O.of(data)
-//           })
-//         case 'website':
-//           return TextInput(sources, {
-//             validator: makeUrlValidator(component_id + ": Invalid url"),
-//             props$: urlInputProps,
-//             initialText$: O.of(data)
-//           })
-//         default:
-//           return BlankUndefined()
-//       }
-//     })
-//     .publishReplay(1).refCount()
-
-//   return {
-//     DOM: out$.switchMap(x => x.DOM),
-//     output$: out$.switchMap(x => x.output$)
-//   }
-
-// }
 
 export function PreRegistrationInfoComponent(sources, props$, component_id) {
   const out$ = props$
@@ -562,17 +596,9 @@ export function PreRegistrationInfoComponent(sources, props$, component_id) {
     .map(({type, data}) => {
       switch (type) {
         case 'email':
-          return TextInput(sources, {
-            validator: makeEmailValidator(component_id + ': Invalid e-mail'),
-            props$: emailInputProps,
-            initialText$: O.of(data)
-          })
+          return EmailInputComponent(sources, O.of(data), component_id + ': Invalid e-mail')
         case 'website':
-          return TextInput(sources, {
-            validator: makeUrlValidator(component_id + ": Invalid url"),
-            props$: urlInputProps,
-            initialText$: O.of(data)
-          })
+          return URLInputComponent(sources, O.of(data), component_id + ': Invalid URL')
         default:
           return BlankStructuredUndefined()
       }
@@ -585,7 +611,6 @@ export function PreRegistrationInfoComponent(sources, props$, component_id) {
   }
 
 }
-
 
 export {
   PerformerSignupOptions,

@@ -94,9 +94,9 @@ defmodule User.Auth do
     {:reply, {:ok, result}, state}
   end
 
-  def handle_call({:save_listing_session, params} , _from, %{user: user, listing_registry: l_reg} = state) do
+  def handle_call({:save_listing_session, %{"id" => id} = params} , _from, %{user: user, listing_registry: l_reg} = state) do
     IO.inspect {:save_listing_session, params}
-    cs = Ecto.build_assoc(user, :listing_sessions)
+    cs = Ecto.build_assoc(user, :listing_sessions, id: id)
     session_cs = ListingSessionMessage.changeset(cs, params)
     case session_cs.valid? do
       true -> 
@@ -144,8 +144,8 @@ defmodule User.Auth do
         %{listing_id: listing_id, lng_lat: lng_lat} = apply_changes(cs)
         {:ok, pid} = Listing.Registry.lookup(l_reg, listing_id)
         out = Listing.Worker.check_in(pid, user, lng_lat)
-        IO.puts "Check-in output..."
-        IO.inspect out
+        # IO.puts "Check-in output..."
+        # IO.inspect out
         {:reply, out, state}
       false ->
         {:reply, {:error, "Sent invalid check-in parameters"}, state}
@@ -157,8 +157,8 @@ defmodule User.Auth do
     case cs.valid? do
       true ->
         out = User.Helpers.gather_check_ins(apply_changes(cs), user)
-        IO.puts "Check-in output..."
-        IO.inspect out
+        # IO.puts "Check-in output..."
+        # IO.inspect out
         {:reply, {:ok, out}, state}
       false ->
         {:reply, {:error, "Sent invalid date-time range parameters"}, state}
@@ -170,7 +170,7 @@ defmodule User.Auth do
     cs = Shared.Settings.changeset(settings_cs, params)
     case cs.valid? do
       true ->
-        IO.puts "Saved settings"
+        # IO.puts "Saved settings"
         row = apply_changes(cs)
         on_conflict = from Shared.Settings, update: [set: [use_region: ^row.use_region, default_region: ^row.default_region]]
         {:ok, result} = Shared.Repo.insert(row, on_conflict: on_conflict, conflict_target: :user_id)

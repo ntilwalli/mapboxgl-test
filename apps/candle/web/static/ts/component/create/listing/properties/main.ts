@@ -11,6 +11,7 @@ import StageTimeRound from './stageTimeRound/main'
 import PerformerLimit from './performerLimit/main'
 import PersonName from './personName/main'
 import PersonNameTitle from './personNameTitle/main'
+import ContactInfo from './contactInfo/main'
 import {getSessionStream, EventTypeToProperties, CostOptions} from '../helpers'
 import {NotesInput} from './helpers'
 import {combineObj, createProxy, traceStartStop} from '../../../../utils'
@@ -111,6 +112,9 @@ function toComponent(type, meta, session$, sources, inputs, authorization) {
       ]
       
       component = (sources, inputs) => isolate(Cost)(sources, {...inputs, options, heading_text: 'Audience cost'})
+      break
+    case 'contact_info':
+      component = ContactInfo
       break
     default:
       throw new Error(`Invalid property component type: ${type}`)

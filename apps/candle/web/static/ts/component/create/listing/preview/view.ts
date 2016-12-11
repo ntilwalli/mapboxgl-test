@@ -6,17 +6,6 @@ import {PerformerSignupOptions, RelativeTimeOptions, CostOptions, PurchaseTypeOp
 import moment = require('moment')
 import {RRule} from 'rrule'
 
-function renderListingCard(state) {
-  const {session} = state
-  const {listing} = session
-  const {type, meta, event_types, categories} = listing
-  const {title, description} = meta
-
-  return div(`.listing-card`, [
-
-  ])
-}
-
 function getDondeSummary(donde) {
   if (donde.source === 'foursquare') {
     const {data} = donde
@@ -294,8 +283,8 @@ function getByWeekdaySummary(byweekday) {
 }
 
 function getFromTo(dtstart, until) {
-  const f = dtstart ? `from ${dtstart.format('LLL')}`: ''
-  const t = until ? ` to ${until.format('LLL')}` : ''
+  const f = dtstart ? `\n  From: ${dtstart.format('LLL')}`: ''
+  const t = until ? `\n  To: ${until.format('LLL')}` : ''
 
   return f + t
 }
@@ -303,10 +292,10 @@ function getFromTo(dtstart, until) {
 
 function getRRuleSummary(rrule) {
   const {freq, byweekday, bysetpos, dtstart, until} = rrule
-  const from_to = (dtstart || until) ? ', ' + getFromTo(dtstart, until) : ''
+  const from_to = (dtstart || until) ? getFromTo(dtstart, until) : ''
   switch (freq) {
     case 'weekly':
-      return getByWeekdaySummary(byweekday) + 's, weekly' + from_to
+      return getByWeekdaySummary(byweekday) + 's, Weekly' + from_to
     case 'monthly':
       return getSetPosSummary(bysetpos) + getByWeekdaySummary(byweekday) + ' of the month' + from_to
     default:
@@ -323,21 +312,21 @@ function getRecurringSummary(info) {
 
   if (rdate.length) {
     if (rrule) {
-      out += `\nAdditional date${rdate.length > 1 ? 's' : ''}: `
+      out += `\nAdditional date${rdate.length > 1 ? 's' : ''}:\n`
     } else {
-      out += `Date${rdate.length > 1 ? 's' : ''}: `
+      out += `Date${rdate.length > 1 ? 's' : ''}:\n`
     }
 
-    out += rdate.map(x => x.format('LLLL')).join(', ') + '\n'
+    out += `${rdate.length ? '  ' : ''}` + rdate.map(x => x.format('LLLL')).join('\n  ')
    
   } 
 
   if (exdate.length) {
     if (rrule) {
-      out += `\nExcluding date${exdate.length > 1 ? 's' : ''}: `
+      out += `\nExcluding date${exdate.length > 1 ? 's' : ''}:\n`
     }
 
-    out += exdate.map(x => x.format('LLLL')).join(', ') + '\n'
+    out += `${exdate.length ? '  ' : ''}` + exdate.map(x => x.format('LLLL')).join('\n  ')
   } 
 
   return out
@@ -367,15 +356,15 @@ function renderSummary(state) {
       `Title: ${title}\n\
 Description: ${description}\n\
 Type: ${type}\n\
-Event Types: ${event_types.join(', ')}\n\
-Search Categories: ${categories.join(', ')}\n\
+Event types: ${event_types.join(', ')}\n\
+Search categories: ${categories.join(', ')}\n\
 ${getDondeSummary(donde)}\n\
-${getCuandoSummary(type, cuando)}\
+${getCuandoSummary(type, cuando)}\n\
 ${event_types.some(x => x === 'open-mic') ? getPerformerSignupSummary(performer_signup) : ''}\
 ${getCheckinSummary(check_in)}\
 ${event_types.some(x => x === 'open-mic') ? getPerformerCostSummary(performer_cost) : ''}\n\
 ${event_types.some(x => x === 'open-mic') ? getStageTimeSummary(stage_time) : ''}\n\
-${event_types.some(x => x === 'open-mic') ? getPerformerLimitSummary(performer_limit) : ''}\
+${event_types.some(x => x === 'open-mic') ? getPerformerLimitSummary(performer_limit) : ''}\n\
 ${getListedHostsSummary(listed_hosts)}\
 ${event_types.some(x => x === 'show') ? getListedPerformersSummary(listed_performers) : ''}\n\
 ${event_types.some(x => x === 'show') ? getAudienceCostSummary(audience_cost) : ''}\n\
@@ -383,6 +372,40 @@ ${event_types.some(x => x === 'show') ? getAudienceCostSummary(audience_cost) : 
     ])
   ])
 }
+
+
+function renderListingCard(state) {
+  const {session} = state
+  const {listing} = session
+  const {type, meta, event_types, categories} = listing
+  const {title, description} = meta
+
+  return div(`.listing-card`, [
+    // div(`.top`, [
+    //   div(`.left`, [
+    //     renderName(name),
+    //     renderDateTimeBegins(cuando),
+    //     renderDateTimeEnds(cuando),
+    //     renderDonde(donde),
+    //     renderContactInfo(contact),
+    //     renderHostInfo(hosts)
+    //   ]),
+    //   div(`.right`, [
+    //     renderStatus(cuando),
+    //     renderCost(cost),
+    //     renderStageTime(stage_time),
+    //     renderSignup(cuando, sign_up),
+    //     renderPerformerLimit(performer_limit),
+    //     checked_in ? div(`.result-check-in`, [`Checked-in`]) : null
+    //   ])
+    // ]),
+    // div(`.bottom`, [
+    //   renderNote(note),
+    // ])
+  ])
+
+}
+
 
 
 export default function view(state$, components) {

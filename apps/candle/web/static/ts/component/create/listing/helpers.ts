@@ -1,8 +1,8 @@
 import moment = require('moment')
 
 export const EventTypeToProperties = {
-  'open-mic': ['performer_signup', 'check_in', 'performer_cost', 'stage_time', 'performer_limit', 'listed_hosts', 'notes'],
-  'show': ['listed_hosts', 'listed_performers', 'check_in', 'audience_cost']
+  'open-mic': ['performer_signup', 'check_in', 'performer_cost', 'stage_time', 'performer_limit', 'listed_hosts', 'notes', 'contact_info'],
+  'show': ['listed_hosts', 'listed_performers', 'check_in', 'audience_cost', 'contact_info']
 }
 
 export const PerformerSignupOptions = {

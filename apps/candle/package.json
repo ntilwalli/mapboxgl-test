@@ -46,6 +46,7 @@
     "query-string": "^4.2.2",
     "rrule": "file:custom_deps/rrule",
     "rxjs": "^5.0.0-rc.3",
+    "twitter-validate": "^1.0.4",
     "valid-url": "^1.0.9",
     "validator": "^5.2.0",
     "xstream": "^9.0.0"
