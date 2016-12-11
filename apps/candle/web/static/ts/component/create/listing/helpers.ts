@@ -81,7 +81,7 @@ function deflateCuandoDates(container) {
     container.rrule.dtstart = rrule.dtstart.toDate().toISOString()
   }
 
-  if (rrule && rrule.dtstart) {
+  if (rrule && rrule.until) {
     container.rrule.until = rrule.until.toDate().toISOString()
   }  
 

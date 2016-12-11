@@ -139,7 +139,7 @@ export default function main(sources, inputs) {
     minimum_purchase_input_component
   ] = getComponents(performer_cost$, sources, inputs)
 
-  const type_component = isolate(CostTypeComboBox)(sources, options, performer_cost$.pluck('type').take(1))
+  const type_component = isolate(CostTypeComboBox)(sources, inputs.options || options, performer_cost$.pluck('type').take(1))
 
   type_input$.attach(type_component.output$)
   cover_input$.attach(cover_input_component.output$)

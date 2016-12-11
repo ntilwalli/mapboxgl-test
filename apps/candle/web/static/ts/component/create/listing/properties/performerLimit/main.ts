@@ -148,19 +148,19 @@ function LimitByTypeComponent(sources, props$, in_app_enabled$, component_id) {
     .publishReplay(1).refCount()
 
   const in_person = isolate(ByTypeComponent)(sources, shared$.pluck('in_person'), 'In person limit')
-  const registration = isolate(ByTypeComponent)(sources, shared$.pluck('registration'), 'Pre-registration limit')
+  const pre_registration = isolate(ByTypeComponent)(sources, shared$.pluck('pre_registration'), 'Pre-registration limit')
 
   const components_output$ = combineObj({
     in_person: in_person.output$,
-    registration: registration.output$
+    pre_registration: pre_registration.output$
   }).map((components: any) => {
-    const {in_person, registration} = components
-    const valid = in_person.valid && registration.valid
-    const errors = in_person.errors.concat(registration.errors)
+    const {in_person, pre_registration} = components
+    const valid = in_person.valid && pre_registration.valid
+    const errors = in_person.errors.concat(pre_registration.errors)
     return {
       data: {
         in_person: in_person.data,
-        registration: registration.data
+        pre_registration: pre_registration.data
       },
       valid,
       errors
@@ -169,8 +169,8 @@ function LimitByTypeComponent(sources, props$, in_app_enabled$, component_id) {
 
 
   const shouldEnable = state => {
-    const {in_person, registration} = state
-    return [in_person.type, registration.type].every(x => x === PerformerLimitOptions.LIMIT)
+    const {in_person, pre_registration} = state
+    return [in_person.type, pre_registration.type].every(x => x === PerformerLimitOptions.LIMIT)
   }
 
   const enable_waitlist$ = combineObj({
@@ -179,8 +179,8 @@ function LimitByTypeComponent(sources, props$, in_app_enabled$, component_id) {
       components_output$.pluck('data')
     ),
     in_app_enabled$
-  }).map((info: any) => {
-    if (info.in_app_enabled && shouldEnable(info.state)) {
+  }).debounceTime(0).map((info: any) => {
+    if (info.in_app_enabled && info.state && shouldEnable(info.state)) {
       return EnableWaitlistComponent(sources, O.of(info.state.enable_waitlist)) 
     } else {
       return BlankUndefined()
@@ -194,7 +194,7 @@ function LimitByTypeComponent(sources, props$, in_app_enabled$, component_id) {
 
   const vtree$ = combineObj({
     in_person: in_person.DOM, 
-    registration: registration.DOM,
+    pre_registration: pre_registration.DOM,
     enable_waitlist: enable_waitlist.DOM
   }).debounceTime(0).map((components: any) => {
     return div('.column', [
@@ -204,7 +204,7 @@ function LimitByTypeComponent(sources, props$, in_app_enabled$, component_id) {
       ]),
       div('.row', [
         span('.sub-sub-heading.item.flex.align-center', ['Pre-registration']),
-        components.registration
+        components.pre_registration
       ]),
       components.enable_waitlist
     ])
@@ -305,7 +305,7 @@ function getLimitByTypeDefault() {
       type: opts.LIMIT,
       data: 5 
     },
-    registration: {
+    pre_registration: {
       type: opts.LIMIT,
       data: 10
     },

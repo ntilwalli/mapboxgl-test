@@ -3,6 +3,8 @@ import {div, pre, span, input, button} from '@cycle/dom'
 import {combineObj} from '../../../../utils'
 import {to12HourTime} from '../../../../helpers/time'
 import {PerformerSignupOptions, RelativeTimeOptions, CostOptions, PurchaseTypeOptions, StageTimeOptions, MinutesTypeOptions, PerformerLimitOptions} from '../helpers'
+import moment = require('moment')
+import {RRule} from 'rrule'
 
 function renderListingCard(state) {
   const {session} = state
@@ -14,9 +16,6 @@ function renderListingCard(state) {
 
   ])
 }
-
-
-
 
 function getDondeSummary(donde) {
   if (donde.source === 'foursquare') {
@@ -194,28 +193,174 @@ function getStageTimeSummary(info) {
   }
 }
 
+function getByTypePerformerLimitSummary(info) {
+  switch (info.type) {
+    case PerformerLimitOptions.NO_LIMIT:
+      return 'No limit'
+    case PerformerLimitOptions.LIMIT:
+      return `${info.data} performers`
+    default:
+      return ''
+  }
+}
+
 function getPerformerLimitSummary(info) {
   let out = 'Performer limit: '
-  // switch (info.type) {
-  //   case PerformerLimitOptions.NO_LIMIT:
-  //     out += 'None'
-  //     break
-  //   case PerformerLimitOptions.LIMIT:
-  //     out += info.data
-  //     break
-  //   default:
-  //     out += getMinutesSummary(info.data.minutes) + ' or ' + getSongsSummary(info.data.songs)
-  // }
+  switch (info.type) {
+    case PerformerLimitOptions.NO_LIMIT:
+      out += 'None'
+      break
+    case PerformerLimitOptions.LIMIT:
+      out += `${info.data.limit}${info.data.enable_waitlist ? ' + waitlist' : ''}`
+      break
+    default:
+      const {in_person, pre_registration, enable_waitlist} = info.data
+      out += `\n  In-person: ${getByTypePerformerLimitSummary(info.data.in_person)}\n  Pre-registration: ${getByTypePerformerLimitSummary(info.data.pre_registration)}\n`
+      if (enable_waitlist) {
+        out += `  Enable waitlist: True`
+      }
+  }
 
   return out
 }
 
+function getListedHostsSummary(info) {
+  return info.length ? `Host${info.length > 1 ? 's' : ''}: ` + info.map((x, index) => x).join(', ') : ''
+}
+
+function getListedPerformersSummary(info) {
+  return info.length ? `Performer${info.length > 1 ? 's' : ''}: ` + info.map((x, index) => `${x.name}${x.title && x.title.length ? ' (' + x.title + ')': ''}`).join(', ') : ''
+}
+
+function getAudienceCostSummary(info) {
+  if (info.type === CostOptions.FREE) {
+    return `Audience cost: Free`
+  } else {
+    return `Audience cost: ${getCoverChargeSummary(info)}${getPurchaseConjunction(info)}${getMinimumPurchaseSummary(info)}`
+  }
+}
+
+function getSingleSummary(info) {
+  const {begins, ends} = info
+  const b = begins ? `Begins: ${begins.format('LLLL')}`: ''
+  const e = ends ? `\nEnds: ${ends.format('LLLL')}` : ''
+
+  return b + e
+}
+
+function getPositionString(info) {
+  switch (info) {
+    case 1:
+      return '1st'
+    case 2:
+      return '2nd'
+    case 3:
+      return '3rd'
+    case 4:
+      return '4th'
+    case -1:
+      return 'last'
+  }
+}
+
+function getSetPosSummary(bysetpos) {
+  if (bysetpos) {
+    const length = bysetpos.length
+    if (length > 1) {
+      return bysetpos.slice(0, length - 1).map(getPositionString).join(', ') + 'and ' + getPositionString(bysetpos[length -1])
+    } else if (length === 1) {
+      const val = getPositionString(bysetpos[length -1])
+      return val.substring(0, 1).toUpperCase() + val.substring(1) 
+    }
+  }
+
+  return ''
+}
+
+const toCamelCase = val => val.substring(0, 1).toUpperCase() + val.substring(1) 
+
+function getByWeekdaySummary(byweekday) {
+  if (byweekday) {
+    const length = byweekday.length
+    if (length > 1) {
+      return byweekday.slice(0, length - 1).map(toCamelCase).join('s, ') + 'and ' + toCamelCase(byweekday[length - 1])
+    } else if (length === 1) {
+      const val = byweekday[length - 1]
+      return toCamelCase(val)
+    }
+  }
+
+  return ''
+}
+
+function getFromTo(dtstart, until) {
+  const f = dtstart ? `from ${dtstart.format('LLL')}`: ''
+  const t = until ? ` to ${until.format('LLL')}` : ''
+
+  return f + t
+}
+
+
+function getRRuleSummary(rrule) {
+  const {freq, byweekday, bysetpos, dtstart, until} = rrule
+  const from_to = (dtstart || until) ? ', ' + getFromTo(dtstart, until) : ''
+  switch (freq) {
+    case 'weekly':
+      return getByWeekdaySummary(byweekday) + 's, weekly' + from_to
+    case 'monthly':
+      return getSetPosSummary(bysetpos) + getByWeekdaySummary(byweekday) + ' of the month' + from_to
+    default:
+      return ''
+  }
+}
+
+function getRecurringSummary(info) {
+  const {rrule, rdate, exdate} = info
+  let out = ''
+  if (rrule) {
+    out += 'Recurrence rule: ' + getRRuleSummary(rrule)
+  }
+
+  if (rdate.length) {
+    if (rrule) {
+      out += `\nAdditional date${rdate.length > 1 ? 's' : ''}: `
+    } else {
+      out += `Date${rdate.length > 1 ? 's' : ''}: `
+    }
+
+    out += rdate.map(x => x.format('LLLL')).join(', ') + '\n'
+   
+  } 
+
+  if (exdate.length) {
+    if (rrule) {
+      out += `\nExcluding date${exdate.length > 1 ? 's' : ''}: `
+    }
+
+    out += exdate.map(x => x.format('LLLL')).join(', ') + '\n'
+  } 
+
+  return out
+}
+
+function getCuandoSummary(type, cuando) {
+  switch (type) {
+    case 'single':
+      return getSingleSummary(cuando)
+    case 'recurring':
+      return getRecurringSummary(cuando)
+    default: 
+      return ''
+  }
+}
 
 function renderSummary(state) {
   const {session} = state
   const {listing} = session
   const {type, meta, donde, cuando, event_types, categories} = listing
-  const {title, description, performer_signup, check_in, performer_cost, stage_time} = meta
+  const {
+    title, description, performer_signup, check_in, performer_cost, 
+    stage_time, performer_limit, listed_hosts, listed_performers, audience_cost} = meta
 
   return div(`.column.listing-summary`, [
     pre([
@@ -225,10 +370,15 @@ Type: ${type}\n\
 Event Types: ${event_types.join(', ')}\n\
 Search Categories: ${categories.join(', ')}\n\
 ${getDondeSummary(donde)}\n\
+${getCuandoSummary(type, cuando)}\
 ${event_types.some(x => x === 'open-mic') ? getPerformerSignupSummary(performer_signup) : ''}\
 ${getCheckinSummary(check_in)}\
-${event_types.some(x => x === 'open-mic') ? getPerformerCostSummary(performer_cost) : ''}
-${event_types.some(x => x === 'open-mic') ? getStageTimeSummary(stage_time) : ''}
+${event_types.some(x => x === 'open-mic') ? getPerformerCostSummary(performer_cost) : ''}\n\
+${event_types.some(x => x === 'open-mic') ? getStageTimeSummary(stage_time) : ''}\n\
+${event_types.some(x => x === 'open-mic') ? getPerformerLimitSummary(performer_limit) : ''}\
+${getListedHostsSummary(listed_hosts)}\
+${event_types.some(x => x === 'show') ? getListedPerformersSummary(listed_performers) : ''}\n\
+${event_types.some(x => x === 'show') ? getAudienceCostSummary(audience_cost) : ''}\n\
 `
     ])
   ])

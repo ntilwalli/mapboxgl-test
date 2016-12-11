@@ -11,7 +11,7 @@ import StageTimeRound from './stageTimeRound/main'
 import PerformerLimit from './performerLimit/main'
 import PersonName from './personName/main'
 import PersonNameTitle from './personNameTitle/main'
-import {getSessionStream, EventTypeToProperties} from '../helpers'
+import {getSessionStream, EventTypeToProperties, CostOptions} from '../helpers'
 import {NotesInput} from './helpers'
 import {combineObj, createProxy, traceStartStop} from '../../../../utils'
 import {getCollectionDefault as getStageTimeDefault} from './stageTimeRound/model'
@@ -103,7 +103,14 @@ function toComponent(type, meta, session$, sources, inputs, authorization) {
       })
       break
     case 'audience_cost':
-      component = (sources, inputs) => isolate(Cost)(sources, {...inputs, heading_text: 'Audience cost'})
+      const options = [
+        CostOptions.FREE,
+        CostOptions.COVER,
+        CostOptions.MINIMUM_PURCHASE,
+        CostOptions.COVER_AND_MINIMUM_PURCHASE
+      ]
+      
+      component = (sources, inputs) => isolate(Cost)(sources, {...inputs, options, heading_text: 'Audience cost'})
       break
     default:
       throw new Error(`Invalid property component type: ${type}`)
