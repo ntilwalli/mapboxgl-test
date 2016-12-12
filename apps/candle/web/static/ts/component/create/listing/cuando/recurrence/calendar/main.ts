@@ -4,8 +4,7 @@ import isolate from '@cycle/isolate'
 import Immutable = require('immutable')
 import moment = require('moment')
 import {combineObj} from '../../../../../../utils'
-import {RRule, RRuleSet} from 'rrule'
-import {getActualRRule} from '../helpers'
+import {recurrenceToRRuleSet} from '../../../helpers'
 import MonthCalendar from '../../../../../../library/monthCalendar'
 
 function intent(sources) {
@@ -47,31 +46,6 @@ function reducers(actions, inputs) {
   })
 
   return O.merge(cuando_r, change_month_r)
-}
-
-function recurrenceToRRuleSet(cuando) {
-  const {rrule, rdate, exdate} = cuando
-  const rruleset = new RRuleSet()
-  //console.log(`rrule`, rrule)
-  if (rrule) {
-    const the_rule = getActualRRule(rrule)
-    rruleset.rrule(the_rule)
-  }
-
-  if (rdate.length) {
-    rdate.forEach(x => {
-      return rruleset.rdate(x.toDate())
-    })
-  } 
-
-  if (exdate.length) {
-    exdate.forEach(x => {
-      return rruleset.exdate(x.toDate())
-    })
-  }
-
-  //console.log(`rruleset`, JSON.stringify(rruleset))
-  return rruleset
 }
 
 function model(actions, inputs) {

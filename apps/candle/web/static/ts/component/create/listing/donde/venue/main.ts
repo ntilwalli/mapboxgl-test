@@ -85,7 +85,7 @@ function mapview(state$) {
 
 
     if (venue) {
-      const {type, source, data, lng_lat, info} = venue
+      const {type, source, data, lng_lat} = venue
       const anchorId = `addSelectVenueMapAnchor`
 
       const descriptor = {

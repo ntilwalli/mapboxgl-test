@@ -312,7 +312,7 @@ const numberInputProps = O.of({
 })
 
 export function NumberInputComponent(sources, initialText$, errorMessage) {
-  const out = TextInput(sources, {
+  const out = isolate(TextInput)(sources, {
     validator: createNaturalNumberValidator(errorMessage),
     props$: numberInputProps,
     initialText$
@@ -345,7 +345,7 @@ const floatInputProps = O.of({
 })
 
 export function FloatInputComponent(sources, initialText$, errorMessage) {
-  const out = TextInput(sources, {
+  const out = isolate(TextInput)(sources, {
     validator: createFloatValidator(errorMessage),
     props$: numberInputProps,
     initialText$
@@ -380,7 +380,7 @@ const nameInputProps = O.of({
 })
 
 export function NameInputComponent(sources, initialText$, errorMessage) {
-  const out = TextInput(sources, {
+  const out = isolate(TextInput)(sources, {
     validator: createTextValidator(errorMessage),
     props$: nameInputProps,
     initialText$
@@ -391,7 +391,7 @@ export function NameInputComponent(sources, initialText$, errorMessage) {
 }
 
 export function TextInputComponent(sources, initialText$, errorMessage, props) {
-  const out = TextInput(sources, {
+  const out = isolate(TextInput)(sources, {
     validator: createTextValidator(errorMessage, props.emptyIsError),
     props$: O.of(props),
     initialText$

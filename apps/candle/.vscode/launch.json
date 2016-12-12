@@ -6,8 +6,9 @@
             "type": "chrome",
             "request": "launch",
             "url": "http://localhost:4000",
-            "webRoot": "${workspaceRoot}/priv/static",
-            "sourceMaps": true
+            "webRoot": "${workspaceRoot}",
+            "sourceMaps": true,
+            "diagnosticLogging": true
         }
     ]
 }

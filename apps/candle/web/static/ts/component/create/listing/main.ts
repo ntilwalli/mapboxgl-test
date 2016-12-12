@@ -147,7 +147,7 @@ function reducers(actions, inputs: any) {
   })
 
   const session_r = inputs.session$.map(session => state => {
-    console.log(`updated workflow session`, session)
+    //console.log(`updated workflow session`, session)
     return state.set(`session`, session)
   })
 

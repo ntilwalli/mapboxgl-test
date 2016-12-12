@@ -1,8 +1,14 @@
 import moment = require('moment')
+import {RRule, RRuleSet} from 'rrule'
 
 export const EventTypeToProperties = {
   'open-mic': ['performer_signup', 'check_in', 'performer_cost', 'stage_time', 'performer_limit', 'listed_hosts', 'notes', 'contact_info'],
   'show': ['listed_hosts', 'listed_performers', 'check_in', 'audience_cost', 'contact_info']
+}
+
+export const EventTypes = {
+  OPEN_MIC: 'open-mic',
+  SHOW: 'show'
 }
 
 export const PerformerSignupOptions = {
@@ -144,4 +150,77 @@ export function fromCheckbox(ev) {
     value: ev.target.value,
     checked
   }
+}
+
+
+function dayToRRuleDay(day) {
+  switch (day) {
+    case 'monday':
+      return RRule.MO
+    case 'tuesday':
+      return RRule.TU
+    case 'wednesday':
+      return RRule.WE
+    case 'thursday':
+      return RRule.TH
+    case 'friday':
+      return RRule.FR
+    case 'saturday':
+      return RRule.SA
+    case 'sunday':
+      return RRule.SU
+    default:
+      throw new Error(`Invalid day`)
+  }
+}
+
+function freqToRRuleFreq(freq) {
+  switch (freq) {
+    case 'weekly':
+      return RRule.WEEKLY
+    case 'monthly':
+      return RRule.MONTHLY
+    case 'daily':
+      return RRule.DAILY
+    default:
+      throw new Error(`Invalid freq`)
+  }
+}
+
+export function getActualRRule(rrule) {
+  const options = {
+    ...rrule,
+    freq: freqToRRuleFreq(rrule.freq),
+    interval: rrule.interval || 1,
+    byweekday: rrule.byweekday.map(dayToRRuleDay),
+    dtstart: rrule.dtstart.toDate(),
+    until: rrule.until ? rrule.until.clone().endOf('day').toDate() : undefined
+  }
+  //console.log(`rrule options`, options)
+  return new RRule(options)
+}
+
+export function recurrenceToRRuleSet(cuando) {
+  const {rrule, rdate, exdate} = cuando
+  const rruleset = new RRuleSet()
+  //console.log(`rrule`, rrule)
+  if (rrule) {
+    const the_rule = getActualRRule(rrule)
+    rruleset.rrule(the_rule)
+  }
+
+  if (rdate.length) {
+    rdate.forEach(x => {
+      return rruleset.rdate(x.toDate())
+    })
+  } 
+
+  if (exdate.length) {
+    exdate.forEach(x => {
+      return rruleset.exdate(x.toDate())
+    })
+  }
+
+  //console.log(`rruleset`, JSON.stringify(rruleset))
+  return rruleset
 }

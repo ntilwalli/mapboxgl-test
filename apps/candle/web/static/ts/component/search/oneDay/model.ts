@@ -63,7 +63,7 @@ function reducers(actions, inputs) {
 }
 
 function getInitialSearchPosition(settings) {
-  console.log(settings)
+  //console.log(settings)
   const {use_region, default_region} = settings
   if (use_region === "default") {
     return {type: "default", data: default_region.position}

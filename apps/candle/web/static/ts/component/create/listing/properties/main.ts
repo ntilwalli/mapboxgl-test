@@ -133,16 +133,24 @@ function intent(sources) {
 function reducers(actions, inputs) {
   const properties_output_r = inputs.properties_output$.map(message => state => {
     //console.log(`properties message`, message)
-    return state.update('session', session => {
-        session.listing.meta[message.type] = message.data.data
-        return session
-      }).update(`valid_flags`, valid_flags => {
-        valid_flags[message.type] = message.data.valid
-        return valid_flags
-      }).update('errors_map', errors_map => {
-        errors_map[message.type] = message.data.errors
-        return errors_map
-      })
+    const properties = state.get(`properties`)
+    properties[message.type] = message.data
+    const session = state.get(`session`)
+    session.listing.meta[message.type] = message.data.data
+
+    return state.set('properties', properties)
+      .set(`session`, session)
+
+    // return state.update('session', session => {
+    //     session.listing.meta[message.type] = message.data.data
+    //     return session
+    //   }).update(`valid_flags`, valid_flags => {
+    //     valid_flags[message.type] = message.data.valid
+    //     return valid_flags
+    //   }).update('errors_map', errors_map => {
+    //     errors_map[message.type] = message.data.errors
+    //     return errors_map
+    //   })
   })
 
   return O.merge(properties_output_r)
@@ -157,8 +165,7 @@ function model(actions, inputs) {
     .switchMap((info: any) => {
       const init = {
         session: info.session,
-        valid_flags: {},
-        errors_map: {}
+        properties: {}
       }
 
       return reducer$
@@ -167,10 +174,10 @@ function model(actions, inputs) {
     })
     .map((x: any) => x.toJS())
     .debounceTime(0)  // ensure all valid flags have been collected before calculating validity
-    .map((x: any) => {
+    .map((state: any) => {
       return {
-        ...x,
-        valid: Object.keys(x.valid_flags).every(prop => x.valid_flags[prop])
+        ...state,
+        valid: Object.keys(state.properties).every(prop => state.properties[prop].valid)
       }
     })
     //.do(x => console.log('properties state', x))
@@ -183,9 +190,9 @@ function view(state$, children$) {
     children$
   }).map((info: any) => {
     const {state, children} = info
-    const {errors_map} = state
+    const {properties} = state
     const errors = 
-      Object.keys(errors_map).reduce((acc, val) => acc.concat(errors_map[val]), [])
+      Object.keys(properties).reduce((acc, val) => acc.concat(properties[val].errors), [])
 
     return div(`.workflow-step`, [
       errors.length ? div('.errors', errors.map(x => div([x]))) : null,

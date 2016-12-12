@@ -2,7 +2,8 @@ import {Observable as O} from 'rxjs'
 import {div, span, input, textarea} from '@cycle/dom'
 import Immutable = require('immutable')
 import {combineObj} from '../../../../utils'
-import {inflateDates, fromCheckbox} from '../helpers'
+import {EventTypeToProperties, inflateDates, fromCheckbox} from '../helpers'
+import clone = require('clone')
 
 function intent(sources) {
   const {DOM, Router} = sources
@@ -27,7 +28,7 @@ function intent(sources) {
   
   const type$ = DOM.select('.appTypeInput').events('click')
     .map(ev => ev.target.value)
-  const title$ = DOM.select('.appTitleInput').events('input')
+  const name$ = DOM.select('.appNameInput').events('input')
     .map(ev => ev.target.value)
   const description$ = DOM.select('.appDescriptionInput').events('input')
     .map(ev => ev.target.value)
@@ -41,7 +42,7 @@ function intent(sources) {
   return {
     session$,
     type$,
-    title$,
+    name$,
     description$,
     event_type$,
     category$
@@ -63,7 +64,7 @@ function processCheckboxArray(msg, arr) {
 function isValid(session) {
   //console.log(`meta valid`, session)
   const {listing} = session
-  return listing.type && listing.meta.title && listing.meta.description &&
+  return listing.type && listing.meta.name && listing.meta.description &&
     listing.event_types.length && listing.categories.length
 }
 
@@ -78,10 +79,10 @@ function reducers(actions, inputs) {
     })
   })
 
-  const title_r = actions.title$.map(val => state => {
+  const name_r = actions.name$.map(val => state => {
     return state.update('session', session => {
       const {listing} = session
-      listing.meta.title = val
+      listing.meta.name = val
       return session
     })
   })
@@ -94,24 +95,58 @@ function reducers(actions, inputs) {
     })
   })
 
-  const event_types_r = actions.event_type$.map(val => state => {
+  const event_types_r = actions.event_type$.map(msg => state => {
     return state.update('session', session => {
       const {listing} = session
-      listing.event_types = processCheckboxArray(val, listing.event_types)
+      listing.event_types = processCheckboxArray(msg, listing.event_types)
+      
+      // HACK since I don't want to figure out how to use ES6 Sets
+      // This ensures when checboxes are unchecked the 
+      // associated meta properties that may have been set for
+      // the associated event type no longer exist in the meta Object
+      if (!msg.checked) {
+        const type = msg.value
+        const meta = listing.meta
+        if (meta) {
+          const properties = EventTypeToProperties[type]
+          const out = {}
+          const current_properties = listing.event_types
+            .map(x => EventTypeToProperties[x])
+            .reduce((acc, val) => acc.concat(val), [])
+
+          // delete all unchecked props
+          Object.keys(meta).forEach(prop => {
+            if (meta.hasOwnProperty(prop) && 
+                properties.every(x => x !== prop)) {
+              out[prop] = meta[prop]
+            }
+          })
+
+          // add back all props assocated with checked event_types that may have been removed
+          current_properties.forEach(x => {
+            if (meta.hasOwnProperty(x)) {
+              out[x] = meta[x]
+            }
+          })
+
+          session.listing.meta = out
+        }
+      }
+
       return session
     })
   })
 
-  const category_r = actions.category$.map(val => state => {
+  const category_r = actions.category$.map(msg => state => {
     return state.update('session', session => {
       //console.log(`category`, val)
       const {listing} = session
-      listing.categories = processCheckboxArray(val, listing.categories)
+      listing.categories = processCheckboxArray(msg, listing.categories)
       return session
     })
   })
 
-  return O.merge(type_r, title_r, description_r, event_types_r, category_r)
+  return O.merge(type_r, name_r, description_r, event_types_r, category_r)
 }
 
 function model(actions, inputs) {
@@ -148,7 +183,7 @@ function view(state$, components) {
       const {session} = state
       const {listing} = session
       const {type, meta, event_types, categories} = listing
-      const {title, description} = meta
+      const {name, description} = meta
 
       return div(`.workflow-step`, [
         div(`.heading`, []),
@@ -167,9 +202,9 @@ function view(state$, components) {
             ])
           ]),
           div(`.column.margin-bottom`, [
-            div(`.sub-heading`, ['Title']),
+            div(`.sub-heading`, ['Name']),
             div(`.input`, [
-              input(`.appTitleInput.full-width`, {attrs: {type: 'text', value: title || ''}}, [])
+              input(`.appNameInput.full-width`, {attrs: {type: 'text', value: name || ''}}, [])
             ])
           ]),
           div(`.column.margin-bottom`, [

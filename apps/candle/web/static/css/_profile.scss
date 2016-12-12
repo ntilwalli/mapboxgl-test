@@ -1,0 +1,174 @@
+@import './variables';
+.flex-grid {
+  .row {
+    display: flex;
+    flex-flow: row wrap;
+    margin-bottom: .2rem;
+  }
+
+  .column {
+    display: flex;
+    flex-flow: column wrap;
+  }
+
+  .row-no-wrap {
+    display: flex;
+    flex-flow: row nowrap;
+  }
+
+  .column-no-wrap {
+    display: flex;
+    flex-flow: column no-wrap;
+  }
+
+  .align-top {
+    align-items: top;
+  }
+
+  .align-center {
+    align-items: top;
+  }
+
+  .align-bottom {
+    align-items: top;
+  }
+
+  .justify-center {
+    justify-content: center;
+  }
+
+  .justify-end {
+    justify-content: flex-end;
+  }
+
+  .justify-between {
+    justify-content: space-between;
+  }
+
+  .justify-around {
+    justify-content: space-around;
+  }
+
+  .margin-left {
+    margin-left: .5em
+  }
+
+  .margin-right {
+    margin-right: .5em
+  }
+
+  .text-item {
+    display: flex;
+    align-items: center;
+  }
+}
+
+.listing-card {
+  .name {
+    font-weight: bold;
+    margin-bottom: .3rem;
+  }
+
+  .cost {
+    margin-right: .5rem;
+  }
+
+  .heading {
+    font-style: italic;
+  }
+
+  .bold {
+    font-weight: bold;
+  }
+
+  .underline {
+    text-decoration: underline;
+  }
+
+  .begins, .began, .ends, .ended {
+    margin-right: .5rem;
+  }
+
+  .begins:after {
+    content: 'Begins:'
+  }
+
+  .began:after {
+    content: 'Began:'
+  }
+
+  .ends:after {
+    content: 'Ends:'
+  }
+
+  .ended:after {
+    content: 'Ended:'
+  }
+
+  .past {
+    font-style: italic;
+    color: gray;
+  }
+
+  .ending-soon {
+    color: red;
+  }
+
+  .in-progress {
+    color: green;
+  }
+
+  .starting-soon {
+    color: $crayola-orange
+  } 
+
+  .future {
+    color: black
+  }
+
+  .xs-margin-bottom {
+    margin-bottom: .2em;
+  }
+
+  .map {
+    position: relative;
+  }
+}
+
+.listing-summary {
+  pre {
+    white-space: pre-wrap;
+    font-size: .9em;
+  }
+}
+
+.row {
+  .heading {
+    margin-right: .5em;
+  }
+}
+
+.outline-button {
+  background-color: white;
+  color: green;
+  border: none;
+  border: 1px solid green;
+}
+
+.outline-button:hover {
+  background-color: green;
+  color: white;
+  border-color: green;
+  border-radius: 5px;
+}
+
+.outline-button:active {
+  outline: none;
+}
+
+.large-button {
+  width: 6em;
+  height: 1.5em;
+  font-size: 1.5em;
+  border-radius: .1em
+}

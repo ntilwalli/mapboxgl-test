@@ -1,6 +1,7 @@
 import {Observable as O} from 'rxjs'
 import Immutable = require('immutable')
 import {combineObj} from '../../../../utils'
+import mapview from './mapview'
 import view from './view'
 import {inflateDates, fromCheckbox} from '../helpers'
 
@@ -32,7 +33,7 @@ function model(actions, inputs) {
       //console.log('meta init', info)
       const session = info.session
       const init = {
-        session
+        session 
       }
 
       return reducer$
@@ -51,9 +52,11 @@ function model(actions, inputs) {
 export function main(sources, inputs) {
   const actions = intent(sources)
   const state$ = model(actions, inputs)
+  const mapvtree$ = mapview(state$)
   const vtree$ = view(state$, {})
   return {
     DOM: vtree$,
+    MapJSON: mapvtree$,
     output$: state$
   }
 }

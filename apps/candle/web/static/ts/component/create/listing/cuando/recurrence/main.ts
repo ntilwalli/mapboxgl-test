@@ -4,7 +4,7 @@ import Immutable = require('immutable')
 import {combineObj, createProxy, traceStartStop} from '../../../../../utils'
 import moment = require('moment')
 import {RRule} from 'rrule'
-import {getActualRRule} from './helpers'
+import {getActualRRule} from '../../helpers'
 import {getDatetime} from '../../../../../helpers/time'
 import clone = require('clone')
 import {inflateDates} from '../../helpers'
