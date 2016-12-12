@@ -15,9 +15,9 @@ const compareBegins = (a, b) => {
 
 function renderResult(result) {
   const {listing} = result
-  const {name, cuando, donde, meta} = listing
+  const {cuando, donde, meta} = listing
   const {begins, ends} = cuando
-  const {cost, sign_up, stage_time, performer_limit} = meta
+  const {name, cost, sign_up, stage_time, performer_limit} = meta
   return div(`.appResult.result-container`, {props: {searchResult: result}}, [
     div(`.result`, [
       div(`.left`, [

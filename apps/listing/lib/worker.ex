@@ -225,12 +225,13 @@ defmodule Listing.Worker do
               begins = cuando.begins
               sls_row = %SLSearch{listing_id: listing_id, begins: begins, geom: geom}
               search_result = Repo.insert(sls_row)
-              categories = listing.categories
+
+              categories = listing.meta["categories"]
               cat_results = Enum.map(categories, fn x -> 
                   cat_row = %SLCategories{category: x, listing_id: listing_id}
                   Repo.insert(cat_row)
                 end)
-              event_types = listing.event_types
+              event_types = listing.meta["event_types"]
               type_results = Enum.map(event_types, fn x -> 
                   type_row = %SLEventTypes{type: x, listing_id: listing_id}
                   Repo.insert(type_row)

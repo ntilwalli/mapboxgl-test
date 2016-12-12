@@ -151,15 +151,11 @@ defmodule Scraper.BadslavaScraper do
 
   defp convert(l) do
     #IO.inspect l
-    {when_info, categories, meta} = extract_meta(l)
-    #IO.inspect categories
+    {when_info, meta} = extract_meta(l)
     out = %{
       type: "recurring",
       visibility: "public",
       release: "posted",
-      name: l["name"],
-      event_types: ["show", "open_mic"],
-      categories: categories,
       donde: %{
         type: "badslava",
         name: l["venue_name"],

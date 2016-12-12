@@ -164,9 +164,9 @@ function renderButtons(state) {
 function renderSingleListing(state) {
   const {authorization, listing, checked_in, settings} = state
 
-  const {name, cuando, donde, meta} = listing
+  const {cuando, donde, meta} = listing
   const {begins, ends} = cuando
-  const {hosts, contact, cost, sign_up, stage_time, performer_limit, note} = meta
+  const {name, hosts, contact, cost, sign_up, stage_time, performer_limit, note} = meta
   return div(`.info`, [
     div(`.top`, [
       div(`.left`, [

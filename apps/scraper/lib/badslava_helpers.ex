@@ -60,6 +60,9 @@ defmodule Scraper.BadslavaScraper.Helpers do
 
     meta_info = %{
       type: "badslava",
+      name: listing["name"],
+      categories: categories,
+      event_types: ["open_mic"], 
       sign_up: sign_up_info,
       stage_time: stage_time_info,
       check_in: check_in_info,
@@ -70,7 +73,7 @@ defmodule Scraper.BadslavaScraper.Helpers do
       note: note
     }
 
-    {when_info, categories, meta_info}
+    {when_info, meta_info}
   end
 
   defp day_diff({start_day, start_time}, {prior_day, prior_time}) do

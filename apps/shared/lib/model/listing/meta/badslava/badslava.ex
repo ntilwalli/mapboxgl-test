@@ -5,6 +5,9 @@ defmodule Shared.Model.Listing.Meta.Badslava do
   @primary_key false
   embedded_schema do
     field :type, :string
+    field :name, :string
+    field :event_types, {:array, :string}
+    field :categories, {:array, :string}
     field :hosts, {:array, :string}
     field :note, :string
     field :stage_time, {:array, :map}
@@ -16,7 +19,7 @@ defmodule Shared.Model.Listing.Meta.Badslava do
   end
 
   @allowed_fields [
-    :type, :hosts, :note, :stage_time
+    :type, :name, :event_types, :categories, :hosts, :note, :stage_time
   ]
 
   @required_fields [:type]

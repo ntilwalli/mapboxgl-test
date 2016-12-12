@@ -22,9 +22,6 @@ defmodule Shared.Listing do
     field :handle, :string
     field :release, :string
     field :visibility, :string
-    field :name, :string
-    field :event_types, {:array, :string}
-    field :categories, {:array, :string}
     field :cuando, :map
     field :donde, :map
     field :meta, :map
@@ -45,13 +42,13 @@ defmodule Shared.Listing do
   end
 
   @allowed_fields [
-    :id, :parent_id, :user_id, :type, :release, :visibility, :handle, :source,
-    :name, :event_types, :categories,
-    :cuando, :donde, :meta, :settings
+    :id, :parent_id, :user_id, :type, :release, :visibility, 
+    :cuando, :donde, :meta, :settings,
+    :handle, :source,
   ]
   
   @required_fields [
-    :user_id, :type, :visibility, :release, :cuando, :donde, :meta, :settings, :event_types, :categories
+    :user_id, :type, :visibility, :release, :cuando, :donde, :meta, :settings
   ]
 
   def changeset(model, params \\ :empty) do
