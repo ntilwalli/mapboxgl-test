@@ -1,7 +1,7 @@
 import {Observable as O} from 'rxjs'
 import {div, span, button, hr} from '@cycle/dom'
 import Immutable = require('immutable')
-import {deflateDates} from './helpers'
+import {ListingTypes, deflateDates} from './helpers'
 
 import {
   combineObj, 
@@ -197,7 +197,7 @@ function getStepHeading(state) {
     case 'donde':
       return 'Step 2/5: Set the venue'
     case 'cuando':
-      if (type === 'recurring') {
+      if (type === ListingTypes.RECURRING) {
         return 'Step 3/5: Set the recurrence'
       } else {
         return 'Step 3/5: Select the date and time'
