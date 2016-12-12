@@ -1,5 +1,9 @@
 @import './variables';
 .flex-grid {
+  .flex {
+    display: flex;
+  }
+
   .row {
     display: flex;
     flex-flow: row wrap;
@@ -11,9 +15,24 @@
     flex-flow: column wrap;
   }
 
+  .section {
+    margin-bottom: 1em;
+    & > .section-heading {
+      text-decoration: underline;
+      font-weight: bold;
+      margin-bottom: .5em;
+    }
+  }
+
   .row-no-wrap {
     display: flex;
     flex-flow: row nowrap;
+  }
+
+  .row, .row-no-wrap {
+    & > .heading {
+      margin-right: .5em;
+    }
   }
 
   .column-no-wrap {
@@ -26,11 +45,11 @@
   }
 
   .align-center {
-    align-items: top;
+    align-items: center;
   }
 
   .align-bottom {
-    align-items: top;
+    align-items: bottom;
   }
 
   .justify-center {
@@ -75,14 +94,6 @@
 
   .heading {
     font-style: italic;
-  }
-
-  .bold {
-    font-weight: bold;
-  }
-
-  .underline {
-    text-decoration: underline;
   }
 
   .begins, .began, .ends, .ended {
@@ -135,40 +146,32 @@
   }
 }
 
-.listing-summary {
-  pre {
-    white-space: pre-wrap;
-    font-size: .9em;
-  }
-}
-
-.row {
-  .heading {
-    margin-right: .5em;
-  }
-}
-
 .outline-button {
   background-color: white;
-  color: green;
   border: none;
-  border: 1px solid green;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 3px;
+  &.green {
+    color: green;
+    border-color: green;
+
+    &:hover {
+      color: white;
+      background-color: green
+    }
+  }
 }
 
 .outline-button:hover {
-  background-color: green;
   color: white;
-  border-color: green;
-  border-radius: 5px;
 }
 
 .outline-button:active {
   outline: none;
 }
 
-.large-button {
+.medium-button {
+  height: 2em;
   width: 6em;
-  height: 1.5em;
-  font-size: 1.5em;
-  border-radius: .1em
 }

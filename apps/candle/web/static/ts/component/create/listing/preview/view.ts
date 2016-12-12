@@ -20,8 +20,7 @@ function getDondeSummary(donde) {
 function getInPersonSummary(info) {
   return `  In-person: ${info.styles.join(',')}\n\
     Begins: ${getRelativeTimeInfo(info.begins)}\n\
-    Ends: ${getRelativeTimeInfo(info.ends)}\n\
-`
+    Ends: ${getRelativeTimeInfo(info.ends)}`
 }
 
 function getPreregistrationData(info) {
@@ -60,8 +59,7 @@ function getPreRegistrationSummary(info) {
   return `  Pre-registration: ${info.type === 'app' ? 'In-' : 'By '}${info.type}\
   ${getPreregistrationData(info)}\n\
     Begins: ${getRelativeTimeInfo(info.begins)}\n\
-    Ends: ${getRelativeTimeInfo(info.ends)}\n\
-`
+    Ends: ${getRelativeTimeInfo(info.ends)}`
 }
 
 function getPerformerSignupSummary(info) {
@@ -92,7 +90,7 @@ function getCheckinSummary(info) {
   return `Check-in:\n\
   Allowed radius: ${info.radius}\n\
   Begins: ${getRelativeTimeInfo(info.begins)}\n\
-  Ends: ${getRelativeTimeInfo(info.ends)}\n`
+  Ends: ${getRelativeTimeInfo(info.ends)}`
 }
 
 function getCoverChargeSummary(info) {
@@ -211,9 +209,9 @@ function getPerformerLimitSummary(info) {
       break
     default:
       const {in_person, pre_registration, enable_waitlist} = info.data
-      out += `\n  In-person: ${getByTypePerformerLimitSummary(info.data.in_person)}\n  Pre-registration: ${getByTypePerformerLimitSummary(info.data.pre_registration)}\n`
+      out += `\n  In-person: ${getByTypePerformerLimitSummary(info.data.in_person)}\n  Pre-registration: ${getByTypePerformerLimitSummary(info.data.pre_registration)}`
       if (enable_waitlist) {
-        out += `  Enable waitlist: True`
+        out += `\n  Enable waitlist: true`
       }
   }
 
@@ -404,22 +402,37 @@ function renderSummary(state) {
 
   return div(`.column.listing-summary`, [
     pre([
-      `
-Event types: ${event_types.join(', ')}\n\n\
-Search categories: ${categories.join(', ')}\n\n\
-${event_types.some(x => x === 'open-mic') ? getPerformerSignupSummary(performer_signup) + '\n' : '\n\n'}\
-${getCheckinSummary(check_in)}\n\
-${event_types.some(x => x === 'open-mic') ? getPerformerCostSummary(performer_cost) : ''}\n\n\
-${event_types.some(x => x === 'open-mic') ? getStageTimeSummary(stage_time) : ''}\n\n\
-${event_types.some(x => x === 'open-mic') ? getPerformerLimitSummary(performer_limit) : ''}\n\
-${getListedHostsSummary(listed_hosts)}\
-${event_types.some(x => x === 'show') ? getListedPerformersSummary(listed_performers) : ''}\n\n\
-${event_types.some(x => x === 'show') ? getAudienceCostSummary(audience_cost) : ''}\n\n\
-${getContactInfoSummary(contact_info)}\
+      `\
+${getCheckinSummary(check_in)}\
+${event_types.some(x => x === 'open-mic') ? '\n\n' + getPerformerSignupSummary(performer_signup) : ''}\
+${event_types.some(x => x === 'open-mic') ? '\n\n' + getStageTimeSummary(stage_time) : ''}\
+${event_types.some(x => x === 'open-mic') ? '\n\n' + getPerformerLimitSummary(performer_limit) : ''}\
 `
     ])
   ])
 }
+
+
+// function renderSummary(state) {
+//   const {session} = state
+//   const {listing} = session
+//   const {type, meta, donde, cuando, event_types, categories} = listing
+//   const {
+//     name, description, performer_signup, check_in, performer_cost, 
+//     stage_time, performer_limit, listed_hosts, listed_performers, 
+//     audience_cost, contact_info} = meta
+
+//   return div(`.column.listing-summary`, [
+//     pre([
+//       `${getCheckinSummary(check_in)}\
+// ${event_types.some(x => x === 'open-mic') ? '\n\n' + getPerformerSignupSummary(performer_signup) : ''}\
+// ${event_types.some(x => x === 'open-mic') ? '\n\n' + getPerformerCostSummary(performer_cost) : ''}\
+// ${event_types.some(x => x === 'open-mic') ? '\n\n' + getStageTimeSummary(stage_time) : ''}\
+// ${event_types.some(x => x === 'open-mic') ? '\n\n' + getPerformerLimitSummary(performer_limit) : ''}\
+// ${event_types.some(x => x === 'show') ? '\n\n' + getAudienceCostSummary(audience_cost) : ''}`
+//     ])
+//   ])
+// }
 
 
 // function renderSummary(state) {
@@ -896,6 +909,27 @@ function renderListingCard(state) {
 
 }
 
+function renderButtons(state) {
+  return div('.column', [
+    div(`.section.row-no-wrap.align-center.justify-between`, [
+      div(`.description-text`, [`Staging a listing allows you to invite/confirm performers before going live.  Would you like to stage this listing?`]),
+      div('.flex.justify-center', [
+        button(`.appStageButton.outline-button.green.medium-button`, [
+          div('.flex.justify-center.align-center', [`Stage`])
+        ])
+      ])
+    ]),
+    div(`.section.row-no-wrap.align-center.justify-center.bold`, ['Or']),
+    div(`.section.row-no-wrap.align-center.justify-between`, [
+      div(`.description-text`, [`Posting this listing will allow you to distribute links to the associated event(s).  It also allows you to send out invitations and makes public events discoverable on search. Would you like to post this event?`]),
+      div('.flex.justify-center', [
+        button(`.appStageButton.outline-button.green.medium-button`, [
+          div('.flex.justify-center.align-center', [`Post`])
+        ])
+      ])
+    ])
+  ])
+}
 
 
 export default function view(state$, components) {
@@ -909,14 +943,17 @@ export default function view(state$, components) {
       return div(`.flex-grid.preview`, [
         //div(`.heading`, ['Preview listing']),
         div(`.body`, [
-          div('.column', [
+          div('.column.section', [
+            div('.section-heading.text-item', ['Listing preview']),
             renderListingCard(state),          
           ]),
-          renderSummary(state),
-          div('.row.flex.justify-center', [
-            button('.appPostButton.outline-button.large-button.medium', [
-              div('.flex.align-center', ['Post'])
-            ])
+          div('.column.section', [
+            div('.section-heading.text-item', ['Interaction properties']),
+            renderSummary(state)    
+          ]),
+          div('.column.section', [
+            div('.section-heading.text-item', ['Stage or post']),
+            renderButtons(state)  
           ])
         ])
       ])

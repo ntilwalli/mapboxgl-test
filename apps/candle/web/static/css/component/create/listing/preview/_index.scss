@@ -1,3 +1,31 @@
+.preview {
+  padding-bottom: 8em;
+  .donde, .description, .notes {
+    margin-top: .3em;
+    margin-bottom: .3rem;
+  }
+
+  .description, .notes {
+    width: 100%;
+  }
+
+  .description-text {
+    margin-right: .5rem;
+  }
+
+  .sub-heading {
+    margin-bottom: .5rem; 
+  }
+
+  .bold {
+    font-weight: bold;
+  }
+
+  .underline {
+    text-decoration: underline;
+  }
+}
+
 .listing-card {
   border: 1px solid black;
   border-radius: .5em;
@@ -22,18 +50,10 @@
   }
 }
 
-.meta {
-  padding: .5rem;
-}
-
-.preview {
-  padding-bottom: 4em;
-  .donde, .description, .notes {
-    margin-top: .3em;
-    margin-bottom: .3rem;
-  }
-
-  .description, .notes {
-    width: 100%;
+.listing-summary {
+  pre {
+    margin: 0;
+    white-space: pre-wrap;
+    font-size: .9em;
   }
 }
