@@ -69,7 +69,7 @@ function getTextFromOption(opt) {
     case PerformerSignupOptions.IN_PERSON_AND_PRE_REGISTRATION:
       return 'In-person + pre-registration'
     default:
-      return (opt.substring(0, 1).toUpperCase() + opt.substring(1)).replace(/-/g, ' ').replace(/and/g, '+')
+      return (opt.substring(0, 1).toUpperCase() + opt.substring(1)).replace(/_/g, ' ').replace(/and/g, '+')
   }
 
 }
@@ -114,7 +114,7 @@ export function CostTypeComboBox(sources, options, props$, styleClass?) {
     return div(`.select-container`, [
       select(`.appCostTypeSelect`, options.map(opt => {
         return option({attrs: {value: opt, selected: state === opt}}, [
-          (opt.substring(0, 1).toUpperCase() + opt.substring(1)).replace(/-/g, ' ').replace(/and/g, '+')
+          (opt.substring(0, 1).toUpperCase() + opt.substring(1)).replace(/_/g, ' ').replace(/and/g, '+')
         ])
       }))
     ])

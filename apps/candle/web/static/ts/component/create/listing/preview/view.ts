@@ -2,7 +2,7 @@ import {Observable as O} from 'rxjs'
 import {div, a, pre, span, input, button} from '@cycle/dom'
 import {combineObj} from '../../../../utils'
 import {to12HourTime} from '../../../../helpers/time'
-import {EventTypes, PerformerSignupOptions, RelativeTimeOptions, CostOptions, PurchaseTypeOptions, StageTimeOptions, MinutesTypeOptions, PerformerLimitOptions} from '../helpers'
+import {ListingTypes, EventTypes, PerformerSignupOptions, RelativeTimeOptions, CostOptions, PurchaseTypeOptions, StageTimeOptions, MinutesTypeOptions, PerformerLimitOptions} from '../helpers'
 import moment = require('moment')
 import {recurrenceToRRuleSet} from '../helpers'
 import {getVenueName, getVenueAddress, getVenueLngLat} from '../../../../helpers/venue'
@@ -76,7 +76,7 @@ function getPerformerSignupSummary(info) {
       break
     case PerformerSignupOptions.IN_PERSON_AND_PRE_REGISTRATION:
       out += 'In-person and pre-registration\n'
-      out += getInPersonSummary(data.in_person)
+      out += getInPersonSummary(data.in_person) + '\n'
       out += getPreRegistrationSummary(data.pre_registration)
       break
     default:
@@ -183,7 +183,7 @@ function getStageTimeSummary(info) {
   if (info.length === 1) {
     return 'Stage-time: ' + getRoundSummary(info[0])
   } else {
-    return 'Stage-time: \n' + info.map((x, index) => '  Round ' + (index+1) + ': ' + getRoundSummary(info[index]) + '\n').join('')
+    return 'Stage-time: \n' + info.map((x, index) => '  Round ' + (index+1) + ': ' + getRoundSummary(info[index]) + ((index < info.length - 1) ? '\n' : '')).join('')
   }
 }
 
@@ -354,9 +354,9 @@ function getRecurringSummary(info) {
 
 function getCuandoSummary(type, cuando) {
   switch (type) {
-    case 'single':
+    case ListingTypes.SINGLE:
       return getSingleSummary(cuando)
-    case 'recurring':
+    case ListingTypes.RECURRING:
       return getRecurringSummary(cuando)
     default: 
       return ''
@@ -404,68 +404,13 @@ function renderSummary(state) {
     pre([
       `\
 ${getCheckinSummary(check_in)}\
-${event_types.some(x => x === 'open-mic') ? '\n\n' + getPerformerSignupSummary(performer_signup) : ''}\
-${event_types.some(x => x === 'open-mic') ? '\n\n' + getStageTimeSummary(stage_time) : ''}\
-${event_types.some(x => x === 'open-mic') ? '\n\n' + getPerformerLimitSummary(performer_limit) : ''}\
+${event_types.some(x => x === EventTypes.OPEN_MIC) ? '\n\n' + getPerformerSignupSummary(performer_signup) : ''}\
+${event_types.some(x => x === EventTypes.OPEN_MIC) ? '\n\n' + getStageTimeSummary(stage_time) : ''}\
+${event_types.some(x => x === EventTypes.OPEN_MIC) ? '\n\n' + getPerformerLimitSummary(performer_limit) : ''}\
 `
     ])
   ])
 }
-
-
-// function renderSummary(state) {
-//   const {session} = state
-//   const {listing} = session
-//   const {type, meta, donde, cuando, event_types, categories} = listing
-//   const {
-//     name, description, performer_signup, check_in, performer_cost, 
-//     stage_time, performer_limit, listed_hosts, listed_performers, 
-//     audience_cost, contact_info} = meta
-
-//   return div(`.column.listing-summary`, [
-//     pre([
-//       `${getCheckinSummary(check_in)}\
-// ${event_types.some(x => x === 'open-mic') ? '\n\n' + getPerformerSignupSummary(performer_signup) : ''}\
-// ${event_types.some(x => x === 'open-mic') ? '\n\n' + getPerformerCostSummary(performer_cost) : ''}\
-// ${event_types.some(x => x === 'open-mic') ? '\n\n' + getStageTimeSummary(stage_time) : ''}\
-// ${event_types.some(x => x === 'open-mic') ? '\n\n' + getPerformerLimitSummary(performer_limit) : ''}\
-// ${event_types.some(x => x === 'show') ? '\n\n' + getAudienceCostSummary(audience_cost) : ''}`
-//     ])
-//   ])
-// }
-
-
-// function renderSummary(state) {
-//   const {session} = state
-//   const {listing} = session
-//   const {type, meta, donde, cuando, event_types, categories} = listing
-//   const {
-//     name, description, performer_signup, check_in, performer_cost, 
-//     stage_time, performer_limit, listed_hosts, listed_performers, 
-//     audience_cost, contact_info} = meta
-
-//   return div(`.column.listing-summary`, [
-//     pre([
-//       `Name: ${name}\n\
-// Description: ${description}\n\
-// Type: ${type}\n\
-// Event types: ${event_types.join(', ')}\n\
-// Search categories: ${categories.join(', ')}\n\
-// ${getDondeSummary(donde)}\n\
-// ${getCuandoSummary(type, cuando)}\n\
-// ${event_types.some(x => x === 'open-mic') ? getPerformerSignupSummary(performer_signup) : ''}\
-// ${getCheckinSummary(check_in)}\
-// ${event_types.some(x => x === 'open-mic') ? getPerformerCostSummary(performer_cost) : ''}\n\
-// ${event_types.some(x => x === 'open-mic') ? getStageTimeSummary(stage_time) : ''}\n\
-// ${event_types.some(x => x === 'open-mic') ? getPerformerLimitSummary(performer_limit) : ''}\n\
-// ${getListedHostsSummary(listed_hosts)}\
-// ${event_types.some(x => x === 'show') ? getListedPerformersSummary(listed_performers) : ''}\n\
-// ${event_types.some(x => x === 'show') ? getAudienceCostSummary(audience_cost) : ''}\n\
-// ${getContactInfoSummary(contact_info)}\
-// `
-//     ])
-//   ])
-// }
 
 function isOpenMic(listing) {
   return listing.meta.event_types.some(x => x === EventTypes.OPEN_MIC)
@@ -808,7 +753,7 @@ export function renderStageTime(stage_time) {
   if (length === 1) {
     return renderSingleRound(stage_time[0])
   } else {
-    return div('.row.align-end', ['Multi-round'])
+    return div('.row.justify-end', ['Multi-round'])
   }
 }
 
@@ -942,7 +887,7 @@ function renderButtons(state) {
         ])
       ])
     ]),
-    div(`.section.row-no-wrap.align-center.justify-center.bold`, ['Or']),
+    div(`.section.row-no-wrap.align-center.justify-center.italic`, ['Or']),
     div(`.section.row-no-wrap.align-center.justify-between`, [
       div(`.description-text`, [`Posting this listing will allow you to distribute links to the associated event(s).  It also allows you to send out invitations and makes public events discoverable on search. Would you like to post this event?`]),
       div('.flex.justify-center', [

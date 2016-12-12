@@ -2,7 +2,7 @@ import {Observable as O} from 'rxjs'
 import {div, span, input, textarea} from '@cycle/dom'
 import Immutable = require('immutable')
 import {combineObj} from '../../../../utils'
-import {EventTypeToProperties, inflateDates, fromCheckbox} from '../helpers'
+import {ListingTypes, EventTypes, CategoryTypes, EventTypeToProperties, inflateDates, fromCheckbox} from '../helpers'
 import clone = require('clone')
 
 function intent(sources) {
@@ -192,11 +192,11 @@ function view(state$, components) {
             div(`.sub-heading`, ['Listing type']),
             div(`.row`, [
               div(`.radio-input`, [
-                input(`.appTypeInput`, {attrs: {type: 'radio', name: 'listingType', value: 'single', checked: type === `single`}}, []),
+                input(`.appTypeInput`, {attrs: {type: 'radio', name: 'listingType', value: ListingTypes.SINGLE, checked: type === ListingTypes.SINGLE}}, []),
                 span(`.title`, ['Single'])
               ]),
               div(`.radio-input`, [
-                input(`.appTypeInput`, {attrs: {type: 'radio', name: 'listingType', value: 'recurring', checked: type === `recurring`}}, []),
+                input(`.appTypeInput`, {attrs: {type: 'radio', name: 'listingType', value: ListingTypes.RECURRING, checked: type === ListingTypes.RECURRING}}, []),
                 span(`.title`, ['Recurring'])
               ])
             ])
@@ -217,11 +217,11 @@ function view(state$, components) {
             div(`.sub-heading`, ['Event types']),
             div(`.row`, [
               div(`.checkbox-input`, [
-                input(`.appEventTypeInput`, {attrs: {type: 'checkbox', name: 'event_types', value: 'open-mic', checked: event_types.some(x => x === 'open-mic')}}, []),
+                input(`.appEventTypeInput`, {attrs: {type: 'checkbox', name: 'event_types', value: EventTypes.OPEN_MIC, checked: event_types.some(x => x === EventTypes.OPEN_MIC)}}, []),
                 span(`.title`, ['open-mic'])
               ]),
               div(`.checkbox-input`, [
-                input(`.appEventTypeInput`, {attrs: {type: 'checkbox', name: 'event_types', value: 'show', checked: event_types.some(x => x === 'show')}}, []),
+                input(`.appEventTypeInput`, {attrs: {type: 'checkbox', name: 'event_types', value: EventTypes.SHOW, checked: event_types.some(x => x === EventTypes.SHOW)}}, []),
                 span(`.title`, ['show'])
               ])
             ])
@@ -230,19 +230,19 @@ function view(state$, components) {
             div(`.sub-heading`, ['Categories']),
             div(`.row`, [
               div(`.checkbox-input`, [
-                input(`.appCategoriesInput`, {attrs: {type: 'checkbox', name: 'categories', value: 'comedy', checked: categories.some(x => x === 'comedy')}}, []),
+                input(`.appCategoriesInput`, {attrs: {type: 'checkbox', name: 'categories', value: CategoryTypes.COMEDY, checked: categories.some(x => x === CategoryTypes.COMEDY)}}, []),
                 span(`.title`, ['comedy'])
               ]),
               div(`.checkbox-input`, [
-                input(`.appCategoriesInput`, {attrs: {type: 'checkbox', name: 'categories', value: 'music', checked: event_types.some(x => x === 'music')}}, []),
+                input(`.appCategoriesInput`, {attrs: {type: 'checkbox', name: 'categories', value: CategoryTypes.MUSIC, checked: event_types.some(x => x === CategoryTypes.MUSIC)}}, []),
                 span(`.title`, ['music'])
               ]),
               div(`.checkbox-input`, [
-                input(`.appCategoriesInput`, {attrs: {type: 'checkbox', name: 'categories', value: 'poetry', checked: categories.some(x => x === 'poetry')}}, []),
+                input(`.appCategoriesInput`, {attrs: {type: 'checkbox', name: 'categories', value: CategoryTypes.POETRY, checked: categories.some(x => x === CategoryTypes.POETRY)}}, []),
                 span(`.title`, ['poetry'])
               ]),
               div(`.checkbox-input`, [
-                input(`.appCategoriesInput`, {attrs: {type: 'checkbox', name: 'categories', value: 'storytelling', checked: event_types.some(x => x === 'storytelling')}}, []),
+                input(`.appCategoriesInput`, {attrs: {type: 'checkbox', name: 'categories', value: CategoryTypes.STORYTELLING, checked: event_types.some(x => x === CategoryTypes.STORYTELLING)}}, []),
                 span(`.title`, ['storytelling'])
               ])
             ])

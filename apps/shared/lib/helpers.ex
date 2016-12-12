@@ -4,6 +4,12 @@ defmodule Shared.Helpers do
   alias Ecto.Changeset
   alias Shared.Manager.TimezoneManager
 
+  def atomize_type(changeset) do
+    changes = changeset.changes
+    data = changeset.data
+    changeset |> put_change(:type, String.to_atom(changes.type))
+  end
+
   def cast_dynamic_parent_flag(changeset, flag_key, dynamic_key, processors, opts \\ :empty) 
     when is_atom(flag_key) and is_atom(dynamic_key) do
     case changeset do

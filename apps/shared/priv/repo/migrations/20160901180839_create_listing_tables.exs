@@ -8,9 +8,6 @@ defmodule Shared.Repo.Migrations.CreateListingTables do
       add :parent_id, references(:listings, on_delete: :delete_all, type: :bigint)
       add :user_id, references(:users, on_delete: :delete_all), null: false
       add :type, :string, null: false
-      add :name, :string
-      add :event_types, {:array, :string}, null: false
-      add :categories, {:array, :string}, null: false
       add :cuando, :map, null: false
       add :donde, :map, null: false
       add :meta, :map, null: false

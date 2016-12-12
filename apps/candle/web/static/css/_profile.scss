@@ -141,10 +141,6 @@
     color: black
   }
 
-  .xs-margin-bottom {
-    margin-bottom: .2em;
-  }
-
   .map {
     position: relative;
   }
@@ -182,4 +178,8 @@
 .medium-button {
   height: 2em;
   width: 6em;
+}
+
+.italic {
+  font-style: italic;
 }
