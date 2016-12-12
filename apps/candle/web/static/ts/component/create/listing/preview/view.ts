@@ -394,9 +394,9 @@ function getContactInfoSummary(info) {
 function renderSummary(state) {
   const {session} = state
   const {listing} = session
-  const {type, meta, donde, cuando, event_types, categories} = listing
+  const {type, meta, donde, cuando} = listing
   const {
-    name, description, performer_signup, check_in, performer_cost, 
+    name, event_types, categories, description, performer_signup, check_in, performer_cost, 
     stage_time, performer_limit, listed_hosts, listed_performers, 
     audience_cost, contact_info} = meta
 
@@ -468,11 +468,11 @@ ${event_types.some(x => x === 'open-mic') ? '\n\n' + getPerformerLimitSummary(pe
 // }
 
 function isOpenMic(listing) {
-  return listing.event_types.some(x => x === EventTypes.OPEN_MIC)
+  return listing.meta.event_types.some(x => x === EventTypes.OPEN_MIC)
 }
 
 function isShow(listing) {
-  return listing.event_types.some(x => x === EventTypes.SHOW)
+  return listing.meta.event_types.some(x => x === EventTypes.SHOW)
 }
 
 function isOpenMicAndShow(listing) {
@@ -511,7 +511,7 @@ function renderCost(listing) {
     return null
   }
 
-  return div('.row.justify-end', [div('.text-item.cost', [out])])
+  return div('.row.justify-end', [out])
 }
 
 const CuandoStatusTypes = {
@@ -599,7 +599,6 @@ function renderSingleEnds(cuando) {
     }
   }
 }
-
 
 function renderSingle(cuando) {
   const {begins, ends} = cuando
@@ -853,9 +852,9 @@ export function renderListedHosts(info) {
 
 export function renderDescription(info) {
   if (info && info.length) {
-    return div('.column.description', [
-      div('.heading.text-item.justify-center', ['Description']),
-      div('.text-item.justify-center', [info])
+    return div('.row.description.separated-above', [
+      div('.heading.text-item', ['Description']),
+      div('.text-item.', [info])
     ])
   } else {
     return null
@@ -864,11 +863,34 @@ export function renderDescription(info) {
 
 export function renderNotes(info) {
   if (info && info.length) {
-    return div('.column.notes', [
-      div('.heading.text-item.justify-center', ['Notes']),
-      div('.text-item.justify-center', [info])
+    return div('.row.notes.separated-above', [
+      div('.heading.text-item', ['Notes']),
+      div('.text-item', [info])
     ])
   } else {
+    return null
+  }
+}
+
+export function renderTextList(info) {
+  if (info.length) {
+    const plural = info.length >1
+    const title = plural ? 'Hosts:' : 'Host:'
+    return div('.row.justify-end', [
+      div('.text-item', info.join(`, `))
+    ])
+  } else {
+    return null
+  }
+}
+
+export function renderEventTypesAndCategories(event_types, categories) {
+  if (event_types.length || categories.length) {
+    return div('.column.separated-above', [
+      renderTextList(event_types),
+      renderTextList(categories),
+    ])
+  }  else {
     return null
   }
 }
@@ -877,8 +899,8 @@ export function renderNotes(info) {
 function renderListingCard(state) {
   const {session} = state
   const {listing} = session
-  const {type, donde, meta, event_types, categories} = listing
-  const {name, notes, performer_cost, description, contact_info, performer_signup, stage_time, performer_limit, listed_hosts} = meta
+  const {type, donde, meta} = listing
+  const {name, event_types, categories, notes, performer_cost, description, contact_info, performer_signup, stage_time, performer_limit, listed_hosts} = meta
 
   return div(`.listing-card`, [
     div('.column.meta', [
@@ -895,6 +917,7 @@ function renderListingCard(state) {
           renderStageTime(stage_time),
           renderPerformerSignup(performer_signup),
           renderPerformerLimit(performer_limit),
+          renderEventTypesAndCategories(event_types, categories)
           // checked_in ? div(`.result-check-in`, [`Checked-in`]) : null
         ])
       ]),

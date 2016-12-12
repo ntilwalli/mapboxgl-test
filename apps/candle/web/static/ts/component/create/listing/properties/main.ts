@@ -216,7 +216,8 @@ export function main(sources, inputs) {
     .map((info: any) => {
       const {session, authorization} = info
       const {listing} = session
-      const {event_types, meta} = listing
+      const {meta} = listing
+      const {event_types} = meta
 
       const foo_components = event_types.reduce((acc, val) => acc.concat(EventTypeToProperties[val]), [])
       const component_types = arrayUnique(foo_components)

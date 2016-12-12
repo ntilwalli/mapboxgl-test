@@ -24,6 +24,10 @@
     }
   }
 
+  .separated-above {
+    margin-top: .5em;
+  }
+
   .row-no-wrap {
     display: flex;
     flex-flow: row nowrap;
@@ -143,6 +147,10 @@
 
   .map {
     position: relative;
+  }
+
+  .meta {
+    margin: .5rem;
   }
 }
 

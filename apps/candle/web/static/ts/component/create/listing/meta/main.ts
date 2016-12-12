@@ -12,13 +12,13 @@ function intent(sources) {
     .map(session => {
       //console.log(`meta session pre`, session)
       session.listing.type = session.listing.type || undefined
-      session.listing.event_types = session.listing.event_types || []
-      session.listing.categories = session.listing.categories || []
       session.listing.meta = session.listing.meta || {
         type: 'standard',
         title: undefined,
         description: undefined,
-        short_description: undefined
+        short_description: undefined,
+        event_types: [],
+        categories: []
       }
 
       return session
@@ -65,7 +65,7 @@ function isValid(session) {
   //console.log(`meta valid`, session)
   const {listing} = session
   return listing.type && listing.meta.name && listing.meta.description &&
-    listing.event_types.length && listing.categories.length
+    listing.meta.event_types.length && listing.meta.categories.length
 }
 
 function reducers(actions, inputs) {
@@ -98,7 +98,7 @@ function reducers(actions, inputs) {
   const event_types_r = actions.event_type$.map(msg => state => {
     return state.update('session', session => {
       const {listing} = session
-      listing.event_types = processCheckboxArray(msg, listing.event_types)
+      listing.meta.event_types = processCheckboxArray(msg, listing.meta.event_types)
       
       // HACK since I don't want to figure out how to use ES6 Sets
       // This ensures when checboxes are unchecked the 
@@ -110,7 +110,7 @@ function reducers(actions, inputs) {
         if (meta) {
           const properties = EventTypeToProperties[type]
           const out = {}
-          const current_properties = listing.event_types
+          const current_properties = listing.meta.event_types
             .map(x => EventTypeToProperties[x])
             .reduce((acc, val) => acc.concat(val), [])
 
@@ -141,7 +141,7 @@ function reducers(actions, inputs) {
     return state.update('session', session => {
       //console.log(`category`, val)
       const {listing} = session
-      listing.categories = processCheckboxArray(msg, listing.categories)
+      listing.meta.categories = processCheckboxArray(msg, listing.meta.categories)
       return session
     })
   })
@@ -182,8 +182,8 @@ function view(state$, components) {
       const {state} = info
       const {session} = state
       const {listing} = session
-      const {type, meta, event_types, categories} = listing
-      const {name, description} = meta
+      const {type, meta} = listing
+      const {name, description, event_types, categories} = meta
 
       return div(`.workflow-step`, [
         div(`.heading`, []),
