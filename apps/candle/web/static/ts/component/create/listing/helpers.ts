@@ -48,7 +48,7 @@ export const PerformerSignupOptions = {
 export const PerformerLimitOptions = {
   NO_LIMIT: 'no_limit',
   LIMIT: 'limit',
-  LIMIT_BY_SIGNUP_TYPE: 'limit_by_signup_type'
+  LIMIT_BY_SIGN_UP_TYPE: 'limit_by_sign_up_type'
 }
 
 export const StageTimeOptions = {

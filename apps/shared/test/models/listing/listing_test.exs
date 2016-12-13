@@ -6,6 +6,9 @@ defmodule Test.Listing do
   test "listing changeset" do
     listing = %{
       "type" => "recurring",
+      "name" => "blah",
+      "event_types" => ["open-mic"],
+      "categories" => ["comedy"],
       "visibility" => "public",
       "release" => "posted",
       "donde" => %{
@@ -84,6 +87,9 @@ defmodule Test.Listing do
   test "invalid listing changeset" do
     listing = %{
       "type" => "blah",
+      "name" => "blah",
+      "event_types" => ["open-mic"],
+      "categories" => ["comedy"],
       "visibility" => "public",
       "release" => "posted",
       "settings" => %{},

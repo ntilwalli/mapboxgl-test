@@ -12,7 +12,7 @@ function PerformerLimitComboBox(sources, props$) {
   const options = [
     PerformerLimitOptions.NO_LIMIT,
     PerformerLimitOptions.LIMIT,
-    PerformerLimitOptions.LIMIT_BY_SIGNUP_TYPE
+    PerformerLimitOptions.LIMIT_BY_SIGN_UP_TYPE
   ]
 
   return isolate(ComboBox)(sources, options, props$)
@@ -358,7 +358,7 @@ export default function main(sources, inputs) {
           type,
           data: getLimitDefault()
         } 
-      } else if (type === opts.LIMIT_BY_SIGNUP_TYPE) {
+      } else if (type === opts.LIMIT_BY_SIGN_UP_TYPE) {
         return {
           type,
           data: getLimitByTypeDefault()
@@ -370,7 +370,7 @@ export default function main(sources, inputs) {
     switch (props.type) {
       case opts.LIMIT:
         return LimitComponent(sources, O.of(props.data), in_app_enabled$, 'Performer limit')
-      case opts.LIMIT_BY_SIGNUP_TYPE:
+      case opts.LIMIT_BY_SIGN_UP_TYPE:
         return LimitByTypeComponent(sources, O.of(props.data), in_app_enabled$, 'Performer limit')
       default:
         return BlankStructuredUndefined()

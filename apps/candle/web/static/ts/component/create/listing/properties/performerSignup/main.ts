@@ -409,13 +409,14 @@ export default function main(sources, inputs): SinksType {
     pre_registration: pre_registration_component.DOM
   }).debounceTime(0).map((components: any) => {
     const {signup_type, in_person, pre_registration} = components
+    const both = in_person && pre_registration
     return div('.column', [
       div('.sub-heading.section-heading', ['Performer signup']),
       signup_type,
-      in_person ? div('.sub-sub-heading.small-margin-top', ['In-person']) : null,
-      in_person ? div('.indented', [in_person]) : null,
-      pre_registration ? div('.sub-sub-heading.small-margin-top', ['Pre-registration']) : null,
-      pre_registration ? div('.indented', [pre_registration]) : null
+      both ? div('.sub-sub-heading.small-margin-top', ['In-person']) : null,
+      in_person ? div({class: {indented: both, "small-margin-top": !both}}, [in_person]) : null,
+      both ? div('.sub-sub-heading.small-margin-top', ['Pre-registration']) : null,
+      pre_registration ? div({class: {indented: both, "small-margin-top": !both}},[pre_registration]) : null
     ])
   })
 

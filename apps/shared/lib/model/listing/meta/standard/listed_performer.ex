@@ -1,4 +1,4 @@
-defmodule Shared.Model.Listing.Meta.Standard.ListedPerformer do
+defmodule Standard.ListedPerformer do
   use Shared.Lib, :model
 
   @derive {Poison.Encoder, except: [:__meta__]}

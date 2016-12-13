@@ -6,7 +6,7 @@ defmodule Test.Model.Region do
   test "Valid badslava location generates valid changeset" do
     bs = %Region{}
     cs = Region.changeset(bs, %{
-      "geotag" => %{
+      "city_state" => %{
         "city" => "Memphis", 
         "state_abbr" => "TN"
       }, 
@@ -16,6 +16,7 @@ defmodule Test.Model.Region do
       }
     })
     
+    IO.inspect cs
     assert cs.valid? == true
   end
 end

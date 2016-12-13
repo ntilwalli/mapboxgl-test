@@ -20,6 +20,9 @@ defmodule Test.Shared.Manager.ListingManagerTest do
     #val = Time.to_iso8601(time)
     listing = %{
       "type" => "recurring",
+      "name" => "blah",
+      "event_types" => ["open-mic"],
+      "categories" => ["comedy"],
       "visibility" => "public",
       "release" => "posted",
       "categories" => ["comedy"],
@@ -103,6 +106,9 @@ defmodule Test.Shared.Manager.ListingManagerTest do
     user = Repo.get!(User, 0)
     parent_listing = %{
       "type" => "recurring",
+      "name" => "blah",
+      "event_types" => ["open-mic"],
+      "categories" => ["comedy"],
       "visibility" => "public",
       "release" => "posted",
       "donde" => %{
@@ -181,6 +187,9 @@ defmodule Test.Shared.Manager.ListingManagerTest do
     child_listing = %{
       "parent_id" => parent_id,
       "type" => "single",
+      "name" => "blah",
+      "event_types" => ["open-mic"],
+      "categories" => ["comedy"],
       "visibility" => "public",
       "release" => "posted",
       "donde" => %{

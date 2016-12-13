@@ -1,13 +1,10 @@
-defmodule Shared.Model.Listing.Meta.Standard.StageTime.Data do
+defmodule Standard.StageTimeData do
   use Shared.Lib, :model
-
-  # :minutes_max
-  # :minutes_range
 
   @derive {Poison.Encoder, except: [:__meta__]}
   @primary_key false
   embedded_schema do
-    embeds_one :minutes, Shared.Model.Listing.Meta.Standard.StageTime.MinutesData
+    embeds_one :minutes, Standard.StageTime.Minutes
     field :songs, :integer
   end
 

@@ -8,6 +8,9 @@
   test "meta badslava changeset" do
     bs = %{
       "type" => "badslava",
+      "name" => "blah",
+      "event_types" => ["open-mic"],
+      "categories" => ["comedy"],
       "sign_up" => %{
         "begins" => -15,
         "styles" => ["list"],

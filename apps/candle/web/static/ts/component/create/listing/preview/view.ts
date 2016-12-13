@@ -774,7 +774,7 @@ export function renderPerformerLimit(info) {
       return null
     case PerformerLimitOptions.LIMIT:
       return div('.row.text-item.justify-end', [`${info.data.limit} people`])
-    case PerformerLimitOptions.LIMIT_BY_SIGNUP_TYPE:
+    case PerformerLimitOptions.LIMIT_BY_SIGN_UP_TYPE:
       return div('.row.text-item.justify-end', [`${getPerformerLimitInfo(info.data.in_person)} + ${getPerformerLimitInfo(info.data.pre_registration)} performers`])  
     default:
       throw new Error() 
