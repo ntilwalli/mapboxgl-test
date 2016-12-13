@@ -1,4 +1,4 @@
-defmodule Scraper.BadslavaScraper.Helpers do
+defmodule Scraper.BadslavaScraper.V1.Helpers do
   def extract_meta(listing) do
     note = listing["note"]
     #if !is_nil(note) do
@@ -466,6 +466,7 @@ defmodule Scraper.BadslavaScraper.Helpers do
       ~r/^\$(?<cover>\d\d?)$/i,
       ~r/\$(?<cover>\d\d?) cover/i,
       ~r/\$(?<cover>\d\d?) plus .* drink/i,
+      ~r/\$(?<cover>\d\d?) plus .* beverage/i,
       ~r/\$(?<cover>\d\d?) flat fee/i,
       ~r/\$(?<cover>\d\d?) for \d ?min/i,
       ~r/(?<cover>a) dollar or a drink/i,
@@ -483,12 +484,14 @@ defmodule Scraper.BadslavaScraper.Helpers do
   defp get_min_purchase_regexes do
     [
       ~r/plus (?<minimum>one|two|1|2) drink cover/i,
+      ~r/plus (?<minimum>one|two|1|2) drink cover/i,
       ~r/(?<minimum>one|two|1|2) item from \$\d menu/i,
       ~r/(?<minimum>one|two|1|2)(-| )?item(-| )?minimum/i,
       ~r/(?<!no longer a )(?<minimum>one|two|1|2)(-| )?drink(-| )min/i,
       ~r/(?<minimum>one|two|1|2|a) item.*min/i,
       ~r/(?<minimum>one|two|1|2|a) drink gets/i,
       ~r/(?<minimum>one|two|1|2|a) drink plus/i,
+      ~r/(?<minimum>one|two|1|2|a) beverage/i,
       ~r/must purchase (?<minimum>one|two|1|2)/i,
       ~r/(?<minimum>one|two|1|2|a) purchased item/i,
       ~r/(?<minimum>one|two|1|2|a) drink buys you/i,

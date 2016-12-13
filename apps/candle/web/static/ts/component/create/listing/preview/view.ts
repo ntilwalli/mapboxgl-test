@@ -110,13 +110,16 @@ function getMinimumPurchaseSummary(info) {
     case CostOptions.COVER_AND_MINIMUM_PURCHASE:
     case CostOptions.COVER_OR_MINIMUM_PURCHASE:
       const val = info.data.minimum_purchase
+      const plural = `${val.data > 1 ? 's' : ''}`
       switch (val.type) {
         case PurchaseTypeOptions.DOLLARS:
           return `$${val.data}`
         case PurchaseTypeOptions.DRINK:
-          return `${val.data} drink${val.data > 1 ? 's' : ''}`
+          return `${val.data} drink${plural}`
         case PurchaseTypeOptions.ITEM:
-          return `${val.data} item${val.data > 1 ? 's' : ''}`
+          return `${val.data} item${plural}`
+        case PurchaseTypeOptions.DRINK_OR_ITEM:
+          return `${val.data} drink${plural} or item${plural}`
         default:
           return ''
       }

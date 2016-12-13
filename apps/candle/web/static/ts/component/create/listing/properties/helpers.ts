@@ -62,6 +62,8 @@ export function NotesInput(sources, {props$}, styleClass?) {
 
 function getTextFromOption(opt) {
   switch (opt) {
+    case "blank":
+      return ''
     case PerformerSignupOptions.IN_PERSON:
       return 'In-person only'
     case PerformerSignupOptions.PRE_REGISTRATION:

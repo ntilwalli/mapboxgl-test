@@ -1,14 +1,42 @@
 import {Observable as O} from 'rxjs'
 import isolate from '@cycle/isolate'
 import {div, span, input} from '@cycle/dom'
-import intent from './intent'
-import model from './model'
-import view from './view'
 import deepEqual = require('deep-equal')
 import {combineObj, createProxy, isInteger} from '../../../../../utils'
-import {MinutesTypeOptions, StageTimeOptions, ComboBox, BlankComponent, FloatInputComponent, NumberInputComponent} from '../helpers'
+import {MinutesTypeOptions, StageTimeOptions, ComboBox, BlankStructuredUndefined, FloatInputComponent, NumberInputComponent} from '../helpers'
 import clone = require('clone')
 
+
+function getMaxDefault() {
+  return {
+      max: 5
+    }
+}
+
+function getRangeDefault() {
+  return {
+    min: 3,
+    max: 5
+  }
+}
+
+function getMinutesDataMaxDefault() {
+  return {
+    type: MinutesTypeOptions.MAX,
+    data: getMaxDefault()
+  }
+}
+
+function getMinutesDataRangeDefault() {
+  return {
+    type: MinutesTypeOptions.RANGE,
+    data: getRangeDefault()
+  }
+}
+
+function getSongsDataDefault() {
+  return 2
+}
 
 function StageTimeTypeComboBox(sources, props$) {
   const options = [
@@ -32,7 +60,7 @@ function MinutesTypeComboBox(sources, props$) {
 function MaxMinutesComponent(sources, props$, component_id = '') {
   const shared$ = props$
       .map(x => {
-      return x
+      return x || getMaxDefault()
     })
     .publishReplay(1).refCount()
   const max_message = component_id + ': Invalid number'
@@ -49,7 +77,7 @@ function MaxMinutesComponent(sources, props$, component_id = '') {
     return {
       ...max,
       data: {
-        max: max.valid ? max.data : undefined
+        max: max.data
       }
     }
   })
@@ -63,16 +91,13 @@ function MaxMinutesComponent(sources, props$, component_id = '') {
 function RangeMinutesComponent(sources, props$, component_id) {
   const shared$ = props$
     .map(x => {
-      return {
-        min: x.min || 3,
-        max: x.max || 5
-      }
+      return x || getRangeDefault()
     })
     .publishReplay(1).refCount()
   const max_message = component_id + ': Invalid max number'
-  const max_input = FloatInputComponent(sources, shared$.map(x => x.max.toString()), max_message)
+  const max_input = FloatInputComponent(sources, shared$.map(x => x ? x.max.toString() : undefined), max_message)
   const min_message = component_id + ': Invalid min number'
-  const min_input = FloatInputComponent(sources, shared$.map(x => x.min.toString()), min_message)
+  const min_input = FloatInputComponent(sources, shared$.map(x => x ? x.min.toString() : undefined), min_message)
 
   const vtree$ = combineObj({
     max: max_input.DOM,
@@ -96,11 +121,11 @@ function RangeMinutesComponent(sources, props$, component_id) {
     const {max, min} = components
     const valid = min.valid && max.valid
     return {
-      data: valid ? {
+      data: {
         min: min.data,
         max: max.data,
-      } : undefined,
-      valid: min.valid && max.valid,
+      },
+      valid,
       errors: min.errors.concat(max.errors)
     }
   })
@@ -111,22 +136,44 @@ function RangeMinutesComponent(sources, props$, component_id) {
   }
 }
 
-function MinutesComponent(sources, props$, component_id) {
+
+function MinutesComponent(sources, options, props$, component_id) {
   const shared$ = props$
     .map(x => {
-      return x
+      return x || getMinutesDataMaxDefault()
     })
     .publishReplay(1).refCount()
-  const type$ = shared$.pluck('type').publishReplay(1).refCount()
-  const type_component = MinutesTypeComboBox(sources, type$)
-  const data_component$ = O.merge(type_component.output$, type$).map(type => {
-    switch (type) {
-      case MinutesTypeOptions.MAX:
-        return MaxMinutesComponent(sources, shared$.pluck('data'), component_id)
-      default: 
-        return RangeMinutesComponent(sources, shared$.pluck('data'), component_id)
-    }
-  }).publishReplay(1).refCount()
+
+  const minutes_options = options || [
+    MinutesTypeOptions.MAX,
+    MinutesTypeOptions.RANGE
+  ]
+
+  const type$ = shared$.pluck('type').take(1).publishReplay(1).refCount()
+  const type_component = isolate(ComboBox)(sources, options, type$)
+  const data_component$ = O.merge(
+    shared$.take(1),
+    type_component.output$.skip(1)
+      .map(type => {
+        switch (type) {
+          case MinutesTypeOptions.MAX:
+            return getMinutesDataMaxDefault()
+          case MinutesTypeOptions.RANGE:
+            return getMinutesDataRangeDefault()
+          default:
+            throw new Error()
+        }
+      }))
+      .map((props: any) => {
+        switch (props.type) {
+          case MinutesTypeOptions.MAX:
+            return MaxMinutesComponent(sources, O.of(props.data), component_id)
+          case MinutesTypeOptions.RANGE: 
+            return RangeMinutesComponent(sources, O.of(props.data), component_id)
+          default: 
+            throw new Error()
+        }
+      }).publishReplay(1).refCount()
 
   const data_component = {
     DOM: data_component$.switchMap(x => x.DOM),
@@ -155,7 +202,7 @@ function MinutesComponent(sources, props$, component_id) {
       ...data,
       data: {
         type,
-        data: data.valid ? data.data : undefined
+        data: data.data
       }
     }
   })
@@ -185,23 +232,100 @@ function SongsComponent(sources, props$, component_id) {
   }
 }
 
-function getComponents(stage_time$, sources, inputs, component_id) {
-  const shared$ = stage_time$
+
+
+function getMinutesDefault() {
+  return {
+    minutes: getMinutesDataMaxDefault()
+  }
+}
+
+function getSongsDefault() {
+  return {
+    songs: getSongsDataDefault()
+  }
+}
+
+function getMinutesOrSongsDefault() {
+  return {
+    songs: getSongsDataDefault(),
+    minutes: getMinutesDataMaxDefault()
+  }
+}
+function getPriorityOrderDefault() {
+  return undefined
+}
+  
+
+export function getDefault() {
+  return {
+    type: StageTimeOptions.MINUTES,
+    data: getMinutesDefault()
+  }
+}
+
+function toDefault(type) {
+  switch (type) {
+    case StageTimeOptions.MINUTES:
+      return {
+        type,
+        data: getMinutesDefault()
+      }
+    case StageTimeOptions.SONGS:
+      return {
+        type,
+        data: getSongsDefault()
+      }
+    case StageTimeOptions.MINUTES_OR_SONGS:
+      return {
+        type,
+        data: getMinutesOrSongsDefault()
+      }
+    case StageTimeOptions.PRIORITY_ORDER:
+      return {
+        type,
+        data: getPriorityOrderDefault()
+      }
+    default:
+      throw new Error()
+  }
+}
+ 
+
+export default function main(sources, inputs) {
+  const component_id =  'Stage time'
+  const shared$ = inputs.props$
     .map(x => {
-      return clone(x)
+      return x || getDefault()
     })
-    .distinctUntilChanged((x, y) => x.type === y.type)
     .publishReplay(1).refCount()
 
-  const type$ = shared$.pluck('type').publishReplay(1).refCount()
 
-  const minutes_component$ = shared$.map((stage_time: any) => {
-    switch (stage_time.type) {
+  const options = inputs.options || [
+    StageTimeOptions.MINUTES,
+    StageTimeOptions.SONGS,
+    StageTimeOptions.MINUTES_OR_SONGS
+  ]
+
+  const type_component = isolate(ComboBox)(sources, options, shared$.pluck('type'))
+
+  const props$ = O.merge(
+    shared$,
+    type_component.output$.skip(1).map(toDefault)
+  ).publishReplay(1).refCount()
+
+  const minutes_options = inputs.minutes_options || [
+    MinutesTypeOptions.MAX,
+    MinutesTypeOptions.RANGE
+  ]
+
+  const minutes_component$ = props$.map((props: any) => {
+    switch (props.type) {
       case StageTimeOptions.MINUTES:
       case StageTimeOptions.MINUTES_OR_SONGS:
-        return MinutesComponent(sources, O.of(stage_time.data.minutes), component_id + ' minutes')
+        return MinutesComponent(sources, minutes_options, O.of(props.data.minutes), component_id + ' minutes')
       default:
-        return BlankComponent()
+        return BlankStructuredUndefined()
 
     }
   }).publishReplay(1).refCount()
@@ -211,14 +335,13 @@ function getComponents(stage_time$, sources, inputs, component_id) {
     output$: minutes_component$.switchMap(x => x.output$)
   }
 
-  const songs_component$ = shared$.map((stage_time: any) => {
-    switch (stage_time.type) {
+  const songs_component$ = props$.map((props: any) => {
+    switch (props.type) {
       case StageTimeOptions.SONGS:
       case StageTimeOptions.MINUTES_OR_SONGS:
-        return SongsComponent(sources, O.of(stage_time.data.songs), component_id + ' songs')
+        return SongsComponent(sources, O.of(props.data.songs), component_id + ' songs')
       default:
-        return BlankComponent()
-
+        return BlankStructuredUndefined()
     }
   }).publishReplay(1).refCount()
 
@@ -227,63 +350,58 @@ function getComponents(stage_time$, sources, inputs, component_id) {
     output$: songs_component$.switchMap(x => x.output$)
   }
 
-  return [
-    minutes_component,
-    songs_component
-  ]
-}
+  const vtree$ = combineObj({
+    type: type_component.DOM,
+    minutes: minutes_component.DOM,
+    songs: songs_component.DOM
+  }).debounceTime(0).map((components: any) => {
+    const {type, minutes, songs} = components
 
-export default function main(sources, inputs) {
-  const actions = intent(sources)
+    const both = minutes && songs
 
-  const type_input$ = createProxy()
-  const minutes_input$ = createProxy()
-  const songs_input$ = createProxy()
-
-
-  const state$ = model(actions, {
-    ...inputs,
-    type_input$,
-    minutes_input$,
-    songs_input$
+    const minutes_heading = !!both ? span('.sub-sub-heading.align-center', ['Minutes']) : null
+    const songs_heading = !!both ? span('.sub-sub-heading.align-center', ['Songs']) : null
+    return div({class: {row: !both, column: both}}, [
+        span('.item', [type]),
+        minutes ? div(`.row.align-center`, [
+          minutes_heading, 
+            span('.row', [
+              minutes
+            ])
+        ]) : null,
+        songs ? div('.row.align-center', [
+          songs_heading,
+            span('.row', [
+              songs
+            ])
+        ]) : null
+      ]) 
   })
 
-  const stage_time$ = state$.pluck('stage_time')
-    .publishReplay(1).refCount()
-  
-  const type_component = StageTimeTypeComboBox(sources, stage_time$.pluck('type').take(1))
-
-  const [
-    minutes_component,
-    songs_component
-  ] = getComponents(stage_time$, sources, inputs, inputs.component_id)
-
-  type_input$.attach(type_component.output$)
-  minutes_input$.attach(minutes_component.output$)
-  songs_input$.attach(songs_component.output$)
-
-  const components = {
-    type: type_component.DOM,
-    songs: songs_component.DOM,
-    minutes: minutes_component.DOM,
-  }
-
-  const vtree$ = view(state$, components)
-
+  const output$ = combineObj({
+    type: type_component.output$,
+    minutes: minutes_component.output$,
+    songs: songs_component.output$
+  }).debounceTime(0).map((components: any) => {
+    const {type, minutes, songs} = components
+    return {
+      data: {
+        type,
+        data: (minutes || songs) ? {
+          minutes: minutes.data,
+          songs: songs.data
+        } : undefined,
+      },
+      errors: minutes.errors.concat(songs.errors),
+      valid: minutes.valid && songs.valid
+    }
+  })
+ 
   return {
     DOM: vtree$,
-    output$: state$.map(x => {
-      const errors = Object.keys(x.errors_map).reduce((acc, val) => acc.concat(x.errors_map[val]), [])
-      const valid = errors.length === 0 
-      const data = {
-        data: valid ? x.stage_time : undefined,
-        valid,
-        errors
-      }
-      return {
-        data, 
-        index: inputs.component_index
-      }
-    })
+    output$: output$.map(data => ({
+      data,
+      index: inputs.component_index
+    }))
   }
 }

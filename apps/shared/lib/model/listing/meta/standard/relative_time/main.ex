@@ -17,6 +17,7 @@ defmodule Standard.RelativeTime do
     |> cast(params, @required_fields)
     |> validate_required(@required_fields)
     |> validate_inclusion(:type, [
+      "blank",
       "upon_posting",
       "previous_weekday_at_time",
       "minutes_before_event_start",

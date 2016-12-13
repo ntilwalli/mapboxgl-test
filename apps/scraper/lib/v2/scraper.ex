@@ -1,51 +1,28 @@
-defmodule Scraper.BadslavaScraper do
+defmodule Scraper.BadslavaScraper.V2 do
   require Logger
   import Ecto.Query, only: [from: 2]
   import Scraper.Helpers
-  import Scraper.BadslavaScraper.Helpers
+  import Scraper.BadslavaScraper.V1.Helpers
+  import Helpers.V2
+  import PerformerSignUp
   alias Scraper.Helpers
   alias Shared.Scrapings
   alias Shared.Repo
 
   def run(opts \\ []) do
     Logger.info "Retrieving latest Badslava listings..."
-    scraped_listings = case Keyword.get(opts, :drop) do
-      nil -> retrieve_latest_listings()
-      false -> retrieve_latest_listings()
-      true -> retrieve_latest_listings() |> Enum.filter(fn _x -> 
-        val = :rand.uniform(100)
-        #IO.inspect val
-        should_pass = val/100 > 0.2
-        #IO.inspect should_pass
-        should_pass
-      end)
-    end
-    scraped_listings = case Keyword.get(opts, :update) do
-      nil -> scraped_listings
-      false -> scraped_listings
-      true -> scraped_listings |> Enum.map(fn x -> 
-        val = :rand.uniform(100)
-        #IO.inspect val
-        should_alter = val/100 > 0.5
-        #IO.inspect should_alter
-        case should_alter do
-          false -> x
-          true -> %{x | "start_time" => ~T[01:30:00]}
-        end
-      end)
-    end
+    scraped_listings = retrieve_latest_listings()
 
     Logger.info "Retrieved #{Enum.count(scraped_listings)} listings from Badslava..."
     stored_listings = for l <- retrieve_from_store(), do: l
     Logger.info "Retrieved #{Enum.count(stored_listings)} listings from store..."
     Logger.info "Determining diff..."
-    {create, update, delete} = diffed_events = diff(scraped_listings, stored_listings)
-    Logger.info "Creating #{Enum.count(create)}, updating #{Enum.count(update)}, deleting #{Enum.count(delete)} listings..."
-    {created, updated, deleted} = transmitted = transmit(diffed_events)
-    #transmit(diffed_events)
-    # IO.inspect transmitted
-    # IO.puts "Storing latest badslava listings..."
-    store(transmitted)
+    # {create, update, delete} = diffed_events = diff(scraped_listings, stored_listings)
+    # Logger.info "Creating #{Enum.count(create)}, updating #{Enum.count(update)}, deleting #{Enum.count(delete)} listings..."
+    # {created, updated, deleted} = transmitted = transmit(diffed_events)
+    # store(transmitted)
+    diffed_events = {scraped_listings, [], []}
+    transmit(diffed_events)
   end
 
   defp retrieve_from_store() do
@@ -106,25 +83,24 @@ defmodule Scraper.BadslavaScraper do
     
     created = Enum.map(create, fn x -> 
       converted = convert(x)
-      #IO.inspect converted
-      {:ok, result} = info = Listing.Registry.create(Listing.Registry, converted, user) 
+      #{:ok, result} = info = Listing.Registry.create(Listing.Registry, converted, user) 
       #IO.inspect result
 
-      {result.id, x}
+      #{result.id, x}
     end)
-    updated = Enum.map(update, fn x -> 
-      #IO.inspect x
-      {listing_id, data} = x
-      {:ok, result} = Listing.Registry.update(Listing.Registry, listing_id, convert(data), user) 
-      x
-    end)
-    deleted = Enum.map(delete, fn x ->
-      val = Shared.Repo.delete!(%Shared.Scrapings{listing_id: x}) 
-      :ok = Listing.Registry.delete(Listing.Registry, x, user) 
-      x
-    end)
+    # updated = Enum.map(update, fn x -> 
+    #   #IO.inspect x
+    #   {listing_id, data} = x
+    #   {:ok, result} = Listing.Registry.update(Listing.Registry, listing_id, convert(data), user) 
+    #   x
+    # end)
+    # deleted = Enum.map(delete, fn x ->
+    #   val = Shared.Repo.delete!(%Shared.Scrapings{listing_id: x}) 
+    #   :ok = Listing.Registry.delete(Listing.Registry, x, user) 
+    #   x
+    # end)
 
-    {created, updated, deleted}
+    #{created, updated, deleted}
   end
 
   defp store({created, updated, deleted}) do
@@ -151,36 +127,30 @@ defmodule Scraper.BadslavaScraper do
 
   defp convert(l) do
     #IO.inspect l
-    {when_info, meta} = extract_meta(l)
-    out = %{
-      type: "recurring",
-      visibility: "public",
-      release: "posted",
-      donde: %{
-        type: "badslava",
-        name: l["venue_name"],
-        street: l["street"],
-        city: l["city"],
-        state_abbr: l["state_abbr"],
-        lng_lat: %{
-          lng: l["lng"],
-          lat: l["lat"]
-        }
-      },
-      cuando: when_info,
-      meta: meta,
-      settings: %{
-        type: "badslava",
-        check_in: %{
-          begins: -30,
-          ends: nil,
-          radius: 30
-        }
-      }
-    }
-    #IO.inspect out
-    out
+    IO.inspect l["note"]
+    IO.inspect get_performer_sign_up(l)
+    # {when_info, meta} = extract_meta(l)
+    # out = %{
+    #   type: "recurring",
+    #   visibility: "public",
+    #   release: "posted",
+    #   donde: %{
+    #     type: "badslava",
+    #     name: l["venue_name"],
+    #     street: l["street"],
+    #     city: l["city"],
+    #     state_abbr: l["state_abbr"],
+    #     lng_lat: %{
+    #       lng: l["lng"],
+    #       lat: l["lat"]
+    #     }
+    #   },
+    #   cuando: when_info,
+    #   meta: meta
+    # }
+
   end
+
 
   def retrieve_latest_listings do
     html = retrieve
@@ -189,6 +159,7 @@ defmodule Scraper.BadslavaScraper do
     dayTables = Enum.zip(days, Floki.find(html, "font + table"))
     generate_badslava_listings(venue_lnglat, days, dayTables)
   end
+
 
   def generate_badslava_listings(venue_lnglat, _days, dayTables) do
     Enum.flat_map(dayTables, fn({
@@ -211,6 +182,7 @@ defmodule Scraper.BadslavaScraper do
           {_, _, [phone]},
           _
       ]}]}) ->
+
         venue_name = Helpers.replace_apos(venue_name)
         lngLat = Map.get(venue_lnglat, venue_name)
         lng = String.to_float(elem(lngLat, 0))
@@ -228,6 +200,16 @@ defmodule Scraper.BadslavaScraper do
           [] -> nil
         end
 
+        time_regexes = [
+          ~r/mic at (?<hour>\d)/i,
+          ~r/(?<hour>\d) ?(?<meridiem>(a|p))\.?m\.? start/i,
+          ~r/(?<!sign(-| )up) ?starts? (at )?(?<hour>\d) ?(?<meridiem>(a|p))\.?m\.?/i,
+          ~r/(?<hour>\d):(?<minute>\d\d) ?(?<meridiem>(a|p))\.?m\.? start/i,
+          ~r/(?<!sign(-| )up) ?starts? (at )?(?<hour>\d):(?<minute>\d\d) ?(?<meridiem>(a|p))\.?m\.?/i
+        ]
+
+        time = parse_note(time_regexes, note, time, &convert_to_time_string/1)
+          
         email = case email_match do
           [{_, [{"href", email}], [email_name]}] -> 
             captures = Regex.named_captures(~r/^mailto:(?<email>.*)$/, email)
@@ -331,20 +313,4 @@ defmodule Scraper.BadslavaScraper do
       |> Enum.map(fn({_, _, [val]}) -> Regex.named_captures(dayExtractor, val) end)
   end
 
-
-
-  def convert_to_time(val) do
-    captures = Regex.named_captures(~r/^(?<hour>\d\d?):(?<minute>\d\d)(?<meridiem>[a|p]m)$/, val)
-
-    meridiem = captures["meridiem"]
-    hour = case meridiem do
-      "am" -> String.to_integer(captures["hour"])
-      "pm" -> String.to_integer(captures["hour"]) + 12
-    end
-    minute = String.to_integer(captures["minute"])
-    case Time.new(hour, minute, 0) do
-      {:ok, val} -> val
-      _ -> raise ArgumentError, message: "Invalid argument #{val}"
-    end
-  end
 end

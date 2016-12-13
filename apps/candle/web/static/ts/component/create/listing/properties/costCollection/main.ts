@@ -5,6 +5,9 @@ import Immutable = require('immutable')
 import {combineObj, createProxy} from '../../../../../utils'
 import clone = require('clone')
 
+import Cost from  '../cost/main'
+import {getStructuredDefault as costDefault} from '../cost/main'
+
 
 // How to use: include 'itemHeading', 'item' and 'itemDefault' in inputs object
 //{...inputs, sectionHeading: 'Stage time', itemHeading: 'Host', item: some component, itemDefault: some component value default function}
@@ -19,7 +22,7 @@ function render(state, component_id, item_heading) {
     children = state.map((x, index) => div('.column', [
       div('.row', [
         span('.sub-sub-heading.item', [`${item_heading} ${index + 1}`]), 
-        span('.appSubtractButton.list-button.fa.fa-minus', {attrs: {'data-index': index}}, [])
+        span('.appCostCollectionSubtractButton.list-button.fa.fa-minus', {attrs: {'data-index': index}}, [])
       ]),
       div('.item.indented', [x])
     ]))
@@ -28,7 +31,7 @@ function render(state, component_id, item_heading) {
   return div('.column', [
     div('.row', [
       div('.sub-heading.section-heading', [component_id]),
-      button('.appAddButton.list-button.item.flex.align-center.fa.fa-plus', [])
+      button('.appCostCollectionAddButton.list-button.item.flex.align-center.fa.fa-plus', [])
     ]),
     div('.column', children)
   ])
@@ -38,8 +41,8 @@ function intent(sources) {
   const {DOM} = sources
 
   return {
-    add$: DOM.select('.appAddButton').events('click'),
-    subtract$: DOM.select('.appSubtractButton').events('click').map(ev => {
+    add$: DOM.select('.appCostCollectionAddButton').events('click'),
+    subtract$: DOM.select('.appCostCollectionSubtractButton').events('click').map(ev => {
       return parseInt(ev.target.dataset['index'])
     })
   }
@@ -47,9 +50,7 @@ function intent(sources) {
 
 function reducers(actions, inputs) {
   const add_r = actions.add$.map(_ => state => {
-    const data = inputs.itemDefault()
-    const structured = add_structure(data)
-    return state.push(Immutable.fromJS(structured))
+    return state.push(Immutable.fromJS(costDefault()))
   })
 
   const subtract_r = actions.subtract$.map(index => state => {
@@ -57,18 +58,11 @@ function reducers(actions, inputs) {
   })
 
   const change_r = inputs.change$.map(msg => state => {
-    return state.set(msg.index, Immutable.fromJS(msg.data))
+    const out = state.set(msg.index, Immutable.fromJS(msg.data))
+    return out
   })
 
   return O.merge(add_r, subtract_r, change_r)
-}
-
-function add_structure(x) {
-  return {
-    data: x,
-    errors: [],
-    valid: true
-  }
 }
 
 function model(actions, inputs) {
@@ -77,13 +71,16 @@ function model(actions, inputs) {
   return inputs.props$
     .switchMap(props => {
       // should be
-      const init = props ? props.map(add_structure) : 
-        [inputs.itemDefault()].map(add_structure)
+      const init = props ? props.map(x => ({
+        data: x,
+        errors: [],
+        valid: true
+      })) : [costDefault()]//[getDefault()]
 
       return reducer$.startWith(Immutable.fromJS(init)).scan((acc, f: Function) => f(acc))
     })
-    .map((x: any) => x.toJS())//.map(x => x.data))
-    //.do(x => console.log('collapseCollection', x))
+    .map((x: any) => x.toJS())
+    //.do(x => console.log(`costCollection state`, x))
     .publishReplay(1).refCount()
 }
 
@@ -97,7 +94,7 @@ export default function main(sources, inputs) {
     .map(state => {
       //const state = JSON.parse(JSON.stringify(my_state));
       const components = state.map((props, index) => {
-        return isolate(inputs.item)(sources, {...inputs, props$: O.of(props.data), component_index: index})
+        return isolate(Cost)(sources, {...inputs, props$: O.of(props.data), component_index: index})
       })
       
       const components_dom = components.map(x => x.DOM)
@@ -114,7 +111,7 @@ export default function main(sources, inputs) {
 
   change$.attach(components_output$)
 
-  const vtree$ = components_dom$.map(x => render(x, inputs.component_id || 'Component id not supplied', inputs.item_heading || 'Item heading not supplied'))
+  const vtree$ = components_dom$.map(x => render(x, inputs.component_id, inputs.item_heading))
 
   return {
     DOM: vtree$,

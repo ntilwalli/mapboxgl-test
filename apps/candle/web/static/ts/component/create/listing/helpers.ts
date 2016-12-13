@@ -1,9 +1,42 @@
 import moment = require('moment')
 import {RRule, RRuleSet} from 'rrule'
 
+export const EventTypes = {
+  OPEN_MIC: 'open_mic',
+  SHOW: 'show'
+}
+
+export const MetaPropertyTypes = {
+  PERFORMER_SIGN_UP: 'performer_sign_up',
+  CHECK_IN: 'check_in',
+  PERFORMER_COST: 'performer_cost',
+  STAGE_TIME: 'stage_time',
+  PERFORMER_LIMIT: 'performer_limit', 
+  LISTED_HOSTS: 'listed_hosts',
+  NOTES: 'notes', 
+  CONTACT_INFO: 'contact_info',
+  AUDIENCE_COST: 'audience_cost',
+  LISTED_PERFORMERS: 'listed_performers'
+}
+
 export const EventTypeToProperties = {
-  'open_mic': ['performer_signup', 'check_in', 'performer_cost', 'stage_time', 'performer_limit', 'listed_hosts', 'notes', 'contact_info'],
-  'show': ['listed_hosts', 'listed_performers', 'check_in', 'audience_cost', 'contact_info']
+  open_mic: [
+    MetaPropertyTypes.PERFORMER_SIGN_UP, 
+    MetaPropertyTypes.CHECK_IN,
+    MetaPropertyTypes.PERFORMER_COST,
+    MetaPropertyTypes.STAGE_TIME,
+    MetaPropertyTypes.PERFORMER_LIMIT,
+    MetaPropertyTypes.LISTED_HOSTS,
+    MetaPropertyTypes.NOTES,
+    MetaPropertyTypes.CONTACT_INFO
+  ],
+  show: [
+    MetaPropertyTypes.LISTED_HOSTS,
+    MetaPropertyTypes.LISTED_PERFORMERS,
+    MetaPropertyTypes.CHECK_IN, 
+    MetaPropertyTypes.AUDIENCE_COST,
+    MetaPropertyTypes.CONTACT_INFO
+  ]
 }
 
 export const DayOfWeek = {
@@ -27,10 +60,7 @@ export const ListingTypes = {
   RECURRING: 'recurring'
 }
 
-export const EventTypes = {
-  OPEN_MIC: 'open_mic',
-  SHOW: 'show'
-}
+
 
 export const CategoryTypes = {
   COMEDY: 'comedy',
@@ -54,7 +84,8 @@ export const PerformerLimitOptions = {
 export const StageTimeOptions = {
   MINUTES: 'minutes',
   SONGS: 'songs',
-  MINUTES_OR_SONGS: 'minutes_or_songs'
+  MINUTES_OR_SONGS: 'minutes_or_songs',
+  PRIORITY_ORDER: 'priority_order'
 }
 
 export const MinutesTypeOptions = {
@@ -63,7 +94,7 @@ export const MinutesTypeOptions = {
 }
 
 export const RelativeTimeOptions = {
-  //BLANK: 'blank',
+  BLANK: 'blank',
   UPON_POSTING: 'upon_posting',
   DAYS_BEFORE_EVENT_START: 'days_before_event_start',
   MINUTES_BEFORE_EVENT_START: 'minutes_before_event_start',
@@ -85,6 +116,7 @@ export const CostOptions = {
 export const PurchaseTypeOptions = {
   DRINK: 'drink',
   ITEM: 'item',
+  DRINK_OR_ITEM: 'drink_or_item',
   DOLLARS: 'dollars'
 }
 

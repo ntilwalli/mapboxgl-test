@@ -7,15 +7,16 @@ import CheckIn from './checkin/main'
 import Cost from './cost/main'
 import CollapseCollection from './collapseCollection/main'
 import Collection from './collection/main'
+import CostCollection from './costCollection/main'
 import StageTimeRound from './stageTimeRound/main'
 import PerformerLimit from './performerLimit/main'
 import PersonName from './personName/main'
 import PersonNameTitle from './personNameTitle/main'
 import ContactInfo from './contactInfo/main'
-import {getSessionStream, EventTypeToProperties, CostOptions} from '../helpers'
+import {MetaPropertyTypes, getSessionStream, EventTypeToProperties, CostOptions} from '../helpers'
 import {NotesInput} from './helpers'
 import {combineObj, createProxy, traceStartStop} from '../../../../utils'
-import {getCollectionDefault as getStageTimeDefault} from './stageTimeRound/model'
+import {getDefault as getStageTimeDefault} from './stageTimeRound/main'
 
 function arrayUnique(array) {
     var a = array.concat();
@@ -28,6 +29,7 @@ function arrayUnique(array) {
 
     return a;
 }
+
 
 function wrapOutput(component, component_type, meta, session$, sources, inputs) {
   const c = component(sources, {...inputs, props$: O.of(meta[component_type]), session$})
@@ -44,16 +46,20 @@ function toComponent(type, meta, session$, sources, inputs, authorization) {
   let component
 
   switch (type) {
-    case 'performer_signup':
+    case MetaPropertyTypes.PERFORMER_SIGN_UP:
       component = PerformerSignup
       break
-    case 'check_in':
+    case MetaPropertyTypes.CHECK_IN:
       component = CheckIn
       break
-    case 'performer_cost':
-      component = (sources, inputs) => isolate(Cost)(sources, {...inputs, heading_text: 'Performer cost'})
+    case MetaPropertyTypes.PERFORMER_COST:
+      component = (sources, inputs) => CostCollection(sources, {
+        ...inputs, 
+        component_id: 'Performer cost', 
+        item_heading: 'Tier', 
+      })
       break
-    case 'stage_time':
+    case MetaPropertyTypes.STAGE_TIME:
       component = (sources, inputs) => isolate(CollapseCollection)(sources, {
         ...inputs, 
         item: StageTimeRound, 
@@ -62,10 +68,10 @@ function toComponent(type, meta, session$, sources, inputs, authorization) {
         itemDefault: getStageTimeDefault
       })
       break
-    case 'performer_limit':
+    case MetaPropertyTypes.PERFORMER_LIMIT:
       component = PerformerLimit
       break
-    case 'listed_hosts':
+    case MetaPropertyTypes.LISTED_HOSTS:
       component = (sources, inputs) => isolate(Collection)(sources, {
         ...inputs, 
         item: PersonName, 
@@ -83,10 +89,10 @@ function toComponent(type, meta, session$, sources, inputs, authorization) {
         })
       })
       break
-    case 'notes':
+    case MetaPropertyTypes.NOTES:
       component = NotesInput
       break;
-    case 'listed_performers':
+    case MetaPropertyTypes.LISTED_PERFORMERS:
       component = (sources, inputs) => isolate(Collection)(sources, {
         ...inputs, 
         initEmpty: true,
@@ -103,7 +109,7 @@ function toComponent(type, meta, session$, sources, inputs, authorization) {
         })
       })
       break
-    case 'audience_cost':
+    case MetaPropertyTypes.AUDIENCE_COST:
       const options = [
         CostOptions.FREE,
         CostOptions.COVER,
@@ -113,7 +119,7 @@ function toComponent(type, meta, session$, sources, inputs, authorization) {
       
       component = (sources, inputs) => isolate(Cost)(sources, {...inputs, options, heading_text: 'Audience cost'})
       break
-    case 'contact_info':
+    case MetaPropertyTypes.CONTACT_INFO:
       component = ContactInfo
       break
     default:
@@ -221,7 +227,9 @@ export function main(sources, inputs) {
 
       const foo_components = event_types.reduce((acc, val) => acc.concat(EventTypeToProperties[val]), [])
       const component_types = arrayUnique(foo_components)
-      const components = component_types.map(type => toComponent(type, meta, replay_session$, sources, inputs, authorization))
+      const components = component_types.map(type => {
+        return toComponent(type, meta, replay_session$, sources, inputs, authorization)
+      })
       //console.log('component',components)
       const DOM = O.combineLatest(...components.map(c => c.DOM))
       

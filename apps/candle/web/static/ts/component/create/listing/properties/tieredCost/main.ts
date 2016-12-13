@@ -3,8 +3,10 @@ import isolate from '@cycle/isolate'
 import {div, span, input} from '@cycle/dom'
 import deepEqual = require('deep-equal')
 import {combineObj, createProxy, blankComponentUndefinedDOM} from '../../../../../utils'
-import {CostOptions, PurchaseTypeOptions, BlankStructuredUndefined, CostTypeComboBox, PurchaseTypeComboBox, FloatInputComponent, NumberInputComponent} from '../helpers'
+import {TierBenefitOptions, CostOptions, PurchaseTypeOptions, BlankStructuredUndefined, CostTypeComboBox, PurchaseTypeComboBox, FloatInputComponent, NumberInputComponent} from '../helpers'
 import clone = require('clone')
+
+import StageTimeRound from '../stageTimeRound/main'
 
 export function getDefault() {
   return {
@@ -26,6 +28,10 @@ function minimumPurchaseDefault() {
     type: PurchaseTypeOptions.DRINK,
     data: 1
   }
+}
+
+function getTierBenefitDefault() {
+
 }
 
 function MinimumPurchaseComponent(sources, props$, component_id) {
@@ -82,15 +88,6 @@ const toDefault = type => {
       return {
         type
       }
-    case CostOptions.COVER_AND_MINIMUM_PURCHASE:
-    case CostOptions.COVER_OR_MINIMUM_PURCHASE:
-      return {
-        type,
-        data: {
-          cover: 5,
-          minimum_purchase: minimumPurchaseDefault()
-        }
-      }
     case CostOptions.COVER:
       return {
         type,
@@ -122,14 +119,12 @@ export default function main(sources, inputs) {
   const options = inputs.options || [
     CostOptions.FREE,
     CostOptions.COVER,
-    CostOptions.MINIMUM_PURCHASE,
-    CostOptions.COVER_AND_MINIMUM_PURCHASE,
-    CostOptions.COVER_OR_MINIMUM_PURCHASE
+    CostOptions.MINIMUM_PURCHASE
   ]
 
   const type_component = isolate(CostTypeComboBox)(sources, options, shared$.pluck('type').take(1))
   const type$ = type_component.output$.publishReplay(1).refCount() 
-  const props$ = O.merge(shared$, type$.skip(1).map(toDefault)).publishReplay(1).refCount()
+  const props$ = type$.map(toDefault).publishReplay(1).refCount()
 
   const cover_component$ = props$
     .map((props: any) => {

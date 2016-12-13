@@ -18,8 +18,9 @@ defmodule Meta.Standard do
     embeds_one :performer_signup, Standard.PerformerSignUp
     embeds_one :check_in, Standard.CheckIn
     embeds_one :performer_limit, Standard.PerformerLimit
-    embeds_one :cost, Standard.Cost
+    embeds_one :performer_cost, Standard.Cost
     embeds_one :contact_info, Standard.ContactInfo
+    embeds_one :audience_cost, Standard.Cost
   end
 
   @allowed_fields [
@@ -39,8 +40,9 @@ defmodule Meta.Standard do
     |> cast_embed(:performer_signup)
     |> cast_embed(:check_in)
     |> cast_embed(:performer_limit)
-    |> cast_embed(:cost)
+    |> cast_embed(:performer_cost)
     |> cast_embed(:contact_info)
+    |> cast_embed(:audience_cost)
 
   end
 end

@@ -12,7 +12,7 @@ defmodule Standard.Cost.MinimumPurchase do
     schema
     |> cast(params, [:type, :data])
     |> validate_required([:type, :data])
-    |> validate_inclusion(:type, ["dollars", "item", "drink"])
+    |> validate_inclusion(:type, ["dollars", "item", "drink", "drink_or_item"])
     |> validate_number(:data, greater_than: 0)
   end
 end

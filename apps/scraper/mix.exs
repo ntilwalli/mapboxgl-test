@@ -24,7 +24,7 @@ defmodule Scraper.Mixfile do
     [
       applications: [
         :logger,
-        :listing, 
+        #:listing, 
         :shared,
         :httpoison,
         :calendar
