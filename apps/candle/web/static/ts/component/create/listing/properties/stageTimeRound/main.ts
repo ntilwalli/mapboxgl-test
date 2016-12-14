@@ -252,10 +252,6 @@ function getMinutesOrSongsDefault() {
     minutes: getMinutesDataMaxDefault()
   }
 }
-function getPriorityOrderDefault() {
-  return undefined
-}
-  
 
 export function getDefault() {
   return {
@@ -280,11 +276,6 @@ function toDefault(type) {
       return {
         type,
         data: getMinutesOrSongsDefault()
-      }
-    case StageTimeOptions.PRIORITY_ORDER:
-      return {
-        type,
-        data: getPriorityOrderDefault()
       }
     default:
       throw new Error()

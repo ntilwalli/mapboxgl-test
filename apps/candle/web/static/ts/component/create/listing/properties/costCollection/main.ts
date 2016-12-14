@@ -6,8 +6,8 @@ import {combineObj, createProxy} from '../../../../../utils'
 import clone = require('clone')
 
 import Cost from  '../cost/main'
-import {getStructuredDefault as costDefault} from '../cost/main'
-
+import {getDefault as costDefault} from '../cost/main'
+import {default as TierBenefit, getDefault as getTierDefault} from '../tierBenefit/main'
 
 // How to use: include 'itemHeading', 'item' and 'itemDefault' in inputs object
 //{...inputs, sectionHeading: 'Stage time', itemHeading: 'Host', item: some component, itemDefault: some component value default function}
@@ -48,9 +48,17 @@ function intent(sources) {
   }
 }
 
+function add_structure(x) {
+  return {
+    data: x,
+    errors: [],
+    valid: true
+  }
+}
+
 function reducers(actions, inputs) {
   const add_r = actions.add$.map(_ => state => {
-    return state.push(Immutable.fromJS(costDefault()))
+    return state.push(Immutable.fromJS(add_structure(getTierDefault())))
   })
 
   const subtract_r = actions.subtract$.map(index => state => {
@@ -71,11 +79,7 @@ function model(actions, inputs) {
   return inputs.props$
     .switchMap(props => {
       // should be
-      const init = props ? props.map(x => ({
-        data: x,
-        errors: [],
-        valid: true
-      })) : [costDefault()]//[getDefault()]
+      const init = props ? props.map(add_structure) : [getTierDefault()].map(add_structure)//[getDefault()]
 
       return reducer$.startWith(Immutable.fromJS(init)).scan((acc, f: Function) => f(acc))
     })
@@ -94,7 +98,7 @@ export default function main(sources, inputs) {
     .map(state => {
       //const state = JSON.parse(JSON.stringify(my_state));
       const components = state.map((props, index) => {
-        return isolate(Cost)(sources, {...inputs, props$: O.of(props.data), component_index: index})
+        return isolate(TierBenefit)(sources, {...inputs, props$: O.of(props.data), component_index: index})
       })
       
       const components_dom = components.map(x => x.DOM)

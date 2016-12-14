@@ -84,7 +84,12 @@ export const PerformerLimitOptions = {
 export const StageTimeOptions = {
   MINUTES: 'minutes',
   SONGS: 'songs',
-  MINUTES_OR_SONGS: 'minutes_or_songs',
+  MINUTES_OR_SONGS: 'minutes_or_songs'
+}
+
+export const TierBenefitOptions = {
+  MINUTES: 'minutes',
+  SONGS: 'songs',
   PRIORITY_ORDER: 'priority_order'
 }
 

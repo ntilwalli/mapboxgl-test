@@ -8,15 +8,14 @@ import Cost from './cost/main'
 import CollapseCollection from './collapseCollection/main'
 import Collection from './collection/main'
 import CostCollection from './costCollection/main'
-import StageTimeRound from './stageTimeRound/main'
 import PerformerLimit from './performerLimit/main'
 import PersonName from './personName/main'
 import PersonNameTitle from './personNameTitle/main'
 import ContactInfo from './contactInfo/main'
+import {default as StageTimeRound, getDefault as getStageTimeDefault} from './stageTimeRound/main'
 import {MetaPropertyTypes, getSessionStream, EventTypeToProperties, CostOptions} from '../helpers'
 import {NotesInput} from './helpers'
 import {combineObj, createProxy, traceStartStop} from '../../../../utils'
-import {getDefault as getStageTimeDefault} from './stageTimeRound/main'
 
 function arrayUnique(array) {
     var a = array.concat();
@@ -56,7 +55,7 @@ function toComponent(type, meta, session$, sources, inputs, authorization) {
       component = (sources, inputs) => CostCollection(sources, {
         ...inputs, 
         component_id: 'Performer cost', 
-        item_heading: 'Tier', 
+        item_heading: 'Tier',
       })
       break
     case MetaPropertyTypes.STAGE_TIME:
