@@ -1,5 +1,5 @@
 defmodule Helpers.V2 do
-  def parse_note(regexes, note, default_val, processor_fn) do
+  def parse_note_with_regexes(regexes, note, fallback_val, processor_fn) do
     cond do
       note ->
         #IO.inspect {"Parsing note", note}
@@ -9,14 +9,14 @@ defmodule Helpers.V2 do
         time = case matches do
           [] -> 
             #IO.puts "No matches"
-            default_val
+            fallback_val
           [val | tail] ->
             #IO.puts "Matches"
             processor_fn.(val)
         end
       true -> 
         #IO.inspect {"Not parsing note", note}
-        default_val
+        fallback_val
     end
   end
 
@@ -135,4 +135,46 @@ defmodule Helpers.V2 do
     end) 
     |> Enum.take(1)
   end
+
+  def val_to_float(val) do
+    case String.downcase(val) do
+      "a" -> 1.0
+      "free" -> 0.0
+      "one" -> 1.0
+      "1" -> 1.0
+      "two" -> 2.0
+      "2" -> 2.0
+      "three" -> 3.0
+      "3" -> 3.0
+      "four" -> 4.0
+      "4" -> 4.0
+      "five" -> 5.0
+      "5" -> 5.0
+      "six" -> 6.0
+      "6" -> 6.0
+      "seven" -> 7.0
+      "7" -> 7.0
+      "eight" -> 8.0
+      "8" -> 8.0
+      "nine" -> 9.0
+      "9" -> 9.0
+      "ten" -> 10.0
+      "10" -> 10.0
+
+      val -> 
+        # IO.puts "val section of convert"
+        # IO.inspect val
+        case val do
+          "" -> 0.0
+          something -> 
+            out = Float.parse(val)
+            case out do
+              :error -> raise ArgumentError, message: "Invalid argument to convert_num_val: #{val}"
+              {parsed, _} -> parsed
+            end
+        end
+    end
+  end
+
+
 end

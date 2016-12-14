@@ -14,6 +14,6 @@ defmodule Standard.StageTime do
     schema
     |> cast(params, @required_fields)
     |> validate_required(@required_fields)
-    |> validate_inclusion(:type, ["minutes", "songs", "minutes_or_songs"])
+    |> validate_inclusion(:type, ["not_specified", "minutes", "songs", "minutes_or_songs"])
   end
 end

@@ -70,18 +70,21 @@ export const CategoryTypes = {
 }
 
 export const PerformerSignupOptions = {
+  NOT_SPECIFIED: 'not_specified',
   IN_PERSON: 'in_person',
   PRE_REGISTRATION: 'pre_registration',
   IN_PERSON_AND_PRE_REGISTRATION: 'in_person_and_pre_registration'
 }
 
 export const PerformerLimitOptions = {
+  NOT_SPECIFIED: 'not_specified',
   NO_LIMIT: 'no_limit',
   LIMIT: 'limit',
   LIMIT_BY_SIGN_UP_TYPE: 'limit_by_sign_up_type'
 }
 
 export const StageTimeOptions = {
+  NOT_SPECIFIED: 'not_specified',
   MINUTES: 'minutes',
   SONGS: 'songs',
   MINUTES_OR_SONGS: 'minutes_or_songs'
@@ -89,12 +92,14 @@ export const StageTimeOptions = {
 
 export const TierPerkOptions = {
   NO_PERK: 'no_perk',
+  ADDITIONAL_MINUTES_AND_PRIORITY_ORDER: 'additional_minutes_and_priority_order',
   MINUTES_AND_PRIORITY_ORDER: 'minutes_and_priority_order',
+  ADDITIONAL_SONGS_AND_PRIORITY_ORDER: 'additional_songs_and_priority_order',
   SONGS_AND_PRIORITY_ORDER: 'songs_and_priority_order',
   MINUTES: 'minutes',
   SONGS: 'songs',
   PRIORITY_ORDER: 'priority_order',
-  BUCKET_ENTRY: 'bucket_entry'
+  ADDITIONAL_BUCKET_ENTRY: 'additional_bucket_entry'
 }
 
 export const MinutesTypeOptions = {
@@ -120,6 +125,8 @@ export const CostOptions = {
   MINIMUM_PURCHASE: 'minimum_purchase',
   COVER_AND_MINIMUM_PURCHASE: 'cover_and_minimum_purchase',
   COVER_OR_MINIMUM_PURCHASE: 'cover_or_minimum_purchase',
+  PAID: 'paid',
+  SEE_NOTES: 'see_notes'
 }
 
 export const PurchaseTypeOptions = {

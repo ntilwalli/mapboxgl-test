@@ -7,37 +7,44 @@ import {ComboBox, BlankStructuredUndefined, FloatInputComponent, NumberInputComp
 import {TierPerkOptions, StageTimeOptions} from '../../helpers'
 import clone = require('clone')
 
-function optionToText(type) {
-  switch (type) {
-    case TierPerkOptions.MINUTES:
-      return "Additional minutes"
-    case TierPerkOptions.MINUTES_AND_PRIORITY_ORDER:
-      return "Additional minutes + priority order"
-    case TierPerkOptions.SONGS:
-      return "Additional songs"
-    case TierPerkOptions.SONGS_AND_PRIORITY_ORDER:
-      return "Additional songs + priority order"
-    case TierPerkOptions.PRIORITY_ORDER:
-      return "Priority order"
-    case TierPerkOptions.BUCKET_ENTRY:
-      return "Additional bucket entry"
-    case TierPerkOptions.NO_PERK:
-      return "No perk"
-    default:
-      throw new Error()
-  }
-}
+// function optionToText(type) {
+//   switch (type) {
+//     case TierPerkOptions.MINUTES:
+//       return "Additional minutes"
+//     case TierPerkOptions.MINUTES_AND_PRIORITY_ORDER:
+//       return "Additional minutes + priority order"
+//     case TierPerkOptions.SONGS:
+//       return "Additional songs"
+//     case TierPerkOptions.SONGS_AND_PRIORITY_ORDER:
+//       return "Additional songs + priority order"
+//     case TierPerkOptions.PRIORITY_ORDER:
+//       return "Priority order"
+//     case TierPerkOptions.BUCKET_ENTRY:
+//       return "Additional bucket entry"
+//     case TierPerkOptions.NO_PERK:
+//       return "No perk"
+//     default:
+//       throw new Error()
+//   }
+// }
 
 
 function getMinutesDefault() {
-  return 2
+  return 5
 }
 
 function getSongsDefault() {
+  return 2
+}
+function getAdditionalMinutesDefault() {
+  return 2
+}
+
+function getAdditionalSongsDefault() {
   return 1
 }
 
-function getBucketEntryDefault() {
+function getAdditionalBucketEntryDefault() {
   return 1
 }
 
@@ -81,11 +88,16 @@ function BucketEntryComponent(sources, props$, component_id) {
 
 function toDefault(type) {
   switch (type) {
-      case TierPerkOptions.MINUTES:
-      case TierPerkOptions.MINUTES_AND_PRIORITY_ORDER:
+    case TierPerkOptions.MINUTES:
+    case TierPerkOptions.MINUTES_AND_PRIORITY_ORDER:
       return {
         type,
         data: getMinutesDefault()
+      }
+    case TierPerkOptions.ADDITIONAL_MINUTES_AND_PRIORITY_ORDER:
+      return {
+        type,
+        data: getAdditionalMinutesDefault()
       }
     case TierPerkOptions.SONGS:
     case TierPerkOptions.SONGS_AND_PRIORITY_ORDER:
@@ -93,15 +105,20 @@ function toDefault(type) {
         type,
         data: getSongsDefault()
       }
+    case TierPerkOptions.ADDITIONAL_SONGS_AND_PRIORITY_ORDER:
+      return {
+        type,
+        data: getAdditionalSongsDefault()
+      }
     case TierPerkOptions.PRIORITY_ORDER:
       return {
         type,
         data: getPriorityOrderDefault()
       }
-    case TierPerkOptions.BUCKET_ENTRY:
+    case TierPerkOptions.ADDITIONAL_BUCKET_ENTRY:
       return {
         type,
-        data: getBucketEntryDefault()
+        data: getAdditionalBucketEntryDefault()
       }
     case TierPerkOptions.NO_PERK:
       return {
@@ -128,12 +145,12 @@ export default function main(sources, inputs) {
     TierPerkOptions.MINUTES,
     TierPerkOptions.SONGS,
     TierPerkOptions.PRIORITY_ORDER,
-    TierPerkOptions.BUCKET_ENTRY,
+    TierPerkOptions.ADDITIONAL_BUCKET_ENTRY,
     TierPerkOptions.MINUTES_AND_PRIORITY_ORDER,
     TierPerkOptions.SONGS_AND_PRIORITY_ORDER
   ]
 
-  const type_component = isolate(ComboBox)(sources, options, shared$.pluck('type'), optionToText)
+  const type_component = isolate(ComboBox)(sources, options, shared$.pluck('type'))
 
   const props$ = O.merge(
     shared$,
@@ -145,6 +162,7 @@ export default function main(sources, inputs) {
     switch (props.type) {
       case TierPerkOptions.MINUTES:
       case TierPerkOptions.MINUTES_AND_PRIORITY_ORDER:
+      case TierPerkOptions.ADDITIONAL_MINUTES_AND_PRIORITY_ORDER:
         return MinutesComponent(sources, O.of(props.data), component_id + ' minutes')
       default:
         return BlankStructuredUndefined()
@@ -161,6 +179,7 @@ export default function main(sources, inputs) {
     switch (props.type) {
       case TierPerkOptions.SONGS:
       case TierPerkOptions.SONGS_AND_PRIORITY_ORDER:
+      case TierPerkOptions.ADDITIONAL_SONGS_AND_PRIORITY_ORDER:
         return SongsComponent(sources, O.of(props.data), component_id + ' songs')
       default:
         return BlankStructuredUndefined()
@@ -174,7 +193,7 @@ export default function main(sources, inputs) {
 
   const bucket_entry_component$ = props$.map((props: any) => {
     switch (props.type) {
-      case TierPerkOptions.BUCKET_ENTRY:
+      case TierPerkOptions.ADDITIONAL_BUCKET_ENTRY:
         return BucketEntryComponent(sources, O.of(props.data), component_id + ' songs')
       default:
         return BlankStructuredUndefined()
@@ -187,15 +206,19 @@ export default function main(sources, inputs) {
   }
 
   function hasMinutes(type) {
-    return type === TierPerkOptions.MINUTES || type === TierPerkOptions.MINUTES_AND_PRIORITY_ORDER
+    return type === TierPerkOptions.MINUTES || 
+      type === TierPerkOptions.MINUTES_AND_PRIORITY_ORDER ||
+      type === TierPerkOptions.ADDITIONAL_MINUTES_AND_PRIORITY_ORDER
   }
 
   function hasSongs(type) {
-    return type === TierPerkOptions.SONGS || type === TierPerkOptions.SONGS_AND_PRIORITY_ORDER
+    return type === TierPerkOptions.SONGS || 
+      type === TierPerkOptions.SONGS_AND_PRIORITY_ORDER ||
+      type === TierPerkOptions.ADDITIONAL_MINUTES_AND_PRIORITY_ORDER
   }
 
   function hasBucketEntry(type) {
-    return type === TierPerkOptions.BUCKET_ENTRY
+    return type === TierPerkOptions.ADDITIONAL_BUCKET_ENTRY
   }
 
   const vtree$ = combineObj({

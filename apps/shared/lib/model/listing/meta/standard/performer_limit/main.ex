@@ -15,6 +15,7 @@ defmodule Standard.PerformerLimit do
     |> cast(params, @allowed_fields)
     |> validate_required(@required_fields)
     |> validate_inclusion(:type, [
+      "not_specified",
       "no_limit", 
       "limit", 
       "limit_by_sign_up_type"

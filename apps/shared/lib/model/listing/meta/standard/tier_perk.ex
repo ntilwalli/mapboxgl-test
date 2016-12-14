@@ -20,9 +20,11 @@ defmodule Standard.TierPerk do
       "minutes",
       "songs",
       "priority_order",
-      "bucket_entry",
+      "additional_bucket_entry",
       "minutes_and_priority_order",
-      "songs_and_priority_order"
+      "songs_and_priority_order",
+      "additional_minutes_and_priority_order",
+      "additional_songs_and_priority_order"
     ])
     |> cast_embed(:data)
   end

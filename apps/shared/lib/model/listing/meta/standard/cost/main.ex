@@ -20,7 +20,9 @@ defmodule Standard.Cost do
       "cover", 
       "minimum_purchase",
       "cover_and_minimum_purchase",
-      "cover_or_minimum_purchase"
+      "cover_or_minimum_purchase",
+      "see_notes",
+      "paid"
     ])
     |> cast_embed(:data, required: true)
     |> cast_embed(:perk)

@@ -14,7 +14,7 @@ export function getDefault() {
     data: {
       cover: 5
     },
-    benefit: {
+    perk: {
       type: TierPerkOptions.MINUTES,
       data: 5
     }
@@ -104,7 +104,7 @@ export default function main(sources, inputs) {
     output$: minimum_purchase_component$.switchMap(x => x.output$)
   }
 
-  const perk_component = TierPerk(sources, {...inputs, props$: shared$.pluck('benefit')})
+  const perk_component = TierPerk(sources, {...inputs, props$: shared$.pluck('perk')})
 
 
   const vtree$ = combineObj({

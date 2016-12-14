@@ -3,76 +3,13 @@ import isolate from '@cycle/isolate'
 import {div, span, input} from '@cycle/dom'
 import deepEqual = require('deep-equal')
 import {combineObj, createProxy, blankComponentUndefinedDOM} from '../../../../../utils'
-import {CostOptions, PurchaseTypeOptions, BlankStructuredUndefined, CostTypeComboBox, PurchaseTypeComboBox, FloatInputComponent, NumberInputComponent} from '../helpers'
+import {CostOptions, MinimumPurchaseComponent, minimumPurchaseDefault, PurchaseTypeOptions, BlankStructuredUndefined, CostTypeComboBox, PurchaseTypeComboBox, FloatInputComponent, NumberInputComponent} from '../helpers'
 import clone = require('clone')
 
 export function getDefault() {
   return {
     type: CostOptions.FREE,
     data: undefined
-  }
-}
-
-export function getStructuredDefault() {
-  return {
-    data: getDefault(),
-    valid: true,
-    errors: []
-  }
-}
-
-function minimumPurchaseDefault() {
-  return {
-    type: PurchaseTypeOptions.DRINK,
-    data: 1
-  }
-}
-
-function MinimumPurchaseComponent(sources, props$, component_id) {
-  const shared$ = props$
-    .map(x => x || minimumPurchaseDefault())
-    .publishReplay(1).refCount()
-  const number_input = NumberInputComponent(sources, props$.map(x => x.data.toString()), 'Minimum purchase: Invalid number')
-  const p_opts = PurchaseTypeOptions
-  const options = [
-    PurchaseTypeOptions.DRINK,
-    PurchaseTypeOptions.ITEM,
-    //p_opts.DRINK_OR_ITEM,
-    PurchaseTypeOptions.DOLLARS
-  ]
-  const type_input = isolate(PurchaseTypeComboBox)(sources, options, props$.map(x => x.type))
-
-  const vtree$ = combineObj({
-    number: number_input.DOM,
-    type: type_input.DOM
-  }).map((components: any) => {
-    const {number, type} = components
-    return div('.row', [
-      span('.item', [number]),
-      span('.item', [type])
-    ])
-  })
-
-  const output$ = combineObj({
-    data: number_input.output$,
-    type: type_input.output$
-  }).map((info: any) => {
-    const {data, type} = info
-    const valid = !! data.valid
-    const errors: string[] = data.errors
-    return {
-      data: {
-        data: data.data,
-        type
-      },
-      valid,
-      errors
-    }
-  })
-
-  return {
-    DOM: vtree$,
-    output$
   }
 }
 

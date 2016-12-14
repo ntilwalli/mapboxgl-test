@@ -5,6 +5,9 @@ defmodule Scraper.BadslavaScraper.V2 do
   import Scraper.BadslavaScraper.V1.Helpers
   import Helpers.V2
   import PerformerSignUp
+  import PerformerCostStageTime
+  import PeformerLimit
+  import Categories
   alias Scraper.Helpers
   alias Shared.Scrapings
   alias Shared.Repo
@@ -127,8 +130,12 @@ defmodule Scraper.BadslavaScraper.V2 do
 
   defp convert(l) do
     #IO.inspect l
+    IO.puts ""
     IO.inspect l["note"]
     IO.inspect get_performer_sign_up(l)
+    IO.inspect get_performer_cost_stage_time(l)
+    IO.inspect get_performer_limit(l)
+    IO.inspect get_categories(l)
     # {when_info, meta} = extract_meta(l)
     # out = %{
     #   type: "recurring",
@@ -208,7 +215,7 @@ defmodule Scraper.BadslavaScraper.V2 do
           ~r/(?<!sign(-| )up) ?starts? (at )?(?<hour>\d):(?<minute>\d\d) ?(?<meridiem>(a|p))\.?m\.?/i
         ]
 
-        time = parse_note(time_regexes, note, time, &convert_to_time_string/1)
+        time = parse_note_with_regexes(time_regexes, note, time, &convert_to_time_string/1)
           
         email = case email_match do
           [{_, [{"href", email}], [email_name]}] -> 

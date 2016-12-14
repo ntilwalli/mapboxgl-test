@@ -5,9 +5,8 @@ import Immutable = require('immutable')
 import {combineObj, createProxy} from '../../../../../utils'
 import clone = require('clone')
 import {default as Cost, getDefault as getCostDefault} from '../cost/main'
-import {default as TierCost, getDefault as getTierCostDefault} from '../tierCost/main'
-// How to use: include 'itemHeading', 'item' and 'itemDefault' in inputs object
-//{...inputs, sectionHeading: 'Stage time', itemHeading: 'Host', item: some component, itemDefault: some component value default function}
+//import {default as TierCost, getDefault as getTierCostDefault} from '../tierCost/main'
+import {default as FullTierCost, getDefault as getFullTierCostDefault} from '../fullTierCost/main'
 
 function render(state, component_id, item_heading) {
   let children
@@ -57,10 +56,10 @@ function reducers(actions, inputs) {
   const add_r = actions.add$.map(_ => state => {
     let new_state = state
     if (state.size === 1) {
-      new_state = state.set(0, Immutable.fromJS(add_structure(getTierCostDefault())))
+      new_state = state.set(0, Immutable.fromJS(add_structure(getFullTierCostDefault())))
     }
 
-    return new_state.push(Immutable.fromJS(add_structure(getTierCostDefault())))
+    return new_state.push(Immutable.fromJS(add_structure(getFullTierCostDefault())))
   })
 
   const subtract_r = actions.subtract$.map(index => state => {
@@ -101,7 +100,7 @@ export default function main(sources, inputs) {
   const components$ = state$
     .distinctUntilChanged((x, y) => x.length === y.length)
     .map(state => {
-      const component_func: any = state.length === 1 ? Cost : TierCost
+      const component_func: any = state.length === 1 ? Cost : FullTierCost
       //const state = JSON.parse(JSON.stringify(my_state));
       const components = state.map((props, index) => {
         return isolate(component_func)(sources, {...inputs, props$: O.of(props.data), component_index: index})

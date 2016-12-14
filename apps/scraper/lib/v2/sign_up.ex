@@ -1,30 +1,9 @@
 defmodule PerformerSignUp do
   import Helpers.V2
   
-  defp get_in_person_default()do
+  defp not_specified do 
     %{
-      type: "in_person",
-      data: %{
-        in_person: %{
-          begins: %{
-            type: "minutes_before_event_start",
-            data: %{
-              minutes: 15
-            }
-          },
-          ends: %{
-            type: "event_start",
-            data: nil
-          },
-          styles: ["list"]
-        }
-      }
-    }
-  end
-
-  defp get_blank do 
-    %{
-      type: "blank"
+      type: "not_specified"
     }
   end
 
@@ -78,23 +57,24 @@ defmodule PerformerSignUp do
       ~r/(?<hour>\d\d?):?(?<minute>\d\d)? sign-?up\/\d(?<meridiem>(?:a\.?|p\.?)m\.?) start/i
     ]
 
-    time_string = parse_note(regexes, note, nil, &convert_to_time_string/1)
+    time_string = parse_note_with_regexes(regexes, note, nil, &convert_to_time_string/1)
     time = case time_string do
       nil -> nil
       val -> convert_to_time(val)
     end
 
     case time do
-      nil ->
-        get_minutes_before_event_start(15)
+      nil -> nil
       val  ->
         week_day = listing["week_day"] |> String.downcase |> String.to_atom
         start_time = listing["start_time"]
-        IO.inspect {"calc params", week_day, start_time, week_day, val}
-        minutes = day_diff({week_day, start_time}, {week_day, val})
-        case minutes do
-          0 -> get_event_start()
-          val -> get_minutes_before_event_start(-minutes)
+        #IO.inspect {"in person begins calc params", week_day, start_time, week_day, val}
+        diff = Calendar.Time.diff(start_time, val)
+        #IO.inspect {"diff", diff}
+        minutes = cond do
+          diff > 0 -> get_minutes_before_event_start(round(diff/60))
+          diff === 0 -> get_event_start
+          diff < 0 -> get_minutes_after_event_start(round(-diff/60))
         end
     end
   end
@@ -105,26 +85,26 @@ defmodule PerformerSignUp do
     start_time = listing["start_time"]
     
     regexes = [
-      ~r/must arrive by (?<hour>\d):?(?<minute>\d\d)? ?(?<meridiem>(?:a\.?|p\.?)m\.?)?/i,
+      ~r/must (arrive|show up) (by|before) (?<hour>\d):?(?<minute>\d\d)? ?(?<meridiem>(?:a\.?|p\.?)m\.?)?/i,
       ~r/(?<hour>\d):?(?<minute>\d\d)? ?(?<meridiem>(?:a\.?|p\.?)m\.?)? walk(-| )?in cut(-| )?off/i,
     ]
 
-    time_string = parse_note(regexes, note, nil, &convert_to_time_string/1)
+    time_string = parse_note_with_regexes(regexes, note, nil, &convert_to_time_string/1)
     time = case time_string do
       nil -> nil
       val -> convert_to_time(val)
     end
 
     case time do
-      nil ->
-        get_event_start
+      nil -> nil
       val  ->
-        IO.inspect {"calc params", week_day, start_time, week_day, val}
-        minutes = day_diff({week_day, start_time}, {week_day, val})
-        cond do
-          minutes === 0 -> get_event_start
-          minutes < 0 -> get_minutes_before_event_start(-minutes)
-          minutes > 0 -> get_minutes_after_event_start(minutes)
+        #IO.inspect {"in person ends calc params", week_day, start_time, week_day, val}
+        diff = Calendar.Time.diff(start_time, val)
+        #IO.inspect {"diff", diff}
+        minutes = cond do
+          diff > 0 -> get_minutes_before_event_start(round(diff/60))
+          diff === 0 -> get_event_start
+          diff < 0 -> get_minutes_after_event_start(round(-diff/60))
         end
     end
   end
@@ -137,23 +117,38 @@ defmodule PerformerSignUp do
     regexes = [
       ~r/must email/
     ]
-    parse_note(regexes, note, false, fn _ -> true end)
+    parse_note_with_regexes(regexes, note, false, fn _ -> true end)
+  end
+
+  def default_not_specified(val) do
+    case val do
+      nil -> not_specified
+      _ -> val
+    end
   end
 
   defp get_in_person_sign_up(listing) do
-    note_string = listing["note"]
-    case note_string do
-      nil -> get_in_person_default()
+    note = listing["note"]
+    case note do
+      nil -> nil
       val -> 
         cond do
           exclude_in_person(listing) ->
             nil
           true ->
-            %{
-              begins: get_in_person_begins(listing),
-              ends: get_in_person_ends(listing),
-              styles: get_in_person_styles(listing)
-            }
+            begins = get_in_person_begins(listing)
+            ends = get_in_person_ends(listing)
+            styles = get_in_person_styles(listing)
+            count = Enum.count(styles)
+            cond do
+              !!(begins || ends || count > 0) -> 
+                %{
+                  begins: default_not_specified(begins),
+                  ends: default_not_specified(ends),
+                  styles: styles
+                }
+              true -> nil
+            end
         end
     end
   end
@@ -161,9 +156,9 @@ defmodule PerformerSignUp do
     note = listing["note"]
     cond do
       Regex.match?(~r/by Tuesday noon/i, note) -> 
-        {get_previous_weekday_at_time("tuesday", 12, 0), get_blank()}
+        {get_previous_weekday_at_time("tuesday", 12, 0), not_specified()}
       Regex.match?(~r/before Thursday/i, note) -> 
-        {get_blank(), get_previous_weekday_at_time("thursday", 0, 0)}
+        {not_specified(), get_previous_weekday_at_time("thursday", 0, 0)}
       Regex.match?(~r/(?<!confirmation )on Monday/i, note) ->
         {get_previous_weekday_at_time("monday", 0, 0), get_previous_weekday_at_time("tuesday", 0, 0)}
       Regex.match?(~r/on Wednesday to sign(-| )?up/, note) ->
@@ -172,8 +167,8 @@ defmodule PerformerSignUp do
         match_day = match_map["day"] |> String.downcase
         time_string = convert_to_time_string(match_map)
         time = convert_to_time(time_string)
-        {get_blank(), get_previous_weekday_at_time(match_day, time.hour, time.minute)}
-      true -> {get_blank(), get_blank()}
+        {not_specified(), get_previous_weekday_at_time(match_day, time.hour, time.minute)}
+      true -> {not_specified, not_specified}
     end 
   end
 
@@ -181,11 +176,11 @@ defmodule PerformerSignUp do
     default_website = listing["website"]
     note = listing["note"]
     regexes = [
-      ~r/sign[ \-]?up .* (?<website>(http:\/\/|www\.)[a-zA-Z0-9\-\/.]+)/i,
+      ~r/sign[ \-]?up.+ (?<website>(http:\/\/|www\.)[a-zA-Z0-9\-\/.]+)/i,
       #~r/(?<website>(http:\/\/|www\.)[a-zA-Z0-9\-\/.]+)/i,
     ]
 
-    parse_note(regexes, note, nil, fn x -> 
+    parse_note_with_regexes(regexes, note, nil, fn x -> 
       #IO.inspect {"got here", x}
       case x["website"] do
         nil -> {"website", default_website}
@@ -199,10 +194,10 @@ defmodule PerformerSignUp do
     note = listing["note"]
     regexes = [
       ~r/e-?mail preferred/i,
-      ~r/e-?mail (?<email>[a-zA-Z@.0-9_\-]+)/i  
+      ~r/e-?mail (?<email>[a-zA-Z.0-9_\-]+@[a-zA-Z.0-9_\-]+)/i  
     ]
 
-    parse_note(regexes, note, nil, fn x -> 
+    parse_note_with_regexes(regexes, note, nil, fn x -> 
       #IO.inspect {"got here", x}
       case x["email"] do
         nil -> {"email", default_email}
@@ -228,7 +223,7 @@ defmodule PerformerSignUp do
     regexes = [
       ~r/no email/
     ]
-    parse_note(regexes, note, false, fn x -> true end)
+    parse_note_with_regexes(regexes, note, false, fn x -> true end)
   end
 
   defp get_pre_registration_sign_up(listing) do
@@ -240,10 +235,11 @@ defmodule PerformerSignUp do
           exclude_pre_registration(listing) -> nil
           true -> 
             out = get_pre_registration_type(listing)
-            IO.inspect({"out", out})
+            #IO.inspect({"out", out})
             case out do
               nil -> nil
               {type, data} ->
+                IO.inspect({"pre registration type", out})
                 {begins, ends} = get_pre_registration_begins_ends(listing)
                 %{
                   type: type,
@@ -264,19 +260,15 @@ defmodule PerformerSignUp do
         out = out ++ ["bucket"]
       end
 
-      if Regex.match?(~r/lottery style/i, note) do
-        out = out ++ ["bucket"]
-      end
-
-      if Regex.match?(~r/bucket/i, note) do
-        out = out ++ ["bucket"]
+      if Regex.match?(~r/by email/i, note) do
+        out = out ++ ["list"]
       end
 
       if Regex.match?(~r/((?<!not )lottery|bucket)/i, note) do
         out = out ++ ["bucket"]
       end
 
-      if Regex.match?(~r/(?<!no )list/i, note) do
+      if Regex.match?(~r/(?<!no )list(?! will now stop)/i, note) do
         out = out ++ ["list"]
       end
 
@@ -285,33 +277,44 @@ defmodule PerformerSignUp do
       end
     end
 
-    if Enum.count(out) == 0 do
-      out = out ++ ["list"]
-    end
-
     out |> Enum.uniq
   end
 
-  def get_performer_sign_up(listing) do
+  def parse_listing(listing) do
     in_person = get_in_person_sign_up(listing)
     pre_registration = get_pre_registration_sign_up(listing)
     cond do
-      in_person && pre_registration -> 
+      in_person && pre_registration ->
         %{
           type: "in_person_and_pre_registration",
-          in_person: in_person,
-          pre_registration: pre_registration
+          data: %{
+            in_person: in_person,
+            pre_registration: pre_registration
+          }
         }
       in_person ->
         %{
           type: "in_person",
-          in_person: in_person
+          data: %{
+            in_person: in_person,
+          }
         }
-      pre_registration ->
+      pre_registration -> 
         %{
           type: "pre_registration",
-          in_person: pre_registration
+          data: %{
+            pre_registration: pre_registration,
+          }
         }
+      true -> not_specified
+    end
+  end
+
+  def get_performer_sign_up(listing) do
+    note = listing["note"]
+    case note do
+      nil -> not_specified
+      val -> parse_listing(listing)
     end
   end
 

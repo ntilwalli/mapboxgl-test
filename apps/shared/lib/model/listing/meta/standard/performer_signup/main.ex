@@ -15,6 +15,7 @@ defmodule Standard.PerformerSignUp do
     |> cast(params, @allowed_fields)
     |> validate_required(@required_fields)
     |> validate_inclusion(:type, [
+      "not_specified",
       "in_person", 
       "pre_registration", 
       "in_person_and_pre_registration"
