@@ -144,10 +144,7 @@ export default function main(sources, inputs) {
     return {
       data: {
         type,
-        data: (minutes || songs) ? {
-          minutes: minutes.data,
-          songs: songs.data
-        } : undefined,
+        data: minutes && minutes.data || songs && songs.data || undefined,
       },
       errors: minutes.errors.concat(songs.errors),
       valid: minutes.valid && songs.valid

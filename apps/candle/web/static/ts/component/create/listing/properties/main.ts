@@ -13,9 +13,11 @@ import PersonName from './personName/main'
 import PersonNameTitle from './personNameTitle/main'
 import ContactInfo from './contactInfo/main'
 import {default as StageTimeRound, getDefault as getStageTimeDefault} from './stageTimeRound/main'
-import {MetaPropertyTypes, getSessionStream, EventTypeToProperties, CostOptions} from '../helpers'
+import {MetaPropertyTypes, PerformerSignupOptions,getSessionStream, EventTypeToProperties, CostOptions} from '../helpers'
 import {NotesInput} from './helpers'
 import {combineObj, createProxy, traceStartStop} from '../../../../utils'
+import clone = require('clone')
+import deepEqual = require('deep-equal')
 
 function arrayUnique(array) {
     var a = array.concat();
@@ -136,7 +138,7 @@ function intent(sources) {
 }
 
 function reducers(actions, inputs) {
-  const properties_output_r = inputs.properties_output$.map(message => state => {
+  const properties_output_r = inputs.properties$.map(message => state => {
     //console.log(`properties message`, message)
     const properties = state.get(`properties`)
     properties[message.type] = message.data
@@ -145,20 +147,28 @@ function reducers(actions, inputs) {
 
     return state.set('properties', properties)
       .set(`session`, session)
-
-    // return state.update('session', session => {
-    //     session.listing.meta[message.type] = message.data.data
-    //     return session
-    //   }).update(`valid_flags`, valid_flags => {
-    //     valid_flags[message.type] = message.data.valid
-    //     return valid_flags
-    //   }).update('errors_map', errors_map => {
-    //     errors_map[message.type] = message.data.errors
-    //     return errors_map
-    //   })
+      .set('component_types', calculateComponentTypes(session))
   })
 
   return O.merge(properties_output_r)
+}
+
+function calculateComponentTypes(session) {
+  const {listing} = session
+  const {meta} = listing
+  const {event_types, performer_cost} = meta
+  const foo_components = event_types.reduce((acc, val) => acc.concat(EventTypeToProperties[val]), [])
+  let out = arrayUnique(foo_components)
+
+
+  if (out.indexOf('stage_time') > -1 &&
+      performer_cost && 
+      performer_cost.length > 1) {
+    const index = out.findIndex('stage_time')
+    out.splice(index, 1)
+  }
+
+  return out
 }
 
 function model(actions, inputs) {
@@ -169,7 +179,9 @@ function model(actions, inputs) {
   })
     .switchMap((info: any) => {
       const init = {
+        authorization: info.authorization,
         session: info.session,
+        component_types: calculateComponentTypes(info.session),
         properties: {}
       }
 
@@ -177,7 +189,7 @@ function model(actions, inputs) {
         .startWith(Immutable.Map(init))
         .scan((acc, f: Function) => f(acc))
     })
-    .map((x: any) => x.toJS())
+    .map((x: any) => clone(x.toJS()))
     .debounceTime(0)  // ensure all valid flags have been collected before calculating validity
     .map((state: any) => {
       return {
@@ -186,6 +198,7 @@ function model(actions, inputs) {
       }
     })
     //.do(x => console.log('properties state', x))
+    //.letBind(traceStartStop('state$ trace'))
     .publishReplay(1).refCount()
 }
 
@@ -208,30 +221,19 @@ function view(state$, children$) {
 
 export function main(sources, inputs) {
   const actions = intent(sources)
-  const session$ = createProxy()
-  const replay_session$ = session$
-    //.letBind(traceStartStop('replay_session trace'))
-    .publishReplay(1).refCount()
-  const shunted_session$ = replay_session$
-    .filter(x => false)
-  const property_components$ = combineObj({
-      session: O.merge(actions.session$, shunted_session$), //  create permanent subscriber to circular session so session can be fed back to components
-      authorization: inputs.Authorization.status$
-    })
-    .map((info: any) => {
-      const {session, authorization} = info
-      const {listing} = session
-      const {meta} = listing
-      const {event_types} = meta
-
-      const foo_components = event_types.reduce((acc, val) => acc.concat(EventTypeToProperties[val]), [])
-      const component_types = arrayUnique(foo_components)
+  const properties$ = createProxy()
+  const state$ = model(actions, {...inputs, properties$})
+  const session$ = state$.pluck('session').publishReplay(1).refCount()
+  const components$ = state$
+    .distinctUntilChanged((x: any, y: any) => x.component_types.length === y.component_types.length)
+    .map((state: any) => {
+      const {authorization, session, component_types} = state
+      const meta = session.listing.meta
       const components = component_types.map(type => {
-        return toComponent(type, meta, replay_session$, sources, inputs, authorization)
+        return toComponent(type, meta, session$.delay(4), sources, inputs, authorization)
       })
-      //console.log('component',components)
+
       const DOM = O.combineLatest(...components.map(c => c.DOM))
-      
       const output$ = O.merge(...components.map(c => c.output$))
 
       return {
@@ -240,11 +242,8 @@ export function main(sources, inputs) {
     })
     .publishReplay(1).refCount()
   
-  const properties_output$ = property_components$.switchMap(x => x.output$)
-  const state$ = model(actions, {...inputs, properties_output$})
-  const properties_dom$ = property_components$.switchMap(x => x.DOM)
-
-  session$.attach(state$.pluck('session'))
+  properties$.attach(components$.switchMap(x => x.output$))
+  const properties_dom$ = components$.switchMap(x => x.DOM)
 
   return {
     DOM: view(state$, properties_dom$),

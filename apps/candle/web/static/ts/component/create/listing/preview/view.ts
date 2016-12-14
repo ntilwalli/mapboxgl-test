@@ -399,7 +399,7 @@ function renderSummary(state) {
   const {listing} = session
   const {type, meta, donde, cuando} = listing
   const {
-    name, event_types, categories, description, performer_signup, check_in, performer_cost, 
+    name, event_types, categories, description, performer_sign_up, check_in, performer_cost, 
     stage_time, performer_limit, listed_hosts, listed_performers, 
     audience_cost, contact_info} = meta
 
@@ -407,7 +407,7 @@ function renderSummary(state) {
     pre([
       `\
 ${getCheckinSummary(check_in)}\
-${event_types.some(x => x === EventTypes.OPEN_MIC) ? '\n\n' + getPerformerSignupSummary(performer_signup) : ''}\
+${event_types.some(x => x === EventTypes.OPEN_MIC) ? '\n\n' + getPerformerSignupSummary(performer_sign_up) : ''}\
 ${event_types.some(x => x === EventTypes.OPEN_MIC) ? '\n\n' + getStageTimeSummary(stage_time) : ''}\
 ${event_types.some(x => x === EventTypes.OPEN_MIC) ? '\n\n' + getPerformerLimitSummary(performer_limit) : ''}\
 `
@@ -848,7 +848,7 @@ function renderListingCard(state) {
   const {session} = state
   const {listing} = session
   const {type, donde, meta} = listing
-  const {name, event_types, categories, notes, performer_cost, description, contact_info, performer_signup, stage_time, performer_limit, listed_hosts} = meta
+  const {name, event_types, categories, notes, performer_cost, description, contact_info, performer_sign_up, stage_time, performer_limit, listed_hosts} = meta
 
   return div(`.listing-card`, [
     div('.column.meta', [
@@ -863,7 +863,7 @@ function renderListingCard(state) {
         div(`.column`, [
           renderCost(listing),
           renderStageTime(stage_time),
-          renderPerformerSignup(performer_signup),
+          renderPerformerSignup(performer_sign_up),
           renderPerformerLimit(performer_limit),
           renderEventTypesAndCategories(event_types, categories)
           // checked_in ? div(`.result-check-in`, [`Checked-in`]) : null

@@ -166,7 +166,7 @@ function InPersonComponent(sources, props$, component_id) {
     begins: begins_component_normalized.DOM,
     ends: ends_component.DOM,
     styles: styles_component.DOM
-  }).debounceTime(0).map((components: any) => {
+  }).map((components: any) => {
     return div('.column', [
       div('.row', [
         span('.sub-heading.item.flex.align-center', ['Begins']),
@@ -182,7 +182,7 @@ function InPersonComponent(sources, props$, component_id) {
     begins: begins_component_normalized.output$,
     ends: ends_component.output$,
     styles: styles_component.output$
-  }).debounceTime(0).map((components: any) => {
+  }).map((components: any) => {
     const {begins, ends, styles} = components
     const errors = [].concat(ends.errors).concat(begins.errors)
     const valid = !!(ends.valid && begins.valid)
@@ -244,7 +244,7 @@ function PreRegistrationComponent(sources, props$, component_id) {
     begins: begins_component.DOM,
     ends: ends_component.DOM,
     data: data_component.DOM
-  }).debounceTime(0).map((components: any) => {
+  }).map((components: any) => {
     return div('.column', [
       components.type,
       components.begins,
@@ -258,7 +258,7 @@ function PreRegistrationComponent(sources, props$, component_id) {
     begins: begins_component.output$,
     ends: ends_component.output$,
     data: data_component.output$
-  }).debounceTime(0).map((components: any) => {
+  }).map((components: any) => {
     const {type, begins, ends, data} = components
     const errors = [].concat(data.errors).concat(ends.errors).concat(begins.errors)
     const valid = !!(data.valid && ends.valid && begins.valid)
@@ -350,6 +350,7 @@ export default function main(sources, inputs): SinksType {
 
   const signup_type_component = PerformerSignupComboBox(sources, shared$.pluck('type'))
   const signup_type$ = signup_type_component.output$
+    //.do(x => console.log('sign_up output$ 1', x))
     .publishReplay(1).refCount()
 
   const input_props$ = O.merge(
@@ -387,7 +388,7 @@ export default function main(sources, inputs): SinksType {
 
   const in_person_component = {
     DOM: in_person_component$.switchMap(x => x.DOM),
-    output$: in_person_component$.switchMap(x => x.output$)
+    output$: in_person_component$.switchMap(x => x.output$)  //.do(x => console.log('sign_up output$ 2', x))
   }
 
   const pre_registration_component$ = input_props$.map((props: any) => {
@@ -402,7 +403,7 @@ export default function main(sources, inputs): SinksType {
 
   const pre_registration_component = {
     DOM: pre_registration_component$.switchMap(x => x.DOM),
-    output$: pre_registration_component$.switchMap(x => x.output$)
+    output$: pre_registration_component$.switchMap(x => x.output$)  //.do(x => console.log('sign_up output$ 3', x))
   }
 
   const vtree$ = combineObj({
@@ -422,11 +423,18 @@ export default function main(sources, inputs): SinksType {
     ])
   })
 
+  // const output$ = combineObj({
+  //   type$: signup_type$,
+  //   in_person$: in_person_component.output$,
+  //   pre_registration$: pre_registration_component.output$
+  // })
+
   const output$ = combineObj({
-    type$: signup_type$,
-    in_person$: in_person_component.output$,
-    pre_registration$: pre_registration_component.output$
-  }).debounceTime(0).map((info: any) => {
+    in_person: in_person_component.output$,
+    pre_registration: pre_registration_component.output$,
+    type: signup_type$
+  })
+  .debounceTime(5).map((info: any) => {
     const {type, in_person, pre_registration} = info
     const errors = in_person.errors.concat(pre_registration.errors)
     const valid = in_person.valid && pre_registration.valid
@@ -442,6 +450,8 @@ export default function main(sources, inputs): SinksType {
       }
     }
   })
+  .publishReplay(1).refCount()
+
 
   return {
     DOM: vtree$,

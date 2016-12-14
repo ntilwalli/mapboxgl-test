@@ -2,7 +2,8 @@ import {Observable as O} from 'rxjs'
 import isolate from '@cycle/isolate'
 import {div, span, input} from '@cycle/dom'
 import {combineObj, createProxy, traceStartStop} from '../../../../../utils'
-import {PerformerSignupOptions, PerformerLimitOptions, ComboBox, BlankUndefined, BlankStructuredUndefined, NumberInputComponent} from '../helpers'
+import { ComboBox, BlankUndefined, BlankStructuredUndefined, NumberInputComponent} from '../helpers'
+import {MetaPropertyTypes, PerformerSignupOptions, PerformerLimitOptions} from '../../helpers'
 import clone = require('clone')
 
 
@@ -327,14 +328,15 @@ export default function main(sources, inputs) {
     })
     .publishReplay(1).refCount()
 
+  //const in_app_enabled$ = O.of(inputs.can_offer_waitlist)
   const in_app_enabled$ = inputs.session$
     .map(session => {
-      const performer_signup = session.listing.meta.performer_signup 
+      const performer_sign_up = session.listing.meta.performer_sign_up 
       return !!(
-        performer_signup && 
-        (performer_signup.type === PerformerSignupOptions.PRE_REGISTRATION || 
-          performer_signup.type === PerformerSignupOptions.IN_PERSON_AND_PRE_REGISTRATION) && 
-        performer_signup.data.pre_registration.type === 'app'
+        performer_sign_up && 
+        (performer_sign_up.type === PerformerSignupOptions.PRE_REGISTRATION || 
+          performer_sign_up.type === PerformerSignupOptions.IN_PERSON_AND_PRE_REGISTRATION) && 
+        performer_sign_up.data.pre_registration.type === 'app'
       )
     })
     .distinctUntilChanged()
