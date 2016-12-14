@@ -65,7 +65,7 @@ export default function main(sources, inputs) {
   return {
     DOM: vtree$,
     output$: output$.map(x => {
-      if (inputs.component_index) {
+      if (inputs.component_index > -1) {
         return {
           data: x,
           index: inputs.component_index

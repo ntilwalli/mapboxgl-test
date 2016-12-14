@@ -145,13 +145,17 @@ export default function main(sources, inputs) {
       const errors = cover.errors.concat(minimum_purchase.errors)
       const valid = cover.valid && minimum_purchase.valid
 
+      const blank = undefined
+      const data = type === CostOptions.SEE_NOTES ? blank :
+                   type === CostOptions.FREE ? blank :
+                   type === CostOptions.COVER ? { cover: cover.data } :
+                   type === CostOptions.MINIMUM_PURCHASE ? { minimum_purchase: minimum_purchase.data } :
+                   {cover: cover.data, minimum_purchase: minimum_purchase.data}
+
       return {
         data: {
           type,
-          data: (cover.data || minimum_purchase.data) ? {
-            cover: cover.data,
-            minimum_purchase: minimum_purchase.data
-          } : undefined, 
+          data: data
         },
         valid,
         errors
@@ -161,7 +165,7 @@ export default function main(sources, inputs) {
   return {
     DOM: vtree$,
     output$: output$.map(x => {
-      if (inputs.component_index) {
+      if (inputs.component_index > -1) {
         return {
           data: x,
           index: inputs.component_index

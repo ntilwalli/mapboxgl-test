@@ -4,6 +4,7 @@ import isolate from '@cycle/isolate'
 import Immutable = require('immutable')
 import {combineObj, createProxy} from '../../../../../utils'
 import clone = require('clone')
+import {CostOptions, TierPerkOptions} from '../../helpers'
 import {default as Cost, getDefault as getCostDefault} from '../cost/main'
 //import {default as TierCost, getDefault as getTierCostDefault} from '../tierCost/main'
 import {default as FullTierCost, getDefault as getFullTierCostDefault} from '../fullTierCost/main'
@@ -56,7 +57,17 @@ function reducers(actions, inputs) {
   const add_r = actions.add$.map(_ => state => {
     let new_state = state
     if (state.size === 1) {
-      new_state = state.set(0, Immutable.fromJS(add_structure(getFullTierCostDefault())))
+      const x = new_state.toJS()
+      const item = x[0]
+      if (item.data.type !== CostOptions.COVER_OR_MINIMUM_PURCHASE) {
+        item.data['perk'] = {
+          type: TierPerkOptions.NO_PERK
+        }
+
+        new_state = new_state.set(0, Immutable.fromJS(item))
+      } else {
+        new_state = state.set(0, Immutable.fromJS(add_structure(getFullTierCostDefault())))
+      }
     }
 
     return new_state.push(Immutable.fromJS(add_structure(getFullTierCostDefault())))
@@ -65,8 +76,15 @@ function reducers(actions, inputs) {
   const subtract_r = actions.subtract$.map(index => state => {
     const new_state = state.delete(index)
     if (new_state.size === 1) {
-      return new_state.set(0, Immutable.fromJS(add_structure(getCostDefault())))
+      const x = new_state.toJS()
+      const item = x[0]
+      delete(item.data.perk)
+
+      return new_state.set(0, Immutable.fromJS(item))
+      //return new_state.set(0, Immutable.fromJS(add_structure(getCostDefault())))
     }
+
+    return new_state
   })
 
   const change_r = inputs.change$.map(msg => state => {
