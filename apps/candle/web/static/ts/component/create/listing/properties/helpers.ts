@@ -76,7 +76,7 @@ function getTextFromOption(opt) {
 
 }
 
-export function ComboBox(sources, options, props$, styleClass?) {
+export function ComboBox(sources, options, props$, mapper?) {
   const shared$ = props$
     .map(x => {
       return x
@@ -91,7 +91,7 @@ export function ComboBox(sources, options, props$, styleClass?) {
     return div(`.select-container`, [
       select(`.appComboBoxSelect`, options.map(opt => {
         return option({attrs: {value: opt, selected: state === opt}}, [
-          getTextFromOption(opt)
+          mapper ? mapper(opt) : getTextFromOption(opt)
         ])
       }))
     ])
@@ -482,8 +482,6 @@ export function RelativeTimeDataComponent(sources, props$, component_id) {
 
 export function getRelativeTimeDefault(type) {
   switch (type) {
-    // case rt_opts.DAYS_BEFORE_EVENT_START:
-    //   return {days: 1}
     case rt_opts.MINUTES_BEFORE_EVENT_START:
     case rt_opts.MINUTES_AFTER_EVENT_START:
     case rt_opts.MINUTES_BEFORE_EVENT_END:
@@ -491,7 +489,7 @@ export function getRelativeTimeDefault(type) {
     case rt_opts.EVENT_START:
     case rt_opts.EVENT_END:
     case rt_opts.UPON_POSTING:
-    //case rt_opts.BLANK:
+    case rt_opts.NOT_SPECIFIED:
       return undefined
     case rt_opts.PREVIOUS_WEEKDAY_AT_TIME:
       return {
@@ -515,7 +513,7 @@ function toRelativeTimeTypeSelector(props) {
       case rt_opts.EVENT_START:
       case rt_opts.EVENT_END:
       case rt_opts.UPON_POSTING:
-      //case rt_opts.BLANK:
+      case rt_opts.NOT_SPECIFIED:
         return ['blank', undefined]
       case rt_opts.PREVIOUS_WEEKDAY_AT_TIME:
         return ['day_time', props.data]

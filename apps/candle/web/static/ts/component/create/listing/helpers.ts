@@ -87,10 +87,14 @@ export const StageTimeOptions = {
   MINUTES_OR_SONGS: 'minutes_or_songs'
 }
 
-export const TierBenefitOptions = {
+export const TierPerkOptions = {
+  NO_PERK: 'no_perk',
+  MINUTES_AND_PRIORITY_ORDER: 'minutes_and_priority_order',
+  SONGS_AND_PRIORITY_ORDER: 'songs_and_priority_order',
   MINUTES: 'minutes',
   SONGS: 'songs',
-  PRIORITY_ORDER: 'priority_order'
+  PRIORITY_ORDER: 'priority_order',
+  BUCKET_ENTRY: 'bucket_entry'
 }
 
 export const MinutesTypeOptions = {
@@ -99,7 +103,7 @@ export const MinutesTypeOptions = {
 }
 
 export const RelativeTimeOptions = {
-  BLANK: 'blank',
+  NOT_SPECIFIED: 'not_specified',
   UPON_POSTING: 'upon_posting',
   DAYS_BEFORE_EVENT_START: 'days_before_event_start',
   MINUTES_BEFORE_EVENT_START: 'minutes_before_event_start',

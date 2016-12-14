@@ -1,14 +1,13 @@
-defmodule Standard.RelativeTime do
+defmodule Standard.TierPerk do
   use Shared.Lib, :model
 
   import Shared.Helpers
-  #import Shared.Model.Listing.Meta.Standard
 
   @derive {Poison.Encoder, except: [:__meta__]}
   @primary_key false
   embedded_schema do
     field :type, :string
-    embeds_one :data, Standard.RelativeTimeData
+    embeds_one :data, :float
   end
 
   @required_fields [:type]
@@ -17,14 +16,13 @@ defmodule Standard.RelativeTime do
     |> cast(params, @required_fields)
     |> validate_required(@required_fields)
     |> validate_inclusion(:type, [
-      "not_specified",
-      "upon_posting",
-      "previous_weekday_at_time",
-      "minutes_before_event_start",
-      "event_start",
-      "minutes_after_event_start",
-      "minutes_before_event_end",
-      "event_end"
+      "no_perk",
+      "minutes",
+      "songs",
+      "priority_order",
+      "bucket_entry",
+      "minutes_and_priority_order",
+      "songs_and_priority_order"
     ])
     |> cast_embed(:data)
   end

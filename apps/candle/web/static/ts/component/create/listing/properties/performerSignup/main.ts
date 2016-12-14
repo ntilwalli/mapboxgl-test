@@ -220,7 +220,7 @@ function PreRegistrationComponent(sources, props$, component_id) {
   )
 
   const begins_options = [
-    RelativeTimeOptions.BLANK,
+    //RelativeTimeOptions.NOT_SPECIFIED,
     RelativeTimeOptions.UPON_POSTING,
     RelativeTimeOptions.PREVIOUS_WEEKDAY_AT_TIME,
     RelativeTimeOptions.MINUTES_BEFORE_EVENT_START
@@ -229,7 +229,7 @@ function PreRegistrationComponent(sources, props$, component_id) {
   const begins_component = RelativeTimeComponent(sources, shared$.pluck('begins'), begins_options, component_id + ' begins', 'Begins')
 
   const ends_options = [
-    RelativeTimeOptions.BLANK,
+    //RelativeTimeOptions.NOT_SPECIFIED,
     RelativeTimeOptions.EVENT_START,
     RelativeTimeOptions.PREVIOUS_WEEKDAY_AT_TIME,
     RelativeTimeOptions.MINUTES_BEFORE_EVENT_START,

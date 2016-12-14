@@ -6,6 +6,7 @@ defmodule Standard.Cost do
   embedded_schema do
     field :type, :string
     embeds_one :data, Standard.CostData
+    embeds_one :perk, Standard.TierPerk
   end
 
   @allowed_fields [:type]
@@ -22,5 +23,6 @@ defmodule Standard.Cost do
       "cover_or_minimum_purchase"
     ])
     |> cast_embed(:data, required: true)
+    |> cast_embed(:perk)
   end
 end

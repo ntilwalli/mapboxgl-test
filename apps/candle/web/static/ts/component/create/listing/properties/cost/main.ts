@@ -183,17 +183,20 @@ export default function main(sources, inputs) {
       const {type, cover, minimum_purchase} = components
       const both = cover && minimum_purchase
 
-      return div({class: {row: !both, column: both}}, [
-        span(`.item`, {class: {'small-margin-bottom': both}}, [type]),
-        cover ? div(`.row.align-center.small-margin-bottom`, [
-          both ? span('.sub-sub-heading.align-center', ['Cover']) : null,
-          span(`.item`, [span('.row', [span('.item', [cover]), span('.item.flex.align-center', ['dollars'])])])
-        ]) : null,
-        minimum_purchase ? div('.row.align-center', [
-          both ? span('.sub-sub-heading.align-center', ['Minimum purchase']) : null,
-          span('.item', [minimum_purchase]),
-        ]) : null
-      ])       
+      return div('.column', [
+        inputs.heading_text ? div('.sub-heading.section-heading ', [inputs.heading_text]) : null,
+        div({class: {row: !both, column: both}}, [
+          span(`.item`, {class: {'small-margin-bottom': both}}, [type]),
+          cover ? div(`.row.align-center.small-margin-bottom`, [
+            both ? span('.sub-sub-heading.align-center', ['Cover']) : null,
+            span(`.item`, [span('.row', [span('.item', [cover]), span('.item.flex.align-center', ['dollars'])])])
+          ]) : null,
+          minimum_purchase ? div('.row.align-center', [
+            both ? span('.sub-sub-heading.align-center', ['Minimum purchase']) : null,
+            span('.item', [minimum_purchase]),
+          ]) : null
+        ])  
+      ])     
     })
 
   const output$ = combineObj({
@@ -221,9 +224,13 @@ export default function main(sources, inputs) {
   return {
     DOM: vtree$,
     output$: output$.map(x => {
-      return {
-        data: x,
-        index: inputs.component_index
+      if (inputs.component_index) {
+        return {
+          data: x,
+          index: inputs.component_index
+        }
+      } else {
+        return x
       }
     })
   }

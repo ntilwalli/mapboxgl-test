@@ -2,7 +2,7 @@ import {Observable as O} from 'rxjs'
 import {div, a, pre, span, input, button} from '@cycle/dom'
 import {combineObj} from '../../../../utils'
 import {to12HourTime} from '../../../../helpers/time'
-import {ListingTypes, EventTypes, PerformerSignupOptions, RelativeTimeOptions, CostOptions, TierBenefitOptions, PurchaseTypeOptions, StageTimeOptions, MinutesTypeOptions, PerformerLimitOptions} from '../helpers'
+import {ListingTypes, EventTypes, PerformerSignupOptions, RelativeTimeOptions, CostOptions, TierPerkOptions, PurchaseTypeOptions, StageTimeOptions, MinutesTypeOptions, PerformerLimitOptions} from '../helpers'
 import moment = require('moment')
 import {recurrenceToRRuleSet} from '../helpers'
 import {getVenueName, getVenueAddress, getVenueLngLat} from '../../../../helpers/venue'
@@ -448,7 +448,7 @@ function renderCost(listing) {
   const {audience_cost, performer_cost} = listing.meta
   let out
   if (isOpenMicAndShow(listing)) {
-    if (deepEqual(audience_cost, performer_cost)) {
+    if (performer_cost.length === 1 && deepEqual(audience_cost, performer_cost[0])) {
       out = getAudienceCostString(audience_cost)
     } else {
       const audience = getAudienceCostString(audience_cost)

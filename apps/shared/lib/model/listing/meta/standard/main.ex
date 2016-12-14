@@ -18,7 +18,7 @@ defmodule Meta.Standard do
     embeds_one :performer_signup, Standard.PerformerSignUp
     embeds_one :check_in, Standard.CheckIn
     embeds_one :performer_limit, Standard.PerformerLimit
-    embeds_one :performer_cost, Standard.Cost
+    embeds_many :performer_cost, Standard.Cost
     embeds_one :contact_info, Standard.ContactInfo
     embeds_one :audience_cost, Standard.Cost
   end

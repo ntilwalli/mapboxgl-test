@@ -4,8 +4,8 @@ import {div, span, input} from '@cycle/dom'
 import deepEqual = require('deep-equal')
 import {combineObj, createProxy, blankComponentUndefinedDOM} from '../../../../../utils'
 import {BlankStructuredUndefined, CostTypeComboBox, PurchaseTypeComboBox, FloatInputComponent, NumberInputComponent} from '../helpers'
-import {CostOptions, TierBenefitOptions} from '../../helpers'
-import TierBenefit from '../tierBenefit/main'
+import {CostOptions, TierPerkOptions} from '../../helpers'
+import TierPerk from '../tierPerk/main'
 import clone = require('clone')
 
 export function getDefault() {
@@ -15,7 +15,7 @@ export function getDefault() {
       cover: 5
     },
     benefit: {
-      type: TierBenefitOptions.MINUTES,
+      type: TierPerkOptions.MINUTES,
       data: 5
     }
   }
@@ -77,15 +77,15 @@ export default function main(sources, inputs) {
     output$: cover_component$.switchMap(x => x.output$)
   }
 
-  const benefit_component = TierBenefit(sources, {...inputs, props$: shared$.pluck('benefit')})
+  const perk_component = TierPerk(sources, {...inputs, props$: shared$.pluck('benefit')})
 
 
   const vtree$ = combineObj({
       type: type_component.DOM,
       cover: cover_component.DOM, 
-      benefit: benefit_component.DOM
+      perk: perk_component.DOM
     }).debounceTime(0).map((components: any) => {
-      const {type, cover, benefit} = components
+      const {type, cover, perk} = components
 
       return div(`.column`, [
         div(`.row.align-center`, [
@@ -93,7 +93,7 @@ export default function main(sources, inputs) {
           cover ? span('.item', [cover]) : null,
           cover ? span('.item.align-center', ['dollars']) : null,
           span('.item.align-center', ['for']),
-          benefit
+          perk
         ])
       ])       
     })
@@ -101,17 +101,17 @@ export default function main(sources, inputs) {
   const output$ = combineObj({
       type: type_component.output$,
       cover: cover_component.output$, 
-      benefit: benefit_component.output$
+      perk: perk_component.output$
     }).debounceTime(0).map((components: any) => {
-      const {type, cover, benefit} = components
-      const errors = cover.errors.concat(benefit.errors)
-      const valid = !!(cover.valid && benefit.valid)
+      const {type, cover, perk} = components
+      const errors = cover.errors.concat(perk.errors)
+      const valid = !!(cover.valid && perk.valid)
 
       return {
         data: {
           type,
           data: cover.data,
-          benefit: benefit.data
+          perk: perk.data
         },
         valid,
         errors
