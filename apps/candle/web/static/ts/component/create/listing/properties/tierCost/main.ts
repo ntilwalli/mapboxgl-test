@@ -105,7 +105,7 @@ export default function main(sources, inputs) {
     }).debounceTime(0).map((components: any) => {
       const {type, cover, benefit} = components
       const errors = cover.errors.concat(benefit.errors)
-      const valid = cover.valid && benefit.errors
+      const valid = !!(cover.valid && benefit.valid)
 
       return {
         data: {

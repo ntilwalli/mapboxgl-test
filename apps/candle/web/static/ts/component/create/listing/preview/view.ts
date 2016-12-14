@@ -2,7 +2,7 @@ import {Observable as O} from 'rxjs'
 import {div, a, pre, span, input, button} from '@cycle/dom'
 import {combineObj} from '../../../../utils'
 import {to12HourTime} from '../../../../helpers/time'
-import {ListingTypes, EventTypes, PerformerSignupOptions, RelativeTimeOptions, CostOptions, PurchaseTypeOptions, StageTimeOptions, MinutesTypeOptions, PerformerLimitOptions} from '../helpers'
+import {ListingTypes, EventTypes, PerformerSignupOptions, RelativeTimeOptions, CostOptions, TierBenefitOptions, PurchaseTypeOptions, StageTimeOptions, MinutesTypeOptions, PerformerLimitOptions} from '../helpers'
 import moment = require('moment')
 import {recurrenceToRRuleSet} from '../helpers'
 import {getVenueName, getVenueAddress, getVenueLngLat} from '../../../../helpers/venue'
@@ -145,6 +145,19 @@ function getCostString(info) {
   } else {
     return `${getCoverChargeSummary(info)}${getPurchaseConjunction(info)}${getMinimumPurchaseSummary(info)}`
   }
+}
+
+function getPerformerCostString(cost) {
+  if (cost.length === 1) {
+    const info = cost[0]
+    return getCostString(info)
+  } else {
+    return `multi-tiered`
+  }
+}
+
+function getAudienceCostString(info) {
+  return getCostString(info)
 }
 
 function getPerformerCostSummary(info) {
@@ -436,10 +449,10 @@ function renderCost(listing) {
   let out
   if (isOpenMicAndShow(listing)) {
     if (deepEqual(audience_cost, performer_cost)) {
-      out = getCostString(audience_cost)
+      out = getAudienceCostString(audience_cost)
     } else {
-      const audience = getCostString(audience_cost)
-      const performer = getCostString(performer_cost)
+      const audience = getAudienceCostString(audience_cost)
+      const performer = getPerformerCostString(performer_cost)
       return div('.col', [
         div('.row.justify-end', [
           span('.heading.text-item.cost', ['Audience:']),
@@ -452,9 +465,9 @@ function renderCost(listing) {
       ])
     }
   } else if (isShow(listing)) {
-    out = getCostString(audience_cost)
+    out = getAudienceCostString(audience_cost)
   } else if (isOpenMic(listing)) {
-    out = getCostString(performer_cost)
+    out = getPerformerCostString(performer_cost)
   } else {
     return null
   }

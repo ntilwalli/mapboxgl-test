@@ -203,7 +203,7 @@ export default function main(sources, inputs) {
     }).debounceTime(0).map((components: any) => {
       const {type, cover, minimum_purchase} = components
       const errors = cover.errors.concat(minimum_purchase.errors)
-      const valid = cover.valid && minimum_purchase.errors
+      const valid = cover.valid && minimum_purchase.valid
 
       return {
         data: {
