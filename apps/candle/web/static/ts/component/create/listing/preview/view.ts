@@ -838,7 +838,7 @@ export function renderTextList(info) {
     const plural = info.length >1
     const title = plural ? 'Hosts:' : 'Host:'
     return div('.row.justify-end', [
-      div('.text-item', info.join(`, `))
+      div('.text-item', info.join(`, `).replace('_', '-'))
     ])
   } else {
     return null
