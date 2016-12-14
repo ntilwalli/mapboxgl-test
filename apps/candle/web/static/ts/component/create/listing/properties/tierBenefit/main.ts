@@ -129,9 +129,9 @@ export default function main(sources, inputs) {
     const {type, minutes, songs} = components
 
     return div(`.row`, [
-      span('.item', [type]),
-      minutes,
-      songs
+      songs ? span('.item.songs', [songs]) : null,
+      minutes ? span('.item.minutes', [minutes]) : null,
+      type
     ]) 
   })
 
@@ -141,10 +141,11 @@ export default function main(sources, inputs) {
     songs: songs_component.output$
   }).debounceTime(0).map((components: any) => {
     const {type, minutes, songs} = components
+    const data = type === "minutes" ? minutes.data : type === "songs" ? songs.data : undefined
     return {
       data: {
         type,
-        data: minutes && minutes.data || songs && songs.data || undefined,
+        data
       },
       errors: minutes.errors.concat(songs.errors),
       valid: minutes.valid && songs.valid
@@ -153,9 +154,6 @@ export default function main(sources, inputs) {
  
   return {
     DOM: vtree$,
-    output$: output$.map(data => ({
-      data,
-      index: inputs.component_index
-    }))
+    output$: output$
   }
 }

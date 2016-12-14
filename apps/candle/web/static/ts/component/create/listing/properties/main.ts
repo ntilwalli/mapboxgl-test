@@ -164,8 +164,9 @@ function calculateComponentTypes(session) {
   if (out.indexOf('stage_time') > -1 &&
       performer_cost && 
       performer_cost.length > 1) {
-    const index = out.findIndex('stage_time')
+    const index = out.findIndex(x => x === 'stage_time')
     out.splice(index, 1)
+    listing.meta.stage_time = undefined
   }
 
   return out
