@@ -1,11 +1,7 @@
 defmodule PeformerLimit do
   import Helpers.V2
 
-  defp not_specified do
-    %{
-      type: "not_specified"
-    }
-  end
+
   defp get_limit(data) do
     %{
       type: "limit",
@@ -47,7 +43,8 @@ defmodule PeformerLimit do
   defp get_performer_limit_regexes do
     regexes = [
       ~r/(?<pre_registration>\d+) spots by email.*(?<in_person>\d+) .*(in-person|bucket|list)/i,
-      ~r/(?<limit>\d+) (people|comic|performers?)/i
+      ~r/(?<limit>\d+) (people|comic|performers|comedians)/i,
+      ~r/(?<pre_registration>\d+) prebooked .* (?<in_person>\d+) walk(-| )?in/i
     ]
 
     regexes

@@ -314,18 +314,33 @@ function getLimitByTypeDefault() {
   }
 }
 
+function toProps(type) {
+
+      if (type === opts.NO_LIMIT) {
+        return {
+          type,
+          data: getNoLimitDefault()
+        }
+      } else if (type === opts.LIMIT) {
+        return {
+          type,
+          data: getLimitDefault()
+        } 
+      } else if (type === opts.LIMIT_BY_SIGN_UP_TYPE) {
+        return {
+          type,
+          data: getLimitByTypeDefault()
+        }
+      } 
+}
+
+export function getDefault() {
+  return toProps(opts.NO_LIMIT)
+}
+
 export default function main(sources, inputs) {
   const shared$ = inputs.props$.take(1)
-    .map(props => {
-      if (props) {
-        return props
-      } else {
-        return {
-          type: opts.NO_LIMIT,
-          data: getLimitByTypeDefault() 
-        }
-      }
-    })
+    .map(props => props || getDefault())
     .publishReplay(1).refCount()
 
   //const in_app_enabled$ = O.of(inputs.can_offer_waitlist)
@@ -349,24 +364,8 @@ export default function main(sources, inputs) {
     
   const input_props$ = O.merge(
     shared$,
-    limit_type$.skip(1).map((type) => {
-      if (type === opts.NO_LIMIT) {
-        return {
-          type,
-          data: getNoLimitDefault()
-        }
-      } else if (type === opts.LIMIT) {
-        return {
-          type,
-          data: getLimitDefault()
-        } 
-      } else if (type === opts.LIMIT_BY_SIGN_UP_TYPE) {
-        return {
-          type,
-          data: getLimitByTypeDefault()
-        }
-      } 
-    }))
+    limit_type$.skip(1).map(toProps)
+  )
  
   const input_component$ = input_props$.map((props: any) => {
     switch (props.type) {

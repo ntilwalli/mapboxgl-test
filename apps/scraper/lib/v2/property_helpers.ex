@@ -1,4 +1,33 @@
 defmodule Helpers.V2 do
+  def not_specified do 
+    %{
+      type: "not_specified"
+    }
+  end
+  def get_minutes_before_event_start(minutes) do
+    %{
+      type: "minutes_before_event_start",
+      data: %{
+        minutes: minutes
+      }
+    }
+  end
+
+  def get_minutes_after_event_start(minutes) do
+    %{
+      type: "minutes_after_event_start",
+      data: %{
+        minutes: minutes
+      }
+    }
+  end  
+
+  def get_event_start do
+    %{
+      type: "event_start",
+    }
+  end
+
   def parse_note_with_regexes(regexes, note, fallback_val, processor_fn) do
     cond do
       note ->

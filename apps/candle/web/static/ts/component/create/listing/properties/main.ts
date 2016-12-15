@@ -2,8 +2,9 @@ import {Observable as O} from 'rxjs'
 import {div} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 import Immutable = require('immutable')
-import PerformerSignup from './performerSignup/main'
-import CheckIn from './checkin/main'
+import PerformerSignup from './performerSignUp/main'
+//import PerformerCheckIn from './performerCheckIn/main'
+import PerformerCheckIn from './togglePerformerCheckIn/main'
 import Cost from './cost/main'
 import CollapseCollection from './collapseCollection/main'
 import Collection from './collection/main'
@@ -50,8 +51,8 @@ function toComponent(type, meta, session$, sources, inputs, authorization) {
     case MetaPropertyTypes.PERFORMER_SIGN_UP:
       component = PerformerSignup
       break
-    case MetaPropertyTypes.CHECK_IN:
-      component = CheckIn
+    case MetaPropertyTypes.PERFORMER_CHECK_IN:
+      component = PerformerCheckIn
       break
     case MetaPropertyTypes.PERFORMER_COST:
       component = (sources, inputs) => CostCollection(sources, {
@@ -175,7 +176,7 @@ function calculateComponentTypes(session) {
 function model(actions, inputs) {
   const reducer$ = reducers(actions, inputs)
   return combineObj({
-    session$: actions.session$,
+    session$: actions.session$.take(1),
     authorization$: inputs.Authorization.status$
   })
     .switchMap((info: any) => {

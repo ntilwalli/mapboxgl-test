@@ -8,6 +8,7 @@ defmodule Scraper.BadslavaScraper.V2 do
   import PerformerCostStageTime
   import PeformerLimit
   import Categories
+  import ListedHosts
   alias Scraper.Helpers
   alias Shared.Scrapings
   alias Shared.Repo
@@ -136,6 +137,7 @@ defmodule Scraper.BadslavaScraper.V2 do
     IO.inspect get_performer_cost_stage_time(l)
     IO.inspect get_performer_limit(l)
     IO.inspect get_categories(l)
+    IO.inspect get_listed_hosts(l)
     # {when_info, meta} = extract_meta(l)
     # out = %{
     #   type: "recurring",

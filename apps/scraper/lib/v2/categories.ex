@@ -22,7 +22,7 @@ defmodule Categories do
 
     end
 
-    case Enum.count(out) do
+    out = case Enum.count(out) do
       0 -> ["comedy"]
       _ -> out
     end

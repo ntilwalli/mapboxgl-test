@@ -8,7 +8,7 @@ export const EventTypes = {
 
 export const MetaPropertyTypes = {
   PERFORMER_SIGN_UP: 'performer_sign_up',
-  CHECK_IN: 'check_in',
+  PERFORMER_CHECK_IN: 'performer_check_in',
   PERFORMER_COST: 'performer_cost',
   STAGE_TIME: 'stage_time',
   PERFORMER_LIMIT: 'performer_limit', 
@@ -22,7 +22,7 @@ export const MetaPropertyTypes = {
 export const EventTypeToProperties = {
   open_mic: [
     MetaPropertyTypes.PERFORMER_SIGN_UP, 
-    MetaPropertyTypes.CHECK_IN,
+    MetaPropertyTypes.PERFORMER_CHECK_IN,
     MetaPropertyTypes.PERFORMER_COST,
     MetaPropertyTypes.STAGE_TIME,
     MetaPropertyTypes.PERFORMER_LIMIT,
@@ -33,7 +33,6 @@ export const EventTypeToProperties = {
   show: [
     MetaPropertyTypes.LISTED_HOSTS,
     MetaPropertyTypes.LISTED_PERFORMERS,
-    MetaPropertyTypes.CHECK_IN, 
     MetaPropertyTypes.AUDIENCE_COST,
     MetaPropertyTypes.CONTACT_INFO
   ]
@@ -60,8 +59,6 @@ export const ListingTypes = {
   RECURRING: 'recurring'
 }
 
-
-
 export const CategoryTypes = {
   COMEDY: 'comedy',
   MUSIC: 'music',
@@ -70,21 +67,24 @@ export const CategoryTypes = {
 }
 
 export const PerformerSignupOptions = {
-  NOT_SPECIFIED: 'not_specified',
   IN_PERSON: 'in_person',
   PRE_REGISTRATION: 'pre_registration',
   IN_PERSON_AND_PRE_REGISTRATION: 'in_person_and_pre_registration'
 }
 
+export const PreRegistrationOptions = {
+  APP: 'app',
+  EMAIL: 'email',
+  WEBSITE: 'website',
+}
+
 export const PerformerLimitOptions = {
-  NOT_SPECIFIED: 'not_specified',
   NO_LIMIT: 'no_limit',
   LIMIT: 'limit',
   LIMIT_BY_SIGN_UP_TYPE: 'limit_by_sign_up_type'
 }
 
 export const StageTimeOptions = {
-  NOT_SPECIFIED: 'not_specified',
   MINUTES: 'minutes',
   SONGS: 'songs',
   MINUTES_OR_SONGS: 'minutes_or_songs'
@@ -109,7 +109,6 @@ export const MinutesTypeOptions = {
 }
 
 export const RelativeTimeOptions = {
-  NOT_SPECIFIED: 'not_specified',
   UPON_POSTING: 'upon_posting',
   DAYS_BEFORE_EVENT_START: 'days_before_event_start',
   MINUTES_BEFORE_EVENT_START: 'minutes_before_event_start',

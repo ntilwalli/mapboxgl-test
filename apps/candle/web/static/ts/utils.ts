@@ -9,7 +9,6 @@ export function toMoment(c) { return moment(c.toISOString()) }
 export function inflateListing(listing) {
   const {cuando, meta} = listing
   const {begins, ends} = cuando
-  const {sign_up, check_in} = meta
 
   if (begins) {
     const inflated_begins = moment(begins)

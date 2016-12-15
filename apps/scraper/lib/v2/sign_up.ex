@@ -1,12 +1,6 @@
 defmodule PerformerSignUp do
   import Helpers.V2
   
-  defp not_specified do 
-    %{
-      type: "not_specified"
-    }
-  end
-
   defp get_previous_weekday_at_time(day, hour, minute) do
     %{
       type: "previous_weekday_at_time",
@@ -20,29 +14,6 @@ defmodule PerformerSignUp do
     }
   end
 
-  def get_minutes_before_event_start(minutes) do
-    %{
-      type: "minutes_before_event_start",
-      data: %{
-        minutes: minutes
-      }
-    }
-  end
-
-  def get_minutes_after_event_start(minutes) do
-    %{
-      type: "minutes_after_event_start",
-      data: %{
-        minutes: minutes
-      }
-    }
-  end  
-
-  def get_event_start do
-    %{
-      type: "event_start",
-    }
-  end
 
 
   def get_in_person_begins(listing) do
@@ -127,6 +98,10 @@ defmodule PerformerSignUp do
     end
   end
 
+  defp get_generic_in_person(listing) do
+    Regex.match?(~r/Walk( |-)ins welcome/, listing["note"])
+  end
+
   defp get_in_person_sign_up(listing) do
     note = listing["note"]
     case note do
@@ -140,8 +115,9 @@ defmodule PerformerSignUp do
             ends = get_in_person_ends(listing)
             styles = get_in_person_styles(listing)
             count = Enum.count(styles)
+            generic = get_generic_in_person(listing)
             cond do
-              !!(begins || ends || count > 0) -> 
+              !!(generic || begins || ends || count > 0) -> 
                 %{
                   begins: default_not_specified(begins),
                   ends: default_not_specified(ends),
@@ -222,7 +198,8 @@ defmodule PerformerSignUp do
     note = listing["note"]
     regexes = [
       ~r/no email/,
-      ~r/email .* for more info/i  
+      ~r/email .* for (more info|questions only)/i,
+      ~r/no pre-sign ?up/
     ]
     parse_note_with_regexes(regexes, note, false, fn x -> true end)
   end
@@ -240,7 +217,7 @@ defmodule PerformerSignUp do
             case out do
               nil -> nil
               {type, data} ->
-                IO.inspect({"pre registration type", out})
+                #IO.inspect({"pre registration type", out})
                 {begins, ends} = get_pre_registration_begins_ends(listing)
                 %{
                   type: type,
@@ -262,6 +239,14 @@ defmodule PerformerSignUp do
       end
 
       if Regex.match?(~r/by email/i, note) do
+        out = out ++ ["list"]
+      end
+      
+      if Regex.match?(~r/booked/i, note) do
+        out = out ++ ["list"]
+      end
+
+      if Regex.match?(~r/sign( |-)up at the bar/i, note) do
         out = out ++ ["list"]
       end
 

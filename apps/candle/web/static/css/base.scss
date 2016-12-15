@@ -78,8 +78,13 @@ input[type="text"] {
   display: none
 }
 
+// .disabled {
+//   color: lightgray;
+// }
+
 .disabled {
-  color: lightgray;
+  opacity: .25;
+  pointer-events: none;
 }
 
 .fa-1-2x {

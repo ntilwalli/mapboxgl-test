@@ -545,7 +545,6 @@ export function getRelativeTimeDefault(type) {
     case rt_opts.EVENT_START:
     case rt_opts.EVENT_END:
     case rt_opts.UPON_POSTING:
-    case rt_opts.NOT_SPECIFIED:
       return undefined
     case rt_opts.PREVIOUS_WEEKDAY_AT_TIME:
       return {
@@ -569,7 +568,6 @@ function toRelativeTimeTypeSelector(props) {
       case rt_opts.EVENT_START:
       case rt_opts.EVENT_END:
       case rt_opts.UPON_POSTING:
-      case rt_opts.NOT_SPECIFIED:
         return ['blank', undefined]
       case rt_opts.PREVIOUS_WEEKDAY_AT_TIME:
         return ['day_time', props.data]
@@ -584,7 +582,10 @@ function toRelativeTimeTypeSelector(props) {
 export function RelativeTimeComponent(sources, props$, options, component_id, heading_title, style_class = '.sub-heading') {
   const shared$ = props$
     .map(x => {
-      return x
+      return x || {
+        type: rt_opts.MINUTES_BEFORE_EVENT_START, 
+        data: getRelativeTimeDefault(rt_opts.MINUTES_BEFORE_EVENT_START)
+      } 
     })
     .publishReplay(1).refCount()
 
@@ -595,9 +596,13 @@ export function RelativeTimeComponent(sources, props$, options, component_id, he
     })
     .publishReplay(1).refCount()
 
-  const input_props$ = relative_type$.map(type => {
+  const input_props$ = O.merge(
+    shared$,
+    relative_type$.skip(1).map(type => {
       return {type, data: getRelativeTimeDefault(type)}
     })
+  )
+  
   const data_component = RelativeTimeDataComponent(sources, input_props$, component_id)
 
    const vtree$ = combineObj({

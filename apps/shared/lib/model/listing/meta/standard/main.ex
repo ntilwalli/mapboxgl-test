@@ -15,8 +15,8 @@ defmodule Meta.Standard do
     field :listed_hosts, {:array, :string}
     embeds_many :listed_performers, Standard.ListedPerformer
     embeds_many :stage_time, Standard.StageTime
-    embeds_one :performer_signup, Standard.PerformerSignUp
-    embeds_one :check_in, Standard.CheckIn
+    embeds_one :performer_sign_up, Standard.PerformerSignUp
+    embeds_one :performer_check_in, Standard.PerformerCheckIn
     embeds_one :performer_limit, Standard.PerformerLimit
     embeds_many :performer_cost, Standard.Cost
     embeds_one :contact_info, Standard.ContactInfo

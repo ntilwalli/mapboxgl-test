@@ -86,11 +86,16 @@ function getPerformerSignupSummary(info) {
   return out
 }
 
-function getCheckinSummary(info) {
-  return `Check-in:\n\
-  Allowed radius: ${info.radius}\n\
+function getPerformerCheckinSummary(info) {
+  let out = `Check-in:\n\
   Begins: ${getRelativeTimeInfo(info.begins)}\n\
   Ends: ${getRelativeTimeInfo(info.ends)}`
+
+  if (info.enable_in_app !== undefined) {
+    out += `\n  Enable in-app check-in: ${info.enable_in_app}`
+  }
+
+  return out
 }
 
 function getCoverChargeSummary(info) {
@@ -412,14 +417,14 @@ function renderSummary(state) {
   const {listing} = session
   const {type, meta, donde, cuando} = listing
   const {
-    name, event_types, categories, description, performer_sign_up, check_in, performer_cost, 
+    name, event_types, categories, description, performer_sign_up, performer_check_in, performer_cost, 
     stage_time, performer_limit, listed_hosts, listed_performers, 
     audience_cost, contact_info} = meta
 
   return div(`.column.listing-summary`, [
     pre([
       `\
-${getCheckinSummary(check_in)}\
+${performer_check_in ? getPerformerCheckinSummary(performer_check_in) : ''}\
 ${event_types.some(x => x === EventTypes.OPEN_MIC) ? '\n\n' + getPerformerSignupSummary(performer_sign_up) : ''}\
 ${event_types.some(x => x === EventTypes.OPEN_MIC) ? '\n\n' + getStageTimeSummary(stage_time) : ''}\
 ${event_types.some(x => x === EventTypes.OPEN_MIC) ? '\n\n' + getPerformerLimitSummary(performer_limit) : ''}\
