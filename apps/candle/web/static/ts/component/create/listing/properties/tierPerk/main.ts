@@ -48,14 +48,17 @@ function getAdditionalBucketEntryDefault() {
   return 1
 }
 
+function getDrinkTicketDefault() {
+  return 1
+}
+
 function getPriorityOrderDefault() {
   return undefined
 }
 
 export function getDefault() {
   return {
-    type: TierPerkOptions.MINUTES,
-    data: getMinutesDefault()
+    type: TierPerkOptions.NO_PERK
   }
 }
 
@@ -120,6 +123,11 @@ function toDefault(type) {
         type,
         data: getAdditionalBucketEntryDefault()
       }
+    case TierPerkOptions.DRINK_TICKET:
+      return {
+        type,
+        data: getDrinkTicketDefault()
+      }
     case TierPerkOptions.NO_PERK:
       return {
         type,
@@ -147,7 +155,8 @@ export default function main(sources, inputs) {
     TierPerkOptions.PRIORITY_ORDER,
     TierPerkOptions.ADDITIONAL_BUCKET_ENTRY,
     TierPerkOptions.MINUTES_AND_PRIORITY_ORDER,
-    TierPerkOptions.SONGS_AND_PRIORITY_ORDER
+    TierPerkOptions.SONGS_AND_PRIORITY_ORDER,
+    TierPerkOptions.DRINK_TICKET
   ]
 
   const type_component = isolate(ComboBox)(sources, options, shared$.pluck('type'))
@@ -205,6 +214,21 @@ export default function main(sources, inputs) {
     output$: bucket_entry_component$.switchMap(x => x.output$)
   }
 
+  const drink_ticket_component$ = props$.map((props: any) => {
+    switch (props.type) {
+      case TierPerkOptions.DRINK_TICKET:
+        return NumberInputComponent(sources, O.of(props.data.toString()), component_id + ' drink ticket: Invalid number')
+      default:
+        return BlankStructuredUndefined()
+    }
+  }).publishReplay(1).refCount()
+
+  const drink_ticket_component = {
+    DOM: drink_ticket_component$.switchMap(x => x.DOM),
+    output$: drink_ticket_component$.switchMap(x => x.output$)
+  }
+
+
   function hasMinutes(type) {
     return type === TierPerkOptions.MINUTES || 
       type === TierPerkOptions.MINUTES_AND_PRIORITY_ORDER ||
@@ -221,17 +245,23 @@ export default function main(sources, inputs) {
     return type === TierPerkOptions.ADDITIONAL_BUCKET_ENTRY
   }
 
+  function hasDrinkTicket(type) {
+    return type === TierPerkOptions.DRINK_TICKET
+  }
+
   const vtree$ = combineObj({
     type: type_component.DOM,
     minutes: minutes_component.DOM,
     songs: songs_component.DOM,
-    bucket_entry: bucket_entry_component.DOM
+    bucket_entry: bucket_entry_component.DOM,
+    drink_ticket: drink_ticket_component.DOM
   }).debounceTime(0).map((components: any) => {
-    const {type, minutes, songs, bucket_entry} = components
+    const {type, minutes, songs, bucket_entry, drink_ticket} = components
     return div(`.row`, [
-      bucket_entry ? span('.item.bucket_entry', [bucket_entry]) : null,
+      bucket_entry ? span('.item.bucket-entry', [bucket_entry]) : null,
       songs ? span('.item.songs', [songs]) : null,
       minutes ? span('.item.minutes', [minutes]) : null,
+      drink_ticket ? span('.item.drink-ticket', [drink_ticket]) : null,
       type
     ]) 
   })
@@ -240,12 +270,15 @@ export default function main(sources, inputs) {
     type: type_component.output$,
     minutes: minutes_component.output$,
     songs: songs_component.output$,
-    bucket_entry: bucket_entry_component.output$
+    bucket_entry: bucket_entry_component.output$,
+    drink_ticket: drink_ticket_component.output$
   }).debounceTime(0).map((components: any) => {
-    const {type, minutes, songs, bucket_entry} = components
+    const {type, minutes, songs, bucket_entry, drink_ticket} = components
     const component = hasMinutes(type) ? minutes:
                  hasSongs(type) ? songs:
-                 hasBucketEntry(type) ? bucket_entry : {data: undefined, errors: [], valid: true}
+                 hasBucketEntry(type) ? bucket_entry : 
+                 hasDrinkTicket(type) ? drink_ticket : 
+                 {data: undefined, errors: [], valid: true}
     return {
       data: {
         type,

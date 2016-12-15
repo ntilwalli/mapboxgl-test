@@ -21,15 +21,16 @@ export default function main(sources, inputs) {
     })
     .publishReplay(1).refCount()
 
-  const options = [
+  const cost_options = inputs.cost_options || [
     CostOptions.FREE,
     CostOptions.COVER,
     CostOptions.MINIMUM_PURCHASE,
     CostOptions.COVER_AND_MINIMUM_PURCHASE
   ]
 
-  const cost = Cost(sources, {inputs, options, props$: shared$})
-  const perk = TierPerk(sources, {...inputs, props$: shared$.pluck('perk')})
+
+  const cost = Cost(sources, {inputs, options: cost_options, props$: shared$})
+  const perk = TierPerk(sources, {...inputs, options: inputs.perk_options, props$: shared$.pluck('perk')})
 
 
   const vtree$ = combineObj({
@@ -41,7 +42,7 @@ export default function main(sources, inputs) {
       return div(`.column`, [
         cost,
         div('.row', [
-          span('.item.align-center', ['gets you']),
+          span('.item.flex.align-center.perk', [inputs.heading_text || 'Perk?']),
           perk
         ])
       ])

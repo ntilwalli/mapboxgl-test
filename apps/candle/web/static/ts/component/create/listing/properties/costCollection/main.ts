@@ -59,9 +59,14 @@ function reducers(actions, inputs) {
     if (state.size === 1) {
       const x = new_state.toJS()
       const item = x[0]
-      if (item.data.type !== CostOptions.COVER_OR_MINIMUM_PURCHASE) {
-        item.data['perk'] = {
-          type: TierPerkOptions.NO_PERK
+
+      const transferrable_cost_type = item.data.type !== CostOptions.COVER_OR_MINIMUM_PURCHASE
+      const transferrable_perk_type = item.data.perk.type === TierPerkOptions.NO_PERK
+      if (transferrable_cost_type) {
+        if (!transferrable_perk_type) {
+          item.data['perk'] = {
+            type: TierPerkOptions.NO_PERK
+          }
         }
 
         new_state = new_state.set(0, Immutable.fromJS(item))
@@ -101,7 +106,7 @@ function model(actions, inputs) {
   return inputs.props$
     .switchMap(props => {
       // should be
-      const init = props ? props.map(add_structure) : [getCostDefault()].map(add_structure)//[getDefault()]
+      const init = props ? props.map(add_structure) : [getFullTierCostDefault()].map(add_structure)//[getDefault()]
 
       return reducer$.startWith(Immutable.fromJS(init)).scan((acc, f: Function) => f(acc))
     })
@@ -118,10 +123,47 @@ export default function main(sources, inputs) {
   const components$ = state$
     .distinctUntilChanged((x, y) => x.length === y.length)
     .map(state => {
-      const component_func: any = state.length === 1 ? Cost : FullTierCost
+      let cost_options, perk_options, heading_text
+
+      if (state.length === 1) {
+        cost_options = [
+          CostOptions.FREE,
+          CostOptions.COVER,
+          CostOptions.MINIMUM_PURCHASE,
+          CostOptions.COVER_AND_MINIMUM_PURCHASE,
+          CostOptions.COVER_OR_MINIMUM_PURCHASE
+        ]
+
+        perk_options = [
+          TierPerkOptions.NO_PERK,
+          TierPerkOptions.DRINK_TICKET
+        ]
+
+        heading_text = "Perk?"
+      } else {
+        cost_options = [
+          CostOptions.FREE,
+          CostOptions.COVER,
+          CostOptions.MINIMUM_PURCHASE,
+          CostOptions.COVER_AND_MINIMUM_PURCHASE,
+        ]
+
+        perk_options = [
+          TierPerkOptions.NO_PERK,
+          TierPerkOptions.MINUTES,
+          TierPerkOptions.SONGS,
+          TierPerkOptions.PRIORITY_ORDER,
+          TierPerkOptions.ADDITIONAL_BUCKET_ENTRY,
+          TierPerkOptions.MINUTES_AND_PRIORITY_ORDER,
+          TierPerkOptions.SONGS_AND_PRIORITY_ORDER
+        ]
+
+        heading_text = "Perk?"
+      }
+
       //const state = JSON.parse(JSON.stringify(my_state));
       const components = state.map((props, index) => {
-        return isolate(component_func)(sources, {...inputs, props$: O.of(props.data), component_index: index})
+        return isolate(FullTierCost)(sources, {...inputs, heading_text, cost_options, perk_options, props$: O.of(props.data), component_index: index})
       })
       
       const components_dom = components.map(x => x.DOM)

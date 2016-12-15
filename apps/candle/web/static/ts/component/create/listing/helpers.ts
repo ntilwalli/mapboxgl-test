@@ -99,7 +99,8 @@ export const TierPerkOptions = {
   MINUTES: 'minutes',
   SONGS: 'songs',
   PRIORITY_ORDER: 'priority_order',
-  ADDITIONAL_BUCKET_ENTRY: 'additional_bucket_entry'
+  ADDITIONAL_BUCKET_ENTRY: 'additional_bucket_entry',
+  DRINK_TICKET: "drink_ticket"
 }
 
 export const MinutesTypeOptions = {

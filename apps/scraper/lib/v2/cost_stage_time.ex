@@ -7,7 +7,9 @@ defmodule PerformerCostStageTime do
     }
   end
 
-  def get_multi_tier(note) do 
+
+
+  def get_hardcoded(note) do 
     cond do
       Regex.match?(~r/free but if you buy a drink at the bar/i, note) ->
         tier_1 = %{
@@ -26,29 +28,60 @@ defmodule PerformerCostStageTime do
             }
           },
           perk: %{
-            type: "bucket_entry"
+            type: "additional_bucket_entry"
           }
         }
 
-        [tier_1, tier_2]
+        [[tier_1, tier_2], [get_cost(note)]]
+      Regex.match?(~r/\$5\/5 min Early spots. \$3\/4 min Early spots and FREE RANDOMLY SELECTED SPOTS\. Sign-up sheet goes out at 3:45\. One drink minimum. Just show up!!!/, note) ->
+        cost = [
+          %{
+            type: "minimum_purchase",
+            data: %{
+              minimum_purchase: %{
+                type: "drink",
+                data: 1
+              }
+            },
+            perk: %{
+              type: "no_perk"
+            }
+          },
+          %{
+            type: "cover_and_minimum_purchase",
+            data: %{
+              cover: 3,
+              minimum_purchase: %{
+                type: "drink",
+                data: 1
+              }
+            },
+            perk: %{
+              type: "minutes_and_priority_order",
+              data: 4
+            }
+          },
+          %{
+            type: "cover_and_minimum_purchase",
+            data: %{
+              cover: 5,
+              minimum_purchase: %{
+                type: "drink",
+                data: 1
+              }
+            },
+            perk: %{
+              type: "minutes_and_priority_order",
+              data: 5
+            }
+          }
+        ]
 
+        stage_time = not_specified
+
+        [cost, stage_time]
       true -> nil
     end
-  end
-
-  def get_multi_round(note) do
-    regexes = [
-      ~r/\$(?<round>\d+) ?min(utes)?/i
-    ]
-
-    regexes |> Enum.map(fn re -> 
-      result = Regex.scan(re, note)
-      case Enum.count(result) do
-        0 -> nil
-        _ -> 
-          ["multi", "round"]
-      end
-    end)
   end
 
   def cost_processor(x) do
@@ -154,34 +187,15 @@ defmodule PerformerCostStageTime do
     out = parse_note_with_regexes(regexes, note, not_specified, &stage_time_processor/1)
   end
 
-  def scan(regex_map, note) do
-    regex_map |> Map.keys |> Enum.map(fn re -> 
-      result = Regex.scan(re, note)
-      count = Enum.count(result)
-      case count do
-        0 -> nil
-        _ -> {re, result, regex_map[re]}
-      end
-    end) |> Enum.filter(fn x -> !is_nil(x) end)
-  end
-
-
 
   def parse_note(note) do
-    # multi_round = get_multi_round(note)
-    multi_tier = get_multi_tier(note)
-    # combo_cost = get_combo_price_cost(note)
+    hardcoded = get_hardcoded(note)
     cond do
-      # multi_round -> 
-      #   [multi_round, [get_cost(note)]]
-      multi_tier -> 
-        [multi_tier, [get_stage_time(note)]]
+      hardcoded -> 
+        hardcoded
       true ->
-        # get cost and stage time individually
-        #"Get cost individually"
         {[get_cost(note)], [get_stage_time(note)]}
     end
-    # multi-scan all regexes return regex and map of result
 
   end
 

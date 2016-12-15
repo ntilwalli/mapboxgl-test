@@ -194,7 +194,7 @@ defmodule PerformerSignUp do
     note = listing["note"]
     regexes = [
       ~r/e-?mail preferred/i,
-      ~r/e-?mail (?<email>[a-zA-Z.0-9_\-]+@[a-zA-Z.0-9_\-]+)/i  
+      ~r/e-?mail (?<email>[a-zA-Z.0-9_\-]+@[a-zA-Z.0-9_\-]+)(?! for more info)/i  
     ]
 
     parse_note_with_regexes(regexes, note, nil, fn x -> 
@@ -221,7 +221,8 @@ defmodule PerformerSignUp do
   defp exclude_pre_registration(listing) do
     note = listing["note"]
     regexes = [
-      ~r/no email/
+      ~r/no email/,
+      ~r/email .* for more info/i  
     ]
     parse_note_with_regexes(regexes, note, false, fn x -> true end)
   end
@@ -271,6 +272,11 @@ defmodule PerformerSignUp do
       if Regex.match?(~r/(?<!no )list(?! will now stop)/i, note) do
         out = out ++ ["list"]
       end
+
+      if Regex.match?(~r/random(ly)?/i, note) do
+        out = out ++ ["bucket"]
+      end
+
 
       if Regex.match?(~r/first come,? first (serve|perform|sign(-| )up)/i, note) do
         out = out ++ ["list"]
