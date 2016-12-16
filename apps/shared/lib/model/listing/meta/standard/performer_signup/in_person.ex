@@ -12,8 +12,7 @@ defmodule Standard.PerformerSignUp.InPerson do
   def changeset(schema, params \\ :empty) do
     schema
     |> cast(params, [:styles])
-    |> cast_embed(:begins, required: true)
-    |> cast_embed(:ends, required: true)
-    |> validate_inclusion(:styles, ["bucket", "list"])
+    |> cast_embed(:begins)
+    |> cast_embed(:ends)
   end
 end

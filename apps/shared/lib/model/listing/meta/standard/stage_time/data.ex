@@ -8,25 +8,9 @@ defmodule Standard.StageTimeData do
     field :songs, :integer
   end
 
-  def minutes_changeset(schema, params \\ :empty) do
+  def changeset(schema, params \\ :empty) do
     schema
-    |> cast(params, [])
-    |> cast_embed(:minutes, required: true)
+    |> cast(params, [:songs])
+    |> cast_embed(:minutes)
   end
-
-  @songs_required [:songs]
-
-  def songs_changeset(schema, params \\ :empty) do
-    schema
-    |> cast(params, @songs_required)
-    |> validate_required(@songs_required)
-  end
-
-  def minutes_or_songs_changeset(schema, params \\ :empty) do
-    schema
-    |> cast(params, @songs_required)
-    |> validate_required(@songs_required)
-    |> cast_embed(:minutes, required: true)
-  end
-
 end

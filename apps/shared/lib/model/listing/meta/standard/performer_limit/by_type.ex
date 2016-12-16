@@ -4,8 +4,8 @@ defmodule Standard.PerformerLimit.ByType do
   @derive {Poison.Encoder, except: [:__meta__]}
   @primary_key false
   embedded_schema do
-    embeds_one :type, :string
-    embeds_one :data, :integer
+    field :type, :string
+    field :data, :integer
   end
 
   def changeset(schema, params \\ :empty) do

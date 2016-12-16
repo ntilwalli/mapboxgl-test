@@ -6,11 +6,12 @@ defmodule Standard.PerformerCheckIn do
   embedded_schema do
     embeds_one :begins, Standard.RelativeTime
     embeds_one :ends, Standard.RelativeTime
+    field :enable_in_app, :boolean
   end
 
   def changeset(schema, params \\ :empty) do
     schema
-    |> cast(params, [])
+    |> cast(params, [:enable_in_app])
     |> cast_embed(:begins)
     |> cast_embed(:ends)
   end

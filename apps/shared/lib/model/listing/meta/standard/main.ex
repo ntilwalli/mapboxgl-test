@@ -34,15 +34,14 @@ defmodule Meta.Standard do
     schema
     |> cast(params, @allowed_fields)
     |> validate_required(@required_fields)
-    |> validate_inclusion(:type, ["recurring", "single"])
+    |> validate_inclusion(:type, ["standard"])
     |> cast_embed(:listed_performers)
     |> cast_embed(:stage_time)
-    |> cast_embed(:performer_signup)
-    |> cast_embed(:check_in)
+    |> cast_embed(:performer_sign_up)
+    |> cast_embed(:performer_check_in)
     |> cast_embed(:performer_limit)
     |> cast_embed(:performer_cost)
     |> cast_embed(:contact_info)
     |> cast_embed(:audience_cost)
-
   end
 end

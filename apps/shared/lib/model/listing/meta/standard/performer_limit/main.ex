@@ -20,6 +20,6 @@ defmodule Standard.PerformerLimit do
       "limit", 
       "limit_by_sign_up_type"
     ])
-    |> cast_embed(:data, required: true)
+    |> cast_embed(:data)
   end
 end

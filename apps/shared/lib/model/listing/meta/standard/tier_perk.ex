@@ -7,7 +7,7 @@ defmodule Standard.TierPerk do
   @primary_key false
   embedded_schema do
     field :type, :string
-    embeds_one :data, :float
+    field :data, :float
   end
 
   @required_fields [:type]
@@ -27,6 +27,5 @@ defmodule Standard.TierPerk do
       "additional_minutes_and_priority_order",
       "additional_songs_and_priority_order"
     ])
-    |> cast_embed(:data)
   end
 end

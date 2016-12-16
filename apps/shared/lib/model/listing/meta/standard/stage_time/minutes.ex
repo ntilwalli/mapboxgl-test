@@ -6,10 +6,10 @@ defmodule Standard.StageTime.Minutes do
   @primary_key false
   embedded_schema do
     field :type, :string
-    embeds_one :data, Standard.StageTimeData.MinutesData
+    embeds_one :data, Standard.StageTime.MinutesData
   end
 
-  @required_fields [:type, :data]
+  @required_fields [:type]
   def changeset(schema, params \\ :empty) do
     schema
     |> cast(params, @required_fields)

@@ -21,4 +21,5 @@ defmodule Standard.PerformerSignUp do
     ])
     |> cast_embed(:data, required: true)
   end
+
 end

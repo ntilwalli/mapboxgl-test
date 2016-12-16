@@ -3,7 +3,7 @@ import isolate from '@cycle/isolate'
 import {div, span, input} from '@cycle/dom'
 import deepEqual = require('deep-equal')
 import {combineObj, createProxy, blankComponentUndefinedDOM} from '../../../../../utils'
-import {CostOptions, MinimumPurchaseComponent, minimumPurchaseDefault, PurchaseTypeOptions, BlankStructuredUndefined, CostTypeComboBox, PurchaseTypeComboBox, FloatInputComponent, NumberInputComponent} from '../helpers'
+import {CostOptions, MinimumPurchaseComponent, minimumPurchaseDefault, CostPerMinuteComponent, costPerMinuteDefault, PurchaseTypeOptions, BlankStructuredUndefined, CostTypeComboBox, PurchaseTypeComboBox, FloatInputComponent, NumberInputComponent} from '../helpers'
 import clone = require('clone')
 
 export function getDefault() {
@@ -16,6 +16,7 @@ export function getDefault() {
 const toDefault = type => {
   switch (type) {
     case CostOptions.FREE:
+    case CostOptions.SEE_NOTES:
       return {
         type
       }
@@ -42,6 +43,13 @@ const toDefault = type => {
           minimum_purchase: minimumPurchaseDefault()
         }
       }
+    case CostOptions.COST_PER_MINUTE:
+      return {
+        type,
+        data: {
+          cost_per_minute: costPerMinuteDefault()
+        }
+      }
     default: 
       throw new Error()
   }
@@ -61,7 +69,9 @@ export default function main(sources, inputs) {
     CostOptions.COVER,
     CostOptions.MINIMUM_PURCHASE,
     CostOptions.COVER_AND_MINIMUM_PURCHASE,
-    CostOptions.COVER_OR_MINIMUM_PURCHASE
+    CostOptions.COVER_OR_MINIMUM_PURCHASE,
+    //CostOptions.COST_PER_MINUTE,
+    CostOptions.SEE_NOTES
   ]
 
   const type_component = isolate(CostTypeComboBox)(sources, options, shared$.pluck('type').take(1))
@@ -112,12 +122,33 @@ export default function main(sources, inputs) {
     output$: minimum_purchase_component$.switchMap(x => x.output$)
   }
 
+  const cost_per_minute_component$ = props$
+    .map((props: any) => {
+      switch (props.type) {
+        case CostOptions.COST_PER_MINUTE:
+          return  CostPerMinuteComponent(
+            sources, 
+            O.of(props.data.cost_per_minute), 
+            component_id
+          )
+        default: 
+          return BlankStructuredUndefined()
+      }
+    }).publishReplay(1).refCount()
+
+  const cost_per_minute_component = {
+    DOM: cost_per_minute_component$.switchMap(x => x.DOM),
+    output$: cost_per_minute_component$.switchMap(x => x.output$)
+  }
+
+
   const vtree$ = combineObj({
       type: type_component.DOM,
       cover: cover_component.DOM, 
-      minimum_purchase: minimum_purchase_component.DOM
+      minimum_purchase: minimum_purchase_component.DOM,
+      cost_per_minute: cost_per_minute_component.DOM
     }).debounceTime(0).map((components: any) => {
-      const {type, cover, minimum_purchase} = components
+      const {type, cover, minimum_purchase, cost_per_minute} = components
       const both = cover && minimum_purchase
 
       return div('.column', [
@@ -131,6 +162,9 @@ export default function main(sources, inputs) {
           minimum_purchase ? div('.row.align-center', [
             both ? span('.sub-sub-heading.align-center', ['Minimum purchase']) : null,
             span('.item', [minimum_purchase]),
+          ]) : null,
+          cost_per_minute ? div('.row.align-center', [
+            span('.item', [minimum_purchase]),
           ]) : null
         ])  
       ])     
@@ -139,17 +173,19 @@ export default function main(sources, inputs) {
   const output$ = combineObj({
       type: type_component.output$,
       cover: cover_component.output$, 
-      minimum_purchase: minimum_purchase_component.output$
+      minimum_purchase: minimum_purchase_component.output$,
+      cost_per_minute: cost_per_minute_component.output$
     }).debounceTime(0).map((components: any) => {
-      const {type, cover, minimum_purchase} = components
-      const errors = cover.errors.concat(minimum_purchase.errors)
-      const valid = cover.valid && minimum_purchase.valid
+      const {type, cover, minimum_purchase, cost_per_minute} = components
+      const errors = cover.errors.concat(minimum_purchase.errors).concat(cost_per_minute.errors)
+      const valid = cover.valid && minimum_purchase.valid && cost_per_minute.valid
 
       const blank = undefined
       const data = type === CostOptions.SEE_NOTES ? blank :
                    type === CostOptions.FREE ? blank :
                    type === CostOptions.COVER ? { cover: cover.data } :
                    type === CostOptions.MINIMUM_PURCHASE ? { minimum_purchase: minimum_purchase.data } :
+                   type === CostOptions.COST_PER_MINUTE ? { cost_per_minute: cost_per_minute.data } :
                    {cover: cover.data, minimum_purchase: minimum_purchase.data}
 
       return {

@@ -2,8 +2,131 @@ defmodule PerformerCostStageTime do
   import Helpers.V2
 
   def get_hardcoded(note) do 
+  #IO.inspect {:hardcoded, note, Regex.match?(~r/\$5 cover\. You get TWO rounds of stage time 5-6 Min and 2-3 Min as long as you get on time\./, note)}
     cond do   
-      Regex.match?(~r/$5 cover. You get TWO rounds of stage time 5-6 Min and 2-3 Min as long as you get on time./, note) ->
+      Regex.match?(~r/you can do up to 10 minutes - \$1 per 1 min/, note) ->
+          cost = [
+          %{
+            type: "cost_per_minute",
+            data: %{
+              cost_per_minute: %{
+                cost: 1,
+                max: 10
+              }
+            },
+            perk: %{
+              type: "no_perk"
+            }
+          }
+        ]
+
+        stage_time = []
+
+        {cost, stage_time}      
+      Regex.match?(~r/\$5 or \$1 per min for up to 10 mins\.  No drink rec at this time\. Walk-in with no email sign-up\./, note) ->
+        cost = [
+          %{
+            type: "cover",
+            data: %{
+              cover: 5
+            },
+            perk: %{
+              type: "no_perk"
+            }
+          },
+          %{
+            type: "cost_per_minute",
+            data: %{
+              cost_per_minute: %{
+                cost: 1,
+                max: 10
+              }
+            },
+            perk: %{
+              type: "no_perk"
+            }
+          }
+        ]
+        stage_time = [
+          %{
+            type: "minutes",
+            data: %{
+              minutes: %{
+                type: "max",
+                data: %{
+                  max: 5
+                }
+              }
+            }
+          }
+        ]
+
+        {cost, stage_time}
+      Regex.match?(~r/Four min, extra minute when you buy a drink\./, note) -> 
+        cost = [
+          %{
+            type: "free",
+            data: nil,
+            perk: %{
+              type: "no_perk"
+            }
+          },
+          %{
+            type: "minimum_purchase",
+            data: %{
+              minimum_purchase: %{
+                type: "drink",
+                data: 1
+              }
+            },
+            perk: %{
+              type: "additional_minutes",
+              data: 1
+            }
+          }
+        ]
+        stage_time = [
+          %{
+            type: "minutes",
+            data: %{
+              minutes: %{
+                type: "max",
+                data: %{
+                  max: 4
+                }
+              }
+            }
+          }
+        ]
+
+        {cost, stage_time}
+
+      Regex.match?(~r/Free to perform, Free to watch, Sign up: 7PM Start time: 7:30PM One drink purchase to peform, 6 minute set/, note) ->
+        cost = [
+          %{
+            type: "free",
+            data: nil,
+            perk: %{
+              type: "no_perk"
+            }
+          },
+          %{
+            type: "minimum_purchase",
+            data: %{
+              minimum_purchase: %{
+                type: "drink",
+                data: 1
+              }
+            },
+            perk: %{
+              type: "minutes",
+              data: 6
+            }
+          }
+        ]
+        
+        {cost, []}
+      Regex.match?(~r/\$5 cover\. You get TWO rounds of stage time 5-6 Min and 2-3 Min as long as you get on time\./, note) ->
         stage_time = [
           %{
             type: "minutes",
@@ -43,7 +166,7 @@ defmodule PerformerCostStageTime do
           }
         ]
 
-        [cost, stage_time]
+        {cost, stage_time}
 
       Regex.match?(~r/\$5\/6 minutes\/2 rounds First Come, First Serve/, note) ->
         stage_time = [
@@ -83,7 +206,7 @@ defmodule PerformerCostStageTime do
           }
         ]
 
-        [cost, stage_time]
+        {cost, stage_time}
       Regex.match?(~r/free but if you buy a drink at the bar/i, note) ->
         tier_1 = %{
           type: "free",
@@ -105,7 +228,7 @@ defmodule PerformerCostStageTime do
           }
         }
 
-        [[tier_1, tier_2], [get_cost(note)]]
+        {[tier_1, tier_2], [get_cost(note)]}
       Regex.match?(~r/\$5\/5 min Early spots.*\$3\/4 min Early spots.*FREE RANDOMLY SELECTED SPOTS/, note) ->
         cost = [
           %{
@@ -152,7 +275,7 @@ defmodule PerformerCostStageTime do
 
         stage_time = []
 
-        [cost, stage_time]
+        {cost, stage_time}
       true -> nil
     end
   end
@@ -221,13 +344,16 @@ defmodule PerformerCostStageTime do
 
   def get_cost(note) do
     regexes =[
+      ~r/(?<cover>a) dollar (?<or>or) (?<min_purchase_data>a) (?<min_purchase_type>(item|drink))/i,
       ~r/\$(?<cover>\d+) cover(?<and>(,|and)) (?<min_purchase_data>(\d+|one|two)) (?<min_purchase_type>(drink|item))/i,
       ~r/\$(?<cover>\d+) plus (?<min_purchase_data>(\d+|one|two)) (?<min_purchase_type>(drink|item))/i,
-      ~r/\$(?<cover>\d+) plus (?<min_purchase_data>(\d+|one|two)) beverage\/(?<min_purchase_type>(drink|item))/i,
+      ~r/\$(?<cover>\d+) plus (?<min_purchase_data>(\d+|one|two)) beverage\((?<min_purchase_type>(drink|item))\)/i,
       ~r/\$(?<cover>\d+) gets you a (?<drink_ticket>drink ticket)/i,
+      ~r/\$(?<cover>\d+) .* includes (?<drink_ticket>(one|1) drink)/i,
       ~r/\$(?<cover>\d+) gets you .* and (?<drink_ticket>a drink)/i,
       ~r/purchase (?<min_purchase_data>(\d+|one|two)) food or drink (?<min_purchase_type>(drink|item))/i,
       ~r/^(?<free>free)./i,
+      ~r/(?<free>free) mic/i,
       ~r/(?<free>, free,)/i,
       ~r/(?<free>totally free)/i,
       ~r/(?>!get 1 )(?<free>free(?!( appetizers| Mics and)))/i,
@@ -238,7 +364,9 @@ defmodule PerformerCostStageTime do
       ~r/(?<!no longer a )(?<min_purchase_data>(\d+|one|two))( |-)?(?<min_purchase_type>(item|drink))/i,
       ~r/\$(?<cover>\d+) cover/i,
       ~r/\$(?<cover>\d+\.\d\d) /i,
-      ~r/\$(?<cover>\d)/i
+      ~r/\$(?<cover>\d)/i,
+      ~r/(?<cover>a) dollar/i,
+      ~r/(?<min_purchase_data>a)n? (?<min_purchase_type>(item|drink))/i
     ]
 
     out = parse_note_with_regexes(regexes, note, nil, &cost_processor/1)
@@ -280,7 +408,7 @@ defmodule PerformerCostStageTime do
       ~r/(?<max>\d+) ?min(ute)?s?/i
     ]
 
-    out = parse_note_with_regexes(regexes, note, not_specified, &stage_time_processor/1)
+    out = parse_note_with_regexes(regexes, note, nil, &stage_time_processor/1)
   end
 
 
@@ -299,7 +427,7 @@ defmodule PerformerCostStageTime do
   def get_performer_cost_stage_time(listing) do
     note = listing["note"]
     case note do
-      nil -> {not_specified, not_specified}
+      nil -> {nil, nil}
       val -> parse_note(note)
     end
   end

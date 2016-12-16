@@ -39,7 +39,7 @@ defmodule PerformerCheckIn do
     end
   end
 
-  def get_check_in(listing) do
+  def get_performer_check_in(listing) do
     note = listing["note"]
     case note do
       nil -> nil

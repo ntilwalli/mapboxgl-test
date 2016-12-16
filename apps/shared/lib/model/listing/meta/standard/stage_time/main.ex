@@ -9,11 +9,12 @@ defmodule Standard.StageTime do
     embeds_one :data, Standard.StageTimeData
   end
 
-  @required_fields [:type, :data]
+  @required_fields [:type]
   def changeset(schema, params \\ :empty) do
     schema
     |> cast(params, @required_fields)
     |> validate_required(@required_fields)
-    |> validate_inclusion(:type, ["minutes", "songs", "minutes_or_songs"])
+    |> validate_inclusion(:type, ["see_notes", "minutes", "songs", "minutes_or_songs"])
+    |> cast_embed(:data)
   end
 end

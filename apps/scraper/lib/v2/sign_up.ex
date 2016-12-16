@@ -19,14 +19,17 @@ defmodule PerformerSignUp do
   def get_in_person_begins(listing) do
     note = listing["note"]
 
-    regexes = [
-      ~r/(?:sign|show)(?:-| ?)up (?:(?:in person|by|at|is) ?)?(?<hour>\d):?(?<minute>\d\d)? ?(?<meridiem>(?:a\.?|p\.?)m\.?)?/i,
-      ~r/(?:sign|show)(?:-| ?)up (?:(?:in person|by|at|is) ?)?(?<hour>\d\d?):?(?<minute>\d\d) ?(?<meridiem>(?:a\.?|p\.?)m\.?)?/i,
-      ~r/(?<hour>\d):?(?<minute>\d\d)? ?(?<meridiem>(?:a\.?|p\.?)m\.?)? (?:bucket|walk-?in)? ?sign(?:-| )?up/i,
-      ~r/(?<hour>\d\d?):?(?<minute>\d\d)? ?(?<meridiem>(?:a\.?|p\.?)m\.?)? (?:bucket|walk-?in)? ?sign(?:-| )?up/i,
-      ~r/bucket out at (?<hour>\d\d?):?(?<minute>\d\d)? ?(?<meridiem>(?:a\.?|p\.?)m\.?)?/i,
-      ~r/(?<hour>\d\d?):?(?<minute>\d\d)? sign-?up\/\d(?<meridiem>(?:a\.?|p\.?)m\.?) start/i
-    ]
+    regexes = 
+      get_time_regex_patterns(:prepend, "(sign|show)(-| )up( (in person|by|at|is))?")
+        |> Enum.concat(get_time_regex_patterns(:append, "walk-?in sign(-| )?up"))
+        |> Enum.concat(get_time_regex_patterns(:prepend, "bucket out at"))
+        |> Enum.concat(get_time_regex_patterns(:append, "bucket"))
+        |> Enum.concat(get_time_regex_patterns(:append, "sign(?:-| )?up"))
+        |> Enum.concat(get_time_regex_patterns(:prepend, "sign(?:-| )?up sheet goes out at"))
+        |> Enum.concat(get_time_regex_patterns(:prepend, "sign(?:-| )?up starts at"))
+        |> Enum.concat([~r/(?<hour>\d\d?):?(?<minute>\d\d)? sign-?up\/\d(?<meridiem>(?:a\.?|p\.?)m\.?) start/i])
+
+    #IO.inspect regexes 
 
     time_string = parse_note_with_regexes(regexes, note, nil, &convert_to_time_string/1)
     time = case time_string do
@@ -39,7 +42,7 @@ defmodule PerformerSignUp do
       val  ->
         week_day = listing["week_day"] |> String.downcase |> String.to_atom
         start_time = listing["start_time"]
-        #IO.inspect {"in person begins calc params", week_day, start_time, week_day, val}
+        IO.inspect {"in person begins calc params", week_day, start_time, week_day, val}
         diff = Calendar.Time.diff(start_time, val)
         #IO.inspect {"diff", diff}
         minutes = cond do
@@ -55,10 +58,27 @@ defmodule PerformerSignUp do
     week_day = listing["week_day"] |> String.downcase |> String.to_atom
     start_time = listing["start_time"]
     
-    regexes = [
-      ~r/must (arrive|show up) (by|before) (?<hour>\d):?(?<minute>\d\d)? ?(?<meridiem>(?:a\.?|p\.?)m\.?)?/i,
-      ~r/(?<hour>\d):?(?<minute>\d\d)? ?(?<meridiem>(?:a\.?|p\.?)m\.?)? walk(-| )?in cut(-| )?off/i,
-    ]
+    regexes =       
+      get_time_regex_patterns(:prepend, "must (arrive|show up) (by|before)")
+        |> Enum.concat(get_time_regex_patterns(:append, "walk(-| )?in cut(-| )?off"))
+
+
+    # regexes = [
+    #   ~r/ (?<hour>\d)(?<minute>\d\d)? ?(?<meridiem>(?:a\.?|p\.?)m\.?)?/i,
+    #   ~r/must (arrive|show up) (by|before) (?<hour>\d\d)(?<minute>\d\d)? ?(?<meridiem>(?:a\.?|p\.?)m\.?)?/i,
+    #   ~r/must (arrive|show up) (by|before)(?<hour>\d):(?<minute>\d\d) ?(?<meridiem>(?:a\.?|p\.?)m\.?)?/i,
+    #   ~r/must (arrive|show up) (by|before) (?<hour>\d\d):(?<minute>\d\d) ?(?<meridiem>(?:a\.?|p\.?)m\.?)?/i,
+
+
+    #   #~r/must (arrive|show up) (by|before) (?<hour>\d):?(?<minute>\d\d)? ?(?<meridiem>(?:a\.?|p\.?)m\.?)?/i,
+
+    #   ~r/(?<hour>\d)(?<minute>\d\d)? ?(?<meridiem>(?:a\.?|p\.?)m\.?)? walk(-| )?in cut(-| )?off/i,
+    #   ~r/(?<hour>\d\d)(?<minute>\d\d)? ?(?<meridiem>(?:a\.?|p\.?)m\.?)? walk(-| )?in cut(-| )?off/i,
+    #   ~r/(?<hour>\d):(?<minute>\d\d) ?(?<meridiem>(?:a\.?|p\.?)m\.?)? walk(-| )?in cut(-| )?off/i,
+    #   ~r/(?<hour>\d\d):(?<minute>\d\d) ?(?<meridiem>(?:a\.?|p\.?)m\.?)? walk(-| )?in cut(-| )?off/i,
+
+    #   #~r/(?<hour>\d):?(?<minute>\d\d)? ?(?<meridiem>(?:a\.?|p\.?)m\.?)? walk(-| )?in cut(-| )?off/i,
+    # ]
 
     time_string = parse_note_with_regexes(regexes, note, nil, &convert_to_time_string/1)
     time = case time_string do
@@ -91,15 +111,13 @@ defmodule PerformerSignUp do
     parse_note_with_regexes(regexes, note, false, fn _ -> true end)
   end
 
-  def default_not_specified(val) do
-    case val do
-      nil -> not_specified
-      _ -> val
-    end
-  end
-
   defp get_generic_in_person(listing) do
-    Regex.match?(~r/Walk( |-)ins welcome/, listing["note"])
+    cond do
+      Regex.match?(~r/Walk( |-)ins welcome/, listing["note"]) -> true
+      Regex.match?(~r/Sign( |-)?up before the mic/, listing["note"]) -> true
+      Regex.match?(~r/Walk( |-)?in with/, listing["note"]) -> true
+      true -> false
+    end
   end
 
   defp get_in_person_sign_up(listing) do
@@ -119,8 +137,8 @@ defmodule PerformerSignUp do
             cond do
               !!(generic || begins || ends || count > 0) -> 
                 %{
-                  begins: default_not_specified(begins),
-                  ends: default_not_specified(ends),
+                  begins: begins,
+                  ends: ends,
                   styles: styles
                 }
               true -> nil
@@ -128,13 +146,14 @@ defmodule PerformerSignUp do
         end
     end
   end
+
   defp get_pre_registration_begins_ends(listing) do
     note = listing["note"]
     cond do
       Regex.match?(~r/by Tuesday noon/i, note) -> 
-        {get_previous_weekday_at_time("tuesday", 12, 0), not_specified()}
+        {get_previous_weekday_at_time("tuesday", 12, 0), nil}
       Regex.match?(~r/before Thursday/i, note) -> 
-        {not_specified(), get_previous_weekday_at_time("thursday", 0, 0)}
+        {nil, get_previous_weekday_at_time("thursday", 0, 0)}
       Regex.match?(~r/(?<!confirmation )on Monday/i, note) ->
         {get_previous_weekday_at_time("monday", 0, 0), get_previous_weekday_at_time("tuesday", 0, 0)}
       Regex.match?(~r/on Wednesday to sign(-| )?up/, note) ->
@@ -143,8 +162,8 @@ defmodule PerformerSignUp do
         match_day = match_map["day"] |> String.downcase
         time_string = convert_to_time_string(match_map)
         time = convert_to_time(time_string)
-        {not_specified(), get_previous_weekday_at_time(match_day, time.hour, time.minute)}
-      true -> {not_specified, not_specified}
+        {nil, get_previous_weekday_at_time(match_day, time.hour, time.minute)}
+      true -> {nil, nil}
     end 
   end
 
@@ -170,7 +189,9 @@ defmodule PerformerSignUp do
     note = listing["note"]
     regexes = [
       ~r/e-?mail preferred/i,
-      ~r/e-?mail (?<email>[a-zA-Z.0-9_\-]+@[a-zA-Z.0-9_\-]+)(?! for more info)/i  
+      ~r/e-?mail (?<email>[a-zA-Z.0-9_\-]+@[a-zA-Z.0-9_\-]+)(?! for more info)/i,
+      ~r/e-?mail to reserve/i,
+      ~r/e-?mail (me )?in advance/i,
     ]
 
     parse_note_with_regexes(regexes, note, nil, fn x -> 
@@ -233,6 +254,8 @@ defmodule PerformerSignUp do
   defp extract_sign_up_styles(listing) do
     note = listing["note"]
     out = []
+    exclude = []
+
     if note do
       if Regex.match?(~r/we draw names/i, note) do
         out = out ++ ["bucket"]
@@ -250,11 +273,27 @@ defmodule PerformerSignUp do
         out = out ++ ["list"]
       end
 
-      if Regex.match?(~r/((?<!not )lottery|bucket)/i, note) do
+      if Regex.match?(~r/not? (lottery|bucket)/i, note) do
+        exclude = exclude ++ ["bucket"]
+      end
+
+      if Regex.match?(~r/not? list/i, note) do
+        exclude = exclude ++ ["list"]
+      end
+
+      if Regex.match?(~r/list will now stop/i, note) do
+        exclude = exclude ++ ["list"]
+      end
+
+      if Regex.match?(~r/lottery/i, note) do
         out = out ++ ["bucket"]
       end
 
-      if Regex.match?(~r/(?<!no )list(?! will now stop)/i, note) do
+      if Regex.match?(~r/bucket/i, note) do
+          out = out ++ ["bucket"]
+      end
+
+      if Regex.match?(~r/list/i, note) do
         out = out ++ ["list"]
       end
 
@@ -262,13 +301,16 @@ defmodule PerformerSignUp do
         out = out ++ ["bucket"]
       end
 
+      if Regex.match?(~r/order they arrive/i, note) do
+        out = out ++ ["list"]
+      end
 
       if Regex.match?(~r/first come,? first (serve|perform|sign(-| )up)/i, note) do
         out = out ++ ["list"]
       end
     end
 
-    out |> Enum.uniq
+    out |> Enum.uniq |> MapSet.new |> MapSet.difference(MapSet.new(exclude)) |> MapSet.to_list
   end
 
   def parse_listing(listing) do
@@ -297,18 +339,15 @@ defmodule PerformerSignUp do
             pre_registration: pre_registration,
           }
         }
-      true -> not_specified
+      true -> nil
     end
   end
 
   def get_performer_sign_up(listing) do
     note = listing["note"]
     case note do
-      nil -> not_specified
+      nil -> nil
       val -> parse_listing(listing)
     end
   end
-
-
-
 end

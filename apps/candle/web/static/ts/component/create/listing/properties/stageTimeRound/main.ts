@@ -295,7 +295,8 @@ export default function main(sources, inputs) {
   const options = inputs.options || [
     StageTimeOptions.MINUTES,
     StageTimeOptions.SONGS,
-    StageTimeOptions.MINUTES_OR_SONGS
+    StageTimeOptions.MINUTES_OR_SONGS,
+    StageTimeOptions.SEE_NOTES
   ]
 
   const type_component = isolate(ComboBox)(sources, options, shared$.pluck('type'))

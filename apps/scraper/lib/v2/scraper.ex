@@ -4,7 +4,9 @@ defmodule Scraper.BadslavaScraper.V2 do
   import Scraper.Helpers
   import Scraper.BadslavaScraper.V1.Helpers
   import Helpers.V2
+  import Cuando
   import PerformerSignUp
+  import PerformerCheckIn
   import PerformerCostStageTime
   import PeformerLimit
   import Categories
@@ -87,17 +89,19 @@ defmodule Scraper.BadslavaScraper.V2 do
     
     created = Enum.map(create, fn x -> 
       converted = convert(x)
-      #{:ok, result} = info = Listing.Registry.create(Listing.Registry, converted, user) 
-      #IO.inspect result
+      {:ok, result} = info = Listing.Registry.create(Listing.Registry, converted, user) 
+      IO.inspect result
 
-      #{result.id, x}
+      {result.id, x}
     end)
+
     # updated = Enum.map(update, fn x -> 
     #   #IO.inspect x
     #   {listing_id, data} = x
     #   {:ok, result} = Listing.Registry.update(Listing.Registry, listing_id, convert(data), user) 
     #   x
     # end)
+
     # deleted = Enum.map(delete, fn x ->
     #   val = Shared.Repo.delete!(%Shared.Scrapings{listing_id: x}) 
     #   :ok = Listing.Registry.delete(Listing.Registry, x, user) 
@@ -131,32 +135,54 @@ defmodule Scraper.BadslavaScraper.V2 do
 
   defp convert(l) do
     #IO.inspect l
-    IO.puts ""
-    IO.inspect l["note"]
-    IO.inspect get_performer_sign_up(l)
-    IO.inspect get_performer_cost_stage_time(l)
-    IO.inspect get_performer_limit(l)
-    IO.inspect get_categories(l)
-    IO.inspect get_listed_hosts(l)
+    #IO.puts ""
+    #IO.inspect l
+    # IO.inspect {:sign_up, get_performer_sign_up(l)}
+    # IO.inspect {:check_in, get_performer_check_in(l)}
+    {cost, stage_time} = get_performer_cost_stage_time(l)
+    # IO.inspect {:cost, cost}
+    # IO.inspect {:stage_time, stage_time}
+    # IO.inspect {:performer_limit, get_performer_limit(l)}
+    # IO.inspect {:categories, get_categories(l)}
+    # IO.inspect {:listed_hosts, get_listed_hosts(l)}
+
+
+    meta = %{
+      type: "standard",
+      performer_sign_up: get_performer_sign_up(l),
+      performer_check_in: get_performer_check_in(l),
+      performer_cost: cost,
+      stage_time: stage_time,
+      performer_limit: get_performer_limit(l),
+      notes: l["note"],
+      categories: get_categories(l),
+      listed_hosts: get_listed_hosts(l)
+    }
+
+    #IO.inspect {:cuando, get_cuando(l)}
     # {when_info, meta} = extract_meta(l)
-    # out = %{
-    #   type: "recurring",
-    #   visibility: "public",
-    #   release: "posted",
-    #   donde: %{
-    #     type: "badslava",
-    #     name: l["venue_name"],
-    #     street: l["street"],
-    #     city: l["city"],
-    #     state_abbr: l["state_abbr"],
-    #     lng_lat: %{
-    #       lng: l["lng"],
-    #       lat: l["lat"]
-    #     }
-    #   },
-    #   cuando: when_info,
-    #   meta: meta
-    # }
+    out = %{
+      type: "recurring",
+      visibility: "public",
+      release: "posted",
+      donde: %{
+        type: "badslava",
+        name: l["venue_name"],
+        street: l["street"],
+        city: l["city"],
+        state_abbr: l["state_abbr"],
+        lng_lat: %{
+          lng: l["lng"],
+          lat: l["lat"]
+        }
+      },
+      cuando: get_cuando(l),
+      meta: meta
+    }
+
+    #IO.inspect out
+
+
 
   end
 
@@ -209,13 +235,21 @@ defmodule Scraper.BadslavaScraper.V2 do
           [] -> nil
         end
 
-        time_regexes = [
-          ~r/mic at (?<hour>\d)/i,
-          ~r/(?<hour>\d) ?(?<meridiem>(a|p))\.?m\.? start/i,
-          ~r/(?<!sign(-| )up) ?starts? (at )?(?<hour>\d) ?(?<meridiem>(a|p))\.?m\.?/i,
-          ~r/(?<hour>\d):(?<minute>\d\d) ?(?<meridiem>(a|p))\.?m\.? start/i,
-          ~r/(?<!sign(-| )up) ?starts? (at )?(?<hour>\d):(?<minute>\d\d) ?(?<meridiem>(a|p))\.?m\.?/i
-        ]
+      time_regexes = get_time_regex_patterns(:prepend, "mic at")
+        |> Enum.concat(get_time_regex_patterns(:append, "start"))
+        |> Enum.concat(get_time_regex_patterns(:prepend, "(?<!sign(-| )up) ?starts?( at)?"))
+        |> Enum.concat(get_time_regex_patterns(:prepend, "start time:"))
+
+
+
+        # time_regexes = [
+        #   ~r/mic at (?<hour>\d)/i,
+        #   ~r/(?<hour>\d) ?(?<meridiem>(a|p))\.?m\.? start/i,
+        #   ~r/(?<!sign(-| )up) ?starts?( at)?(?<hour>\d) ?(?<meridiem>(a|p))\.?m\.?/i,
+        #   ~r/(?<hour>\d):(?<minute>\d\d) ?(?<meridiem>(a|p))\.?m\.? start/i,
+        #   ~r/(?<!sign(-| )up) ?starts? (at )?(?<hour>\d):(?<minute>\d\d) ?(?<meridiem>(a|p))\.?m\.?/i,
+        #   ~r/start time: (?<hour>\d):(?<minute>\d\d) ?(?<meridiem>(a|p))\.?m\.?/i
+        # ]
 
         time = parse_note_with_regexes(time_regexes, note, time, &convert_to_time_string/1)
           

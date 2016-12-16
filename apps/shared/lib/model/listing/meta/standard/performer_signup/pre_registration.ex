@@ -19,8 +19,8 @@ defmodule Standard.PerformerSignUp.PreRegistration do
       "email", 
       "website"
     ])
-    |> cast_embed(:begins, required: true)
-    |> cast_embed(:ends, required: true)
+    |> cast_embed(:begins)
+    |> cast_embed(:ends)
 
   end
 end

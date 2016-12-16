@@ -22,9 +22,10 @@ defmodule Standard.Cost do
       "cover_and_minimum_purchase",
       "cover_or_minimum_purchase",
       "see_notes",
+      "cost_per_minute",
       "paid"
     ])
-    |> cast_embed(:data, required: true)
+    |> cast_embed(:data)
     |> cast_embed(:perk)
   end
 end

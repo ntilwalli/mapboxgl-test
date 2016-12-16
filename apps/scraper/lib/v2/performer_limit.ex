@@ -36,7 +36,7 @@ defmodule PeformerLimit do
         {pre_registration, _} = Integer.parse(x["pre_registration"])
         get_limit_by_type(in_person, pre_registration)   
       true ->
-        not_specified     
+        nil     
     end
   end
 
@@ -54,7 +54,7 @@ defmodule PeformerLimit do
     out = parse_note_with_regexes(
       get_performer_limit_regexes, 
       note, 
-      not_specified, 
+      nil, 
       &performer_limit_processor/1
     )
     #IO.inspect {"performer_limit", out}
@@ -64,7 +64,7 @@ defmodule PeformerLimit do
   def get_performer_limit(listing) do
     note = listing["note"]
     case note do
-      nil -> not_specified
+      nil -> nil
       val -> parse_note(note)
     end
   end

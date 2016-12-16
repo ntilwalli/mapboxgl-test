@@ -1,9 +1,30 @@
 defmodule Helpers.V2 do
-  def not_specified do 
-    %{
-      type: "not_specified"
-    }
+
+  def get_time_regex_patterns(type, pattern) do
+      base = [
+        "(?<hour>\\d)(?<minute>\\d\\d) ?(?<meridiem>(?:a\\.?|p\\.?)m\\.?)?",
+        "(?<hour>\\d\\d)(?<minute>\\d\\d) ?(?<meridiem>(?:a\\.?|p\\.?)m\\.?)?",
+        "(?<hour>\\d):(?<minute>\\d\\d) ?(?<meridiem>(?:a\\.?|p\\.?)m\\.?)?",
+        "(?<hour>\\d\\d):(?<minute>\\d\\d) ?(?<meridiem>(?:a\\.?|p\\.?)m\\.?)?",
+        "(?<hour>\\d\\d?) ?(?<meridiem>(?:a\\.?|p\\.?)m\\.?)?",
+        "(?<hour>\\d)(?<minute>\\d\\d)",
+        "(?<hour>\\d):(?<minute>\\d\\d)",
+        "(?<hour>\\d\d)(?<minute>\\d\\d)",
+        "(?<hour>\\d\d):(?<minute>\\d\\d)",
+      ]
+
+      case type do
+        :append -> base |> Enum.map(fn x -> 
+          {:ok, val} = Regex.compile(x <> " " <> pattern, "i") 
+          val
+        end)
+        :prepend -> base |> Enum.map(fn x -> 
+          {:ok, val} = Regex.compile(pattern <> " " <> x, "i")
+          val
+        end)
+      end
   end
+
   def get_minutes_before_event_start(minutes) do
     %{
       type: "minutes_before_event_start",
@@ -33,15 +54,15 @@ defmodule Helpers.V2 do
       note ->
         #IO.inspect {"Parsing note", note}
         matches = regexes 
-          |> Enum.map(fn x -> Regex.named_captures(x, note) end)
-          |> Enum.filter(fn x -> !is_nil(x) end)
+          |> Enum.map(fn x -> {x, note, Regex.named_captures(x, note)} end)
+          |> Enum.filter(fn x -> !is_nil(elem(x, 2)) end)
         time = case matches do
           [] -> 
             #IO.puts "No matches"
             fallback_val
           [val | tail] ->
-            #IO.puts "Matches"
-            processor_fn.(val)
+            #IO.inspect {:matches, matches}
+            processor_fn.(elem(val, 2))
         end
       true -> 
         #IO.inspect {"Not parsing note", note}

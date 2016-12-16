@@ -85,6 +85,7 @@ export const PerformerLimitOptions = {
 }
 
 export const StageTimeOptions = {
+  SEE_NOTES: 'see_notes',
   MINUTES: 'minutes',
   SONGS: 'songs',
   MINUTES_OR_SONGS: 'minutes_or_songs'
@@ -125,6 +126,7 @@ export const CostOptions = {
   MINIMUM_PURCHASE: 'minimum_purchase',
   COVER_AND_MINIMUM_PURCHASE: 'cover_and_minimum_purchase',
   COVER_OR_MINIMUM_PURCHASE: 'cover_or_minimum_purchase',
+  COST_PER_MINUTE: 'cost_per_minute',
   PAID: 'paid',
   SEE_NOTES: 'see_notes'
 }

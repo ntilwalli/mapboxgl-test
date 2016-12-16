@@ -83,6 +83,56 @@ export function MinimumPurchaseComponent(sources, props$, component_id) {
   }
 }
 
+export function costPerMinuteDefault() {
+  return {
+    cost: 1,
+    max: 10
+  }
+}
+
+export function CostPerMinuteComponent(sources, props$, component_id) {
+  const shared$ = props$
+    .map(x => x || costPerMinuteDefault())
+    .publishReplay(1).refCount()
+  const cost_input = NumberInputComponent(sources, props$.map(x => x.cost.toString()), component_id + ': Invalid number')
+  const max_input = NumberInputComponent(sources, props$.map(x => x.max.toString()), component_id + ' max: Invalid number')
+
+  const vtree$ = combineObj({
+    cost: cost_input.DOM,
+    max: max_input.DOM
+  }).map((components: any) => {
+    const {cost, max} = components
+    return div('.row', [
+      span('.item', [cost]),
+      span('.item', ['dollars per minute, max:']),
+      span('.item', [max])
+    ])
+  })
+
+  const output$ = combineObj({
+    cost: cost_input.output$,
+    max: max_input.output$
+  }).map((info: any) => {
+    const {data, type} = info
+    const valid = !! data.valid
+    const errors: string[] = data.errors
+    return {
+      data: {
+        data: data.data,
+        type
+      },
+      valid,
+      errors
+    }
+  })
+
+  return {
+    DOM: vtree$,
+    output$
+  }
+}
+
+
 
 export function NotesInput(sources, {props$}, styleClass?) {
   const shared$ = props$
