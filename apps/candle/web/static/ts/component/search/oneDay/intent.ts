@@ -4,10 +4,16 @@ import moment = require('moment')
 
 const onlySuccess = x => x.type === "success"
 const onlyError = x => x.type === "error"
-const onlySingleBadslava = x => {
+// const onlySingleBadslava = x => {
+//   //console.log(x)
+//   const listing = x.listing
+//   return listing.type === "single" && listing.meta.type === "badslava" && listing.cuando.begins
+// }
+
+const onlySingleStandard = x => {
   //console.log(x)
   const listing = x.listing
-  return listing.type === "single" && listing.meta.type === "badslava" && listing.cuando.begins
+  return listing.type === "single" && listing.meta.type === "standard" && listing.cuando.begins
 }
 
 function drillInflate(result) {
@@ -21,7 +27,7 @@ export default function intent(sources) {
   const success$ = good$
     .filter(onlySuccess)
     .pluck(`data`)
-    .map(x => x.filter(onlySingleBadslava).map(drillInflate))
+    .map(x => x.filter(onlySingleStandard).map(drillInflate))
     .publish().refCount()
 
   // const error$ = good$

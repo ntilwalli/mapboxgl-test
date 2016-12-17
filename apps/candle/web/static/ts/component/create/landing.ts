@@ -2,7 +2,10 @@ import {Observable as O} from 'rxjs'
 import {div, button} from '@cycle/dom'
 import Immutable = require('immutable')
 import {combineObj} from '../../utils'
-import {renderMenuButton, renderUserProfileButton, renderLoginButton, renderSearchCalendarButton} from '../renderHelpers/navigator'
+import {
+  renderMenuButton, renderUserProfileButton, renderLoginButton, 
+  renderSearchCalendarButton
+} from '../helpers/navigator'
 
 function intent(sources) {
   const {DOM} = sources

@@ -1,7 +1,7 @@
 import {Observable as O} from 'rxjs'
 import {combineObj, createProxy} from '../../../../utils'
 import {toLngLatArray, createFeatureCollection} from '../../../../mapUtils'
-import {getVenueName, getVenueAddress, getVenueLngLat} from '../../../../helpers/venue'
+import {getVenueName, getVenueAddress, getVenueLngLat} from '../../../../helpers/donde'
 
 
 export default function mapview(state$) {

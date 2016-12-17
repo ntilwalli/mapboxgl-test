@@ -90,8 +90,14 @@ defmodule Shared.Listing do
       #     _ -> nil
       #   end
       # end)
-    |> cast_dynamic(:meta, %{"badslava" => Shared.Model.Listing.Meta.Badslava})
-    |> cast_dynamic(:donde, %{"badslava" => Shared.Model.Listing.Donde.Badslava})
+    |> cast_dynamic(:meta, %{
+      "badslava" => Shared.Model.Listing.Meta.Badslava,
+      "standard" => Meta.Standard
+    })
+    |> cast_dynamic(:donde, %{
+      "badslava" => Donde.Badslava,
+      "venue" => Donde.Venue
+    })
     |> assoc_constraint(:user)
 
     # |> inspect_changeset

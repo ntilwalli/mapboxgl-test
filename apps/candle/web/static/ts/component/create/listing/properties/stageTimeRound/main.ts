@@ -3,7 +3,11 @@ import isolate from '@cycle/isolate'
 import {div, span, input} from '@cycle/dom'
 import deepEqual = require('deep-equal')
 import {combineObj, createProxy, isInteger} from '../../../../../utils'
-import {MinutesTypeOptions, StageTimeOptions, ComboBox, BlankStructuredUndefined, FloatInputComponent, NumberInputComponent} from '../helpers'
+import {ComboBox, BlankStructuredUndefined, FloatInputComponent, NumberInputComponent} from '../helpers'
+import {
+  MinutesTypeOptions, 
+  StageTimeOptions
+} from '../../../../../listingTypes'
 import clone = require('clone')
 
 
@@ -296,7 +300,7 @@ export default function main(sources, inputs) {
     StageTimeOptions.MINUTES,
     StageTimeOptions.SONGS,
     StageTimeOptions.MINUTES_OR_SONGS,
-    StageTimeOptions.SEE_NOTES
+    StageTimeOptions.SEE_NOTE
   ]
 
   const type_component = isolate(ComboBox)(sources, options, shared$.pluck('type'))

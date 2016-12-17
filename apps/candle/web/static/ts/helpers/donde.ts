@@ -7,6 +7,45 @@ export function isValid(venue) {
 
   throw new Error(`Invalid source`)
 }
+
+export function getDondeName(donde) {
+  const {type} = donde
+  if (type === `venue`) {
+    return getVenueName(donde)
+  } else if (type === 'badslava') {
+    return getBadslavaName(donde)
+  }
+
+
+  throw new Error(`Invalid type`)
+}
+
+export function getDondeAddress(donde) {
+  const {type} = donde
+  if (type === `venue`) {
+    return getVenueAddress(donde)
+  } else if (type === 'badslava') {
+    return getBadslavaAddress(donde)
+  }
+
+
+  throw new Error(`Invalid type`)
+}
+
+export function getDondeyLngLat(donde) {
+  return donde.lng_lat
+}
+
+export function getBadslavaName(donde) {
+  return donde.name
+}
+
+
+export function getBadslavaAddress(donde) {
+  return donde.street + ', ' + donde.city
+}
+
+
 export function getVenueAddress(venue) {
 
   const {source, data} = venue
@@ -25,6 +64,8 @@ export function getVenueAddress(venue) {
 
   throw new Error(`Invalid source`)
 }
+
+
 
 export function getVenueName(venue) {
     const {source, data} = venue

@@ -3,7 +3,7 @@ import {div, button, li, span, select, input, option} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 import Immutable = require('immutable')
 import {combineObj, createProxy, mergeSinks, processHTTP, traceStartStop, onlyError, onlySuccess, normalizeArcGISSingleLineToParts} from '../../utils'
-import {renderMenuButton, renderCircleSpinner, renderLoginButton, renderUserProfileButton, renderSearchCalendarButton} from '../renderHelpers/navigator'
+import {renderMenuButton, renderCircleSpinner, renderLoginButton, renderUserProfileButton, renderSearchCalendarButton} from '../helpers/navigator'
 import ArcGISSuggest from '../../thirdParty/ArcGISSuggest'
 import ArcGISGetMagicKey from '../../thirdParty/ArcGISGetMagicKey'
 import AutocompleteInput from '../../library/autocompleteInput'

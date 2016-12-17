@@ -3,7 +3,8 @@ import isolate from '@cycle/isolate'
 import {div, span, input} from '@cycle/dom'
 import deepEqual = require('deep-equal')
 import {combineObj, createProxy, blankComponentUndefinedDOM} from '../../../../../utils'
-import {CostOptions, MinimumPurchaseComponent, minimumPurchaseDefault, CostPerMinuteComponent, costPerMinuteDefault, PurchaseTypeOptions, BlankStructuredUndefined, CostTypeComboBox, PurchaseTypeComboBox, FloatInputComponent, NumberInputComponent} from '../helpers'
+import {MinimumPurchaseComponent, minimumPurchaseDefault, CostPerMinuteComponent, costPerMinuteDefault, BlankStructuredUndefined, CostTypeComboBox, PurchaseTypeComboBox, FloatInputComponent, NumberInputComponent} from '../helpers'
+import {CostOptions, PurchaseTypeOptions} from '../../../../../listingTypes'
 import clone = require('clone')
 
 export function getDefault() {
@@ -16,7 +17,7 @@ export function getDefault() {
 const toDefault = type => {
   switch (type) {
     case CostOptions.FREE:
-    case CostOptions.SEE_NOTES:
+    case CostOptions.SEE_NOTE:
       return {
         type
       }
@@ -71,7 +72,7 @@ export default function main(sources, inputs) {
     CostOptions.COVER_AND_MINIMUM_PURCHASE,
     CostOptions.COVER_OR_MINIMUM_PURCHASE,
     //CostOptions.COST_PER_MINUTE,
-    CostOptions.SEE_NOTES
+    CostOptions.SEE_NOTE
   ]
 
   const type_component = isolate(CostTypeComboBox)(sources, options, shared$.pluck('type').take(1))
@@ -181,7 +182,7 @@ export default function main(sources, inputs) {
       const valid = cover.valid && minimum_purchase.valid && cost_per_minute.valid
 
       const blank = undefined
-      const data = type === CostOptions.SEE_NOTES ? blank :
+      const data = type === CostOptions.SEE_NOTE ? blank :
                    type === CostOptions.FREE ? blank :
                    type === CostOptions.COVER ? { cover: cover.data } :
                    type === CostOptions.MINIMUM_PURCHASE ? { minimum_purchase: minimum_purchase.data } :

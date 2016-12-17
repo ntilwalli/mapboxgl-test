@@ -2,7 +2,12 @@ import {Observable as O} from 'rxjs'
 import {div, span, button} from '@cycle/dom'
 import Immutable = require('immutable')
 import {combineObj, mergeSinks} from '../../utils'
-import {renderMenuButton, renderCircleSpinner, renderLoginButton, renderSearchCalendarButton} from '../renderHelpers/navigator'
+import {
+  renderMenuButton, 
+  renderCircleSpinner, 
+  renderLoginButton, 
+  renderSearchCalendarButton
+} from '../helpers/navigator'
 
 import {main as routing} from './routing'
 

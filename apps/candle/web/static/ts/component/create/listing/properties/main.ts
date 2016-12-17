@@ -14,7 +14,13 @@ import PersonName from './personName/main'
 import PersonNameTitle from './personNameTitle/main'
 import ContactInfo from './contactInfo/main'
 import {default as StageTimeRound, getDefault as getStageTimeDefault} from './stageTimeRound/main'
-import {MetaPropertyTypes, PerformerSignupOptions,getSessionStream, EventTypeToProperties, CostOptions} from '../helpers'
+import {
+  MetaPropertyTypes, 
+  PerformerSignupOptions, 
+  EventTypeToProperties, 
+  CostOptions
+} from '../../../../listingTypes'
+import {getSessionStream} from '../../../helpers/listing/utils'
 import {NotesInput} from './helpers'
 import {combineObj, createProxy, traceStartStop} from '../../../../utils'
 import clone = require('clone')

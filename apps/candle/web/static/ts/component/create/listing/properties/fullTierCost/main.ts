@@ -2,7 +2,7 @@ import {Observable as O} from 'rxjs'
 import isolate from '@cycle/isolate'
 import {div, span, input} from '@cycle/dom'
 import {combineObj} from '../../../../../utils'
-import {CostOptions} from '../../helpers'
+import {CostOptions} from '../../../../../listingTypes'
 import {default as Cost, getDefault as costDefault} from '../cost/main'
 import {default as TierPerk, getDefault as tierPerkDefault} from '../tierPerk/main'
 

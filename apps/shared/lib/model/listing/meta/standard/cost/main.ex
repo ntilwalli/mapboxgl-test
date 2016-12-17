@@ -21,7 +21,7 @@ defmodule Standard.Cost do
       "minimum_purchase",
       "cover_and_minimum_purchase",
       "cover_or_minimum_purchase",
-      "see_notes",
+      "see_note",
       "cost_per_minute",
       "paid"
     ])

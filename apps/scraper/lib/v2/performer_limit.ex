@@ -18,7 +18,7 @@ defmodule PeformerLimit do
   end
   defp get_limit_by_type(in_person, pre_registration) do
     %{
-      type: "limit_by_type",
+      type: "limit_by_sign_up_type",
       data: %{
         in_person: get_sub_limit(in_person),
         pre_registration: get_sub_limit(pre_registration)

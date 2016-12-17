@@ -1,7 +1,7 @@
 import {div, button, span, i} from '@cycle/dom'
 import {combineObj} from '../../../utils'
 import moment = require('moment')
-import {renderMenuButton, renderUserProfileButton, renderLoginButton} from '../../renderHelpers/navigator'
+import {renderMenuButton, renderUserProfileButton, renderLoginButton} from '../../helpers/navigator'
 
 const showLoader = state => {
   const {results, retrieving, searchPosition} = state

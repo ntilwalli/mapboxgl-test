@@ -24,6 +24,8 @@ defmodule Standard.TierPerk do
       "additional_bucket_entry",
       "minutes_and_priority_order",
       "songs_and_priority_order",
+      "additional_minutes",
+      "additional_songs",
       "additional_minutes_and_priority_order",
       "additional_songs_and_priority_order"
     ])

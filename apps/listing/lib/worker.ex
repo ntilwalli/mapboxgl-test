@@ -12,7 +12,6 @@ defmodule Listing.Worker do
   alias Shared.SingleListingEventTypes, as: SLEventTypes
   alias Shared.CheckIn
 
-  alias Shared.Model.Listing.Donde.Badslava, as: BadslavaDonde
   alias Shared.Model.Listing.Meta.Badslava, as: BadslavaMeta
   alias Shared.Model.Listing.Settings.Badslava, as: BadslavaSettings
   alias Shared.Model.Listing.Cuando.Once, as: OnceCuando
@@ -49,6 +48,7 @@ defmodule Listing.Worker do
       nil -> {:stop, "Listing not found in database"}
       listing -> 
         Logger.info "Starting process for listing #{listing_id}"
+        #IO.inspect listing
         :ok = ensure_searchability(listing)
         {:ok, %{listing: listing, registry_name: r_name}, 60 * 1_000}
     end
@@ -124,7 +124,7 @@ defmodule Listing.Worker do
     l_type = listing.type
     case l_type do
       "single" ->
-          cs_donde = BadslavaDonde.changeset(%BadslavaDonde{}, listing.donde)
+          cs_donde = Donde.Badslava.changeset(%Donde.Badslava{}, listing.donde)
           donde = apply_changes(cs_donde)
           #IO.inspect donde
           cs_cuando = OnceCuando.changeset(%OnceCuando{}, listing.cuando)

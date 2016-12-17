@@ -4,7 +4,7 @@ defmodule Categories do
     note = listing["note"]
     out = []
     if note do
-      if Regex.match?(~r/(?<!no )comedy/i, note) do
+      if Regex.match?(~r/(?<!no )(comics|comedy)/i, note) and not Regex.match?(~r/storytellers/i, note) do
         out = out ++ ["comedy"]
       end
 

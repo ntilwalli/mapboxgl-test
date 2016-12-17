@@ -42,7 +42,7 @@ defmodule PerformerSignUp do
       val  ->
         week_day = listing["week_day"] |> String.downcase |> String.to_atom
         start_time = listing["start_time"]
-        IO.inspect {"in person begins calc params", week_day, start_time, week_day, val}
+        #IO.inspect {"in person begins calc params", week_day, start_time, week_day, val}
         diff = Calendar.Time.diff(start_time, val)
         #IO.inspect {"diff", diff}
         minutes = cond do

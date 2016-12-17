@@ -4,7 +4,7 @@ import {div, span, input, VNode} from '@cycle/dom'
 import {combineObj, createProxy, traceStartStop} from '../../../../../utils'
 import {
   RelativeTimeOptions, 
-} from '../../helpers'
+} from '../../../../../listingTypes'
 import {
   DayOfWeekTimeComponent,
   PreRegistrationInfoComponent, 

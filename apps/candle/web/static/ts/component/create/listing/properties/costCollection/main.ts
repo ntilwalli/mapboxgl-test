@@ -4,7 +4,7 @@ import isolate from '@cycle/isolate'
 import Immutable = require('immutable')
 import {combineObj, createProxy} from '../../../../../utils'
 import clone = require('clone')
-import {CostOptions, TierPerkOptions} from '../../helpers'
+import {CostOptions, TierPerkOptions} from '../../../../../listingTypes'
 import {default as Cost, getDefault as getCostDefault} from '../cost/main'
 //import {default as TierCost, getDefault as getTierCostDefault} from '../tierCost/main'
 import {default as FullTierCost, getDefault as getFullTierCostDefault} from '../fullTierCost/main'

@@ -9,9 +9,10 @@ defmodule Standard.ContactInfo do
     field :facebook, :string
     field :instagram, :string
     field :website, :string
+    field :phone, :string
   end
 
-  @allowed_fields [:email, :twitter, :facebook, :instagram, :website]
+  @allowed_fields [:email, :twitter, :facebook, :instagram, :website, :phone]
   def changeset(schema, params \\ :empty) do
     schema
     |> cast(params, @allowed_fields)

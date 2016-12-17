@@ -1,10 +1,17 @@
 import {Observable as O} from 'rxjs'
 import {div, h5, span, button} from '@cycle/dom'
 import Immutable = require('immutable')
-import {combineObj, getPreferredRegion$, mergeSinks, normalizeSink, normalizeComponent, componentify, createProxy} from '../../../../utils'
-import {renderMenuButton, renderCircleSpinner, renderLoginButton, renderSearchCalendarButton} from '../../../renderHelpers/navigator'
+import {
+  combineObj, getPreferredRegion$, mergeSinks, normalizeSink, 
+  normalizeComponent, componentify, createProxy} from '../../../../utils'
+import {
+  renderMenuButton, 
+  renderCircleSpinner, 
+  renderLoginButton, 
+  renderSearchCalendarButton
+} from '../../../helpers/navigator'
 import clone = require('clone')
-import {inflateDates} from '../helpers'
+import {inflateDates} from '../../../helpers/listing/utils'
 
 import {model} from './model'
 import {main as getModal} from './getModal'

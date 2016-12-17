@@ -4,7 +4,7 @@ defmodule Standard.Cost.MinimumPurchase do
   @derive {Poison.Encoder, except: [:__meta__]}
   @primary_key false
   embedded_schema do
-    field :data, :integer
+    field :data, :float
     field :type, :string
   end
 

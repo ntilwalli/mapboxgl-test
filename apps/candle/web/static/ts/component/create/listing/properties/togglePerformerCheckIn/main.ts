@@ -2,7 +2,7 @@ import {Observable as O} from 'rxjs'
 import isolate from '@cycle/isolate'
 import {div, span, input} from '@cycle/dom'
 import {combineObj} from '../../../../../utils'
-import {PerformerSignupOptions, PreRegistrationOptions} from '../../helpers'
+import {PerformerSignupOptions, PreRegistrationOptions} from '../../../../../listingTypes'
 import {BlankStructuredUndefined} from '../helpers'
 import {default as CheckIn, getDefault as getCheckInDefault} from '../performerCheckIn/main'
 import clone = require('clone')

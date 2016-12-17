@@ -6,7 +6,7 @@ import {combineObj, createProxy, spread} from '../../../../../utils'
 import {toLngLatArray, createFeatureCollection} from '../../../../../mapUtils'
 
 import {createVenueAutocomplete} from '../../../../../library/venueAutocomplete'
-import {getVenueName, getVenueAddress, getVenueLngLat} from '../../../../../helpers/venue'
+import {getVenueName, getVenueAddress, getVenueLngLat} from '../../../../../helpers/donde'
 
 function reducers(actions, inputs) {
   const {selected$} = inputs

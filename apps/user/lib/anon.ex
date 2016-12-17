@@ -84,6 +84,7 @@ defmodule User.Anon do
       true -> 
         query_params = apply_changes(cs)
         listings_info = User.Helpers.gather_listings_info(query_params, nil, l_reg)
+        #IO.inspect {:anon_listings_info, listings_info}
         {:reply, {:ok, listings_info}, state}
       false -> 
         {:reply, {:error, "Sent search params invalid"}, state}

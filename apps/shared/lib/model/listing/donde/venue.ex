@@ -1,4 +1,4 @@
-defmodule Donde.Badslava do
+defmodule Donde.Venue do
   use Shared.Lib, :model
   import Shared.Helpers
 
@@ -6,14 +6,12 @@ defmodule Donde.Badslava do
   @primary_key false
   embedded_schema do
     field :type, :string
-    field :name, :string
-    field :street, :string
-    field :city, :string
-    field :state_abbr, :string
+    field :source, :string
+    field :data, :map
     embeds_one :lng_lat, Shared.Model.LngLat
   end
 
-  @required_fields [:type, :name, :street, :city, :state_abbr]
+  @required_fields [:type, :source, :data]
   def changeset(schema, params \\ :empty) do
     schema
     |> cast(params, @required_fields)

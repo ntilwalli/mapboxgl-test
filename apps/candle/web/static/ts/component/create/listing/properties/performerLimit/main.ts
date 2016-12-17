@@ -3,7 +3,7 @@ import isolate from '@cycle/isolate'
 import {div, span, input} from '@cycle/dom'
 import {combineObj, createProxy, traceStartStop} from '../../../../../utils'
 import { ComboBox, BlankUndefined, BlankStructuredUndefined, NumberInputComponent} from '../helpers'
-import {MetaPropertyTypes, PerformerSignupOptions, PerformerLimitOptions} from '../../helpers'
+import {MetaPropertyTypes, PerformerSignupOptions, PerformerLimitOptions} from '../../../../../listingTypes'
 import clone = require('clone')
 
 

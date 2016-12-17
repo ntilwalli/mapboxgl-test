@@ -4,7 +4,7 @@ import {div, span, input} from '@cycle/dom'
 import deepEqual = require('deep-equal')
 import {combineObj, createProxy, isInteger} from '../../../../../utils'
 import {ComboBox, BlankStructuredUndefined, FloatInputComponent, NumberInputComponent} from '../helpers'
-import {TierPerkOptions, StageTimeOptions} from '../../helpers'
+import {TierPerkOptions, StageTimeOptions} from '../../../../../listingTypes'
 import clone = require('clone')
 
 // function optionToText(type) {

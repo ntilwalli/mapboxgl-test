@@ -4,7 +4,7 @@ import isolate from '@cycle/isolate'
 import {combineObj, createProxy, mergeSinks} from '../utils'
 import FoursquareSuggestVenues from '../thirdParty/FoursquareSuggestVenues'
 import AutocompleteInput from '../library/autocompleteInput'
-import {isValid, getVenueName, getVenueAddress} from '../helpers/venue'
+import {isValid, getVenueName, getVenueAddress} from '../helpers/donde'
 
 
 function toFoursquareVenueResults(results) {

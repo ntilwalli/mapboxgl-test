@@ -1,7 +1,7 @@
 import {Observable as O} from 'rxjs'
 import {div, span, button, hr} from '@cycle/dom'
 import Immutable = require('immutable')
-import {ListingTypes, deflateDates} from './helpers'
+import {ListingTypes, deflateDates} from '../../helpers/listing/utils'
 
 import {
   combineObj, 
@@ -16,7 +16,7 @@ import {
   renderCircleSpinner, 
   renderLoginButton, 
   renderSearchCalendarButton
-} from '../../renderHelpers/navigator'
+} from '../../helpers/navigator'
 
 import {main as Meta} from './meta/main'
 import {main as Donde} from './donde/main'

@@ -4,7 +4,7 @@ import {div, span, input} from '@cycle/dom'
 import deepEqual = require('deep-equal')
 import {combineObj, createProxy, blankComponentUndefinedDOM} from '../../../../../utils'
 import {BlankStructuredUndefined, MinimumPurchaseComponent, minimumPurchaseDefault, CostTypeComboBox, PurchaseTypeComboBox, FloatInputComponent, NumberInputComponent} from '../helpers'
-import {CostOptions, TierPerkOptions, PurchaseTypeOptions} from '../../helpers'
+import {CostOptions, TierPerkOptions, PurchaseTypeOptions} from '../../../../../listingTypes'
 import TierPerk from '../tierPerk/main'
 import clone = require('clone')
 

@@ -3,8 +3,6 @@ import isolate from '@cycle/isolate'
 import {div, span, input, VNode} from '@cycle/dom'
 import {combineObj, createProxy, traceStartStop} from '../../../../../utils'
 import {
-  PerformerSignupOptions, 
-  RelativeTimeOptions, 
   DayOfWeekTimeComponent,
   RelativeTimeComponent,
   PreRegistrationInfoComponent, 
@@ -13,6 +11,11 @@ import {
   BlankStructuredUndefined, 
   NumberInputComponent
 } from '../helpers'
+
+import {
+  PerformerSignupOptions, 
+  RelativeTimeOptions
+} from '../../../../../listingTypes'
 import clone = require('clone')
 
 const rt_opts = RelativeTimeOptions

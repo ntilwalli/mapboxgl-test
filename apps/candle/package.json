@@ -28,6 +28,7 @@
     "@cycle/isolate": "^1.4.0",
     "@cycle/rxjs-run": "^3.1.0",
     "@cycle/storage": "3.0.0-rc3",
+    "bootstrap": "^4.0.0-alpha.5",
     "clone": "^2.0.0",
     "cycle-mapboxgl": "0.0.9",
     "cyclic-router": "^3.0.1",

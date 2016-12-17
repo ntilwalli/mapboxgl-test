@@ -1,157 +1,147 @@
-import {div, span} from '@cycle/dom'
+import {div, span, ul, li} from '@cycle/dom'
 import {combineObj} from '../../../../utils'
-import * as renderHelpers from '../../../renderHelpers/listing'
+import {renderListingCard} from '../../../helpers/listing/render'
 import moment = require('moment')
 
-const {renderName, renderBegins, renderEnds, renderCost, 
-  renderStageTime, renderPerformerLimit, renderDonde, 
-  renderStatus, renderSignup} = renderHelpers
+import {CostOptions, TierPerkOptions, StageTimeOptions, MinutesTypeOptions} from '../../../../listingTypes'
 
-const compareBegins = (a, b) => {
-  const aVal = a.listing.cuando.begins
-  const bVal = b.listing.cuando.begins
-  return aVal - bVal
-}
 
-function renderResult(result) {
-  const {listing} = result
-  const {cuando, donde, meta} = listing
-  const {begins, ends} = cuando
-  const {name, cost, sign_up, stage_time, performer_limit} = meta
-  return div(`.appResult.result-container`, {props: {searchResult: result}}, [
-    div(`.result`, [
-      div(`.left`, [
-        renderName(name),
-        renderBegins(cuando),
-        renderEnds(cuando),
-        renderDonde(donde)
-      ]),
-      div(`.right`, [
-        renderStatus(cuando),
-        renderCost(cost),
-        renderStageTime(stage_time),
-        renderSignup(cuando, sign_up),
-        renderPerformerLimit(performer_limit)
-      ])
-      // renderCheckin(meta),
-      // renderHosts(meta)
-    ])
-  ])
-}
-
-function getSimpleCost(result) {
-  const {listing} = result
-  const {meta} = listing
-  const {cost} = meta
-  if (cost) {
-    switch (cost.type) {
-      case "free":
-      case "free_purchase_encouraged":
-      case "free_plus_upgrade":
-        return "free"
-      default:
-        return "paid"
+function getSimpleCost(performer_cost) {
+  if (performer_cost.length) {
+    if (performer_cost.some(x => x.type === CostOptions.FREE)) {
+      return CostOptions.FREE
+    } else {
+      return CostOptions.PAID
     }
-  } else {
-    return "free"
-  }
-}
-
-function getSimpleStageTime(result): [any, any] {
-  const {listing} = result
-  const {meta} = listing
-  const {stage_time} = meta
-  if (stage_time && stage_time.length) {
-    let out = 0
-    stage_time.forEach(x => {
-      if (x.type === "max") { out += x.data }
-      else if (x.type === "range") { 
-        const [min, max] = x.data
-        out += min
-      }
-      else { throw new Error(`Invalid stage_time type`) }
-    })
-
-    return [result, out]
   }
 
-  return [result, undefined]
-  
+  return undefined
 }
 
-function augmentStageTimeWithSignupUpgrades([result, amount]): [any, any] {
-  if (amount) {
-    const out = amount
-    const {listing} = result
-    const {meta} = listing
-    const {sign_up} = meta
-    const {type, data} = sign_up
-    let increment
-    switch (type) {
-      case "email_with_upgrade":
-        const {upgrades} = data
-        if (upgrades.length) {
-          const upgrade = upgrades[0]
-          if (upgrade.type === "additional_stage_time") {
-            return [result, amount + upgrade.data]
+function getAggregateStageTime(stage_time) {
+
+  if (stage_time.every(x => x.type === StageTimeOptions.MINUTES)) {
+    const datas = stage_time.map(x => x.data.minutes)
+
+    if (datas.every(x => x.type === MinutesTypeOptions.MAX)) {
+      const max = datas.reduce((acc, val) => acc + val.data.max, 0)
+      return {
+        type: StageTimeOptions.MINUTES,
+        data: {
+          minutes: {
+            type: MinutesTypeOptions.MAX,
+            data: {
+              max
+            }
           }
         }
+      }
+    } else if (datas.every(x => x.type === MinutesTypeOptions.RANGE)) {
+      const min = datas.reduce((acc, val) => acc + val.data.min, 0)
+      const max = datas.reduce((acc, val) => acc + val.data.max, 0)
+      return {
+        type: StageTimeOptions.MINUTES, 
+        data: {
+          minutes: {
+            type: MinutesTypeOptions.RANGE,
+            data: {min, max}
+          }
+        }
+      }
+    } else {
+      return undefined
+    }
+  } else if (stage_time.every(x => x.type === StageTimeOptions.SONGS)) {
+    return {type: StageTimeOptions.SONGS, data: {songs: stage_time.reduce((acc, val) => acc + val.data.songs, 0)}}
+  } else if (stage_time.every(x => x.type === StageTimeOptions.MINUTES_OR_SONGS)) {
+    return undefined
+  } else {
+    return undefined
+  }
+}
+
+function getMaxStageTime(stage_time) {
+  const aggregate: any = getAggregateStageTime(stage_time)
+
+  if (aggregate) {
+    switch (aggregate.type) {
+      case StageTimeOptions.MINUTES:
+        return {type: StageTimeOptions.MINUTES, data: aggregate.data.minutes.data.max}
+      case StageTimeOptions.SONGS:
+        return {type: StageTimeOptions.SONGS, data: aggregate.data.songs}
       default:
-        return [result, amount]
+        throw new Error()
     }
   }
-
-  return [result, amount]
 }
 
+function getMaxOfCostPerk(performer_cost, perk_type) {
+  const minutes = performer_cost
+    .filter(x => x.perk && x.perk.type === perk_type)
+    .map(x => x.perk.data)
+    .sort()
 
-function augmentStageTimeWithCostUpgrades([result, amount]): [any, any] {
-  if (amount) {
-    const {listing} = result
-    const {meta} = listing
-    const {cost} = meta
-    const {type, data} = cost
-    let upgrade_item, upgrade_type, upgrade, length
-    switch (type) {
-    case "free_plus_upgrade":
-    case "cover_plus_upgrades":
-      upgrade = data.upgrades[0]
-      upgrade_item = upgrade.item
-      if (upgrade_item.type === `additional_stage_time`) {
-        return [result, amount + upgrade_item.data]
-      }
+  const length = minutes.length
+  if (length) {
+    return minutes[length - 1]
+  } else {
+    return undefined
+  }
+}
 
-      break;
-    case "cover_or_purchase_time":
-      upgrade = data.upgrades[0]
-      upgrade_type = upgrade.type
-      upgrade_item = upgrade.item
-      if (upgrade_type.type === `pay_with_min_max` && upgrade_item.type === `stage_time`) {
-        return [result, upgrade_type.data[2]]
-      }
-      
-      break;
-    default:
-      break
+function calculateMaxMinutes(baseline, cost_minutes, additional) {
+  if (baseline) {
+    if (cost_minutes && additional) {
+      return Math.max(cost_minutes, baseline + additional)
+    } else if (additional) {
+      return baseline + additional
+    } else if (cost_minutes) {
+      return Math.max(cost_minutes, baseline)
     }
+  } else {
+    if (cost_minutes) {
+      return cost_minutes
+    } 
   }
 
-  return [result, amount]
+  return undefined
 }
 
-function normalizeStageTime(result) {
-  return augmentStageTimeWithCostUpgrades(augmentStageTimeWithSignupUpgrades(getSimpleStageTime(result)))
+// remove those without stage_time specified
+function deriveMaxPossibleStageTime(result) {
+
+  const {stage_time, performer_cost} = result
+
+  if (stage_time.length >= 1) {
+    if (performer_cost.length <= 1) {
+      const {type, data} = getMaxStageTime(stage_time)
+      return data
+    } else {
+      const {type, data} = getMaxStageTime(stage_time)
+      const cost_minutes = getMaxOfCostPerk(performer_cost, TierPerkOptions.MINUTES)
+      const additional = getMaxOfCostPerk(performer_cost, TierPerkOptions.ADDITIONAL_MINUTES)
+      return calculateMaxMinutes(data, cost_minutes, additional)
+    }
+  } else {
+    const cost_minutes = getMaxOfCostPerk(performer_cost, TierPerkOptions.MINUTES)
+    if (cost_minutes) {
+      return cost_minutes
+    }
+
+    return undefined
+  }
 }
 
 function normalizeForFiltering(result) {
-  const [_, stageTime] = normalizeStageTime(result)
+  const derived_stage_time = deriveMaxPossibleStageTime(result.listing.meta)
 
   const out = {
     id: result.listing.id,
     result,
-    cost: getSimpleCost(result),
-    stageTime,
-    categories:result.listing.categories
+    cost: getSimpleCost(result.listing.meta.performer_cost),
+    stage_time: derived_stage_time,
+    categories: result.listing.meta.categories,
+    note: result.listing.meta.note
   }
 
   //console.log(out)
@@ -194,12 +184,20 @@ function applyFilters(results, filters) {
   const listings = {}
   results.forEach(x => listings[x.listing.id] = x)
   const normalized = results.map(normalizeForFiltering)
+
+  console.log('normalized results', normalized)
   const filtered = normalized
-    .filter(x => hasCategories(x, filterCategories, categories))
-    .filter(x => hasCosts(x, filterCosts, costs))
-    .filter(x => hasMinimumStageTime(x, filterStageTime, stageTime))
+    // .filter(x => hasCategories(x.meta, filterCategories, categories))
+    // .filter(x => hasCosts(x.meta, filterCosts, costs))
+    // .filter(x => hasMinimumStageTime(x.meta, filterStageTime, stageTime))
 
   return filtered.map(x => x.result)
+}
+
+const compareBegins = (a, b) => {
+  const aVal = a.listing.cuando.begins
+  const bVal = b.listing.cuando.begins
+  return aVal - bVal
 }
 
 export default function view(state$) {
@@ -209,9 +207,12 @@ export default function view(state$) {
     const withFilters = applyFilters(results, filters)
     const sorted = withFilters.sort(compareBegins)
 
-    return div(
+    return ul(
       `.one-day-grid`, 
-      sorted.map(renderResult)
+      //['Hi there']
+      sorted
+      .map(x => renderListingCard(x.listing))
+      .map(x => li([x]))
     )
   })
 }

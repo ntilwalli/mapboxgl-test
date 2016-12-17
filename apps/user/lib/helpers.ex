@@ -45,7 +45,9 @@ defmodule User.Helpers do
   end
 
   def gather_listings_info(query, user, listing_registry) do
+    IO.inspect {:query, query}
     search_results = search(query, user)
+    #IO.inspect {:search_results, search_results}
     listings_info =
       for l <- search_results do
         {:ok, pid} = Listing.Registry.lookup(listing_registry, l.listing_id)
@@ -65,6 +67,8 @@ defmodule User.Helpers do
           s.begins >= ^begins and 
           s.begins <= ^ends,
         select: s
+
+    #IO.inspect {:query, query}
 
     out = Repo.all(query)
     # IO.puts "search query/out"

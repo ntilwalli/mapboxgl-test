@@ -1,12 +1,19 @@
 defmodule Shared.Model.Decoders do
   import Ecto.Changeset, only: [apply_changes: 1]
-  alias Shared.Model.Listing.Donde.Badslava, as: DondeBadslava
+  alias Donde.Badslava
   alias Shared.Model.Listing.Cuando.Once, as: CuandoOnce
   def decode_donde(val) do
     case val["type"] do
       "badslava" -> 
-        donde_cs = DondeBadslava.changeset(%DondeBadslava{}, val)
+        donde_cs = Donde.Badslava.changeset(%Donde.Badslava{}, val)
         apply_changes(donde_cs)
+      "standard" -> 
+        IO.puts "standard decode"
+        IO.inspect val
+        donde_cs = Donde.Venue.changeset(%Donde.Venue{}, val)
+        out = apply_changes(donde_cs)
+        IO.puts "decoded successfully"
+        out
       _ -> raise ArgumentError, message: "Donde.Badslava is only supported type"
     end
   end

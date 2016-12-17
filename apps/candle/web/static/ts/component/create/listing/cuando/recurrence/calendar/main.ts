@@ -4,7 +4,7 @@ import isolate from '@cycle/isolate'
 import Immutable = require('immutable')
 import moment = require('moment')
 import {combineObj} from '../../../../../../utils'
-import {recurrenceToRRuleSet} from '../../../helpers'
+import {recurrenceToRRuleSet} from '../../../../../helpers/listing/utils'
 import MonthCalendar from '../../../../../../library/monthCalendar'
 
 function intent(sources) {

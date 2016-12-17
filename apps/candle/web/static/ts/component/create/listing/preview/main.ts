@@ -3,7 +3,7 @@ import Immutable = require('immutable')
 import {combineObj} from '../../../../utils'
 import mapview from './mapview'
 import view from './view'
-import {inflateDates, fromCheckbox} from '../helpers'
+import {inflateDates, fromCheckbox} from '../../../helpers/listing/utils'
 
 function intent(sources) {
   const {DOM, Router} = sources

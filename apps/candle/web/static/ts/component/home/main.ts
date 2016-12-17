@@ -2,7 +2,7 @@ import {Observable as O} from 'rxjs'
 import {div, span, button} from '@cycle/dom'
 import {combineObj, createProxy, processHTTP, componentify, spread, defaultNever} from '../../utils'
 import Immutable = require('immutable')
-import {renderMenuButton, renderLoginButton, renderSearchCalendarButton} from '../renderHelpers/navigator'
+import {renderMenuButton, renderLoginButton, renderSearchCalendarButton} from '../helpers/navigator'
 
 //import {main as Profile} from './profile/main'
 import {main as Invalid} from './invalid'

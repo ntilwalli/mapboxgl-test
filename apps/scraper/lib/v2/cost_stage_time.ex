@@ -228,7 +228,7 @@ defmodule PerformerCostStageTime do
           }
         }
 
-        {[tier_1, tier_2], [get_cost(note)]}
+        {[tier_1, tier_2], get_stage_time(note)}
       Regex.match?(~r/\$5\/5 min Early spots.*\$3\/4 min Early spots.*FREE RANDOMLY SELECTED SPOTS/, note) ->
         cost = [
           %{
@@ -291,7 +291,7 @@ defmodule PerformerCostStageTime do
           _ -> "cover_or_minimum_purchase"
         end
         data = x["min_purchase_data"]
-        %{
+        [%{
           type: type,
           data: %{
             minimum_purchase: %{
@@ -300,11 +300,11 @@ defmodule PerformerCostStageTime do
             },
             cover: val_to_float(cover)
           }
-        }
+        }]
 
       purchase_type -> 
         data = x["min_purchase_data"]
-        %{
+        [%{
           type: "minimum_purchase",
           data: %{
             minimum_purchase: %{
@@ -312,18 +312,18 @@ defmodule PerformerCostStageTime do
               data: val_to_float(data)
             }
           }
-        }
+        }]
       cover -> 
         case x["drink_ticket"] do
           nil ->
-            %{
+            [%{
               type: "cover",
               data: %{
                 cover: val_to_float(cover)
               }
-            }
+            }]
           _ -> 
-            %{
+            [%{
               type: "cover",
               data: %{
                 cover: val_to_float(cover)
@@ -332,13 +332,13 @@ defmodule PerformerCostStageTime do
                 type: "drink_ticket",
                 data: 1
               }
-            }
+            }]
         end
 
-      free -> %{
+      free -> [%{
         type: "free"
-      }
-      true -> nil
+      }]
+      true -> []
     end
   end
 
@@ -369,7 +369,7 @@ defmodule PerformerCostStageTime do
       ~r/(?<min_purchase_data>a)n? (?<min_purchase_type>(item|drink))/i
     ]
 
-    out = parse_note_with_regexes(regexes, note, nil, &cost_processor/1)
+    out = parse_note_with_regexes(regexes, note, [], &cost_processor/1)
   end
 
   def stage_time_processor(x) do
@@ -377,28 +377,32 @@ defmodule PerformerCostStageTime do
     max = x["max"]
     cond do
       min && max ->
-        %{
+        [%{
           type: "minutes",
           data: %{
-            type: "range",
-            data: %{
-              min: val_to_float(min),
-              max: val_to_float(max)
+            minutes: %{
+              type: "range",
+              data: %{
+                min: val_to_float(min),
+                max: val_to_float(max)
+              }
             }
           }
-        }
+        }]
 
       max -> 
-        %{
+        [%{
           type: "minutes",
           data: %{
-            type: "max",
-            data: %{
-              max: val_to_float(max)
+            minutes: %{
+              type: "max",
+              data: %{
+                max: val_to_float(max)
+              }
             }
           }
-        }
-      true -> nil
+        }]
+      true -> []
     end
   end
 
@@ -408,7 +412,7 @@ defmodule PerformerCostStageTime do
       ~r/(?<max>\d+) ?min(ute)?s?/i
     ]
 
-    out = parse_note_with_regexes(regexes, note, nil, &stage_time_processor/1)
+    out = parse_note_with_regexes(regexes, note, [], &stage_time_processor/1)
   end
 
 
@@ -418,7 +422,7 @@ defmodule PerformerCostStageTime do
       hardcoded -> 
         hardcoded
       true ->
-        {[get_cost(note)], [get_stage_time(note)]}
+        {get_cost(note), get_stage_time(note)}
     end
 
   end
@@ -427,7 +431,7 @@ defmodule PerformerCostStageTime do
   def get_performer_cost_stage_time(listing) do
     note = listing["note"]
     case note do
-      nil -> {nil, nil}
+      nil -> {[], []}
       val -> parse_note(note)
     end
   end

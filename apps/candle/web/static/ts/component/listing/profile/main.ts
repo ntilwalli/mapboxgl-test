@@ -3,7 +3,7 @@ import {div, span, button} from '@cycle/dom'
 import {combineObj, processHTTP, spread, createProxy} from '../../../utils'
 import {createFeatureCollection, geoToLngLat} from '../../../mapUtils'
 import Immutable = require('immutable')
-import * as renderHelpers from '../../renderHelpers/listing'
+import * as renderHelpers from '../../helpers/listing'
 import moment = require('moment')
 import * as Geolib from 'geolib'
 

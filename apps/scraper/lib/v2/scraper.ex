@@ -11,6 +11,7 @@ defmodule Scraper.BadslavaScraper.V2 do
   import PeformerLimit
   import Categories
   import ListedHosts
+  import ContactInfo
   alias Scraper.Helpers
   alias Shared.Scrapings
   alias Shared.Repo
@@ -18,17 +19,20 @@ defmodule Scraper.BadslavaScraper.V2 do
   def run(opts \\ []) do
     Logger.info "Retrieving latest Badslava listings..."
     scraped_listings = retrieve_latest_listings()
-
     Logger.info "Retrieved #{Enum.count(scraped_listings)} listings from Badslava..."
     stored_listings = for l <- retrieve_from_store(), do: l
     Logger.info "Retrieved #{Enum.count(stored_listings)} listings from store..."
     Logger.info "Determining diff..."
-    # {create, update, delete} = diffed_events = diff(scraped_listings, stored_listings)
-    # Logger.info "Creating #{Enum.count(create)}, updating #{Enum.count(update)}, deleting #{Enum.count(delete)} listings..."
-    # {created, updated, deleted} = transmitted = transmit(diffed_events)
-    # store(transmitted)
-    diffed_events = {scraped_listings, [], []}
-    transmit(diffed_events)
+    {create, update, delete} = diffed_events = diff(scraped_listings, stored_listings)
+    Logger.info "Creating #{Enum.count(create)}, updating #{Enum.count(update)}, deleting #{Enum.count(delete)} listings..."
+    
+    #create |> Enum.map(&convert/1)
+    
+    {created, updated, deleted} = transmitted = transmit(diffed_events)
+    #transmit(diffed_events)
+    # IO.inspect transmitted
+    # IO.puts "Storing latest badslava listings..."
+    store(transmitted)
   end
 
   defp retrieve_from_store() do
@@ -79,36 +83,29 @@ defmodule Scraper.BadslavaScraper.V2 do
 
   defp transmit({create, update, delete} = _info) do
     user = Shared.Repo.get(Shared.User, 0)
-    # created = Enum.map(create, fn x -> 
-    #   convert(x)
-    #   # {:ok, result} = 
-    #   #   info = Listing.Registry.create(Listing.Registry, convert(x), user) 
-    #   #   #IO.inspect info
-    #   # {result.id, x}
-    # end)
     
     created = Enum.map(create, fn x -> 
       converted = convert(x)
       {:ok, result} = info = Listing.Registry.create(Listing.Registry, converted, user) 
-      IO.inspect result
+      #IO.inspect result
 
       {result.id, x}
     end)
 
-    # updated = Enum.map(update, fn x -> 
-    #   #IO.inspect x
-    #   {listing_id, data} = x
-    #   {:ok, result} = Listing.Registry.update(Listing.Registry, listing_id, convert(data), user) 
-    #   x
-    # end)
+    updated = Enum.map(update, fn x -> 
+      #IO.inspect x
+      {listing_id, data} = x
+      {:ok, result} = Listing.Registry.update(Listing.Registry, listing_id, convert(data), user) 
+      x
+    end)
 
-    # deleted = Enum.map(delete, fn x ->
-    #   val = Shared.Repo.delete!(%Shared.Scrapings{listing_id: x}) 
-    #   :ok = Listing.Registry.delete(Listing.Registry, x, user) 
-    #   x
-    # end)
+    deleted = Enum.map(delete, fn x ->
+      val = Shared.Repo.delete!(%Shared.Scrapings{listing_id: x}) 
+      :ok = Listing.Registry.delete(Listing.Registry, x, user) 
+      x
+    end)
 
-    #{created, updated, deleted}
+    {created, updated, deleted}
   end
 
   defp store({created, updated, deleted}) do
@@ -134,33 +131,23 @@ defmodule Scraper.BadslavaScraper.V2 do
   end
 
   defp convert(l) do
-    #IO.inspect l
-    #IO.puts ""
-    #IO.inspect l
-    # IO.inspect {:sign_up, get_performer_sign_up(l)}
-    # IO.inspect {:check_in, get_performer_check_in(l)}
     {cost, stage_time} = get_performer_cost_stage_time(l)
-    # IO.inspect {:cost, cost}
-    # IO.inspect {:stage_time, stage_time}
-    # IO.inspect {:performer_limit, get_performer_limit(l)}
-    # IO.inspect {:categories, get_categories(l)}
-    # IO.inspect {:listed_hosts, get_listed_hosts(l)}
-
 
     meta = %{
       type: "standard",
+      name: l["name"],
       performer_sign_up: get_performer_sign_up(l),
       performer_check_in: get_performer_check_in(l),
       performer_cost: cost,
       stage_time: stage_time,
       performer_limit: get_performer_limit(l),
-      notes: l["note"],
+      note: l["note"],
       categories: get_categories(l),
-      listed_hosts: get_listed_hosts(l)
+      event_types: ["comedy"],
+      listed_hosts: get_listed_hosts(l),
+      contact_info: get_contact_info(l)
     }
 
-    #IO.inspect {:cuando, get_cuando(l)}
-    # {when_info, meta} = extract_meta(l)
     out = %{
       type: "recurring",
       visibility: "public",
@@ -177,13 +164,27 @@ defmodule Scraper.BadslavaScraper.V2 do
         }
       },
       cuando: get_cuando(l),
-      meta: meta
+      meta: meta,
+      settings: %{
+        check_in: %{
+          begins: %{
+            type: "minutes_before_event_start",
+            data: %{
+              minutes: 30
+            }
+          },
+          ends: %{
+            type: "event_end"
+          },
+          radius: 30
+        }
+      },
+      source: "badslava"
     }
 
-    #IO.inspect out
+    IO.inspect out
 
-
-
+    out
   end
 
 
