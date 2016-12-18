@@ -1,5 +1,5 @@
 import {Observable as O} from 'rxjs'
-import {div, a, pre, span, input, button} from '@cycle/dom'
+import {div, a, pre, span, input, button, strong, h6, em, b, address, small} from '@cycle/dom'
 import {combineObj} from '../../../utils'
 import {to12HourTime} from '../../../helpers/time'
 import {ListingTypes, EventTypes, PerformerSignupOptions, RelativeTimeOptions, CostOptions, TierPerkOptions, PurchaseTypeOptions, StageTimeOptions, MinutesTypeOptions, PerformerLimitOptions} from '../../../listingTypes'
@@ -149,15 +149,6 @@ function getCostString(info) {
     return `Free`
   } else {
     return `${getCoverChargeSummary(info)}${getPurchaseConjunction(info)}${getMinimumPurchaseSummary(info)}`
-  }
-}
-
-function getPerformerCostString(cost) {
-  if (cost.length === 1) {
-    const info = cost[0]
-    return getCostString(info)
-  } else {
-    return `multi-tiered`
   }
 }
 
@@ -412,231 +403,6 @@ function getContactInfoSummary(info) {
   return out
 }
 
-
-
-
-
-
-
-
-
-
-
-function isOpenMic(listing) {
-  return listing.meta.event_types.some(x => x === EventTypes.OPEN_MIC)
-}
-
-function isShow(listing) {
-  return listing.meta.event_types.some(x => x === EventTypes.SHOW)
-}
-
-function isOpenMicAndShow(listing) {
-  return isOpenMic(listing) && isShow(listing)
-}
-
-function renderName(info) {
-  return info ? div('.row.text-item.name', [info]) : null
-}
-
-function renderCost(listing) {
-  const {audience_cost, performer_cost} = listing.meta
-  let out
-  if (isOpenMicAndShow(listing)) {
-    if (performer_cost.length === 1 && deepEqual(audience_cost, performer_cost[0])) {
-      out = getAudienceCostString(audience_cost)
-    } else {
-      const audience = getAudienceCostString(audience_cost)
-      const performer = getPerformerCostString(performer_cost)
-      return div('.col', [
-        div('.row.justify-end', [
-          span('.heading.text-item.cost', ['Audience:']),
-          span('.text-item', [audience])
-        ]),
-        div('.row.justify-end', [
-          span('.heading.text-item.cost', ['Performer:']),
-          span('.text-item', [performer])
-        ])
-      ])
-    }
-  } else if (isShow(listing)) {
-    out = getAudienceCostString(audience_cost)
-  } else if (isOpenMic(listing)) {
-    out = getPerformerCostString(performer_cost)
-  } else {
-    return null
-  }
-
-  return div('.row.justify-end', [out])
-}
-
-const CuandoStatusTypes = {
-  PAST: 'past',
-  ENDING_SOON: 'ending-soon',
-  IN_PROGRESS: 'in-progress',
-  STARTING_SOON: 'starting-soon',
-  FUTURE: 'future'
-}
-
-const toStyleClass = type => '.' + type
-
-function getDateTimeString(d) {
-  if (moment().isSame(d, "day")) {
-    return "Today, " + d.format(`h:mm A`)
-  } else if (moment().add(1, "day").isSame(d, "day")) {
-    return "Tomorrow, " + d.format(`h:mm A`)
-  } else if (moment().subtract(1, "day").isSame(d, "day")) {
-    return "Yesterday, " + d.format(`h:mm A`)
-  } else {
-    return d.format(`llll`)
-  }
-}
-
-function getCuandoStatus(cuando) {
-  //onsole.log(cuando)
-  const {begins} = cuando
-  const half_hour_before_start = begins.clone().subtract(30, 'minute')
-  const ends = cuando.ends ? cuando.ends : begins.clone().add(120, 'minutes')
-  const half_hour_before_end = ends.clone().subtract(30, 'minute')
-
-  const now = moment()
-  if (now.isBefore(begins)) {
-    //console.log(moment().add(30, 'minutes').isAfter(begins))
-    if (now.isAfter(half_hour_before_start)) {
-      return CuandoStatusTypes.STARTING_SOON
-    } else {
-      return CuandoStatusTypes.FUTURE
-    }
-  } else {
-    if (now.isAfter(ends)) {
-      return CuandoStatusTypes.PAST
-    } else {
-      if (now.isAfter(half_hour_before_end)) {
-        return CuandoStatusTypes.ENDING_SOON
-      } else {
-        return CuandoStatusTypes.IN_PROGRESS
-      }
-    }
-  }
-}
-
-function getCuandoStatusClass(cuando) {
-  return toStyleClass(getCuandoStatus(cuando))
-}
-
-function renderSingleBegins(cuando) {
-  const {begins} = cuando
-  const status_class = getCuandoStatusClass(cuando)
-  if (moment().isBefore(begins)) {
-    return div(`.row${status_class}`, [
-      //span(`.text-item.begins`, []), 
-      span(`.text-item.align-center`, [getDateTimeString(begins)])
-    ])
-  } else {
-    return div(`.row${status_class}`, [
-      span(`.text-item.began`), 
-      span(`.text-item`, [getDateTimeString(begins)])
-    ])
-  }
-}
-
-function renderSingleEnds(cuando) {
-  const {ends} = cuando
-  if (ends) {
-    const status_class = getCuandoStatusClass(cuando)
-    if (moment().isBefore(ends)) {
-      return div(`.row${status_class}`, [
-        span(`.text-item.ends`), span(`.text-item`, [getDateTimeString(ends)])
-      ])
-    } else {
-      return div(`.row${status_class}`, [
-        span(`.text-item.ended`), span(`.text-item`, [getDateTimeString(ends)])
-      ])
-    }
-  }
-}
-
-function renderSingle(cuando) {
-  const {begins, ends} = cuando
-  return div('.col', [
-    renderSingleBegins(cuando),
-    renderSingleEnds(cuando),
-  ])
-}
-
-function renderRecurring(cuando) {
-  const rruleset = recurrenceToRRuleSet(cuando)
-  const upcoming_dates = rruleset.between(moment().toDate(), moment().add(90, 'day').toDate())
-  const upcoming_date = upcoming_dates.length ? moment(upcoming_dates[0].toISOString()) : undefined
-  const upcoming = upcoming_date ? 
-    div('.row', [
-      span('.heading.text-item', ['Next event:']),
-      span('.text-item', [upcoming_date.format('llll')])
-    ]) : null
-
-  const {rrule, rdate, exdate} = cuando
-  if (rdate.length || exdate.length) {
-    return div('.column', [
-      span('.row.heading.text-item', ['Recurring']),
-      upcoming
-    ])
-  } else if (rrule) {
-    return div('.column', [
-      div('.row', [
-        span('.heading.text-item', ['Recurs:']),
-        span('.text-item', [getFreqSummary(rrule)])
-      ]),
-      upcoming
-    ])
-  } else {
-    return null
-  }
-}
-
-function renderCuando(listing) {
-  const {type, cuando} = listing
-  if (type === 'single') {
-    return renderSingle(cuando)
-  } else {
-    return renderRecurring(cuando)
-  }
-}
-
-function renderDondeVenue(donde) {
-  const name = getVenueName(donde)
-  return div(`.column.donde`, [
-    div('.row.underline', [getVenueName(donde)]),
-    div('.row', [getVenueAddress(donde)])
-  ])
-}
-
-function renderDondeBadslava(donde) {
-  return div(`.column.donde`, [
-    div('.row.underline', [getBadslavaName(donde)]),
-    div(`.row.street`, [donde.street]),
-    div(`.row.city`, [donde.city])
-  ])
-}
-
-function renderDonde(donde) {
-  if (donde.type === "venue") return renderDondeVenue(donde)
-  if (donde.type === "badslava") return renderDondeBadslava(donde)
-  throw new Error()
-}
-
-function renderMapVenueInfo(donde) {
-  const name = getVenueName(donde)
-  return div(`.column.location-info`, [
-    div('.bold.row', [getVenueName(donde)]),
-    div('.row', [getVenueAddress(donde)])
-  ])
-}
-
-function renderLocationInfo(donde) {
-  if (donde.type === 'venue') {
-    return renderMapVenueInfo(donde)
-  }
-}
-
 function renderWebsite(website) {
   const site = `http://${website}`
   return div(`.result-website`, [
@@ -691,120 +457,6 @@ function renderContactInfo(contact_info) {
   return null
 }
 
-function getRelativeTimeInfoShort(info) {
-  let val_string
-  switch(info.type) {
-    case RelativeTimeOptions.MINUTES_BEFORE_EVENT_START:
-      return `${info.data.minutes} minutes`
-    case RelativeTimeOptions.MINUTES_AFTER_EVENT_START:
-      return `${info.data.minutes} minutes after`
-    case RelativeTimeOptions.MINUTES_BEFORE_EVENT_END:
-      return `${info.data.minutes} minutes from end` 
-    case RelativeTimeOptions.EVENT_START:
-      return 'Event start'
-    case RelativeTimeOptions.EVENT_END:
-      return 'Event end'
-    case RelativeTimeOptions.UPON_POSTING:
-      return 'Upon posting'
-    case RelativeTimeOptions.PREVIOUS_WEEKDAY_AT_TIME:
-      const time = to12HourTime(info.data.time)
-      return `${info.data.day} @ ${time.hour}:{time.minute} ${time.mode}`
-  }
-}
-
-
-function getPreRegistrationTypeString(info) {
-  return `${info.type === 'app' ? 'In-' : ''}${info.type}`
-}
-
-const capitalize = val => {
-  if (val === 'email') return 'E-mail'
-  else return val.substring(0, 1).toUpperCase() + val.substring(1)
-}
-
-function renderPerformerSignup(info) {
-  let out = 'Performer sign-up: '
-  const {type, data} = info
-  switch (info.type) {
-    case PerformerSignupOptions.IN_PERSON:
-      return div('.column', [
-        div('.row.justify-end', ['In person'])
-      ])
-    case PerformerSignupOptions.PRE_REGISTRATION:
-      return div('.column', [
-        div('.row.justify-end', [`${capitalize(data.pre_registration.type)}`])
-      ])
-    case PerformerSignupOptions.IN_PERSON_AND_PRE_REGISTRATION:
-      return div('.column', [
-        div('.row.justify-end', [`In person/${capitalize(data.pre_registration.type)}`])
-      ])
-    default:
-     throw new Error()
-  }
-
-}
-
-function getMinutesInfo(info) {
-  switch (info.type) {
-    case MinutesTypeOptions.MAX:
-      return `${info.data.max} minutes`
-    case MinutesTypeOptions.RANGE:
-      return `${info.data.min}-${info.data.max} minutes`
-    default:
-      throw new Error()
-  }
-}
-
-function getSongsInfo(info) {
-  return `${info} songs`
-}
-
-function renderSingleRound(stage_time) {
-  switch (stage_time.type) {
-    case StageTimeOptions.MINUTES:
-      return div('.row.text-item.justify-end', [getMinutesInfo(stage_time.data.minutes)])
-    case StageTimeOptions.SONGS:
-      return div('.row.text-item.justify-end', [getSongsInfo(stage_time.data.songs)])
-    case StageTimeOptions.MINUTES_OR_SONGS:
-      return div('.row.text-item.justify-end', [`${getMinutesInfo(stage_time.data.minutes)}/${getSongsInfo(stage_time.data.songs)}`])  
-    default:
-      throw new Error() 
-  }
-}
-
-function renderStageTime(stage_time) {
-  const length = stage_time.length
-  if (length === 1) {
-    return renderSingleRound(stage_time[0])
-  } else {
-    return div('.row.justify-end', ['Multi-round'])
-  }
-}
-
-function getPerformerLimitInfo(info) {
-  switch (info.type) {
-    case PerformerLimitOptions.NO_LIMIT:
-      return `No limit`
-    case PerformerLimitOptions.LIMIT:
-      return `${info.data}`
-    default:
-      throw new Error()
-  }
-}
-
-function renderPerformerLimit(info) {
-  switch (info.type) {
-    case PerformerLimitOptions.NO_LIMIT:
-      return null
-    case PerformerLimitOptions.LIMIT:
-      return div('.row.text-item.justify-end', [`${info.data.limit} people`])
-    case PerformerLimitOptions.LIMIT_BY_SIGN_UP_TYPE:
-      return div('.row.text-item.justify-end', [`${getPerformerLimitInfo(info.data.in_person)} + ${getPerformerLimitInfo(info.data.pre_registration)} performers`])  
-    default:
-      throw new Error() 
-  }
-}
-
 function renderListedHosts(info) {
   if (info.length) {
     const plural = info.length >1
@@ -840,113 +492,454 @@ function renderNotes(info) {
   }
 }
 
-function renderTextList(info) {
-  if (info.length) {
-    const plural = info.length >1
-    const title = plural ? 'Hosts:' : 'Host:'
-    return div('.row.justify-end', [
-      div('.text-item', info.join(`, `).replace('_', '-'))
+
+
+
+
+
+
+
+
+function renderName(info) {
+  return info ? strong([info]) : null
+}
+
+function isOpenMic(listing) {
+  return listing.meta.event_types.some(x => x === EventTypes.OPEN_MIC)
+}
+
+function isShow(listing) {
+  return listing.meta.event_types.some(x => x === EventTypes.SHOW)
+}
+
+function isOpenMicAndShow(listing) {
+  return isOpenMic(listing) && isShow(listing)
+}
+
+function getPerformerCostString(cost) {
+  if (cost.length === 0) {
+    return undefined
+  }
+  
+  if (cost.length === 1) {
+    if (cost[0].type === CostOptions.FREE) {
+      return 'Free'
+    } else {
+      return getCostString(cost[0]).replace('and', '+')
+    }
+  }
+
+  if (cost.some(x => x.type === CostOptions.FREE)) {
+    return `Free/Paid`
+  }
+
+  return `Paid`
+}
+
+function renderCost(listing) {
+  const {audience_cost, performer_cost} = listing.meta
+  let out
+  if (isOpenMicAndShow(listing)) {
+    if (performer_cost.length === 1 && deepEqual(audience_cost, performer_cost[0])) {
+      out = getAudienceCostString(audience_cost)
+    } else {
+      const audience = getAudienceCostString(audience_cost)
+      const performer = getPerformerCostString(performer_cost)
+      return div([
+        div([
+          span(['Audience:']),
+          span([audience])
+        ]),
+        div([
+          span(['Performer:']),
+          span([performer])
+        ])
+      ])
+    }
+  } else if (isShow(listing)) {
+    out = getAudienceCostString(audience_cost)
+  } else if (isOpenMic(listing)) {
+    out = getPerformerCostString(performer_cost)
+  } else {
+    return null
+  }
+
+  return span('.float-xs-right', [out])
+}
+
+const CuandoStatusTypes = {
+  PAST: 'past',
+  ENDED_RECENTLY: 'ended-recently',
+  ENDING_SOON: 'ending-soon',
+  IN_PROGRESS: 'in-progress',
+  STARTING_SOON: 'starting-soon',
+  FUTURE: 'future'
+}
+
+function cuandoStatusToClass(type) {
+  switch (type) {
+    case CuandoStatusTypes.PAST:
+      return '.text-muted'
+    case CuandoStatusTypes.ENDED_RECENTLY:
+      return '.text-muted.font-italic'
+    case CuandoStatusTypes.ENDING_SOON:
+      return '.text-success.font-italic'
+    case CuandoStatusTypes.IN_PROGRESS:
+      return '.text-success'
+    case CuandoStatusTypes.STARTING_SOON:
+      return '.text-warning.font-italic'
+    case CuandoStatusTypes.FUTURE:
+      return '.text-primary'      
+  }
+}
+
+function cuandoStatusToText(type) {
+  switch (type) {
+    case CuandoStatusTypes.PAST:
+      return 'Past'
+    case CuandoStatusTypes.ENDED_RECENTLY:
+      return 'Ended'
+    case CuandoStatusTypes.ENDING_SOON:
+      return 'Ending soon'
+    case CuandoStatusTypes.IN_PROGRESS:
+      return 'In progress'
+    case CuandoStatusTypes.STARTING_SOON:
+      return 'Starting soon'
+    case CuandoStatusTypes.FUTURE:
+      return 'Future'  
+  }
+}
+
+
+function getDateTimeString(d) {
+  if (moment().isSame(d, "day")) {
+    return "Today, " + d.format(`h:mm A`)
+  } else if (moment().add(1, "day").isSame(d, "day")) {
+    return "Tomorrow, " + d.format(`h:mm A`)
+  } else if (moment().subtract(1, "day").isSame(d, "day")) {
+    return "Yesterday, " + d.format(`h:mm A`)
+  } else {
+    return d.format(`llll`)
+  }
+}
+
+function getCuandoStatus(cuando) {
+  //onsole.log(cuando)
+  const {begins} = cuando
+  const half_hour_before_start = begins.clone().subtract(30, 'minute')
+  const ends = cuando.ends ? cuando.ends : begins.clone().add(120, 'minutes')
+  const half_hour_before_end = ends.clone().subtract(30, 'minute')
+  const six_hours_after_end = ends.clone().add(6, 'hours')
+
+  const now = moment()
+  if (now.isBefore(begins)) {
+    //console.log(moment().add(30, 'minutes').isAfter(begins))
+    if (now.isAfter(half_hour_before_start)) {
+      return CuandoStatusTypes.STARTING_SOON
+    } else {
+      return CuandoStatusTypes.FUTURE
+    }
+  } else {
+    if (now.isAfter(ends)) {
+      if (now.isAfter(six_hours_after_end)) {
+        return CuandoStatusTypes.PAST
+      } else {
+        return CuandoStatusTypes.ENDED_RECENTLY
+      }
+
+    } else {
+      if (now.isAfter(half_hour_before_end)) {
+        return CuandoStatusTypes.ENDING_SOON
+      } else {
+        return CuandoStatusTypes.IN_PROGRESS
+      }
+    }
+  }
+}
+
+function getCuandoStatusClass(cuando) {
+  return cuandoStatusToClass(getCuandoStatus(cuando))
+}
+
+function renderCuandoStatus(cuando) {
+  const status = getCuandoStatus(cuando)
+  if (status === CuandoStatusTypes.FUTURE) {
+    return null
+  }
+
+  return strong(`${getCuandoStatusClass(cuando)}.float-xs-right`, [
+    cuandoStatusToText(status)
+  ])
+}
+
+
+function renderSingleBegins(cuando) {
+  const {begins} = cuando
+  const status_class = getCuandoStatusClass(cuando)
+  return span(`.mr-xs`, {
+      class: {
+        "text-muted": !moment().isBefore(begins)
+      }
+    }, [getDateTimeString(begins)])
+}
+
+
+function renderSingleEnds(cuando) {
+  const {ends} = cuando
+  const status_class = getCuandoStatusClass(cuando)
+  return ends ? span(`.mr-xs`, {
+      class: {
+        "text-muted": !moment().isBefore(ends)
+      }
+    }, [getDateTimeString(ends)]) : null
+}
+
+function renderSingle(cuando) {
+  const {begins, ends} = cuando
+  return div([
+    renderSingleBegins(cuando),
+    renderSingleEnds(cuando),
+  ])
+}
+
+function renderRecurring(cuando) {
+  const rruleset = recurrenceToRRuleSet(cuando)
+  const upcoming_dates = rruleset.between(moment().toDate(), moment().add(90, 'day').toDate())
+  const upcoming_date = upcoming_dates.length ? moment(upcoming_dates[0].toISOString()) : undefined
+  const upcoming = upcoming_date ? 
+    div([
+      strong('.mr-xs', ['Next event:']),
+      span([upcoming_date.format('llll')])
+    ]) : null
+
+  const {rrule, rdate, exdate} = cuando
+  if (rdate.length || exdate.length) {
+    return div([
+      span('.mr-xs', ['Recurring']),
+      upcoming
+    ])
+  } else if (rrule) {
+    return div([
+      div([
+        span('.mr-xs', ['Recurs:']),
+        span([getFreqSummary(rrule)])
+      ]),
+      upcoming
     ])
   } else {
     return null
   }
 }
 
-function renderEventTypesAndCategories(event_types, categories) {
-  if (event_types.length || categories.length) {
-    return div('.column.separated-above', [
-      renderTextList(event_types),
-      renderTextList(categories),
-    ])
-  }  else {
+function renderCuando(listing) {
+  const {type, cuando} = listing
+  if (type === 'single') {
+    return renderSingle(cuando)
+  } else {
+    return renderRecurring(cuando)
+  }
+}
+
+function getMinutesInfo(info) {
+  switch (info.type) {
+    case MinutesTypeOptions.MAX:
+      return `${info.data.max} minutes`
+    case MinutesTypeOptions.RANGE:
+      return `${info.data.min}-${info.data.max} minutes`
+    default:
+      throw new Error()
+  }
+}
+
+function getSongsInfo(info) {
+  return `${info} songs`
+}
+
+function getSingleRoundText(stage_time) {
+  switch (stage_time.type) {
+    case StageTimeOptions.MINUTES:
+      return getMinutesInfo(stage_time.data.minutes)
+    case StageTimeOptions.SONGS:
+      return getSongsInfo(stage_time.data.songs)
+    case StageTimeOptions.MINUTES_OR_SONGS:
+      return `${getMinutesInfo(stage_time.data.minutes)}/${getSongsInfo(stage_time.data.songs)}`
+    default:
+      throw new Error() 
+  }
+}
+
+function renderStageTime(stage_time) {
+  let text 
+  const length = stage_time.length
+  if (length === 0) {
+    return null
+  } else if (length === 1) {
+    text = getSingleRoundText(stage_time[0])
+  } else {
+    text = 'Multi-round'
+  }
+
+  return div('.float-xs-right', [text])  
+
+}
+
+function getRelativeTimeInfoShort(info) {
+  let val_string
+  switch(info.type) {
+    case RelativeTimeOptions.MINUTES_BEFORE_EVENT_START:
+      return `${info.data.minutes} minutes`
+    case RelativeTimeOptions.MINUTES_AFTER_EVENT_START:
+      return `${info.data.minutes} minutes after`
+    case RelativeTimeOptions.MINUTES_BEFORE_EVENT_END:
+      return `${info.data.minutes} minutes from end` 
+    case RelativeTimeOptions.EVENT_START:
+      return 'Event start'
+    case RelativeTimeOptions.EVENT_END:
+      return 'Event end'
+    case RelativeTimeOptions.UPON_POSTING:
+      return 'Upon posting'
+    case RelativeTimeOptions.PREVIOUS_WEEKDAY_AT_TIME:
+      const time = to12HourTime(info.data.time)
+      return `${info.data.day} @ ${time.hour}:{time.minute} ${time.mode}`
+  }
+}
+
+
+function getPreRegistrationTypeString(info) {
+  return `${info.type === 'app' ? 'In-' : ''}${info.type}`
+}
+
+const capitalize = val => {
+  if (val === 'email') return 'E-mail'
+  else return val.substring(0, 1).toUpperCase() + val.substring(1)
+}
+
+function renderPerformerSignup(info) {
+  let out
+  const {type, data} = info
+  
+  switch (info.type) {
+    case PerformerSignupOptions.IN_PERSON:
+      out = 'In person'
+      break
+    case PerformerSignupOptions.PRE_REGISTRATION:
+      out = `${capitalize(data.pre_registration.type)}`
+      break
+    case PerformerSignupOptions.IN_PERSON_AND_PRE_REGISTRATION:
+      out = `In person/${capitalize(data.pre_registration.type)}`
+      break
+    default:
+     throw new Error()
+  }
+
+  return span('.float-xs-right', [out])
+}
+
+function getPerformerLimitInfo(info) {
+  switch (info.type) {
+    case PerformerLimitOptions.NO_LIMIT:
+      return `No limit`
+    case PerformerLimitOptions.LIMIT:
+      return `${info.data}`
+    default:
+      throw new Error()
+  }
+}
+
+function renderPerformerLimit(info) {
+  let text
+  switch (info.type) {
+    case PerformerLimitOptions.NO_LIMIT:
+      return null
+    case PerformerLimitOptions.LIMIT:
+      text = `${info.data.limit} people`
+      break
+    case PerformerLimitOptions.LIMIT_BY_SIGN_UP_TYPE:
+      text = `${getPerformerLimitInfo(info.data.in_person)} + ${getPerformerLimitInfo(info.data.pre_registration)} performers`
+      break
+    default:
+      throw new Error() 
+  }
+
+  return div('.float-xs-right', [text])
+}
+
+function renderDondeVenue(donde) {
+  const name = getVenueName(donde)
+  return address([
+    em([getVenueName(donde)]),
+    div([getVenueAddress(donde)])
+  ])
+}
+
+function renderDondeBadslava(donde) {
+  return address([
+    em([getBadslavaName(donde)]),
+    div([donde.street]),
+    div([donde.city])
+  ])
+}
+
+function renderDonde(donde) {
+  if (donde.type === "venue") return renderDondeVenue(donde)
+  if (donde.type === "badslava") return renderDondeBadslava(donde)
+  throw new Error()
+}
+
+
+function renderTextList(info) {
+  if (info.length) {
+    return div('.float-xs-right', [small([info.join(`, `).replace('_', '-')])])
+  } else {
     return null
   }
 }
 
 
-
-export function renderSummary(listing) {
-  const {type, meta, donde, cuando} = listing
-  const {
-    name, event_types, categories, description, performer_sign_up, performer_check_in, performer_cost, 
-    stage_time, performer_limit, listed_hosts, listed_performers, 
-    audience_cost, contact_info} = meta
-
-  return div(`.column.listing-summary`, [
-    pre([
-      `\
-${performer_check_in ? getPerformerCheckinSummary(performer_check_in) : ''}\
-${event_types.some(x => x === EventTypes.OPEN_MIC) ? '\n\n' + getPerformerSignupSummary(performer_sign_up) : ''}\
-${event_types.some(x => x === EventTypes.OPEN_MIC) ? '\n\n' + getStageTimeSummary(stage_time) : ''}\
-${event_types.some(x => x === EventTypes.OPEN_MIC) ? '\n\n' + getPerformerLimitSummary(performer_limit) : ''}\
-`
-    ])
-  ])
-}
-
-
-export function renderListingCard(listing) {
-  const {type, donde, meta} = listing
-  const {name, event_types, categories, notes, performer_cost, description, contact_info, performer_sign_up, stage_time, performer_limit, listed_hosts} = meta
-
-  return div(`.listing-card`, [
-    div('.column.meta', [
-      div(`.row.justify-between`, [
-        div(`.column`, [
-          renderName(name),
-          renderCuando(listing),
-          renderDonde(donde),
-          renderContactInfo(contact_info),
-          renderListedHosts(listed_hosts)
-        ]),
-        div(`.column`, [
-          renderCost(listing),
-          renderStageTime(stage_time),
-          performer_sign_up ? renderPerformerSignup(performer_sign_up) : null,
-          performer_limit ? renderPerformerLimit(performer_limit) : null,
-          renderEventTypesAndCategories(event_types, categories)
-          // checked_in ? div(`.result-check-in`, [`Checked-in`]) : null
-        ])
-      ]),
-      renderDescription(description),
-      renderNotes(notes)
-    ]),
-    div(`.map`, [
-      div(`#location-map`, []),
-      renderLocationInfo(donde)
-    ])
-  ])
-}
-
 export function renderListingResult(listing) {
-  const {type, donde, meta} = listing
-  const {name, event_types, categories, notes, performer_cost, description, contact_info, performer_sign_up, stage_time, performer_limit, listed_hosts} = meta
+  const {type, donde, cuando, meta} = listing
+  const {
+    name, event_types, categories, notes, 
+    performer_cost, description, contact_info, 
+    performer_sign_up, stage_time, 
+    performer_limit, listed_hosts} = meta
 
-  return div(`.listing-result`, [
-    div('.column.meta', [
-      div(`.row.justify-between`, [
-        div(`.column`, [
-          renderName(name),
-          renderCuando(listing),
-          renderDonde(donde),
-          renderContactInfo(contact_info),
-          renderListedHosts(listed_hosts)
+  return div('.container-fluid.no-gutter', [
+    div('.row.no-gutter', [
+      div('.col-xs-6', [
+        div('.row.no-gutter', [
+          renderName(name)
         ]),
-        div(`.column`, [
-          renderCost(listing),
-          renderStageTime(stage_time),
-          performer_sign_up ? renderPerformerSignup(performer_sign_up) : null,
-          performer_limit ? renderPerformerLimit(performer_limit) : null,
-          renderEventTypesAndCategories(event_types, categories)
-          // checked_in ? div(`.result-check-in`, [`Checked-in`]) : null
+        div('.row.no-gutter', [
+          renderCuando(listing)
+        ]),
+        div('.row.no-gutter', [
+          renderDonde(donde)
         ])
       ]),
-      renderDescription(description),
-      renderNotes(notes)
-    ]),
-    div(`.map`, [
-      div(`#location-map`, []),
-      renderLocationInfo(donde)
+      div('.col-xs-6', [
+        div('.row.no-gutter.clearfix', [
+          renderCuandoStatus(cuando)
+        ]),
+        performer_cost ? div('.row.no-gutter.clearfix', [
+          renderCost(listing)
+        ]) : null,
+        stage_time ? div('.row.no-gutter.clearfix', [
+          renderStageTime(stage_time)
+        ]) : null,
+        performer_sign_up ? div('.row.no-gutter.clearfix', [
+          renderPerformerSignup(performer_sign_up)
+        ]) : null,
+        performer_limit ? div('.row.no-gutter.clearfix', [
+          renderPerformerLimit(performer_limit)
+        ]) : null,
+        categories.length ? div('.row.no-gutter.clearfix', [
+          renderTextList(categories)
+        ]) : null,
+        // event_types.length ? div('.row.no-gutter.clearfix', [
+        //   renderTextList(event_types)
+        // ]) : null
+      ])
     ])
   ])
 }

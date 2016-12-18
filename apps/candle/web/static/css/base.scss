@@ -1,3 +1,72 @@
+@import '../../../node_modules/bootstrap/scss/bootstrap';
+
+.container, .container-fluid {
+  &.no-gutter {
+    margin-right: 0;
+    margin-left: 0;
+    padding-right: 0;
+    padding-left: 0;
+  }
+}
+
+.row {
+  &.no-gutter{
+    margin-right: 0;
+    margin-left: 0;
+  }
+  
+  &.no-gutter > [class^="col-"], &.no-gutter > [class^=" col-"] {
+    padding-right: 0;
+    padding-left: 0;
+  }
+
+  &.gutter-8 {
+    margin-right: -8px;
+    margin-left: -8px;
+  }
+
+  &.gutter-8 > [class^="col-"], &.gutter-8 > [class^=" col-"] {
+    padding-right: 4px;
+    padding-left: 4px;
+  }
+}
+
+.list-group-item {
+  border-right-width: 0;
+  border-left-width: 0;
+  &.no-padding {
+    padding: 0;
+  }
+
+  &.xs-padding {
+    padding: .25rem;
+  }
+
+  &.sm-padding {
+    padding: .25rem .5rem;
+  }
+
+  &.last-child {
+    border-radius: 0;
+  }
+}
+
+.mr-xs {
+  margin-right: $spacer-x * .5;
+}
+
+
+address {
+  margin-top: $spacer-y * .5;
+  margin-bottom: 0;//$spacer-y * .5;
+}
+
+
+.search-result-list {
+  font-size: .9rem;
+}
+
+
 @import '_variables';
 
 @font-face {

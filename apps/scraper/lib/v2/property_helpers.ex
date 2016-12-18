@@ -106,7 +106,7 @@ defmodule Helpers.V2 do
 
   def email_processor(val) do
     email = val["email"]
-    IO.inspect {"found email", email}
+    #IO.inspect {"found email", email}
     email
   end
 
@@ -148,7 +148,7 @@ defmodule Helpers.V2 do
   end
   
   def any_match(regexes, note) do
-    regexes |> Enum.any?(fn x -> Regex.match(x, note) end)
+    regexes |> Enum.any?(fn x -> Regex.match?(x, note) end)
   end
 
   def extract_time(regexes, note) do

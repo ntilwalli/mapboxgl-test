@@ -1,0 +1,47 @@
+Verbose logs are written to /Users/ntilwalli/.vscode/extensions/msjsdiag.debugger-for-chrome-2.4.1/vscode-chrome-debug.txt
+4:50:24 PM, 12/17/2016
+OS: darwin x64
+Adapter node: v6.5.0 x64
+vscode-chrome-debug-core: 3.8.2
+debugger-for-chrome: 2.4.1
+spawn('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', ["--remote-debugging-port=9222","--no-first-run","--no-default-browser-check","http://localhost:4000"])
+Discovering targets via http://127.0.0.1:9222/json
+Warning: Found more than one valid target page. Attaching to the first one. Available pages: ["http://localhost:4000/","http://localhost:4000/","http://localhost:4000/"]
+Paths.scriptParsed: resolved http://localhost:4000/node_modules/mapbox-gl/dist/mapbox-gl.js to /Users/ntilwalli/dev/spotlight/apps/candle/priv/static/node_modules/mapbox-gl/dist/mapbox-gl.js. webRoot: /Users/ntilwalli/dev/spotlight/apps/candle/priv/static
+Paths.scriptParsed: resolved http://localhost:4000/js/main.js to /Users/ntilwalli/dev/spotlight/apps/candle/priv/static/js/main.js. webRoot: /Users/ntilwalli/dev/spotlight/apps/candle/priv/static
+Paths.scriptParsed: could not resolve http://localhost:4000/phoenix/live_reload/frame to a file under webRoot: /Users/ntilwalli/dev/spotlight/apps/candle/priv/static. It may be external or served directly from the server's memory (and that's OK).
+normalized results Array[11]
+TypeError: Cannot read property 'rrule' of undefined
+    at Object.recurrenceToRRuleSet (http://localhost:4000/js/main.js:56970:23)
+    at renderRecurring (http://localhost:4000/js/main.js:56744:28)
+    at renderCuando (http://localhost:4000/js/main.js:56778:16)
+    at Object.renderListingResult (http://localhost:4000/js/main.js:56791:21)
+    at http://localhost:4000/js/main.js:58153:99
+    at Array.map (native)
+    at MapSubscriber.project (http://localhost:4000/js/main.js:58153:14)
+    at MapSubscriber._next (http://localhost:4000/js/main.js:34358:35)
+    at MapSubscriber.Subscriber.next (http://localhost:4000/js/main.js:25766:18)
+    at RefCountSubscriber.Subscriber._next (http://localhost:4000/js/main.js:25802:26)
+TypeError: Cannot read property 'rrule' of undefined
+    at Object.recurrenceToRRuleSet (http://localhost:4000/js/main.js:56970:23)
+    at renderRecurring (http://localhost:4000/js/main.js:56744:28)
+    at renderCuando (http://localhost:4000/js/main.js:56778:16)
+    at Object.renderListingResult (http://localhost:4000/js/main.js:56791:21)
+    at http://localhost:4000/js/main.js:58153:99
+    at Array.map (native)
+    at MapSubscriber.project (http://localhost:4000/js/main.js:58153:14)
+    at MapSubscriber._next (http://localhost:4000/js/main.js:34358:35)
+    at MapSubscriber.Subscriber.next (http://localhost:4000/js/main.js:25766:18)
+    at RefCountSubscriber.Subscriber._next (http://localhost:4000/js/main.js:25802:26)
+signup bad$ errored TypeError: Cannot read property 'rrule' of undefined
+    at Object.recurrenceToRRuleSet (http://localhost:4000/js/main.js:56970:23)
+    at renderRecurring (http://localhost:4000/js/main.js:56744:28)
+    at renderCuando (http://localhost:4000/js/main.js:56778:16)
+    at Object.renderListingResult (http://localhost:4000/js/main.js:56791:21)
+    at http://localhost:4000/js/main.js:58153:99
+    at Array.map (native)
+    at MapSubscriber.project (http://localhost:4000/js/main.js:58153:14)
+    at MapSubscriber._next (http://localhost:4000/js/main.js:34358:35)
+    at MapSubscriber.Subscriber.next (http://localhost:4000/js/main.js:25766:18)
+    at RefCountSubscriber.Subscriber._next (http://localhost:4000/js/main.js:25802:26)
+Target userAgent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.95 Safari/537.36

@@ -143,7 +143,7 @@ defmodule Scraper.BadslavaScraper.V2 do
       performer_limit: get_performer_limit(l),
       note: l["note"],
       categories: get_categories(l),
-      event_types: ["comedy"],
+      event_types: ["open_mic"],
       listed_hosts: get_listed_hosts(l),
       contact_info: get_contact_info(l)
     }

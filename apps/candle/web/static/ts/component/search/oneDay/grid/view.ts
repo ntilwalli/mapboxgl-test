@@ -1,6 +1,6 @@
 import {div, span, ul, li} from '@cycle/dom'
 import {combineObj} from '../../../../utils'
-import {renderListingCard} from '../../../helpers/listing/render'
+import {renderListingResult} from '../../../helpers/listing/renderBootstrap'
 import moment = require('moment')
 
 import {CostOptions, TierPerkOptions, StageTimeOptions, MinutesTypeOptions} from '../../../../listingTypes'
@@ -208,11 +208,10 @@ export default function view(state$) {
     const sorted = withFilters.sort(compareBegins)
 
     return ul(
-      `.one-day-grid`, 
+      `.list-group.search-result-list`, 
       //['Hi there']
       sorted
-      .map(x => renderListingCard(x.listing))
-      .map(x => li([x]))
+      .map(x => li('.list-group-item.sm-padding', [renderListingResult(x.listing)]))
     )
   })
 }
