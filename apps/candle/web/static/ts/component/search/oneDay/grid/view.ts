@@ -208,7 +208,7 @@ export default function view(state$) {
     const sorted = withFilters.sort(compareBegins)
 
     return ul(
-      `.list-group.search-result-list`, 
+      `.list-group.search-results`, 
       //['Hi there']
       sorted
       .map(x => li('.list-group-item.sm-padding', [renderListingResult(x.listing)]))

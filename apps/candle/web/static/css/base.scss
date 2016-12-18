@@ -1,4 +1,47 @@
 @import '../../../node_modules/bootstrap/scss/bootstrap';
+@import '_variables';
+
+address {
+  margin-top: $spacer-y * .5;
+  margin-bottom: 0;//$spacer-y * .5;
+}
+
+.navbar {
+  button {
+    line-height: 2rem;
+
+    &.fa-angle-left, &.fa-angle-right {
+      font-size: 1.5rem;
+    }
+
+    &.fa-cog {
+      position: relative;
+      top: 2px;
+      font-size: 1.2rem
+    }
+  }
+  
+  .row {
+    height: 2rem;
+  }
+}
+
+.btn {
+  &.btn-link {
+    margin: 0;
+    padding: 0;
+    color: black
+  }
+
+  &.btn-link:hover {
+    color: $crayola-orange;
+    text-decoration: none;
+  }
+
+  &.btn-link:focus, &.btn-link:active {
+    outline: none;
+  }
+}
 
 .container, .container-fluid {
   &.no-gutter {
@@ -55,19 +98,26 @@
   margin-right: $spacer-x * .5;
 }
 
-
-address {
-  margin-top: $spacer-y * .5;
-  margin-bottom: 0;//$spacer-y * .5;
+.d-flex {
+  display: flex
 }
 
-
-.search-result-list {
-  font-size: .9rem;
+.fx-a-c {
+  align-items: center
 }
 
+.fx-j-c {
+  justify-content: center;
+}
 
-@import '_variables';
+.fx-j-sb {
+  justify-content: space-between;
+}
+
+.fx-j-sa {
+  justify-content: space-around;
+}
+
 
 @font-face {
   font-family: Corona4Typewriter;
@@ -98,7 +148,7 @@ html {
 html, body {
   height: 100%;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-  font-size: .9rem;
+  //font-size: .9rem;
   //font-family: 'Fixedsys Excelsior 3.01';//'Akkurat Regular';//"Corona4Typewriter";
 }
 

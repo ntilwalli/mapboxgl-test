@@ -13,7 +13,7 @@ export function renderSearchCalendarButton() {
 }
 
 export function renderLoginButton() {
-  return button(`.auth-button`, {class: {appShowLoginButton: true}}, [`Login`])
+  return button(`.appShowLoginButton.btn.btn-link`, [`Login`])
 }
 
 // export function renderLoadingSpinner() {

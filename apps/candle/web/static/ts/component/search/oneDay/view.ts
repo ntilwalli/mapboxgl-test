@@ -1,4 +1,4 @@
-import {div, button, span, i} from '@cycle/dom'
+import {div, button, span, i, nav} from '@cycle/dom'
 import {combineObj} from '../../../utils'
 import moment = require('moment')
 import {renderMenuButton, renderUserProfileButton, renderLoginButton} from '../../helpers/navigator'
@@ -35,43 +35,53 @@ function getDateDisplayString(dt) {
   }
 }
 
-function renderDateDisplay(state) {
-  //console.log(state.searchDateTime)
+function renderDateController(state) {
   const dt = state.searchDateTime
   const [val, status] = getDateDisplayString(dt)
-
-  return span(`.date-display${status}`, [val])
-}
-
-function renderDateController(state) {
-  return span(`.date-controller`, [
-    button(`.appSubtractDay.subtract-day.fa.fa-angle-left.fa-1-5x`),
-    renderDateDisplay(state), //span(`.date-display`[`This is the controller`]),
-    button(`.appAddDay.add-day.fa.fa-angle-right.fa-1-5x`)
+  return div(`.search-controller.clearfix`, [
+    button(`.appSubtractDay.fa.fa-angle-left.btn.btn-link.float-xs-left`, []),
+    val,
+    button(`.appAddDay.fa.fa-angle-right.btn.btn-link.float-xs-right`),
+    button(`.appShowFilters.filter-button.fa.fa-cog.btn.btn-link`)
   ])
 }
 
-function renderFiltersController(state) {
-  return span(`.filter-controller`, [
-    button(`.appShowFilters.show-filters.fa.fa-cog.fa-1-2x`)
-  ])
-}
+// function renderNavigator(state) {
+//   const {authorization} = state
+//   const authClass = authorization ? `Logout` : `Login`
+//   return div(`.navigator-section`, [
+//     div(`.section`, [
+//       renderMenuButton()
+//     ]),
+//     div(`.section`, [
+//       //`Hello`,
+//       renderDateController(state),
+//       renderFiltersController(state)
+//     ]),
+//     div(`.section`, [
+//       !authorization ? renderLoginButton() : null,
+//       authorization ? renderUserProfileButton() : null
+//     ])
+//   ])
+// }
+
+
 
 function renderNavigator(state) {
   const {authorization} = state
-  const authClass = authorization ? `Logout` : `Login`
-  return div(`.navigator-section`, [
-    div(`.section`, [
-      renderMenuButton()
-    ]),
-    div(`.section`, [
-      //`Hello`,
-      renderDateController(state),
-      renderFiltersController(state)
-    ]),
-    div(`.section`, [
-      !authorization ? renderLoginButton() : null,
-      authorization ? renderUserProfileButton() : null
+  const authClass = authorization ? 'Logout' : 'Login'
+  return nav('.navbar.navbar-light.bg-faded.container-fluid.pos-f-t', [
+    div('.row.no-gutter', [
+      div('.col-xs-4', [
+        i('.appShowMenuButton.fa.fa-bars.fa-1-5x.btn.btn-link', [])
+      ]),
+      div('.col-xs-4', [
+        renderDateController(state),
+      ]),
+      div('.col-xs-4', [
+        !authorization ?  button(`.appShowLoginButton.btn.btn-link.float-xs-right`, [`Login`]) : null,
+        authorization ? renderUserProfileButton() : null
+      ]),
     ])
   ])
 }
@@ -105,7 +115,7 @@ function view(state$, components) {
     const {showFilters} = state
     const {grid, filters} = components
 
-    return div(`.search-component-one-day.application`, {class: {"no-scroll": showFilters}}, [
+    return div(`.search-results.one-day`, {class: {"no-scroll": showFilters}}, [
       renderNavigator(state),
       renderContent(info),
       showFilters ? filters : null

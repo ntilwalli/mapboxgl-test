@@ -1,8 +1,34 @@
 .content-section {
   //position: absolute;
-  top: 2rem;
+  top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  padding-top: 2rem;
+  padding-top: 3rem;
+}
+
+
+.search-results {
+  button {
+    padding: 0;
+    margin: 0 .5rem;
+  }
+
+  &.one-day {
+
+    .search-controller {
+      text-align: center;
+      line-height: 2rem;
+
+      .date-display {
+        display: inline-block;
+      }
+
+      .filter-button {
+        position: absolute;
+        right: -40px;
+        z-index: 1;
+      }
+    }
+  }
 }
