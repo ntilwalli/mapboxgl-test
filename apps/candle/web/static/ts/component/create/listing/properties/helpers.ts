@@ -179,7 +179,6 @@ function getTextFromOption(opt) {
     default:
       return (opt.substring(0, 1).toUpperCase() + opt.substring(1)).replace(/_/g, ' ').replace(/and/g, '+')
   }
-
 }
 
 export function ComboBox(sources, options, props$, mapper?) {
@@ -282,9 +281,38 @@ export function BlankStructuredUndefined() {
   }
 }
 
+
 function genericValidator(input, f, empty_is_error) {
-  return (!input && !empty_is_error) || (input && ((!input.length && !empty_is_error) || (input.length && f(input))))
+  if (!input && !empty_is_error) {
+    return {
+      value: input,
+      errors: []
+    }
+  } else if (input) {
+    if (!input.length && !empty_is_error) {
+      return {
+        value: input,
+        errors: []
+      }
+    } else if (input.length) {
+      return f(input)
+    } else {
+      return  {
+        value: input,
+        errors: ['Cannot be empty']
+      }
+    }
+  } else {
+    return {
+      value: input,
+      errors: ['Cannot be empty']
+    }
+  }
 }
+
+// function genericValidator(input, f, empty_is_error) {
+//   return (!input && !empty_is_error) || (input && ((!input.length && !empty_is_error) || (input.length && f(input))))
+// }
 
 const emailTest = isEmail
 const urlTest = validUrl.isWebUri

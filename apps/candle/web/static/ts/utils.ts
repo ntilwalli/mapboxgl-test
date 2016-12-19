@@ -77,37 +77,6 @@ export function targetIsOwner(ev) {
 
 export function noop() {}
 
-export function renderTextPasswordField(type, name, cssClass, placeholder, value) {
-  return div(`.form-group`, [
-    input(`${cssClass}.form-control`, {attrs: {type, placeholder, name, value: value ? value : ``}})
-  ])
-}
-
-export function renderOrSeparator() {
-  return div(`.signup-or-separator.form-group`, [
-    span(`.h6.signup-or-separator--text.flex-center`, [`or`]),
-    hr()
-  ])
-}
-
-export function renderExternalButton(text, cssClass) {
-  const c = cssClass ? cssClass : ``
-  return div(`.form-group.flex-center`, [
-    button(`${c}.external-auth-button`, [text])
-  ])
-}
-
-export function renderExternalLink(text, cssClass) {
-  const c = cssClass ? cssClass : ``
-  return button(`${c}.flex-center`, [text])
-}
-
-export function renderAlerts(state) {
-  return div(`.form-group`, [
-    div(`.alerts-area`, state.errors.map(err => div(`.input-error`, [err])))
-  ])
-}
-
 export function defaultNever(component, sinkName) {
   const out = component[sinkName] || O.never()
   return out.publish().refCount()

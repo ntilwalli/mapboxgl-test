@@ -8,15 +8,19 @@ import model from './model'
 
 import {combineObj, spread} from '../../../utils'
 //import TextInput from '../../textInput'
-import TextInput, {SmartTextInputValidation} from '../../smartTextInput'
+//import TextInput, {SmartTextInputValidation} from '../../smartTextInput'
+import TextInput, {SmartTextInputValidation} from '../../bootstrapTextInput'
+
+const validator = x => ({value: x, errors: []})
 
 const usernameInputProps = O.of({
   placeholder: `Username`,
   name: `username`,
   autofocus: true,
   //required: true,
-  styleClass: `.auth-input`
+  styleClass: `.auth-input`,
   // key: `login`
+  emptyIsError: true
 })
 
 const passwordInputProps = O.of({
@@ -24,8 +28,9 @@ const passwordInputProps = O.of({
   placeholder: `Password`,
   name: `password`,
   //required: true,
-  styleClass: `.auth-input`
+  styleClass: `.auth-input`,
   // key: `login`
+  emptyIsError: true
 })
 
 const BACKEND_URL = `/api_auth/login`
@@ -39,11 +44,13 @@ export default function main(sources, inputs) {
     .publishReplay(1).refCount()
 
   const usernameInput = TextInput(sources, {
+    validator,
     props$: usernameInputProps, 
     initialText$: O.of(undefined)
   })
 
   const passwordInput = TextInput(sources, {
+    validator,
     props$: passwordInputProps, 
     initialText$: O.of(undefined)
   })

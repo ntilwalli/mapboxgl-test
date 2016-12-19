@@ -2,8 +2,9 @@ import {nav, hr, div, a, input, form, strong, span, button} from '@cycle/dom'
 import {
   renderTextPasswordField,
   renderOrSeparator,
-  renderAlerts
-} from '../../../utils'
+  renderExternalButton,
+  renderAlerts,
+} from '../helpers'
 
 
 function renderSignupButton(state) {

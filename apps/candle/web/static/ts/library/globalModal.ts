@@ -6,7 +6,7 @@ function intent(sources) {
   const {DOM} = sources
   const close$ = O.merge(
     DOM.select(`.appModalClose`).events(`click`),
-    DOM.select(`.appModalBackdrop`).events(`click`)
+    DOM.select(`.appModalContainer`).events(`click`)
       .filter(targetIsOwner)
   )
 
@@ -19,13 +19,21 @@ function renderModal(info) {
   const {props, content} = info
   const title = props.title || ``
   const styleClass = props.styleClass || ``
-  return div(`.modal-dialog${styleClass}`, [
-    div(`.modal-content`, [
-      div(`.modal-header`, [
-        div(`.modal-title.modal-header-text`, [title]),
-        span(`.appModalClose.close.fa-2x`, [`×`])
-      ]),
-      div(`.modal-body`, [content])
+  return div(`.appModalContainer.modal${styleClass}`, {style: {display: "inline-block"}}, [
+    div('.modal-dialog.modal-lg', [
+      div(`.modal-content`, [
+        div(`.modal-header.container-fluid`, [
+          div('.row', [
+            div('.col-xs-6', [
+              div(`.modal-title.modal-header-text`, [title]),
+            ]),
+            div('.col-xs-6.float-xs-right', [
+              span(`.appModalClose.close.fa-2x`, [`×`])
+            ])
+          ])
+        ]),
+        div(`.modal-body`, [content])
+      ])
     ])
   ])
 }
@@ -34,9 +42,8 @@ function view(props$, content$) {
   return combineObj({props$, content$})
     .map(info => {
       return div(`.modal-component`, [
-        div(`.appModalBackdrop.modal-backdrop`, [
-          renderModal(info)
-        ])
+        div(`.modal-backdrop`, []),
+        renderModal(info)
       ])
     })
 }

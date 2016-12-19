@@ -14,15 +14,19 @@
     margin: 0 .5rem;
   }
 
+  font-size: .8rem;
+
   &.one-day {
 
     .search-controller {
+      font-size: 1rem;
       text-align: center;
       line-height: 2rem;
 
-      .date-display {
-        display: inline-block;
-      }
+      // .date-display {
+      //   display: inline-block;
+      //   font-size
+      // }
 
       .filter-button {
         position: absolute;

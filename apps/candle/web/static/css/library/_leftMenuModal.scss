@@ -1,12 +1,31 @@
 @import '../variables';
 
-  .left-menu-modal {
+  .main-menu-modal {
     position: absolute;
     left: 0;
-    height: 100%;
-    top: 0;
-    width: 20rem;
+    right: 0;
+    width: 100%;
+    //height: 20rem;
     background-color: white;
+
+    .menu-items {
+      margin: 0 1rem;
+      button {
+        //display: table;
+        text-align: left;
+        height: 4rem;
+        background-color: white;
+        border: none;
+        width: 100%;
+        //text-align: center;
+      }
+
+      li:not(:last-child) {
+        border-width: 0 0 1px;
+        border-color: lightgray;
+        border-style: solid;
+      }
+    }
 
     .header {
       display: flex;

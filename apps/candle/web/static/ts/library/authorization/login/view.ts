@@ -1,25 +1,28 @@
 import {nav, hr, div, a, input, form, strong, span, button} from '@cycle/dom'
 import {
+  combineObj
+} from '../../../utils'
+import {
   renderTextPasswordField,
   renderOrSeparator,
   renderExternalButton,
   renderAlerts,
-  combineObj
-} from '../../../utils'
+} from '../helpers'
 
 
 function renderLoginButton(state) {
-  return div(``, [
-    input(`.appLoginButton.internal-auth-button.login-button`, {
+  return div('.form-group', [
+    button(`.appLoginButton.btn.btn-outline-crayola-orange`, {
       class: {
-        disabled: !state.valid
+        disabled: !state.valid,
+        "form-control": true
       },
       attrs: {
         type: `button`, 
         value: `Log in`, 
         disabled: !state.valid
       }
-    })
+    }, ['Log-in'])
   ])
 }
 
@@ -48,14 +51,16 @@ function renderNoAccountArea() {
 function renderBody({state, components}) {
   return div(`.login-modal`, [
     renderAlerts(state),
-    form([
-      div(`.form-group.username-section`, [components.username]),
-      div(`.form-group.password-section`, [components.password]),
-      //renderRememberMeForgottenPassword(state),
-      renderLoginButton(state)
+    div(`.form-group.username-section`, [
+      components.username
     ]),
+    div(`.form-group.password-section`, 
+      [components.password
+    ]),
+    //renderRememberMeForgottenPassword(state),
+    renderLoginButton(state),
     renderOrSeparator(),
-    renderExternalButton(`Log in with Facebook`, `.appFacebookLink.facebook-button`),
+    renderExternalButton(`Log in with Facebook`, `.appFacebookLink.btn.btn-outline-primary`),
     hr(),
     renderNoAccountArea()
 

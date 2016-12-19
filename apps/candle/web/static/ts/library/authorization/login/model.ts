@@ -4,7 +4,7 @@ import {combineObj, spread, checkValidity} from '../../../utils'
 
 function isValid(state) {
   const {username, password} = state
-  return username && password
+  return username.errors.length === 0 && password.errors.length === 0
 }
 
 function setValid(state) {
@@ -18,12 +18,12 @@ function setValid(state) {
 
 function reducers(actions, inputs) {
   const {username$, password$, error$} = inputs
-  const usernameR = username$.skip(1)
+  const usernameR = username$
     .map(x => state => {
       return setValid(state.set(`username`, x))
     })
 
-  const passwordR = password$.skip(1)
+  const passwordR = password$
     .map(x => state => {
       return setValid(state.set(`password`, x))
     })
@@ -47,7 +47,7 @@ export default function model(actions, inputs) {
     password$: inputs.password$//.map(checkValidity)
   }).take(1)
    .map(inputs => {
-      const valid = isValid(inputs)
+      const valid = false //isValid(inputs)
       return spread(inputs, {
         valid,
         errors: []

@@ -1,4 +1,4 @@
-import {div, button, span, i, nav} from '@cycle/dom'
+import {div, button, span, i, nav, a} from '@cycle/dom'
 import {combineObj} from '../../../utils'
 import moment = require('moment')
 import {renderMenuButton, renderUserProfileButton, renderLoginButton} from '../../helpers/navigator'
@@ -73,14 +73,15 @@ function renderNavigator(state) {
   return nav('.navbar.navbar-light.bg-faded.container-fluid.pos-f-t', [
     div('.row.no-gutter', [
       div('.col-xs-4', [
-        i('.appShowMenuButton.fa.fa-bars.fa-1-5x.btn.btn-link', [])
+        a('.hopscotch-icon.btn.btn-link.nav-brand', {attrs: {href: '#'}}, []),
       ]),
       div('.col-xs-4', [
         renderDateController(state),
       ]),
       div('.col-xs-4', [
-        !authorization ?  button(`.appShowLoginButton.btn.btn-link.float-xs-right`, [`Login`]) : null,
-        authorization ? renderUserProfileButton() : null
+        button('.appShowMenuButton.fa.fa-bars.btn.btn-link.float-xs-right', []),
+        //!authorization ?  button(`.appShowLoginButton.btn.btn-link.float-xs-right`, [`Login`]) : null,
+        //authorization ? button(`.appShowUserProfile.fa.fa-user-o.btn.btn-link.float-xs-right.mr-1`, []) : null
       ]),
     ])
   ])

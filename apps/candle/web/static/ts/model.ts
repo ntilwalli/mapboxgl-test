@@ -4,7 +4,9 @@ import Immutable = require('immutable')
 function reducers(actions, inputs) {
   const show_modal_r = actions.show_modal$.skip(1).map(modal => state => {
     //console.log(modal)
-    return state.set(`modal`, modal)
+    const curr_modal = state.get('modal')
+    const new_modal = curr_modal === 'leftMenu' ? modal === 'leftMenu' ? undefined : modal : modal
+    return state.set(`modal`, new_modal)
   })
 
   const hide_modal_r = actions.hide_modal$.map(_ => state => {
