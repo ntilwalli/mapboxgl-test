@@ -1,16 +1,17 @@
 import {Observable as O} from 'rxjs'
-import {div, span, button} from '@cycle/dom'
+import {div, span, button, nav, a} from '@cycle/dom'
 import {combineObj, processHTTP, spread, createProxy} from '../../../utils'
 import {createFeatureCollection, geoToLngLat} from '../../../mapUtils'
 import Immutable = require('immutable')
-import * as renderHelpers from '../../helpers/listing'
 import moment = require('moment')
 import * as Geolib from 'geolib'
 
+import {
+  renderName, renderNameWithParentLink, renderCuando, renderDonde, 
+  renderCuandoStatus, renderCost, renderStageTime, renderPerformerSignup,
+  renderPerformerLimit, renderTextList
+}  from '../../helpers/listing/renderBootstrap'
 
-const {renderName, renderDateTimeBegins, renderDateTimeEnds, renderCost, 
-  renderStageTime, renderPerformerLimit, renderDonde, 
-  renderStatus, renderSignup, renderNote, renderContactInfo, renderHostInfo} = renderHelpers
 
 const onlySuccess = x => x.type === "success"
 const onlyError = x => x.type === "error"
@@ -28,10 +29,17 @@ function intent(sources) {
   const checkin$ = DOM.select(`.appCheckin`).events(`click`)
       .publishReplay(1).refCount()
 
+  const to_parent$ = DOM.select(`.appGoToParent`).events('click')
+
+
+  const show_menu$ = DOM.select(`.appShowMenuButton`).events(`click`)
+
   return {
     checkin$,
     checkin_success$,
-    checkin_failure$
+    checkin_failure$,
+    show_menu$,
+    to_parent$
   }
 }
 
@@ -102,6 +110,7 @@ function renderMarkerInfo(donde) {
 }
 
 const convertLngLat = x => ({longitude: x.lng, latitude: x.lat})
+
 function renderButtons(state) {
   const {geolocation, authorization, listing, checked_in, in_flight} = state
   const {donde, cuando, settings} = listing
@@ -136,63 +145,94 @@ function renderButtons(state) {
   //enabled, disabled, checked-in
 
 
-  return div(`.buttons`, [
-    // button(`.appShare.disabled.share-button.flex-center`, {
-    //   class: {
-    //     disabled: true
-    //   },
-    //   attrs: {
-    //     disabled: true
-    //   }
-    // }, [
-    //   `Share`
-    // ]),
-    button(`.appCheckin.check-in-button.flex-center`, {
+  return button(`.appCheckin.btn.btn-success`, {
       class: {
         disabled,
         enabled: !disabled,
       },
       attrs: {
+        type: 'button',
         disabled
       }
     }, [
       in_flight? span(`.loader`, []) : checked_in ? span(`.flex-center.button-text`, [`Checked-in`]) : span(`.flex-center.button-text`, [`Check-in`])
     ])
+  
+}
+
+export function renderSingleListing(state) {
+  const {listing} = state
+  const {type, donde, cuando, meta} = listing
+  const {
+    name, event_types, categories, notes, 
+    performer_cost, description, contact_info, 
+    performer_sign_up, stage_time, 
+    performer_limit, listed_hosts, note} = meta
+
+  return div('.container-fluid.mt-1', [
+    div('.row.mb-1', [
+      div('.col-xs-6', [
+        div('.row.no-gutter', [
+          renderNameWithParentLink(listing)
+        ]),
+        div('.row.no-gutter', [
+          renderCuando(listing)
+        ]),
+        div('.row.no-gutter', [
+          renderDonde(donde)
+        ])
+      ]),
+      div('.col-xs-6', [
+        div('.row.no-gutter.clearfix', [
+          renderCuandoStatus(cuando)
+        ]),
+        performer_cost ? div('.row.no-gutter.clearfix', [
+          renderCost(listing)
+        ]) : null,
+        stage_time ? div('.row.no-gutter.clearfix', [
+          renderStageTime(stage_time)
+        ]) : null,
+        performer_sign_up ? div('.row.no-gutter.clearfix', [
+          renderPerformerSignup(performer_sign_up)
+        ]) : null,
+        performer_limit ? div('.row.no-gutter.clearfix', [
+          renderPerformerLimit(performer_limit)
+        ]) : null,
+        categories.length ? div('.row.no-gutter.clearfix', [
+          renderTextList(categories)
+        ]) : null,
+        event_types.length ? div('.row.no-gutter.clearfix', [
+          renderTextList(event_types)
+        ]) : null
+      ])
+    ]),
+    note ? div('.row.no-gutter.mb-1', [
+      'Note: ' + note
+    ]) : null,
+    // div('row.no-gutter', [
+    //   renderButtons(state)
+    // ]),
+    div(`.row.no-gutter.map-area`, [
+      renderMarkerInfo(donde),
+      div(`#listing-location-map`)
+    ])
   ])
 }
 
-function renderSingleListing(state) {
-  const {authorization, listing, checked_in, settings} = state
 
-  const {cuando, donde, meta} = listing
-  const {begins, ends} = cuando
-  const {name, hosts, contact, cost, sign_up, stage_time, performer_limit, note} = meta
-  return div(`.info`, [
-    div(`.top`, [
-      div(`.left`, [
-        renderName(name),
-        renderDateTimeBegins(cuando),
-        renderDateTimeEnds(cuando),
-        renderDonde(donde),
-        renderContactInfo(contact),
-        renderHostInfo(hosts)
-        
+
+function renderNavigator(state) {
+  const {authorization} = state
+  const authClass = authorization ? 'Logout' : 'Login'
+  return nav('.navbar.navbar-light.bg-faded.container-fluid.pos-f-t', [
+    div('.row.no-gutter', [
+      div('.col-xs-6', [
+        a('.hopscotch-icon.btn.btn-link.nav-brand', {attrs: {href: '#'}}, []),
       ]),
-      div(`.right`, [
-        renderStatus(cuando),
-        renderCost(cost),
-        renderStageTime(stage_time),
-        renderSignup(cuando, sign_up),
-        renderPerformerLimit(performer_limit),
-        checked_in ? div(`.result-check-in`, [`Checked-in`]) : null
-      ])
-    ]),
-    div(`.bottom`, [
-      renderNote(note),
+      div('.col-xs-6', [
+        button('.appShowMenuButton.fa.fa-bars.btn.btn-link.float-xs-right', []),
+      ]),
     ])
-
-    // renderCheckin(meta),
-    // renderHosts(meta)
   ])
 }
 
@@ -203,12 +243,10 @@ function view(state$) {
       const {geolocation, authorization, listing, checked_in, in_flight, settings} = state
       const {type, donde} = listing
       //console.log(donde)
-      return div(`.profile`, [
-        type === "single" ? renderSingleListing(state) : renderRecurringListing(state),
-        renderButtons(state),
-        div(`.map`, [
-          renderMarkerInfo(donde),
-          div(`#listing-location-map`)
+      return div('.screen', [
+        renderNavigator(state),
+        div('.listing-profile.content-section', [
+          type === "single" ? renderSingleListing(state) : renderRecurringListing(state)
         ])
       ])
     })
@@ -293,11 +331,22 @@ export function main(sources, inputs) {
     //.do(x => console.log(`checkin request`, x))
     .publishReplay(1).refCount()
   
+  const to_router$ = actions.to_parent$.withLatestFrom(state$, (_, state) => {
+    const {listing} = state
+    return {
+      type: `push`,
+      state: undefined,
+      pathname: `/listing/${listing.parent_id}`
+    } 
+  })
+
   in_flight$.attach(to_http$)
 
   return {
     DOM: vtree$,
     MapJSON: mapjson$,
-    HTTP: to_http$
+    Router: to_router$,
+    HTTP: to_http$, 
+    MessageBus: actions.show_menu$.mapTo({to: `main`, message: `showLeftMenu`})
   }
 }

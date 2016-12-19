@@ -43,8 +43,7 @@ defmodule Listing.Worker do
 
   def init({:ok, %Shared.Listing{id: listing_id}, r_name}) do
     Logger.metadata(listing_id: listing_id)
-    case retrieve_listing_with_check_ins(listing_id) do
-    #case Repo.get(Shared.Listing, listing_id) do
+    case retrieve_listing_with_other_data(listing_id) do
       nil -> {:stop, "Listing not found in database"}
       listing -> 
         Logger.info "Starting process for listing #{listing_id}"
@@ -61,9 +60,9 @@ defmodule Listing.Worker do
         _ -> %{checked_in: listing.check_ins |> Enum.any?(fn x -> x.user_id === user.id end)}
       end
 
-    #IO.puts "Retrieve listing..."
-    #IO.inspect  %{listing: listing, status: status}
-    {:reply, {:ok, %{listing: listing, status: status}}, state}
+    # IO.puts "Retrieve listing..."
+    # IO.inspect  %{listing: listing, status: status}
+    {:reply, {:ok, %{listing: listing, children: listing.children, status: status}}, state}
   end
 
   def handle_call({:add_child, child_listing, user}, _from, %{listing: listing, registry_name: r_name} = state) do
@@ -106,7 +105,7 @@ defmodule Listing.Worker do
           |> Map.put(:geom, %Geo.Point{coordinates: {lng, lat}, srid: 4326})
           |> Map.put(:inserted_at, Calendar.DateTime.now_utc())
         {:ok, result} = Repo.insert(check_in_row)
-        new_state = %{state | listing: retrieve_listing_with_check_ins(listing_id)}
+        new_state = %{state | listing: retrieve_listing_with_other_data(listing_id)}
         {:reply, {:ok, result}, new_state}
     end
   end
@@ -116,7 +115,7 @@ defmodule Listing.Worker do
   #   check_in_row = Ecto.build_assoc(user, :check_ins)
   #     |> Map.put(:listing_id, listing_id)
   #   {:ok, result} = Repo.delete(check_in_row)
-  #   new_state = %{state | listing: retrieve_listing_with_check_ins(listing_id)}
+  #   new_state = %{state | listing: retrieve_listing_with_other_data(listing_id)}
   #   {:reply, {:ok, result}, new_state}
   # end
 
@@ -204,8 +203,8 @@ defmodule Listing.Worker do
     end
   end
 
-  def retrieve_listing_with_check_ins(listing_id) do
-    query = from l in Shared.Listing, where: l.id == ^listing_id, preload: [:check_ins]
+  def retrieve_listing_with_other_data(listing_id) do
+    query = from l in Shared.Listing, where: l.id == ^listing_id, preload: [:check_ins, :children, :parent]
     Repo.one(query)
   end
 

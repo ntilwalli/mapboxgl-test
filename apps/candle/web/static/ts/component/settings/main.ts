@@ -319,11 +319,13 @@ function main(sources, inputs) {
     Router: O.merge(
       actions.show_search_calendar$.mapTo({
         pathname: `/`,
-        action: `push`
+        type: 'push',
+        action: 'PUSH'
       }),
       actions.show_user_profile$.mapTo({
         pathname: `/home`,
-        action: `PUSH`
+        type: 'push',
+        action: 'PUSH'
       })
     ),
     MessageBus: toMessageBus$

@@ -1,9 +1,14 @@
 import {div, span, ul, li} from '@cycle/dom'
 import {combineObj} from '../../../../utils'
-import {renderListingResult} from '../../../helpers/listing/renderBootstrap'
 import moment = require('moment')
 
 import {CostOptions, TierPerkOptions, StageTimeOptions, MinutesTypeOptions} from '../../../../listingTypes'
+
+import {
+  renderName, renderCuando, renderDonde, 
+  renderCuandoStatus, renderCost, renderStageTime, renderPerformerSignup,
+  renderPerformerLimit, renderTextList
+} from '../../../helpers/listing/renderBootstrap'
 
 
 function getSimpleCost(performer_cost) {
@@ -200,6 +205,59 @@ const compareBegins = (a, b) => {
   return aVal - bVal
 }
 
+
+
+
+export function renderListingResult(listing) {
+  const {type, donde, cuando, meta} = listing
+  const {
+    name, event_types, categories, notes, 
+    performer_cost, description, contact_info, 
+    performer_sign_up, stage_time, 
+    performer_limit, listed_hosts} = meta
+
+  return div('.container-fluid.no-gutter', [
+    div('.row.no-gutter', [
+      div('.col-xs-6', [
+        div('.row.no-gutter', [
+          renderName(name)
+        ]),
+        div('.row.no-gutter', [
+          renderCuando(listing)
+        ]),
+        div('.row.no-gutter', [
+          renderDonde(donde)
+        ])
+      ]),
+      div('.col-xs-6', [
+        div('.row.no-gutter.clearfix', [
+          renderCuandoStatus(cuando)
+        ]),
+        performer_cost ? div('.row.no-gutter.clearfix', [
+          renderCost(listing)
+        ]) : null,
+        stage_time ? div('.row.no-gutter.clearfix', [
+          renderStageTime(stage_time)
+        ]) : null,
+        performer_sign_up ? div('.row.no-gutter.clearfix', [
+          renderPerformerSignup(performer_sign_up)
+        ]) : null,
+        performer_limit ? div('.row.no-gutter.clearfix', [
+          renderPerformerLimit(performer_limit)
+        ]) : null,
+        categories.length ? div('.row.no-gutter.clearfix', [
+          renderTextList(categories)
+        ]) : null,
+        // event_types.length ? div('.row.no-gutter.clearfix', [
+        //   renderTextList(event_types)
+        // ]) : null
+      ])
+    ])
+  ])
+}
+
+
+
 export default function view(state$) {
   return state$.map(state => {
     //console.log(state)
@@ -208,10 +266,10 @@ export default function view(state$) {
     const sorted = withFilters.sort(compareBegins)
 
     return ul(
-      `.list-group.search-results`, 
+      '.list-group', 
       //['Hi there']
       sorted
-      .map(x => li('.list-group-item.sm-padding', [renderListingResult(x.listing)]))
+        .map(x => li('.appResult.list-group-item.sm-padding', {props: {searchResult: x}}, [renderListingResult(x.listing)]))
     )
   })
 }

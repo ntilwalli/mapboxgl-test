@@ -73,11 +73,13 @@ export default function main(sources, inputs) {
     Router: O.merge(
         actions.show_settings$.mapTo({
           pathname: `/settings`, 
-          action: `PUSH`
+          type: 'push',
+          action: 'PUSH'
         }),
         actions.show_create_workflow$.mapTo({
           pathname: `/create`,
-          actions: `PUSH`
+          type: 'push',
+          actions: 'PUSH'
         })
       ),
     MessageBus: O.merge(

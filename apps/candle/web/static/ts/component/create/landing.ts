@@ -82,15 +82,15 @@ function main(sources, inputs) {
     Router: O.merge(
       actions.show_search_calendar$.mapTo({
         pathname: `/`,
-        action: `PUSH`
+        type: `push`
       }),
       actions.show_user_profile$.mapTo({
         pathname: `/home`,
-        action: `PUSH`
+        type: `push`
       }),
       actions.create_new_listing$.map(x => ({
         pathname: `/create/listing`,
-        action: `PUSH`,
+        type: `push`,
         state: {
           type: `new`
         }

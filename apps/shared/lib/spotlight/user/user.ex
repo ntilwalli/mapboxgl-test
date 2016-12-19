@@ -10,7 +10,7 @@ defmodule Shared.User do
 
     has_many :authorizations, Shared.Authorization
     has_many :listings, Shared.Listing
-    has_many :user_listings, Shared.UserListing
+    has_many :user_child_listings, Shared.UserChildListing
     has_many :check_ins, Shared.CheckIn
     has_one :settings, Shared.Settings
     has_many :listing_sessions, Shared.ListingSession

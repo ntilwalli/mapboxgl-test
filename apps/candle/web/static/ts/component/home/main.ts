@@ -206,7 +206,8 @@ export default function main(sources, inputs): any {
     Router: O.merge(
       actions.showSearchCalendar$.mapTo({
         pathname: `/`,
-        action: `PUSH`
+        type: 'push',
+        action: 'PUSH'
       })
     ),
     MessageBus: O.merge(

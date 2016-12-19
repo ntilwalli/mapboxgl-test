@@ -9,6 +9,7 @@ import {getBadslavaName, getVenueName, getVenueAddress, getVenueLngLat} from '..
 
 import deepEqual = require('deep-equal')
 
+
 function getDondeSummary(donde) {
   if (donde.source === 'foursquare') {
     const {data} = donde
@@ -470,39 +471,17 @@ function renderListedHosts(info) {
   }
 }
 
-function renderDescription(info) {
-  if (info && info.length) {
-    return div('.row.description.separated-above', [
-      div('.heading.text-item', ['Description']),
-      div('.text-item.', [info])
-    ])
-  } else {
-    return null
-  }
-}
 
-function renderNotes(info) {
-  if (info && info.length) {
-    return div('.row.notes.separated-above', [
-      div('.heading.text-item', ['Notes']),
-      div('.text-item', [info])
-    ])
-  } else {
-    return null
-  }
-}
-
-
-
-
-
-
-
-
-
-function renderName(info) {
+export function renderName(info) {
   return info ? strong([info]) : null
 }
+
+export function renderNameWithParentLink(listing) {
+  const {meta, parent_id} = listing
+  const {name} = meta
+  return name ? parent_id ? button('.appGoToParent.btn.btn-link.wrap-link', [strong([name])]) : strong([name]) :null
+}
+
 
 function isOpenMic(listing) {
   return listing.meta.event_types.some(x => x === EventTypes.OPEN_MIC)
@@ -536,7 +515,7 @@ function getPerformerCostString(cost) {
   return `Paid`
 }
 
-function renderCost(listing) {
+export function renderCost(listing) {
   const {audience_cost, performer_cost} = listing.meta
   let out
   if (isOpenMicAndShow(listing)) {
@@ -661,7 +640,7 @@ function getCuandoStatusClass(cuando) {
   return cuandoStatusToClass(getCuandoStatus(cuando))
 }
 
-function renderCuandoStatus(cuando) {
+export function renderCuandoStatus(cuando) {
   const status = getCuandoStatus(cuando)
   if (status === CuandoStatusTypes.FUTURE) {
     return null
@@ -694,7 +673,7 @@ function renderSingleEnds(cuando) {
     }, [getDateTimeString(ends)]) : null
 }
 
-function renderSingle(cuando) {
+export function renderSingle(cuando) {
   const {begins, ends} = cuando
   return div([
     renderSingleBegins(cuando),
@@ -702,7 +681,7 @@ function renderSingle(cuando) {
   ])
 }
 
-function renderRecurring(cuando) {
+export function renderRecurring(cuando) {
   const rruleset = recurrenceToRRuleSet(cuando)
   const upcoming_dates = rruleset.between(moment().toDate(), moment().add(90, 'day').toDate())
   const upcoming_date = upcoming_dates.length ? moment(upcoming_dates[0].toISOString()) : undefined
@@ -731,7 +710,7 @@ function renderRecurring(cuando) {
   }
 }
 
-function renderCuando(listing) {
+export function renderCuando(listing) {
   const {type, cuando} = listing
   if (type === 'single') {
     return renderSingle(cuando)
@@ -768,7 +747,7 @@ function getSingleRoundText(stage_time) {
   }
 }
 
-function renderStageTime(stage_time) {
+export function renderStageTime(stage_time) {
   let text 
   const length = stage_time.length
   if (length === 0) {
@@ -814,7 +793,7 @@ const capitalize = val => {
   else return val.substring(0, 1).toUpperCase() + val.substring(1)
 }
 
-function renderPerformerSignup(info) {
+export function renderPerformerSignup(info) {
   let out
   const {type, data} = info
   
@@ -846,7 +825,7 @@ function getPerformerLimitInfo(info) {
   }
 }
 
-function renderPerformerLimit(info) {
+export function renderPerformerLimit(info) {
   let text
   switch (info.type) {
     case PerformerLimitOptions.NO_LIMIT:
@@ -880,14 +859,14 @@ function renderDondeBadslava(donde) {
   ])
 }
 
-function renderDonde(donde) {
+export function renderDonde(donde) {
   if (donde.type === "venue") return renderDondeVenue(donde)
   if (donde.type === "badslava") return renderDondeBadslava(donde)
   throw new Error()
 }
 
 
-function renderTextList(info) {
+export function renderTextList(info) {
   if (info.length) {
     return div('.float-xs-right', [small([info.join(`, `).replace('_', '-')])])
   } else {
@@ -895,51 +874,50 @@ function renderTextList(info) {
   }
 }
 
+// export function renderSingleListing(listing) {
+//   const {type, donde, cuando, meta} = listing
+//   const {
+//     name, event_types, categories, notes, 
+//     performer_cost, description, contact_info, 
+//     performer_sign_up, stage_time, 
+//     performer_limit, listed_hosts} = meta
 
-export function renderListingResult(listing) {
-  const {type, donde, cuando, meta} = listing
-  const {
-    name, event_types, categories, notes, 
-    performer_cost, description, contact_info, 
-    performer_sign_up, stage_time, 
-    performer_limit, listed_hosts} = meta
-
-  return div('.container-fluid.no-gutter', [
-    div('.row.no-gutter', [
-      div('.col-xs-6', [
-        div('.row.no-gutter', [
-          renderName(name)
-        ]),
-        div('.row.no-gutter', [
-          renderCuando(listing)
-        ]),
-        div('.row.no-gutter', [
-          renderDonde(donde)
-        ])
-      ]),
-      div('.col-xs-6', [
-        div('.row.no-gutter.clearfix', [
-          renderCuandoStatus(cuando)
-        ]),
-        performer_cost ? div('.row.no-gutter.clearfix', [
-          renderCost(listing)
-        ]) : null,
-        stage_time ? div('.row.no-gutter.clearfix', [
-          renderStageTime(stage_time)
-        ]) : null,
-        performer_sign_up ? div('.row.no-gutter.clearfix', [
-          renderPerformerSignup(performer_sign_up)
-        ]) : null,
-        performer_limit ? div('.row.no-gutter.clearfix', [
-          renderPerformerLimit(performer_limit)
-        ]) : null,
-        categories.length ? div('.row.no-gutter.clearfix', [
-          renderTextList(categories)
-        ]) : null,
-        // event_types.length ? div('.row.no-gutter.clearfix', [
-        //   renderTextList(event_types)
-        // ]) : null
-      ])
-    ])
-  ])
-}
+//   return div('.container-fluid.no-gutter', [
+//     div('.row.no-gutter', [
+//       div('.col-xs-6', [
+//         div('.row.no-gutter', [
+//           renderName(name)
+//         ]),
+//         div('.row.no-gutter', [
+//           renderCuando(listing)
+//         ]),
+//         div('.row.no-gutter', [
+//           renderDonde(donde)
+//         ])
+//       ]),
+//       div('.col-xs-6', [
+//         div('.row.no-gutter.clearfix', [
+//           renderCuandoStatus(cuando)
+//         ]),
+//         performer_cost ? div('.row.no-gutter.clearfix', [
+//           renderCost(listing)
+//         ]) : null,
+//         stage_time ? div('.row.no-gutter.clearfix', [
+//           renderStageTime(stage_time)
+//         ]) : null,
+//         performer_sign_up ? div('.row.no-gutter.clearfix', [
+//           renderPerformerSignup(performer_sign_up)
+//         ]) : null,
+//         performer_limit ? div('.row.no-gutter.clearfix', [
+//           renderPerformerLimit(performer_limit)
+//         ]) : null,
+//         categories.length ? div('.row.no-gutter.clearfix', [
+//           renderTextList(categories)
+//         ]) : null,
+//         // event_types.length ? div('.row.no-gutter.clearfix', [
+//         //   renderTextList(event_types)
+//         // ]) : null
+//       ])
+//     ])
+//   ])
+// }

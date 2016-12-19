@@ -27,7 +27,8 @@ function main(sources, inputs) {
       actions.click$.map(val => { 
         const out = {
           pathname: `/listing/${val.listing.id}`,
-          action: `PUSH`,
+          type: 'push',
+          action: 'PUSH',
           state: val
         }
 

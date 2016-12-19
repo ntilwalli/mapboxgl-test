@@ -35,7 +35,8 @@ export default function routing(sources, inputs) {
         return {
           Router: O.of({
             pathname: `/`,
-            action: `replace`,
+            type: 'replace',
+            action: `REPLACE`,
             state: {
               errors: [
                 `Must be logged-in to create new listing`

@@ -104,10 +104,11 @@ function main(sources, inputs) {
   return {
     DOM: vtree$,
     Router: O.merge(
-      actions.change_date$.withLatestFrom(state$, (amt, state) => {
+      actions.change_date$.withLatestFrom(state$, (amt, state: any) => {
         //console.log(`Shifting date by: `, amt)
         return {
           pathname: `/`,
+          type: 'replace',
           action: `REPLACE`,
           state: {
             searchDateTime: state.searchDateTime.clone().add(amt, 'days').toDate().toISOString()
@@ -119,7 +120,8 @@ function main(sources, inputs) {
         const {authorization} = state
         return {
           pathname: `/home`,
-          action: `PUSH`
+          type: 'push',
+          action: 'PUSH'
         }
       })
     ),

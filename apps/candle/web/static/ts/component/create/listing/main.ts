@@ -454,14 +454,15 @@ function main(sources, inputs) {
          .map(val => {
            return {
              pathname: `/home`,
-             action: `replace`
+             action: 'REPLACE',
+             type: 'replace'
            }
          }),
        navigation$.withLatestFrom(state$, (nav, state) => {
          const session = deflateDates(state.session)
          return {
            pathname: `/create/listing`,
-           action: `replace`,
+           type: `replace`,
            state: {
              type: 'session',
              data: {...session, current_step: nav}
@@ -483,7 +484,8 @@ function main(sources, inputs) {
 
            return {
              pathname: `/create/listing`,
-             action: `replace`,
+             type: 'replace',
+             action: `REPLACE`,
              state: {
                type: 'session',
                data: session
@@ -493,7 +495,8 @@ function main(sources, inputs) {
        push_state$.filter(is_invalid).map(x => {
          return {
            pathname: `/create`,
-           action: `replace`
+           type: 'replace',
+           action: `REPLACE`,
          }
        }))
      ),//.do(x => console.log(`to router`, x)),

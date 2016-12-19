@@ -9,15 +9,15 @@ defmodule Shared.Listing do
   # alias When.Once
 
   @derive {Poison.Encoder, except: [
-    :__meta__, :sort_id, :source, :user, :user_listings, 
-    :child_listings, :single_listing_search, :single_listing_categories, 
+    :__meta__, :sort_id, :source, :user,  :parent, :children,
+    #:group_child_listings, :user_child_listings,
+    :single_listing_search, :single_listing_categories, 
     :single_listing_event_types, :check_ins, :inserted_at, :updated_at
   ]}
 
   @primary_key {:id, :id, autogenerate: true}
   schema "listings" do
     field :sort_id, :id
-    field :parent_id, :id
     field :type, :string
     field :handle, :string
     field :release, :string
@@ -27,16 +27,19 @@ defmodule Shared.Listing do
     field :meta, :map
     field :settings, :map
     field :source, :string
-    field :user_sequence_id, :id, virtual: true
-    field :child_sequence_id, :id, virtual: true
+    # field :user_child_sequence_id, :id, virtual: true
+    # field :group_child_sequence_id, :id, virtual: true
 
     belongs_to :user, Shared.User
-    has_one :user_listings, Shared.UserListing
-    has_many :child_listings, Shared.ChildListing
+    belongs_to :parent, Shared.Listing
+
+    # has_one :user_child_listings, Shared.UserChildListing
+    # has_many :group_child_listings, Shared.GroupChildListing
     has_one :single_listing_search, Shared.SingleListingSearch
     has_many :single_listing_categories, Shared.SingleListingCategories
     has_many :single_listing_event_types, Shared.SingleListingEventTypes
     has_many :check_ins, Shared.CheckIn
+    has_many :children, Shared.Listing, foreign_key: :parent_id
 
     timestamps
   end
@@ -99,6 +102,7 @@ defmodule Shared.Listing do
       "venue" => Donde.Venue
     })
     |> assoc_constraint(:user)
+    |> assoc_constraint(:parent)
 
     # |> inspect_changeset
     # |> cast_dynamic(:type, :donde, %{

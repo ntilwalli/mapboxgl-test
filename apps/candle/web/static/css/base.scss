@@ -191,6 +191,11 @@ address {
 }
 
 
+.wrap-link {
+  white-space: normal;
+  text-align: left;
+}
+
 @font-face {
   font-family: Corona4Typewriter;
   src: local("Corona4Typewriter"), url("/fonts/corona4typewriter.ttf") format('truetype')
