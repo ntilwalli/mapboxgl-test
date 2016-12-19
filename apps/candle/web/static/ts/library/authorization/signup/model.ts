@@ -4,7 +4,7 @@ import {combineObj, spread, checkValidity} from '../../../utils'
 
 function isValid(state) {
   const {name, username, email, password} = state
-  if (name && username && email && password) {
+  if (name.valid && username.valid && email.valid && password.valid) {
     return true
   } else {
     return false

@@ -3,7 +3,7 @@ import isolate from '@cycle/isolate'
 import view from './view'
 import intent from './intent'
 import model from './model'
-import TextInput, {SmartTextInputValidation} from '../../smartTextInput'
+import TextInput, {SmartTextInputValidation} from '../../bootstrapTextInput'
 import {combineObj, spread} from '../../../utils'
 import {div} from '@cycle/dom'
 // import isEmail from 'validator/lib/isEmail'
@@ -23,7 +23,8 @@ function emailValidator(val): SmartTextInputValidation {
 const emailInputProps = O.of({
   placeholder: `E-mail address`,
   name: `email`,
-  styleClass: `.auth-input`
+  styleClass: `.auth-input`,
+  emptyIsError: true
 })
 
 function usernameValidator(val): SmartTextInputValidation {
@@ -36,13 +37,15 @@ function usernameValidator(val): SmartTextInputValidation {
 const usernameInputProps = O.of({
   placeholder: `Username`,
   name: `username`,
-  styleClass: `.auth-input`
+  styleClass: `.auth-input`,
+  emptyIsError: true
 })
 
 const nameInputProps = O.of({
   placeholder: `Display name`,
   name: `name`,
-  styleClass: `.auth-input`
+  styleClass: `.auth-input`,
+  emptyIsError: true
 })
 
 const passwordInputProps = O.of({
@@ -50,7 +53,8 @@ const passwordInputProps = O.of({
   placeholder: `Password`,
   name: `password`,
   styleClass: `.auth-input`,
-  required: true
+  required: true,
+  empytyIsError: true
 })
 
 const BACKEND_URL = `/api_auth/signup`
@@ -119,7 +123,13 @@ export default function main(sources, inputs) {
         const {name, username, email, password} = state
         return {
           to: `/authorization/signup`,
-          message: {type: `attempt`, data: {type: "individual", name, username, email, password}}
+          message: {type: `attempt`, data: {
+            type: "individual", 
+            name: name.data, 
+            username: username.data, 
+            email: email.data, 
+            password: password.data
+          }}
         }
       }),
       actions.switchToLogin$.mapTo({to: `main`, message: `showLogin`}),

@@ -4,7 +4,7 @@ import view from './view'
 import intent from './intent'
 import model from './model'
 import {combineObj, spread} from '../../../utils'
-import TextInput, {SmartTextInputValidation} from '../../smartTextInput'
+import TextInput, {SmartTextInputValidation} from '../../bootstrapTextInput'
 // import isEmail from 'validator/lib/isEmail'
 // import isAlphanumeric from 'validator/lib/isAlphanumeric'
 // import isAlpha from 'validator/lib/isAlpha'
@@ -22,7 +22,8 @@ function emailValidator(val): SmartTextInputValidation {
 const emailInputProps = O.of({
   placeholder: `E-mail address`,
   name: `email`,
-  styleClass: `.auth-input`
+  styleClass: `.auth-input`,
+  emptyIsError: true
 })
 
 function usernameValidator(val): SmartTextInputValidation {
@@ -35,13 +36,15 @@ function usernameValidator(val): SmartTextInputValidation {
 const usernameInputProps = O.of({
   placeholder: `Username`,
   name: `username`,
-  styleClass: `.auth-input`
+  styleClass: `.auth-input`,
+  emptyIsError: true
 })
 
 const nameInputProps = O.of({
   placeholder: `Display name`,
   name: `name`,
-  styleClass: `.auth-input`
+  styleClass: `.auth-input`,
+  emptyIsError: true
 })
 
 
@@ -101,7 +104,12 @@ export default function main(sources, inputs) {
       const {type, name, username, email} = state
       return {
         to: `/authorization/presignup`,
-        message: {type: `attempt`, data: {type: "individual", name, username, email}}
+        message: {type: `attempt`, data: {
+          type: "individual", 
+          name: name.data, 
+          username: username.data, 
+          email: email.data
+        }}
       }
     })
   }

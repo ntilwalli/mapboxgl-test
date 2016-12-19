@@ -65,7 +65,7 @@ function validate(val, state, validator) {
 
   return state.set(`validatedValue`, validation.value)
     .set(`errors`, validation.errors)
-    .set(`isValid`, !!(validation.value && validation.errors.length === 0))
+    .set(`isValid`, !!(validation.errors.length === 0))
 }
 
 function reducers(actions, inputs: any) {
@@ -77,9 +77,9 @@ function reducers(actions, inputs: any) {
       .set(`errors`, [])
 
     if (!validateOnBlur) {
-      return validate(val, withValue, inputs.validator)
+      return validate(val, withValue, inputs.validator).set('emit', true)
     } else {
-      return withValue
+      return withValue.set('emit', false)
     }
   }) 
 
@@ -96,20 +96,20 @@ function reducers(actions, inputs: any) {
         .set(`isValid`, false)
     }
 
-    return withValidation
+    return withValidation.set('emit', true)
   })
 
   const disabledR = inputs.disabled$.skip(1).map(val => state => {
-    return state.set(`disabled`, val)
+    return state.set(`disabled`, val).set('emit', true)
   })
 
   const errorsR = inputs.props$.switchMap(props => {
     const name = props.name
       return inputs.errors$.map(errors => state => {
         if (Array.isArray(errors)) {
-          return state.set(`errors`, errors.filter(x => x.type === name).map(x => x.error))
+          return state.set(`errors`, errors.filter(x => x.type === name).map(x => x.error)).set('emit', true)
         } else {
-          return state 
+          return state.set('emit', true)
         }
       })
   })
@@ -137,7 +137,8 @@ function model(actions, inputs) {
         errors: validation.errors,
         isValid: validation.errors.length === 0,
         disabled,
-        emptyIsError: props.emptyIsError
+        emptyIsError: props.emptyIsError,
+        emit: true
       })
     })
     .switchMap(init => {
@@ -176,11 +177,15 @@ function main(sources, inputs) {
     // .letBind(traceStartStop(`DOM trace`))
 
   const output$ = state$
-      .map((state: any) => ({
-        data: state.isValid ? state.validatedValue : undefined,
-        errors: state.errors,
-        valid: state.isValid
-      }))
+      .filter((x: any) => x.emit)
+      .map((state: any) => { 
+        return {
+          //data: state.isValid ? state.validatedValue : undefined,
+          data: state.value,
+          errors: state.errors,
+          valid: state.isValid
+        }
+      })
       // .letBind(traceStartStop(`output$ trace`))
       .publishReplay(1).refCount()
 

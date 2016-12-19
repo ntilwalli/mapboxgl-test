@@ -9,16 +9,17 @@ import {
 
 function renderSignupButton(state) {
   return div(``, [
-    input(`.appSignupButton.internal-auth-button.sign-up-button`, {
+    button(`.appSignupButton.btn.btn-outline-crayola-orange`, {
       class: {
-        disabled: !state.valid
+        disabled: !state.valid,
+        "form-control": true
       },
       attrs: {
         type: `button`, 
         value: `Sign-up`, 
         disabled: !state.valid
       }
-    })
+    }, ['Sign-up'])
   ])
 }
 
@@ -71,17 +72,21 @@ function renderIndividualNameFields(state) {
 
 
 function renderBody({state, components}) {
+  const {email} = state
+  const errors = email.data && email.data.length &&  email.errors.length > 0 ? email.errors : []
+
   return div(`.signup-modal`, [
     renderAlerts(state),
     //form(attrs({action: `/auth/identity/callback`, method: `POST`}), [
-    form([
       //renderAccountTypes(state),
       div(`.form-group`, [components.name]),
       div(`.form-group`, [components.username]),
-      div(`.form-group`, [components.email]),
+      div(`.form-group`, {class: {"has-danger": errors.length}}, [
+        components.email,
+        errors.length? div('.form-control-feedback', [errors[0]]) : null
+      ]),
       div(`.form-group`, [components.password]),
-      renderSignupButton(state)
-    ]),
+      renderSignupButton(state),
     renderOrSeparator(),
     renderExternalButton(`Sign-up with Facebook`, `.appFacebookLink.facebook-button`),
     //renderExternalLinks(),

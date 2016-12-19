@@ -4,7 +4,7 @@ import {combineObj, spread, checkValidity} from '../../../utils'
 
 function isValid(state) {
   const {name, username, email} = state
-  return name && username && email
+  return name.valid && username.valid && email.valid
 }
 function setValid(state) {
   const name = state.get(`name`)

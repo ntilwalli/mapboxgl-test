@@ -9,16 +9,17 @@ import {
 
 function renderSignupButton(state) {
   return div(``, [
-    input(`.appSignupButton.internal-auth-button.sign-up-button`, {
+    button(`.appSignupButton.btn.btn-outline-crayola-orange`, {
       class: {
-        disabled: !state.valid
+        disabled: !state.valid,
+        "form-control": true
       },
       attrs: {
         type: `button`, 
         value: `Sign-up`, 
         disabled: !state.valid
       }
-    })
+    }, ['Sign-up'])
   ])
 }
 
@@ -52,6 +53,9 @@ function renderSignupButton(state) {
 // }
 
 function renderBody({state, components}) {
+
+  const {email} = state
+  const errors = email.data && email.data.length &&  email.errors.length > 0 ? email.errors : []
   return div(`.presignup-modal`, [
     renderAlerts(state),
     div(`.form-group`, [
@@ -60,18 +64,19 @@ function renderBody({state, components}) {
       ])
     ]),
     //form(attrs({action: `/auth/presignup`, method: `POST`}), [
-    form([
       //renderAccountTypes(state),
-      div(`.form-group`, [components.name]),
-      div(`.form-group`, [components.username]),
-      div(`.form-group`, [components.email]),
-      renderSignupButton(state)
-    ])
+    div(`.form-group`, [components.name]),
+    div(`.form-group`, [components.username]),
+    div(`.form-group`, {class: {"has-danger": errors.length}}, [
+      components.email,
+      errors.length? div('.form-control-feedback', [errors[0]]) : null
+    ]),
+    renderSignupButton(state)
   ])
 }
 
 export default function view(state$) {
-  return state$.map(state => {
+  return state$.debounceTime(0).map(state => {
     return renderBody(state)
   })
 }

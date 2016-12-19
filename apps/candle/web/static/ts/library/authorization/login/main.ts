@@ -79,7 +79,7 @@ export default function main(sources, inputs) {
           const {username, password} = state
           return {
             type: `local`,
-            data: {username, password}
+            data: {username: username.data, password: password.data}
           }
         })
       ).map(x => ({to: `/authorization/login`, message: x})),
