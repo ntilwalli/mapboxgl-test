@@ -141,7 +141,7 @@ function renderButtons(state) {
   //enabled, disabled, checked-in
 
 
-  return button(`.appCheckin.col-xs-4.float-xs-right.btn.btn-success.mt-1`, {
+  return button(`.appCheckin.check-in-button.col-xs-12.float-xs-right.btn.btn-success.mt-1`, {
       class: {
         disabled,
         enabled: !disabled,
