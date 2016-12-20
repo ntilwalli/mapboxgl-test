@@ -16,7 +16,6 @@ defmodule Standard.TierPerk do
     |> cast(params, @required_fields)
     |> validate_required(@required_fields)
     |> validate_inclusion(:type, [
-      "no_perk",
       "drink_ticket",
       "minutes",
       "songs",

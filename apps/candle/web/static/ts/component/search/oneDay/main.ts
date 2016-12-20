@@ -123,7 +123,8 @@ function main(sources, inputs) {
           type: 'push',
           action: 'PUSH'
         }
-      })
+      }),
+      actions.brand_button$.mapTo('/')
     ),
     HTTP: retrieve$,
     Storage: state$

@@ -13,9 +13,6 @@ defmodule PerformerCostStageTime do
                 cost: 1,
                 max: 10
               }
-            },
-            perk: %{
-              type: "no_perk"
             }
           }
         ]
@@ -29,9 +26,6 @@ defmodule PerformerCostStageTime do
             type: "cover",
             data: %{
               cover: 5
-            },
-            perk: %{
-              type: "no_perk"
             }
           },
           %{
@@ -41,9 +35,6 @@ defmodule PerformerCostStageTime do
                 cost: 1,
                 max: 10
               }
-            },
-            perk: %{
-              type: "no_perk"
             }
           }
         ]
@@ -66,10 +57,7 @@ defmodule PerformerCostStageTime do
         cost = [
           %{
             type: "free",
-            data: nil,
-            perk: %{
-              type: "no_perk"
-            }
+            data: nil
           },
           %{
             type: "minimum_purchase",
@@ -105,10 +93,7 @@ defmodule PerformerCostStageTime do
         cost = [
           %{
             type: "free",
-            data: nil,
-            perk: %{
-              type: "no_perk"
-            }
+            data: nil
           },
           %{
             type: "minimum_purchase",
@@ -159,9 +144,6 @@ defmodule PerformerCostStageTime do
             type: "cover",
             data: %{
               cover: 5
-            },
-            perk: %{
-              type: "no_perk"
             }
           }
         ]
@@ -176,7 +158,7 @@ defmodule PerformerCostStageTime do
               minutes: %{
                 type: "max",
                 data: %{
-                  max: 6
+                  max: 3
                 }
               }
             }
@@ -187,7 +169,7 @@ defmodule PerformerCostStageTime do
               minutes: %{
                 type: "max",
                 data: %{
-                  max: 6
+                  max: 3
                 }
               }
             }
@@ -199,9 +181,6 @@ defmodule PerformerCostStageTime do
             type: "cover",
             data: %{
               cover: 5
-            },
-            perk: %{
-              type: "no_perk"
             }
           }
         ]
@@ -209,10 +188,7 @@ defmodule PerformerCostStageTime do
         {cost, stage_time}
       Regex.match?(~r/free but if you buy a drink at the bar/i, note) ->
         tier_1 = %{
-          type: "free",
-          perk: %{
-            type: "no_perk"
-          }
+          type: "free"
         }
 
         tier_2 = %{
@@ -238,9 +214,6 @@ defmodule PerformerCostStageTime do
                 type: "drink",
                 data: 1
               }
-            },
-            perk: %{
-              type: "no_perk"
             }
           },
           %{

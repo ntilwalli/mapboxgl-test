@@ -7,7 +7,7 @@ import {CostOptions, TierPerkOptions, StageTimeOptions, MinutesTypeOptions} from
 import {
   renderName, renderCuando, renderDonde, 
   renderCuandoStatus, renderCost, renderStageTime, renderPerformerSignup,
-  renderPerformerLimit, renderTextList
+  renderPerformerLimit, renderTextList, hasConsistentStageTimeType
 } from '../../../helpers/listing/renderBootstrap'
 
 
@@ -187,8 +187,23 @@ function applyFilters(results, filters) {
   //console.log(filters)
   const {filterCategories, filterCosts, filterStageTime, categories, costs, stageTime} = filters
   const listings = {}
-  results.forEach(x => listings[x.listing.id] = x)
-  const normalized = results.map(normalizeForFiltering)
+  const consistent_results = results
+    .filter(x => {
+      const c = hasConsistentStageTimeType(
+        x.listing.meta.performer_cost, 
+        x.listing.meta.stage_time
+      )
+
+      if (!c) {
+        console.error('Inconsistent stage time types, discarding...', x.listing.meta)
+        return false
+      }
+
+      return true
+
+    })
+  consistent_results.forEach(x => listings[x.listing.id] = x)
+  const normalized = consistent_results.map(normalizeForFiltering)
 
   console.log('normalized results', normalized)
   const filtered = normalized

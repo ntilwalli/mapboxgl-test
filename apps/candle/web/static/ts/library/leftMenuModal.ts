@@ -12,13 +12,15 @@ function intent(sources) {
   const signup$ = DOM.select(`.appShowSignupButton`).events(`click`)
   const show_settings$ = DOM.select(`.appShowSettingsButton`).events(`click`)
   const show_create_workflow$ = DOM.select(`.appShowCreateWorkflowButton`).events(`click`)
+  const brand_button$ = DOM.select('.appBrandButton').events('click')
   return {
     close$,
     logout$,
     login$,
     signup$,
     show_settings$,
-    show_create_workflow$
+    show_create_workflow$,
+    brand_button$
   } 
 }
 
@@ -28,7 +30,7 @@ function renderNavigator(state) {
   return nav('.navbar.navbar-light.bg-faded.container-fluid', [
     div('.row.no-gutter', [
       div('.col-xs-6', [
-        a('.hopscotch-icon.btn.btn-link.nav-brand', {attrs: {href: '#'}}, []),
+        button('.appBrandButton.hopscotch-icon.btn.btn-link.nav-brand', []),
       ]),
       div('.col-xs-6', [
         button('.appShowMenuButton.fa.fa-bars.btn.btn-link.float-xs-right', [])
@@ -80,7 +82,8 @@ export default function main(sources, inputs) {
           pathname: `/create`,
           type: 'push',
           actions: 'PUSH'
-        })
+        }),
+        actions.brand_button$.mapTo('/')
       ),
     MessageBus: O.merge(
       actions.close$.mapTo({to: `main`, message: `hideModal`}),

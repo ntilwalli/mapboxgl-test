@@ -60,8 +60,8 @@ defmodule Listing.Worker do
         _ -> %{checked_in: listing.check_ins |> Enum.any?(fn x -> x.user_id === user.id end)}
       end
 
-    # IO.puts "Retrieve listing..."
-    # IO.inspect  %{listing: listing, status: status}
+    IO.puts "Retrieve listing..."
+    IO.inspect  %{listing: listing, children: listing.children, status: status}
     {:reply, {:ok, %{listing: listing, children: listing.children, status: status}}, state}
   end
 

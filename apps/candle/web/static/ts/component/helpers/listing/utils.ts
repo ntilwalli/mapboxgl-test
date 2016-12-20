@@ -6,7 +6,7 @@ import {
   DayOfWeek, RecurrenceFrequency, ListingTypes, CategoryTypes,
   PerformerSignupOptions, PreRegistrationOptions, PerformerLimitOptions,
   StageTimeOptions, TierPerkOptions, MinutesTypeOptions, RelativeTimeOptions,
-  CostOptions, PurchaseTypeOptions
+  CostOptions, PurchaseTypeOptions, UndefinedOption
 } from '../../../listingTypes'
 
 export {
@@ -14,10 +14,10 @@ export {
   DayOfWeek, RecurrenceFrequency, ListingTypes, CategoryTypes,
   PerformerSignupOptions, PreRegistrationOptions, PerformerLimitOptions,
   StageTimeOptions, TierPerkOptions, MinutesTypeOptions, RelativeTimeOptions,
-  CostOptions, PurchaseTypeOptions
+  CostOptions, PurchaseTypeOptions, UndefinedOption
 } 
 
-function inflateCuandoDates(container) {
+function inflateRecurringCuandoDates(container) {
   const {rrule, rdate, exdate} = container
 
   if (rrule && rrule.dtstart) {
@@ -28,16 +28,16 @@ function inflateCuandoDates(container) {
     container.rrule.until = moment(rrule.until)
   }
   
-  if (rdate.length) {
+  if (rdate && rdate.length) {
     container.rdate = container.rdate.map(x => moment(x))
   }
 
-  if (exdate.length) {
+  if (exdate && exdate.length) {
     container.exdate = container.exdate.map(x => moment(x))
   }
 }
 
-function deflateCuandoDates(container) {
+function deflateRecurringCuandoDates(container) {
   const {rrule, rdate, exdate} = container
 
   if (rrule && rrule.dtstart) {
@@ -57,6 +57,44 @@ function deflateCuandoDates(container) {
   }
 }
 
+export function inflateListing(listing) {
+
+  const {type} = listing
+
+
+  if (type === ListingTypes.RECURRING) {
+    if (listing.cuando) { inflateRecurringCuandoDates(listing.cuando) }
+  } else {
+    if (listing.cuando) {
+      const {begins, ends} = listing.cuando
+      if (begins) { listing.cuando.begins = moment(begins) }
+      if (ends) { listing.cuando.ends = moment(ends) }
+    }
+  }
+
+  return listing
+}
+
+
+export function deflateListing(listing) {
+  const {type} = listing
+
+  if (type === ListingTypes.RECURRING) {
+    if (listing.cuando) { deflateRecurringCuandoDates(listing.cuando) }
+  } else {
+    if (listing.cuando) {
+      const {begins, ends} = listing.cuando
+      if (begins) { listing.cuando.begins = begins.toDate().toISOString() }
+      if (ends) { listing.cuando.ends = ends.toDate().toISOString() }
+    }
+  }
+
+  return listing
+}
+
+
+
+
 export function inflateDates(session) {
   //console.log(`inflateDates`, session)
   const {properties, listing} = session
@@ -64,8 +102,8 @@ export function inflateDates(session) {
 
 
   if (type === ListingTypes.RECURRING) {
-    if (session.listing.cuando) { inflateCuandoDates(session.listing.cuando) }
-    if (session.properties.recurrence) { inflateCuandoDates(session.properties.recurrence) }
+    if (session.listing.cuando) { inflateRecurringCuandoDates(session.listing.cuando) }
+    if (session.properties.recurrence) { inflateRecurringCuandoDates(session.properties.recurrence) }
   } else {
     if (session.listing.cuando) {
       const {begins, ends} = listing.cuando
@@ -82,8 +120,8 @@ export function deflateDates(session) {
   const {type} = listing
 
   if (type === ListingTypes.RECURRING) {
-    if (listing.cuando) { deflateCuandoDates(session.listing.cuando) }
-    if (properties.recurrence) { deflateCuandoDates(session.properties.recurrence) }
+    if (listing.cuando) { deflateRecurringCuandoDates(session.listing.cuando) }
+    if (properties.recurrence) { deflateRecurringCuandoDates(session.properties.recurrence) }
   } else {
     if (listing.cuando) {
       const {begins, ends} = listing.cuando
@@ -147,14 +185,17 @@ function freqToRRuleFreq(freq) {
 export function getActualRRule(rrule) {
   const options = {
     ...rrule,
+    wkst: rrule.wkst ? dayToRRuleDay(rrule.wkst) : RRule.MO,
     freq: freqToRRuleFreq(rrule.freq),
     interval: rrule.interval || 1,
-    byweekday: rrule.byweekday.map(dayToRRuleDay),
+    byweekday: rrule.byweekday ? rrule.byweekday.map(dayToRRuleDay) : [RRule.MO],
     dtstart: rrule.dtstart.toDate(),
-    until: rrule.until ? rrule.until.clone().endOf('day').toDate() : undefined
+    until: rrule.until ? rrule.until.clone().endOf('day').toDate() : undefined,
   }
   //console.log(`rrule options`, options)
-  return new RRule(options)
+  const out = new RRule(options)
+  //const blah = out.between(moment().toDate(), moment().add(30, 'day').toDate())
+  return out
 }
 
 export function recurrenceToRRuleSet(cuando) {
@@ -166,13 +207,13 @@ export function recurrenceToRRuleSet(cuando) {
     rruleset.rrule(the_rule)
   }
 
-  if (rdate.length) {
+  if (rdate && rdate.length) {
     rdate.forEach(x => {
       return rruleset.rdate(x.toDate())
     })
   } 
 
-  if (exdate.length) {
+  if (rdate && exdate.length) {
     exdate.forEach(x => {
       return rruleset.exdate(x.toDate())
     })

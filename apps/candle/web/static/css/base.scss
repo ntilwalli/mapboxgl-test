@@ -18,11 +18,35 @@
     content: 'h'
   }
 
+  &:visited {
+    color: black;
+    border-color: black;
+    text-decoration: none;
+  }
+
+
   &:hover {
     text-decoration: none;
     color: $crayola-orange;
     border-color: $crayola-orange;
   }
+
+  &:active {
+    text-decoration: none;
+    color: black;
+    border-color: black;
+  }
+
+  &:link {
+    text-decoration: none;
+    color: black;
+    border-color: black;
+  }
+
+}
+
+pre {
+  white-space: normal;
 }
 
 address {
@@ -121,6 +145,18 @@ address {
 
 .mr-xs {
   margin-right: $spacer-x * .5;
+}
+
+.ml-xs {
+  margin-left: $spacer-x * .5;
+}
+
+.mt-xs {
+  margin-top: $spacer-x * .5;
+}
+
+.mb-xs {
+  margin-bottom: $spacer-x * .5;
 }
 
 .d-flex {

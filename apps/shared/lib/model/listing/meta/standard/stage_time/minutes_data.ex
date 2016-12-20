@@ -1,9 +1,6 @@
 defmodule Standard.StageTime.MinutesData do
   use Shared.Lib, :model
 
-  # :minutes_max
-  # :minutes_range
-
   @derive {Poison.Encoder, except: [:__meta__]}
   @primary_key false
   embedded_schema do

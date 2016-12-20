@@ -1,3 +1,5 @@
+const UndefinedOption = ''
+
 const EventTypes = {
   OPEN_MIC: 'open_mic',
   SHOW: 'show'
@@ -89,7 +91,6 @@ const StageTimeOptions = {
 }
 
 const TierPerkOptions = {
-  NO_PERK: 'no_perk',
   ADDITIONAL_MINUTES: 'additional_minutes',
   ADDITIONAL_SONGS: 'additional_songs',
   ADDITIONAL_MINUTES_AND_PRIORITY_ORDER: 'additional_minutes_and_priority_order',
@@ -142,5 +143,5 @@ export {
   DayOfWeek, RecurrenceFrequency, ListingTypes, CategoryTypes,
   PerformerSignupOptions, PreRegistrationOptions, PerformerLimitOptions,
   StageTimeOptions, TierPerkOptions, MinutesTypeOptions, RelativeTimeOptions,
-  CostOptions, PurchaseTypeOptions
+  CostOptions, PurchaseTypeOptions, UndefinedOption
 }

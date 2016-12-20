@@ -1,8 +1,8 @@
 import {Observable as O} from 'rxjs'
-import {div, a, pre, span, input, button, strong, h6, em, b, address, small} from '@cycle/dom'
+import {div, a, pre, span, input, button, strong, h6, em, b, address, small, ul, li} from '@cycle/dom'
 import {combineObj} from '../../../utils'
 import {to12HourTime} from '../../../helpers/time'
-import {ListingTypes, EventTypes, PerformerSignupOptions, RelativeTimeOptions, CostOptions, TierPerkOptions, PurchaseTypeOptions, StageTimeOptions, MinutesTypeOptions, PerformerLimitOptions} from '../../../listingTypes'
+import {ListingTypes, EventTypes, PerformerSignupOptions, PreRegistrationOptions, RelativeTimeOptions, CostOptions, TierPerkOptions, PurchaseTypeOptions, StageTimeOptions, MinutesTypeOptions, PerformerLimitOptions} from '../../../listingTypes'
 import moment = require('moment')
 import {recurrenceToRRuleSet} from './utils'
 import {getBadslavaName, getVenueName, getVenueAddress, getVenueLngLat} from '../../../helpers/donde'
@@ -39,11 +39,11 @@ function getRelativeTimeInfo(info) {
   let val_string
   switch(info.type) {
     case RelativeTimeOptions.MINUTES_BEFORE_EVENT_START:
-      return `${info.data.minutes} minutes before event start`
+      return `${info.data.minutes} mins before event start`
     case RelativeTimeOptions.MINUTES_AFTER_EVENT_START:
-      return `${info.data.minutes} minutes after event start`
+      return `${info.data.minutes} mins after event start`
     case RelativeTimeOptions.MINUTES_BEFORE_EVENT_END:
-      return `${info.data.minutes} minutes before event end`
+      return `${info.data.minutes} mins before event end`
     case RelativeTimeOptions.EVENT_START:
       return 'Event start'
     case RelativeTimeOptions.EVENT_END:
@@ -110,6 +110,8 @@ function getCoverChargeSummary(info) {
   }
 }
 
+const pluralize = (amt, type) => amt > 1 ? `${type}s` : type
+
 function getMinimumPurchaseSummary(info) {
   switch (info.type) {
     case CostOptions.MINIMUM_PURCHASE:
@@ -121,11 +123,11 @@ function getMinimumPurchaseSummary(info) {
         case PurchaseTypeOptions.DOLLARS:
           return `$${val.data}`
         case PurchaseTypeOptions.DRINK:
-          return `${val.data} drink${plural}`
+          return '' + val.data + ' ' + pluralize(val.data, 'drink')
         case PurchaseTypeOptions.ITEM:
-          return `${val.data} item${plural}`
+          return '' + val.data + ' ' + pluralize(val.data, 'item')
         case PurchaseTypeOptions.DRINK_OR_ITEM:
-          return `${val.data} drink${plural} or item${plural}`
+          return '' + val.data + ' ' + pluralize(val.data, 'drink') + ' or ' + pluralize(val.data, 'item')
         default:
           return ''
       }
@@ -161,42 +163,42 @@ function getPerformerCostSummary(info) {
   return `Performer cost: ${getCostString(info)}`
 }
 
-function getMinutesSummary(info) {
-  switch (info.type) {
-    case MinutesTypeOptions.MAX:
-      return `${info.data.max} minute${info.data.max === 1 ? '' : 's'}`
-    case MinutesTypeOptions.RANGE:
-      return `${info.data.min}/${info.type.max} minutes`
-    default: 
-      return ''
-  }
-}
+// function getMinutesSummary(info) {
+//   switch (info.type) {
+//     case MinutesTypeOptions.MAX:
+//       return `${info.data.max} minute${info.data.max === 1 ? '' : 's'}`
+//     case MinutesTypeOptions.RANGE:
+//       return `${info.data.min}/${info.type.max} minutes`
+//     default: 
+//       return ''
+//   }
+// }
 
-function getSongsSummary(info) {
-  return `${info} song${info > 1 ? 's' : ''}`
-}
+// function getSongsSummary(info) {
+//   return `${info} song${info > 1 ? 's' : ''}`
+// }
 
-function getRoundSummary(info) {
-  let out = ''
-  switch (info.type) {
-    case StageTimeOptions.MINUTES:
-      out += getMinutesSummary(info.data.minutes)
-      break
-    case StageTimeOptions.SONGS:
-      out += getSongsSummary(info.data.songs)
-      break
-    default:
-      out += getMinutesSummary(info.data.minutes) + ' or ' + getSongsSummary(info.data.songs)
-  }
+// function getRoundSummary(info) {
+//   let out = ''
+//   switch (info.type) {
+//     case StageTimeOptions.MINUTES:
+//       out += getMinutesSummary(info.data.minutes)
+//       break
+//     case StageTimeOptions.SONGS:
+//       out += getSongsSummary(info.data.songs)
+//       break
+//     default:
+//       out += getMinutesSummary(info.data.minutes) + ' or ' + getSongsSummary(info.data.songs)
+//   }
 
-  return out
-}
+//   return out
+// }
 
 function getStageTimeSummary(info) {
   if (info.length === 1) {
-    return 'Stage-time: ' + getRoundSummary(info[0])
+    return 'Stage-time: ' + getSingleRoundText(info[0])
   } else {
-    return 'Stage-time: \n' + info.map((x, index) => '  Round ' + (index+1) + ': ' + getRoundSummary(info[index]) + ((index < info.length - 1) ? '\n' : '')).join('')
+    return 'Stage-time: \n' + info.map((x, index) => '  Round ' + (index+1) + ': ' + getSingleRoundText(info[index]) + ((index < info.length - 1) ? '\n' : '')).join('')
   }
 }
 
@@ -286,7 +288,7 @@ function getSetPosSummary(bysetpos) {
 
 const toCamelCase = val => val.substring(0, 1).toUpperCase() + val.substring(1) 
 
-function getByWeekdaySummary(byweekday) {
+function getWeekdaySummary(byweekday, dtstart) {
   if (byweekday) {
     const length = byweekday.length
     if (length > 1) {
@@ -295,6 +297,8 @@ function getByWeekdaySummary(byweekday) {
       const val = byweekday[length - 1]
       return toCamelCase(val)
     }
+  } else {
+    return dtstart.format('dddd')
   }
 
   return ''
@@ -313,9 +317,9 @@ function getFreqSummary(rrule) {
   const from_to = (dtstart || until) ? getFromTo(dtstart, until) : ''
   switch (freq) {
     case 'weekly':
-      return 'Weekly ' + getByWeekdaySummary(byweekday) + 's'
+      return 'Weekly ' + getWeekdaySummary(byweekday, dtstart) + 's'
     case 'monthly':
-      return getSetPosSummary(bysetpos) + getByWeekdaySummary(byweekday)
+      return getSetPosSummary(bysetpos) + getWeekdaySummary(byweekday, dtstart)
     default:
       return ''
   }
@@ -404,60 +408,6 @@ function getContactInfoSummary(info) {
   return out
 }
 
-function renderWebsite(website) {
-  const site = `http://${website}`
-  return div(`.result-website`, [
-    a({attrs: {href: site}}, [`Website`])
-  ])
-}
-
-
-function renderEmail(email) {
-  return div(`.row`, [
-    div('.heading.text-input', ['E-mail']),
-    a(`.text-input`, {attrs: {href: `mailto:${email}`}}, [email]),
-  ])
-}
-
-function renderURL(title, url) {
-  return div(`.row`, [
-    div('.heading.text-input', [title]),
-    a(`.text-input`, {attrs: {href: url}}, [url]),
-  ])
-}
-
-function renderTwitter(handle) {
-  return div(`.row`, [
-    div('.heading.text-input', ['Twitter']),
-    a(`.text-input`, {attrs: {href: `https://twitter.com/${handle.substring(1)}`}}, [handle]),
-  ])
-}
-
-function renderInstagram(handle) {
-  return div(`.row`, [
-    div('.heading.text-input', ['Instagram']),
-    a(`.text-input`, {attrs: {href: 'https://instagram.com/' + handle.substring(1)}}, [handle]),
-  ])
-}
-
-
-function renderContactInfo(contact_info) {
-  const has_info = Object.keys(contact_info).some(x => !!contact_info[x])
-  if (has_info) {
-    const {email, twitter, facebook, instagram, website} = contact_info
-
-    return div(`.column`, [
-      email ? renderEmail(email) : null,
-      website ? renderURL('Website', website) : null,
-      twitter ? renderTwitter(twitter) : null,
-      instagram ? renderInstagram(instagram) : null,
-      facebook ? renderURL('Facebook', facebook) : null
-    ])
-  }
-
-  return null
-}
-
 function renderListedHosts(info) {
   if (info.length) {
     const plural = info.length >1
@@ -495,7 +445,7 @@ function isOpenMicAndShow(listing) {
   return isOpenMic(listing) && isShow(listing)
 }
 
-function getPerformerCostString(cost) {
+function getSummaryPerformerCostString(cost) {
   if (cost.length === 0) {
     return undefined
   }
@@ -523,7 +473,7 @@ export function renderCost(listing) {
       out = getAudienceCostString(audience_cost)
     } else {
       const audience = getAudienceCostString(audience_cost)
-      const performer = getPerformerCostString(performer_cost)
+      const performer = getSummaryPerformerCostString(performer_cost)
       return div([
         div([
           span(['Audience:']),
@@ -538,7 +488,7 @@ export function renderCost(listing) {
   } else if (isShow(listing)) {
     out = getAudienceCostString(audience_cost)
   } else if (isOpenMic(listing)) {
-    out = getPerformerCostString(performer_cost)
+    out = getSummaryPerformerCostString(performer_cost)
   } else {
     return null
   }
@@ -687,8 +637,8 @@ export function renderRecurring(cuando) {
   const upcoming_date = upcoming_dates.length ? moment(upcoming_dates[0].toISOString()) : undefined
   const upcoming = upcoming_date ? 
     div([
-      strong('.mr-xs', ['Next event:']),
-      span([upcoming_date.format('llll')])
+      em('.mr-xs', ['Next event:']),
+      span([upcoming_date.format('ddd, M/D/YY h:mm a')])
     ]) : null
 
   const {rrule, rdate, exdate} = cuando
@@ -722,9 +672,9 @@ export function renderCuando(listing) {
 function getMinutesInfo(info) {
   switch (info.type) {
     case MinutesTypeOptions.MAX:
-      return `${info.data.max} minutes`
+      return stitchString(info.data.max, 'min')
     case MinutesTypeOptions.RANGE:
-      return `${info.data.min}-${info.data.max} minutes`
+      return `${info.data.min}-${stitchString(info.data.max, 'min')}`
     default:
       throw new Error()
   }
@@ -766,11 +716,11 @@ function getRelativeTimeInfoShort(info) {
   let val_string
   switch(info.type) {
     case RelativeTimeOptions.MINUTES_BEFORE_EVENT_START:
-      return `${info.data.minutes} minutes`
+      return stitchString(info.data.minutes, 'min')
     case RelativeTimeOptions.MINUTES_AFTER_EVENT_START:
-      return `${info.data.minutes} minutes after`
+      return `${stitchString(info.data.minutes, 'min')} after`
     case RelativeTimeOptions.MINUTES_BEFORE_EVENT_END:
-      return `${info.data.minutes} minutes from end` 
+      return `${stitchString(info.data.minutes, 'min')} from end` 
     case RelativeTimeOptions.EVENT_START:
       return 'Event start'
     case RelativeTimeOptions.EVENT_END:
@@ -793,19 +743,37 @@ const capitalize = val => {
   else return val.substring(0, 1).toUpperCase() + val.substring(1)
 }
 
+function normalizeWebAddress(site) {
+  if (site.indexOf('http') === 0) return site
+  else return 'http:\/\/' + site
+}
+
+function renderPreRegistrationType(pre_registration) {
+  switch (pre_registration.type) {
+    case PreRegistrationOptions.WEBSITE:
+      return a({attrs: {href: normalizeWebAddress(pre_registration.data)}}, ['Website'])
+    case PreRegistrationOptions.EMAIL:
+      return a({attrs: {href: `mailto:${pre_registration.data}`}}, ['Email'])
+    case PreRegistrationOptions.APP:
+      return 'App'
+    default:
+      throw new Error()
+  }
+}
+
 export function renderPerformerSignup(info) {
   let out
   const {type, data} = info
   
-  switch (info.type) {
+  switch (type) {
     case PerformerSignupOptions.IN_PERSON:
       out = 'In person'
       break
     case PerformerSignupOptions.PRE_REGISTRATION:
-      out = `${capitalize(data.pre_registration.type)}`
+      out = renderPreRegistrationType(data.pre_registration)
       break
     case PerformerSignupOptions.IN_PERSON_AND_PRE_REGISTRATION:
-      out = `In person/${capitalize(data.pre_registration.type)}`
+      out = span([span(['In person/']), span([renderPreRegistrationType(data.pre_registration)])])
       break
     default:
      throw new Error()
@@ -831,7 +799,7 @@ export function renderPerformerLimit(info) {
     case PerformerLimitOptions.NO_LIMIT:
       return null
     case PerformerLimitOptions.LIMIT:
-      text = `${info.data.limit} people`
+      text = `${info.data.limit} performers`
       break
     case PerformerLimitOptions.LIMIT_BY_SIGN_UP_TYPE:
       text = `${getPerformerLimitInfo(info.data.in_person)} + ${getPerformerLimitInfo(info.data.pre_registration)} performers`
@@ -874,50 +842,365 @@ export function renderTextList(info) {
   }
 }
 
-// export function renderSingleListing(listing) {
-//   const {type, donde, cuando, meta} = listing
-//   const {
-//     name, event_types, categories, notes, 
-//     performer_cost, description, contact_info, 
-//     performer_sign_up, stage_time, 
-//     performer_limit, listed_hosts} = meta
+export function renderNote(note) {
+  if (note) {
+    const new_note = note.replace(/\\n/g, '\n')
+    return pre('.row.no-gutter', [
+      new_note
+    ])
+  } else {
+    return null
+  }
+}
 
-//   return div('.container-fluid.no-gutter', [
-//     div('.row.no-gutter', [
-//       div('.col-xs-6', [
-//         div('.row.no-gutter', [
-//           renderName(name)
-//         ]),
-//         div('.row.no-gutter', [
-//           renderCuando(listing)
-//         ]),
-//         div('.row.no-gutter', [
-//           renderDonde(donde)
-//         ])
-//       ]),
-//       div('.col-xs-6', [
-//         div('.row.no-gutter.clearfix', [
-//           renderCuandoStatus(cuando)
-//         ]),
-//         performer_cost ? div('.row.no-gutter.clearfix', [
-//           renderCost(listing)
-//         ]) : null,
-//         stage_time ? div('.row.no-gutter.clearfix', [
-//           renderStageTime(stage_time)
-//         ]) : null,
-//         performer_sign_up ? div('.row.no-gutter.clearfix', [
-//           renderPerformerSignup(performer_sign_up)
-//         ]) : null,
-//         performer_limit ? div('.row.no-gutter.clearfix', [
-//           renderPerformerLimit(performer_limit)
-//         ]) : null,
-//         categories.length ? div('.row.no-gutter.clearfix', [
-//           renderTextList(categories)
-//         ]) : null,
-//         // event_types.length ? div('.row.no-gutter.clearfix', [
-//         //   renderTextList(event_types)
-//         // ]) : null
-//       ])
-//     ])
-//   ])
-// }
+function isMinutesPerk(type) {
+  switch (type) {
+    case TierPerkOptions.MINUTES:
+    case TierPerkOptions.ADDITIONAL_MINUTES:
+    case TierPerkOptions.ADDITIONAL_MINUTES_AND_PRIORITY_ORDER:
+      return true
+    default: 
+      return false
+  }
+}
+
+function isSongsPerk(type) {
+  switch (type) {
+    case TierPerkOptions.SONGS:
+    case TierPerkOptions.ADDITIONAL_SONGS:
+    case TierPerkOptions.ADDITIONAL_SONGS_AND_PRIORITY_ORDER:
+      return true
+    default: 
+      return false
+  }
+}
+
+function isNonTimePerk(type) {
+  switch (type) {
+    case TierPerkOptions.DRINK_TICKET:
+    case TierPerkOptions.ADDITIONAL_BUCKET_ENTRY:
+    case TierPerkOptions.PRIORITY_ORDER:
+      return true
+    default: 
+      return false
+  }
+}
+
+function hasPerk(cost) {
+  return !!cost.perk
+}
+
+
+export function consistentWithSongsStageTime(performer_cost) {
+  return performer_cost.every(c => {
+    return !hasPerk(c) || (isNonTimePerk(c.perk.type) || isSongsPerk(c.perk.type))
+  })
+}
+
+export function consistentWithMinutesStageTime(performer_cost) {
+  return performer_cost.every(c => {
+    return !hasPerk(c) || (isNonTimePerk(c.perk.type) || isMinutesPerk(c.perk.type))
+  })
+}
+
+export function consistentWithMinutesOrSongsStageTime(performer_cost) {
+  return performer_cost.every(c => {
+    return !hasPerk(c) || isNonTimePerk(c.perk.type)
+  })
+}
+
+export function hasStageTimeMinutesInfo(stage_time) {
+  return stage_time.every(x => x.type === StageTimeOptions.MINUTES)
+}
+
+export function hasStageTimeSongsInfo(stage_time) {
+  return stage_time.every(x => x.type === StageTimeOptions.SONGS)
+}
+
+
+export function hasConsistentStageTimeType(performer_cost, stage_time) {
+  if (performer_cost.length <= 1) return true
+  if (stage_time.length === 0) return true
+
+  const has_stage_time_minutes = hasStageTimeMinutesInfo(stage_time)
+  const has_stage_time_songs = hasStageTimeSongsInfo(stage_time)
+
+  if (stage_time.length === 1) {
+    if (stage_time[0].type === StageTimeOptions.SEE_NOTE) return true
+    if (stage_time[0].type === StageTimeOptions.MINUTES_OR_SONGS) {
+      return consistentWithMinutesOrSongsStageTime(performer_cost)
+    }
+  }
+
+  if (has_stage_time_minutes) return consistentWithMinutesStageTime(performer_cost)
+  if (has_stage_time_songs) return consistentWithSongsStageTime(performer_cost)
+
+  console.error('Cost tiers are incompatible with stage time rounds')
+  return false
+}
+
+
+function stitchString(amt, type, perk?) {
+  return '' + amt + ' ' + pluralize(amt, type) + (perk ? ' + ' + perk.replace('_', ' ') : '')
+}
+
+function getPerformerTierPerkString(cost) {
+    let out
+    if (cost.perk) {
+      switch (cost.perk.type) {
+        case TierPerkOptions.MINUTES:
+          out = stitchString(cost.perk.data, 'min')
+          break
+        case TierPerkOptions.ADDITIONAL_MINUTES:
+          out = stitchString(cost.perk.data, 'additional min')
+          break
+        case TierPerkOptions.ADDITIONAL_MINUTES_AND_PRIORITY_ORDER:
+          out = stitchString(cost.perk.data, 'additional min', 'priority order')
+          break
+        case TierPerkOptions.SONGS:
+          out = stitchString(cost.perk.data, 'song')
+          break
+        case TierPerkOptions.ADDITIONAL_SONGS:
+          out = stitchString(cost.perk.data, 'additional song')
+          break
+        case TierPerkOptions.ADDITIONAL_SONGS_AND_PRIORITY_ORDER:
+          out = stitchString(cost.perk.data, 'additional song', 'priority order')
+          break
+        default:
+          out = cost.perk.type
+      }
+    } else {
+      out = ''
+    }
+
+    return out
+}
+
+function getPerformerCostTierString(cost) {
+  return getPerformerCostString(cost) + '/' + getPerformerTierPerkString(cost)
+}
+
+export function renderFullStageTime(stage_time) {
+  let text 
+  const length = stage_time.length
+  if (length === 0) {
+    return null
+  } else if (length === 1) {
+    return span('.float-xs-right', [ getSingleRoundText(stage_time[0]) ])
+  } else {
+    const base = stage_time[0]
+    if (stage_time.every(x => deepEqual(base, x))) {
+      return span('.float-xs-right', [ '' + length + ' rounds: ' + getSingleRoundText(stage_time[0]) + ' per' ])
+    } else {
+      return div('.float-xs-right', stage_time.map((s, index) => {
+        return div('row.float-xs-right', [
+          'Round ' + (index + 1) + ': ' + getSingleRoundText(s)
+        ])
+      }))
+    }
+  }
+}
+
+export function renderFullPerformerCost(performer_cost) {
+  let text 
+  const length = performer_cost.length
+  if (length === 0) {
+    return null
+  } else if (length === 1) {
+    return span('.float-xs-right', [ getPerformerCostString(performer_cost[0]) ])
+  } else {
+    return div('.float-xs-right', performer_cost.map((c, index) => {
+      return div('.row.float-xs-right', [
+        'Tier ' + (index + 1) + ': ' + getPerformerCostTierString(c)
+      ])
+    }))
+  }
+}
+
+function incrementMinutes(minutes_data, inc) {
+  switch (minutes_data.type) {
+    case MinutesTypeOptions.MAX:
+      return {
+        type: minutes_data.type,
+        data: {
+          max: minutes_data.data.max + inc
+        }
+      }
+    case MinutesTypeOptions.RANGE:
+      return {
+        type: minutes_data.type,
+        data: {
+          max: minutes_data.data.max + inc,
+          min: minutes_data.data.min + inc
+        }
+      }
+    default: 
+      throw new Error(`Invalid minutes type: ${minutes_data.type}`)
+  }
+}
+
+function productize(c, stage_time) {
+    let out
+    if (c.perk) {
+      switch (c.perk.type) {
+        case TierPerkOptions.MINUTES:
+          out = {
+            stage_time: {
+              type: StageTimeOptions.MINUTES,
+              data: {
+                minutes: {
+                  type: MinutesTypeOptions.MAX,
+                  data: {
+                    max: c.perk.data
+                  }
+                }
+              }
+            }, 
+            perk: undefined
+          }
+        case TierPerkOptions.ADDITIONAL_MINUTES:
+          out = {
+            stage_time: {
+              type: StageTimeOptions.MINUTES,
+              data: {
+                minutes: incrementMinutes(stage_time.data.minutes, c.perk.data)
+              }
+            }, 
+            perk: undefined
+          }
+        case TierPerkOptions.ADDITIONAL_MINUTES_AND_PRIORITY_ORDER:
+          out = {
+            stage_time: {
+              type: StageTimeOptions.MINUTES,
+              data: {
+                minutes: incrementMinutes(stage_time.data.minutes, c.perk.data)
+              }
+            }, 
+            perk: TierPerkOptions.PRIORITY_ORDER
+          }
+        case TierPerkOptions.SONGS:
+          out = {
+            stage_time: {
+              type: StageTimeOptions.SONGS,
+              data: {
+                songs: c.perk.data
+              }
+            }, 
+            perk: undefined
+          }
+        case TierPerkOptions.ADDITIONAL_SONGS:
+          out = {
+            stage_time: {
+              type: StageTimeOptions.SONGS,
+              data: {
+                songs: c.perk.data + stage_time.data.songs
+              }
+            }, 
+            perk: undefined
+          }
+        case TierPerkOptions.ADDITIONAL_SONGS_AND_PRIORITY_ORDER:
+          out = {
+            stage_time: {
+              type: StageTimeOptions.SONGS,
+              data: {
+                songs: c.perk.data + stage_time.data.songs
+              }
+            }, 
+            perk: TierPerkOptions.PRIORITY_ORDER
+          }
+        default:
+          out = {
+            stage_time, 
+            perk: c.perk.type
+          }
+      }
+    } else {
+      out =  {
+        stage_time,
+        perk: undefined
+      }
+    }
+
+
+  return {
+    type: c.type,
+    data: c.data,
+    product: out
+  }
+}
+
+function getProductPerkString(perk) {
+  if (perk) {
+    return perk.replace('_', ' ')
+  } else {
+    return ''
+  }
+}
+
+function getPerkString(perk) {
+  if (perk) {
+    return perk.replace('_', ' ')
+  } else {
+    return ''
+  }
+}
+
+function getPerformerCostString(cost) {
+  if (cost.type === CostOptions.FREE) {
+    return 'Free'
+  } else {
+    return getCostString(cost).replace('and', '+')
+  }
+}
+
+function renderMergedPerformerCostAndStageTime(performer_cost, stage_time) {
+  const products = performer_cost.map(tier => productize(tier, stage_time))
+  return div('.row', [
+    div(['Cost tiers']),
+    ul('.unstyled-list', products.map(p => {
+      return li([
+        getPerformerCostString(p) + ' -> ' + getSingleRoundText(p.product.stage_time) + getProductPerkString(p.product.perk) 
+      ])
+    }))
+  ])
+}
+
+export function getFullCostAndStageTime(performer_cost, stage_time) {
+  if (performer_cost.length > 1 && stage_time.length === 1) {
+    return [undefined, undefined, renderMergedPerformerCostAndStageTime(performer_cost, stage_time[0])]
+  } else {
+    return [renderFullPerformerCost(performer_cost), renderFullStageTime(stage_time), undefined]
+  }
+}
+
+function getRowDiv(info) {
+  return div('.row', [div('.col-xs-12', [info])])
+}
+
+export function renderContactInfo(info) {
+  const {email, twitter, facebook, instagram, website} = info
+  if (Object.keys(info).every(x => !x)) return null
+  let out = []
+
+  if (email) {
+    out.push(getRowDiv(a({attrs: {href: 'mailto:' + email}}, [email])))
+  }
+
+  // if (twitter) {
+  //   out.push(getRightRowDiv('@' + twitter))
+  // }
+
+  // if (facebook) {
+  //   out.push(getRightRowDiv(facebook))
+  // }
+
+  // if (instagram) {
+  //   out.push(getRightRowDiv(instagram))
+  // }
+
+  if (website) {
+    out.push(getRowDiv(a({attrs: {href: normalizeWebAddress(website)}}, [website])))
+  }
+
+  return div('.row.no-gutter.mb-1', out)
+}

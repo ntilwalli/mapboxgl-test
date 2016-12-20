@@ -1,6 +1,8 @@
 defmodule Shared.Model.RRule do
   use Shared.Lib, :model
 
+  @derive {Poison.Encoder, exclude: [:__meta__]}
+  @primary_key false
   embedded_schema do
     field :freq, :string, null: false
     field :dtstart, :naive_datetime

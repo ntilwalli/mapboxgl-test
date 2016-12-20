@@ -52,7 +52,9 @@ defmodule Cuando do
       "weekly" -> 
         %{
           freq: "weekly",
-          dtstart: dtstart
+          dtstart: dtstart,
+          byweekday: [week_day |> String.downcase]
+
         }
       "monthly" -> 
         get_monthly_rrule(week_day, dtstart, note_string)
@@ -60,13 +62,14 @@ defmodule Cuando do
         %{
           freq: "weekly",
           dtstart: dtstart,
+          byweekday: [week_day |> String.downcase],
           interval: 2
         }
     end
 
-    exdates = extract_exdates(listing)
+    #exdates = extract_exdates(listing)
 
-    out = %{rrule: rrule, exdate: exdates}
+    out = %{rrule: rrule, rdate: [], exdate: []}
     out = case duration do
       nil -> out
       val -> Map.put(out, :duration, val)

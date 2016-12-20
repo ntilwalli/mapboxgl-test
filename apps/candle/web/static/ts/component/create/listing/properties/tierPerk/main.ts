@@ -4,7 +4,7 @@ import {div, span, input} from '@cycle/dom'
 import deepEqual = require('deep-equal')
 import {combineObj, createProxy, isInteger} from '../../../../../utils'
 import {ComboBox, BlankStructuredUndefined, FloatInputComponent, NumberInputComponent} from '../helpers'
-import {TierPerkOptions, StageTimeOptions} from '../../../../../listingTypes'
+import {TierPerkOptions, StageTimeOptions, UndefinedOption} from '../../../../../listingTypes'
 import clone = require('clone')
 
 // function optionToText(type) {
@@ -21,8 +21,8 @@ import clone = require('clone')
 //       return "Priority order"
 //     case TierPerkOptions.BUCKET_ENTRY:
 //       return "Additional bucket entry"
-//     case TierPerkOptions.NO_PERK:
-//       return "No perk"
+//     case "":
+//       return ""
 //     default:
 //       throw new Error()
 //   }
@@ -57,9 +57,7 @@ function getPriorityOrderDefault() {
 }
 
 export function getDefault() {
-  return {
-    type: TierPerkOptions.NO_PERK
-  }
+  return undefined
 }
 
 function MinutesComponent(sources, props$, component_id = '') {
@@ -128,11 +126,8 @@ function toDefault(type) {
         type,
         data: getDrinkTicketDefault()
       }
-    case TierPerkOptions.NO_PERK:
-      return {
-        type,
-        data: undefined
-      }
+    case UndefinedOption:
+      return undefined
     default:
       throw new Error()
   }
@@ -149,7 +144,7 @@ export default function main(sources, inputs) {
 
 
   const options = inputs.options || [
-    TierPerkOptions.NO_PERK,
+    UndefinedOption,
     TierPerkOptions.MINUTES,
     TierPerkOptions.SONGS,
     TierPerkOptions.PRIORITY_ORDER,
@@ -280,10 +275,10 @@ export default function main(sources, inputs) {
                  hasDrinkTicket(type) ? drink_ticket : 
                  {data: undefined, errors: [], valid: true}
     return {
-      data: {
+      data: type ? {
         type,
         data: component.data
-      },
+      } : undefined,
       errors: component.errors,
       valid: component.valid
     }

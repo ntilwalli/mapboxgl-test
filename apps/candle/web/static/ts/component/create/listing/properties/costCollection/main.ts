@@ -4,7 +4,7 @@ import isolate from '@cycle/isolate'
 import Immutable = require('immutable')
 import {combineObj, createProxy} from '../../../../../utils'
 import clone = require('clone')
-import {CostOptions, TierPerkOptions} from '../../../../../listingTypes'
+import {CostOptions, TierPerkOptions, UndefinedOption} from '../../../../../listingTypes'
 import {default as Cost, getDefault as getCostDefault} from '../cost/main'
 //import {default as TierCost, getDefault as getTierCostDefault} from '../tierCost/main'
 import {default as FullTierCost, getDefault as getFullTierCostDefault} from '../fullTierCost/main'
@@ -61,14 +61,8 @@ function reducers(actions, inputs) {
       const item = x[0]
 
       const transferrable_cost_type = item.data.type !== CostOptions.COVER_OR_MINIMUM_PURCHASE
-      const transferrable_perk_type = item.data.perk.type === TierPerkOptions.NO_PERK
       if (transferrable_cost_type) {
-        if (!transferrable_perk_type) {
-          item.data['perk'] = {
-            type: TierPerkOptions.NO_PERK
-          }
-        }
-
+        item.data['perk'] = undefined
         new_state = new_state.set(0, Immutable.fromJS(item))
       } else {
         new_state = state.set(0, Immutable.fromJS(add_structure(getFullTierCostDefault())))
@@ -135,7 +129,7 @@ export default function main(sources, inputs) {
         ]
 
         perk_options = [
-          TierPerkOptions.NO_PERK,
+          UndefinedOption,
           TierPerkOptions.DRINK_TICKET
         ]
 
@@ -149,7 +143,7 @@ export default function main(sources, inputs) {
         ]
 
         perk_options = [
-          TierPerkOptions.NO_PERK,
+          UndefinedOption,
           TierPerkOptions.MINUTES,
           TierPerkOptions.SONGS,
           TierPerkOptions.PRIORITY_ORDER,

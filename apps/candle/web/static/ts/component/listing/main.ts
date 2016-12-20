@@ -1,9 +1,9 @@
 import {Observable as O} from 'rxjs'
 import {div, span, button, nav, a} from '@cycle/dom'
-import {combineObj, inflateListing, processHTTP, componentify, spread, defaultNever} from '../../utils'
+import {combineObj, processHTTP, componentify, spread, defaultNever} from '../../utils'
 import Immutable = require('immutable')
 import {renderMenuButton, renderLoginButton, renderSearchCalendarButton, renderUserProfileButton} from '../helpers/navigator'
-
+import {inflateListing} from '../helpers/listing/utils'
 import {main as Profile} from './profile/main'
 import {main as Invalid} from './invalid'
 
@@ -13,12 +13,17 @@ const routes = [
   {pattern: /.*/, value: {type: "error"}}
 ]
 
+const Loader = () => ({
+  DOM: O.of(undefined)
+})
+
 const onlySuccess = x => x.type === "success"
 const onlyError = x => x.type === "error"
 
 function drillInflate(result) {
   // console.log(result)
   result.listing = inflateListing(result.listing)
+  result.children.map(inflateListing)
   return result
 }
 
@@ -37,12 +42,53 @@ function intent(sources) {
     .pluck(`data`)
     .publish().refCount()
 
+  const show_menu$ = DOM.select(`.appShowMenuButton`).events(`click`)
+  const brand_button$ = DOM.select(`.appBrandButton`).events(`click`)
   return {
     listing$,
     not_found$,
+    show_menu$,
+    brand_button$
   }
 }
 
+
+function renderNavigator(state) {
+  const {authorization} = state
+  const authClass = authorization ? 'Logout' : 'Login'
+  return nav('.navbar.navbar-light.bg-faded.container-fluid.pos-f-t', [
+    div('.row.no-gutter', [
+      div('.col-xs-6', [
+        a('.btn.btn-link', {attrs: {href: '/'}}, [
+          span({style: {display: "table"}}, [
+            span('.appBackToSearch.fa.fa-2x.fa-angle-left.mr-1', []),
+            span({style: {display: "table-cell", "vertical-align": "middle"}}, ['Back to search'])
+          ])
+        ])
+      ]),
+      // div('.col-xs-2', {style: {"text-align": "center"}},  [
+      //   div('.hopscotch-icon.btn.btn-link.nav-brand', []),
+      // ]),
+      div('.col-xs-6', [
+        button('.appShowMenuButton.fa.fa-bars.btn.btn-link.float-xs-right', []),
+      ]),
+    ])
+  ])
+}
+
+
+function view(authorization, components) {
+  return combineObj({authorization, components: combineObj(components)})
+    .map((info: any) => {
+      const {authorization, components} = info
+      return div('.screen', [
+        renderNavigator({authorization}),
+        components.content ? div('.content-section.listing-profile', [
+          components.content
+        ]) : span('.loader')
+      ])
+    })
+}
 
 
 export default function main(sources, inputs): any {
@@ -57,26 +103,30 @@ export default function main(sources, inputs): any {
 
   const error$ = route$
     .filter(route => route.value.info.type === 'error')
-    .map(x => Invalid(sources, inputs))
+    
 
+  const invalid$ = error$.map(x => Invalid(sources, inputs))
+
+  const send_to_http$ = success$
+    .filter(route => !route.location.state)
+    .publishReplay(1).refCount()
+
+  const waiting$ = send_to_http$.map(_ => {
+    return Loader()
+  })
 
   const profile$ = success$
     .filter(route => route.location.state)
     .map(route => {
-      const {type} = route.value.info
-      if (type === "error") {
-        return Invalid(sources, inputs)
-      } else {
-        return Profile(
-          {...sources, Router: Router.path(route.path.substring(1))}, 
-          {...inputs, props$: O.of(drillInflate(route.location.state))}
-        )
-      }
+      return Profile(
+        {...sources, Router: Router.path(route.path.substring(1))}, 
+        {...inputs, props$: O.of(drillInflate(route.location.state))}
+      )
     })
 
-  const component$ = O.merge(profile$, error$).publishReplay(1).refCount()
+  const content$ = O.merge(profile$, invalid$, waiting$).publishReplay(1).refCount()
 
-  const component = componentify(component$)
+  const content = componentify(content$)
 
   const to_router$ = O.merge(
     actions.listing$.map(result => { 
@@ -103,8 +153,7 @@ export default function main(sources, inputs): any {
     })//.switchMap(x => O.from(x))
   )
 
-  const to_http$ = success$
-    .filter(route => !route.location.state)
+  const to_http$ = send_to_http$
     .map(route => route.path.substring(1))
     .map(listing_id => {
       return {
@@ -121,8 +170,10 @@ export default function main(sources, inputs): any {
 
 
   return {
-    ...component,
-    HTTP: O.merge(component.HTTP, to_http$),
-    Router: O.merge(component.Router, to_router$)
+    ...content,
+    DOM: view(inputs.Authorization.status$, {content: content.DOM}),
+    HTTP: O.merge(content.HTTP, to_http$),
+    Router: O.merge(content.Router, to_router$, actions.brand_button$.mapTo('/')),
+    MessageBus: actions.show_menu$.mapTo({to: `main`, message: `showLeftMenu`})
   }
 }

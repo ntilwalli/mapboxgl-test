@@ -73,7 +73,7 @@ function renderNavigator(state) {
   return nav('.navbar.navbar-light.bg-faded.container-fluid.pos-f-t', [
     div('.row.no-gutter', [
       div('.col-xs-4', [
-        a('.hopscotch-icon.btn.btn-link.nav-brand', {attrs: {href: '#'}}, []),
+        button('.appBrandButton.hopscotch-icon.btn.btn-link.nav-brand', []),
       ]),
       div('.col-xs-4', [
         renderDateController(state),
@@ -98,11 +98,7 @@ function renderContent(info) {
 }
 
 function renderLoader() {
-  return div(`.retrieving-panel`, [
-    div(`.loader-container`, [
-      div(`.loader`)
-    ])
-  ])
+  return div('.loader', [])
 }
 
 function view(state$, components) {
@@ -116,7 +112,7 @@ function view(state$, components) {
     const {showFilters} = state
     const {grid, filters} = components
 
-    return div(`.search-results.one-day`, {class: {"no-scroll": showFilters}}, [
+    return div(`.screen.search-results.one-day`, {class: {"no-scroll": showFilters}}, [
       renderNavigator(state),
       renderContent(info),
       showFilters ? filters : null

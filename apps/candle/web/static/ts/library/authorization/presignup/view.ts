@@ -23,35 +23,6 @@ function renderSignupButton(state) {
   ])
 }
 
-// function renderSignupButton(state) {
-//   return div(`.form-group`, [
-//     input(
-//       `.appSignUpButton.btn.btn-block.btn-primary`,
-//       {attrs: {type: `button`, value: `Sign up`, disabled: !state.valid}})
-//   ])
-// }
-
-// function renderAccountTypes(state) {
-//   const accType = state.type
-//   const individual = accType === `individual`
-//   const group = state.accountType === `group`
-
-//   return div(`.form-group.account-type`, [
-//     div(`.radio-inline`, [
-//       input(
-//         `.appAccountTypeIndividual`,
-//         {attrs: {name: `type`, type: `radio`, value: `individual`, checked: individual}}),
-//       `Individual`
-//     ]),
-//     div(`.radio-inline`, [
-//       input(
-//         `.appAccountTypeGroup`,
-//         {attrs: {name: `type`, type: `radio`, value: `group`, checked: group}}),
-//       `Performer group`
-//     ])
-//   ])
-// }
-
 function renderBody({state, components}) {
 
   const {email} = state
