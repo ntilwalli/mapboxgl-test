@@ -2,7 +2,7 @@ import {Observable as O} from 'rxjs'
 import {div} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 import Immutable = require('immutable')
-import PerformerSignup from './performerSignUp/main'
+import PerformerSignup from './newPerformerSignUp/main'
 //import PerformerCheckIn from './performerCheckIn/main'
 import PerformerCheckIn from './togglePerformerCheckIn/main'
 import Cost from './cost/main'
