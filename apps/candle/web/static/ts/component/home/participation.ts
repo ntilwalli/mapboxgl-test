@@ -33,6 +33,39 @@ function intent(sources) {
   }
 }
 
+function reducers(actions, inputs) {
+  const selected_check_in_r = inputs.selected_check_in$.map(x => state => {
+    return state.set(`selected_check_in`, x)
+  })
+
+  const check_ins_r = actions.check_ins$.map(x => state => {
+    return state.set('check_ins', x)
+  })
+
+  return O.merge(check_ins_r, selected_check_in_r)
+}
+
+function model(actions, inputs) {
+  const reducer$ = reducers(actions, inputs)
+  
+  return inputs.Authorization.status$
+    .map(authorization => {
+      return { 
+        selected_check_in: undefined,
+        check_ins: undefined
+      }
+    })
+    .map(x => Immutable.Map(x))
+    .switchMap(init => {
+      return reducer$
+        .startWith(init)
+        .scan((acc, f: Function) => f(acc))
+    })
+    .map(x => x.toJS())
+    //.do(x => console.log(`home/profile state`, x))
+    .publishReplay(1).refCount()
+}
+
 function render_check_in(info) {
   return div(`.check-in`, [
     span([info.listing_name]),
@@ -61,19 +94,10 @@ function render_selected_check_in_date(info) {
   ])
 }
 
-function render_profile_info(authorization, profile) {
-  return div(`.info`, [
-    div([authorization.name]),
-    div([`(@${authorization.username})`])
-  ])
-}
-
 function render_participation(info) {
   const {state, components} = info
-  const {authorization, profile, selected_check_in} = state
+  const {authorization, selected_check_in} = state
   const {check_in_grid} = components
-
-
 
   return div(`.participation`, [
     span(`.heading`, [
@@ -84,56 +108,23 @@ function render_participation(info) {
   ])
 }
 
-function reducers(actions, inputs) {
-  const selected_check_in_r = inputs.selected_check_in$.map(x => state => {
-    return state.set(`selected_check_in`, x)
-  })
 
-  const check_ins_r = actions.check_ins$.map(x => state => {
-    return state.set('check_ins', x).set('waiting', false)
-  })
-
-  const waiting_r = inputs.to_http$.map(x => state => {
-    return state.set('waiting', true)
-  })
-
-  return O.merge(selected_check_in_r)
-}
-
-function model(actions, inputs) {
-  const reducer$ = reducers(actions, inputs)
-  
-  return inputs.Authorization.status$
-    .map(authorization => {
-      return {
-        authorization, 
-        selected_check_in: undefined,
-        check_ins: undefined,
-        waiting: true
-      }
+function view(state$, components) {
+  return combineObj({
+      state$,
+      components: combineObj(components)
+    }).map((info: any) => {
+      return render_participation(info)
     })
-    .map(x => Immutable.Map(x))
-    .switchMap(init => {
-      return reducer$
-        .startWith(init)
-        .scan((acc, f: Function) => f(acc))
-    })
-    .map(x => x.toJS())
-    //.do(x => console.log(`home/profile state`, x))
-    .publishReplay(1).refCount()
 }
-
 
 export default function main(sources, inputs) {
   const actions = intent(sources)
-
   const check_in_grid = CheckInGrid(sources, inputs)
+  const state$ = model(actions, {...inputs, selected_check_in$: check_in_grid.output$})
 
   return {
-    DOM: O.of(div('.row', [
-      div('.col-xs-12', [
-        'Participation'
-      ])
-    ]))
+    ...check_in_grid,
+    DOM: view(state$, {check_in_grid: check_in_grid.DOM})
   }
 }

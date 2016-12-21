@@ -115,7 +115,7 @@ address {
   &.no-gutter > [class^="col-"], &.no-gutter > [class^=" col-"] {
     padding-right: 0;
     padding-left: 0;
-  }
+  } 
 
   &.gutter-8 {
     margin-right: -8px;
@@ -237,6 +237,9 @@ address {
   text-align: left;
 }
 
+.hover-bg-verylightgray:hover {
+  background-color: #EEEEEE;
+}
 
 
 @font-face {

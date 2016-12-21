@@ -96,12 +96,21 @@ function view(state$, components) {
       const {state, components} = info
       //const {authorization, profile, selected_check_in} = state
       const {profile_info, my_listings, participation} = components
+      const show_waiting = !(profile_info && my_listings && participation)
       return div(`.screen.user-profile`, [
         renderNavigator(state),
-        div('.container-fluid', [
-          components.profile_info,
-          components.my_listings,
-          components.participation
+        show_waiting ? div('.loader', []) : div('.container-fluid.mt-1', [
+          profile_info,
+          div('.row.mt-1', [
+            div('.col-xs-12', [
+              my_listings 
+            ])
+          ]),
+          div('.row.mt-1', [
+            div('.col-xs-12', [
+              participation 
+            ])
+          ])
         ])
       ])
     })
