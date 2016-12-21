@@ -12,6 +12,7 @@ function intent(sources) {
   const signup$ = DOM.select(`.appShowSignupButton`).events(`click`)
   const show_settings$ = DOM.select(`.appShowSettingsButton`).events(`click`)
   const show_create_workflow$ = DOM.select(`.appShowCreateWorkflowButton`).events(`click`)
+  const show_profile$ = DOM.select(`.appShowProfileButton`).events(`click`)
   const brand_button$ = DOM.select('.appBrandButton').events('click')
   return {
     close$,
@@ -20,6 +21,7 @@ function intent(sources) {
     signup$,
     show_settings$,
     show_create_workflow$,
+    show_profile$,
     brand_button$
   } 
 }
@@ -48,6 +50,9 @@ function view(auth$) {
           div(`.main-menu-modal`, [
             renderNavigator({authorization: auth}),
             ul('.list-unstyled.menu-items', [
+              auth ? li([
+                button(`.btn.btn-link`, {class: {appShowProfileButton: true}}, [`Profile`]) 
+              ]) : null,
               auth ? li([
                 button(`.btn.btn-link`, {class: {appShowCreateWorkflowButton: true}}, [`Add New Listing`]) 
               ]) : null,
@@ -80,6 +85,11 @@ export default function main(sources, inputs) {
         }),
         actions.show_create_workflow$.mapTo({
           pathname: `/create`,
+          type: 'push',
+          actions: 'PUSH'
+        }),
+        actions.show_profile$.mapTo({
+          pathname: `/home`,
           type: 'push',
           actions: 'PUSH'
         }),

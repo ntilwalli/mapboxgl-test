@@ -99,6 +99,11 @@ address {
     padding-right: 0;
     padding-left: 0;
   }
+
+  &.gutter-8 {
+    padding-right: 8px;
+    padding-left: 8px;
+  }
 }
 
 .row {
@@ -118,8 +123,8 @@ address {
   }
 
   &.gutter-8 > [class^="col-"], &.gutter-8 > [class^=" col-"] {
-    padding-right: 4px;
-    padding-left: 4px;
+    padding-right: 8px;
+    padding-left: 8px;
   }
 }
 
@@ -231,6 +236,8 @@ address {
   white-space: normal;
   text-align: left;
 }
+
+
 
 @font-face {
   font-family: Corona4Typewriter;
