@@ -1,5 +1,5 @@
 import {Observable as O} from 'rxjs'
-import {div, span, button, hr} from '@cycle/dom'
+import {div, span, button, hr, nav} from '@cycle/dom'
 import Immutable = require('immutable')
 import {ListingTypes, deflateDates} from '../../helpers/listing/utils'
 
@@ -110,6 +110,7 @@ function intent(sources) {
   }).publishReplay(1).refCount()
 
   const open_instruction$ = DOM.select(`.appOpenInstruction`).events(`click`)
+  const brand_button$ = DOM.select(`.appBrandButton`).events(`click`)
   const close_instruction$ = O.merge(
     Global.resize$,
     DOM.select(`.appCloseInstruction`).events(`click`)
@@ -129,7 +130,8 @@ function intent(sources) {
     open_instruction$,
     close_instruction$,
     show_menu$,
-    save_exit$
+    save_exit$,
+    brand_button$
   }
 }
 
@@ -193,7 +195,7 @@ function getStepHeading(state) {
 
   switch (current_step) {
     case 'meta':
-      return 'Step 1/5: Title + type?'
+      return 'Step 1/5: Meta stuff'
     case 'donde':
       return 'Step 2/5: Set the venue'
     case 'cuando':
@@ -211,24 +213,41 @@ function getStepHeading(state) {
   }
 }
 
-function renderNavigator(state: any) {
-  const {waiting} = state
-  return div(`.navigator-section`, [
-    div(`.section`, [
-      renderMenuButton(),
-      span(`.step-description`, [
-        span(`.show-lg`, [getStepHeading(state)]),
-        span(`.show-sm`, [getStepHeading(state)])
-      ])
-    ]),
-    div(`.section`, [
-      div(`.buttons`, [
-        waiting ? renderCircleSpinner() : null,
-        renderSaveExitButton()
-      ])
+function renderNavigator(state) {
+  const {authorization} = state
+  const authClass = authorization ? 'Logout' : 'Login'
+  return nav('.navbar.navbar-light.bg-faded.container-fluid.pos-f-t', [
+    div('.row.no-gutter', [
+      div('.col-xs-6', [
+        button('.appBrandButton.hopscotch-icon.btn.btn-link.nav-brand', []),
+        span('.ml-1', [getStepHeading(state)])
+      ]),
+      div('.col-xs-6', [
+        button(`.appSaveExitButton.text-button.btn.btn-link.float-xs-right`, [`Save/Exit`])
+        //button('.appShowMenuButton.fa.fa-bars.btn.btn-link.float-xs-right', [])
+      ]),
     ])
   ])
 }
+
+// function renderNavigator(state: any) {
+//   const {waiting} = state
+//   return div(`.navigator-section`, [
+//     div(`.section`, [
+//       renderMenuButton(),
+//       span(`.step-description`, [
+//         span(`.show-lg`, [getStepHeading(state)]),
+//         span(`.show-sm`, [getStepHeading(state)])
+//       ])
+//     ]),
+//     div(`.section`, [
+//       div(`.buttons`, [
+//         waiting ? renderCircleSpinner() : null,
+//         renderSaveExitButton()
+//       ])
+//     ])
+//   ])
+// }
 
 function renderMainContent(info: any) {
   return div(`.main-content`, [
@@ -290,7 +309,7 @@ function view(state$, components) {
   }).map((info: any) => {
     const {state, components} = info
     const {show_instruction} = state
-    return div(`.create-component`, [
+    return div(`.screen.create-component`, [
       renderNavigator(state),
       div(`.content-section`, [
         div(`.content`, [
@@ -449,6 +468,7 @@ function main(sources, inputs) {
      ).publish().refCount(),
       //.do(x => console.log(`to http`, x)),
      Router: O.merge(
+       actions.brand_button$.mapTo('/'), 
        actions.success_save$
          .delay(4)
          .map(val => {

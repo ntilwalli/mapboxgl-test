@@ -1,5 +1,5 @@
 import {Observable as O} from 'rxjs'
-import {div, span, input, textarea} from '@cycle/dom'
+import {div, span, input, textarea, label} from '@cycle/dom'
 import Immutable = require('immutable')
 import {combineObj} from '../../../../utils'
 import {
@@ -189,66 +189,79 @@ function view(state$, components) {
       const {type, meta} = listing
       const {name, description, event_types, categories} = meta
 
-      return div(`.workflow-step`, [
-        div(`.heading`, []),
-        div(`.body`, [
-          div(`.column.margin-bottom`, [
-            div(`.sub-heading`, ['Listing type']),
-            div(`.row`, [
-              div(`.radio-input`, [
-                input(`.appTypeInput`, {attrs: {type: 'radio', name: 'listingType', value: ListingTypes.SINGLE, checked: type === ListingTypes.SINGLE}}, []),
-                span(`.title`, ['Single'])
+      return div(`.row`, [
+        div('.col-xs-12', [
+          div(`.form-group`, [
+            label('.mr-1', {attrs: {for: 'listingType'}}, ['Listing type']),
+            //div('.form-check', [
+            div([
+              label('.form-check-inline', [
+                input(`.appTypeInput.form-check-input`, {attrs: {type: 'radio', name: 'listingType', value: ListingTypes.SINGLE, checked: type === ListingTypes.SINGLE}}, []),
+                span('.ml-xs', ['Single'])
               ]),
-              div(`.radio-input`, [
-                input(`.appTypeInput`, {attrs: {type: 'radio', name: 'listingType', value: ListingTypes.RECURRING, checked: type === ListingTypes.RECURRING}}, []),
-                span(`.title`, ['Recurring'])
+            //]),
+            //div('.form-check', [
+              label('.form-check-inline', [
+                input(`.appTypeInput.form-check-input`, {attrs: {type: 'radio', name: 'listingType', value: ListingTypes.RECURRING, checked: type === ListingTypes.RECURRING}}, []),
+                span('.ml-xs', ['Recurring'])
               ])
+            //])
             ])
           ]),
-          div(`.column.margin-bottom`, [
-            div(`.sub-heading`, ['Name']),
-            div(`.input`, [
-              input(`.appNameInput.full-width`, {attrs: {type: 'text', value: name || ''}}, [])
+          div('.form-group', [
+            label({attrs: {for: 'listingName'}}, ['Name']),
+            input(`.appNameInput.form-control`, {attrs: {type: 'text', name: 'listingName', value: name || ''}}, [])
+          ]),
+          div('.form-group', [
+            label({attrs: {for: 'description'}}, ['Description']),
+            textarea(`.appDescriptionInput.form-control`, {attrs: {name: 'description'}}, [
+                description || ''
             ])
           ]),
-          div(`.column.margin-bottom`, [
-            div(`.sub-heading`, [`Description`]),
-            textarea(`.appDescriptionInput`, [
-              description || ''
-            ])
-          ]),
-          div(`.column.margin-bottom`, [
-            div(`.sub-heading`, ['Event types']),
-            div(`.row`, [
-              div(`.checkbox-input`, [
-                input(`.appEventTypeInput`, {attrs: {type: 'checkbox', name: 'event_types', value: EventTypes.OPEN_MIC, checked: event_types.some(x => x === EventTypes.OPEN_MIC)}}, []),
-                span(`.title`, ['open-mic'])
+          div(`.form-group`, [
+            label('.mr-1', {attrs: {for: 'eventTypes'}}, ['Event type']),
+            //div('.form-check', [
+            div([
+              label('.form-check-inline', [
+                input(`.appEventTypeInput.form-check-input`, {attrs: {type: 'checkbox', name: 'eventTypes', value: EventTypes.OPEN_MIC, checked: type === EventTypes.OPEN_MIC}}, []),
+                span('.ml-xs', ['open-mic'])
               ]),
-              div(`.checkbox-input`, [
-                input(`.appEventTypeInput`, {attrs: {type: 'checkbox', name: 'event_types', value: EventTypes.SHOW, checked: event_types.some(x => x === EventTypes.SHOW)}}, []),
-                span(`.title`, ['show'])
+            //]),
+            //div('.form-check', [
+              label('.form-check-inline', [
+                input(`.appEventTypeInput.form-check-input`, {attrs: {type: 'checkbox', name: 'eventTypes', value: EventTypes.SHOW, checked: type === EventTypes.SHOW}}, []),
+                span('.ml-xs', ['show'])
               ])
+            //])
             ])
           ]),
-          div(`.column.margin-bottom`, [
-            div(`.sub-heading`, ['Categories']),
-            div(`.row`, [
-              div(`.checkbox-input`, [
-                input(`.appCategoriesInput`, {attrs: {type: 'checkbox', name: 'categories', value: CategoryTypes.COMEDY, checked: categories.some(x => x === CategoryTypes.COMEDY)}}, []),
-                span(`.title`, ['comedy'])
+          div(`.form-group`, [
+            label({attrs: {for: 'categories'}}, ['Categories']),
+            div([
+            //div('.form-check', [
+              label('.form-check-inline', [
+                input(`.appCategoriesInput.form-check-input`, {attrs: {type: 'checkbox', name: 'categories', value: CategoryTypes.COMEDY, checked: type === CategoryTypes.COMEDY}}, []),
+                span('.ml-xs', ['comedy'])
               ]),
-              div(`.checkbox-input`, [
-                input(`.appCategoriesInput`, {attrs: {type: 'checkbox', name: 'categories', value: CategoryTypes.MUSIC, checked: event_types.some(x => x === CategoryTypes.MUSIC)}}, []),
-                span(`.title`, ['music'])
+            //]),
+            //div('.form-check', [
+              label('.form-check-inline', [
+                input(`.appCategoriesInput.form-check-input`, {attrs: {type: 'checkbox', name: 'categories', value: CategoryTypes.MUSIC, checked: type === CategoryTypes.MUSIC}}, []),
+                span('.ml-xs', ['music'])
               ]),
-              div(`.checkbox-input`, [
-                input(`.appCategoriesInput`, {attrs: {type: 'checkbox', name: 'categories', value: CategoryTypes.POETRY, checked: categories.some(x => x === CategoryTypes.POETRY)}}, []),
-                span(`.title`, ['poetry'])
+            //]),
+            //div('.form-check', [
+              label('.form-check-inline', [
+                input(`.appCategoriesInput.form-check-input`, {attrs: {type: 'checkbox', name: 'categories', value: CategoryTypes.POETRY, checked: type === CategoryTypes.POETRY}}, []),
+                span('.ml-xs', ['poetry'])
               ]),
-              div(`.checkbox-input`, [
-                input(`.appCategoriesInput`, {attrs: {type: 'checkbox', name: 'categories', value: CategoryTypes.STORYTELLING, checked: event_types.some(x => x === CategoryTypes.STORYTELLING)}}, []),
-                span(`.title`, ['storytelling'])
+            //]),
+            //div('.form-check', [
+              label('.form-check-inline', [
+                input(`.appCategoriesInput.form-check-input`, {attrs: {type: 'checkbox', name: 'categories', value: CategoryTypes.STORYTELLING, checked: type === CategoryTypes.STORYTELLING}}, []),
+                span('.ml-xs', ['storytelling'])
               ])
+            //])
             ])
           ])
         ])

@@ -1,5 +1,5 @@
 import {Observable as O} from 'rxjs'
-import {div, button} from '@cycle/dom'
+import {div, button, nav} from '@cycle/dom'
 import Immutable = require('immutable')
 import {combineObj} from '../../utils'
 import {
@@ -10,15 +10,13 @@ import {
 function intent(sources) {
   const {DOM} = sources
   const show_menu$ = DOM.select(`.appShowMenuButton`).events(`click`)
-  const show_user_profile$ = DOM.select(`.appShowUserProfileButton`).events(`click`)
-  const show_search_calendar$ = DOM.select(`.appShowSearchCalendarButton`).events(`click`)
+  const brand_button$ = DOM.select(`.appBrandButton`).events(`click`)
   const create_new_listing$ = DOM.select(`.appCreateNewListing`).events(`click`)
   
   return {
     show_menu$,
-    show_user_profile$,
-    show_search_calendar$,
-    create_new_listing$
+    create_new_listing$,
+    brand_button$
   }
 }
 
@@ -44,15 +42,15 @@ function model(actions, inputs) {
 
 function renderNavigator(state) {
   const {authorization} = state
-  //const authClass = authorization ? `Logout` : `Login`
-  //console.log(authorization)
-  return div(`.navigator-section`, [
-    div(`.section`, [
-      renderMenuButton()
-    ]),
-    div(`.section`, [
-      renderSearchCalendarButton(),
-      renderUserProfileButton()
+  const authClass = authorization ? 'Logout' : 'Login'
+  return nav('.navbar.navbar-light.bg-faded.container-fluid', [
+    div('.row.no-gutter', [
+      div('.col-xs-6', [
+        button('.appBrandButton.hopscotch-icon.btn.btn-link.nav-brand', []),
+      ]),
+      div('.col-xs-6', [
+        button('.appShowMenuButton.fa.fa-bars.btn.btn-link.float-xs-right', [])
+      ]),
     ])
   ])
 }
@@ -80,21 +78,14 @@ function main(sources, inputs) {
   return {
     DOM: vtree$,
     Router: O.merge(
-      actions.show_search_calendar$.mapTo({
-        pathname: `/`,
-        type: `push`
-      }),
-      actions.show_user_profile$.mapTo({
-        pathname: `/home`,
-        type: `push`
-      }),
       actions.create_new_listing$.map(x => ({
         pathname: `/create/listing`,
         type: `push`,
         state: {
           type: `new`
         }
-      }))
+      })),
+      actions.brand_button$.map(x => '/')
     ),
     MessageBus: O.merge(
       actions.show_menu$.mapTo({to: `main`, message: `showLeftMenu`})
