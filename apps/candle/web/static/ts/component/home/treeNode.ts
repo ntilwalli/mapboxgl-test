@@ -3,6 +3,7 @@ import Immutable = require('immutable')
 import {div, button, img, span, i, a} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 import {combineObj, mergeSinks, componentify} from '../../utils'
+import moment = require('moment')
 
 function getListingLine(listing) {
   const {type, parent_id, cuando, meta} = listing
@@ -99,13 +100,16 @@ export default function main(sources, inputs) {
   const children$ = shared$.pluck('children').map(x => x && x.length ? x : undefined)
     .map(children => {
       if (children && children.length) {
-        const items = children.map(x => {
-          return isolate(main)(sources, {...inputs, props$: O.of({listing: x, children: []})})
-        })
-        const merged = mergeSinks(...items)
+        const now = moment()
+        const items = children.sort((x, y) => x.cuando.begins - y.cuando.begins).filter(x => x.cuando.begins > now)
+        const sorted = items.map(x => {
+            return isolate(main)(sources, {...inputs, props$: O.of({listing: x, children: []})})
+          })
+
+        const merged = mergeSinks(...sorted)
         return {
           ...merged,
-          DOM: O.combineLatest(...items.map(x => x.DOM)).do(x => {
+          DOM: O.combineLatest(...sorted.map(x => x.DOM)).do(x => {
               console.log('children DOM', x)
             })
         }

@@ -6,30 +6,8 @@ import moment = require('moment')
 
 const {g, rect} = svg
 
-const onlySuccess = x => x.type === "success"
-const onlyError = x => x.type === "error"
-
-function inflateCheckIn(result) {
-  result.check_in_datetime = moment(result.check_in_datetime)
-  result.listing_datetime = moment(result.listing_datetime)
-  return result
-}
-
 function intent(sources) {
   const {DOM, HTTP} = sources
-  const {good$, bad$, ugly$} = processHTTP(sources, `homeCheckIns`)
-  const check_ins$ = good$
-    //.do(x => console.log(`got home/check_ins response`, x))
-    .filter(onlySuccess)
-    .pluck(`data`)
-    .pluck(`check_ins`)
-    .map(x => x.map(inflateCheckIn))
-    .publish().refCount()
-  
-  const error$ = good$
-    .filter(onlyError)
-    .pluck(`data`)
-    .publish().refCount()
 
   const mouseenter$ = DOM.select(`.check-in-grid`).select(`.day`).events(`mouseenter`)
     .map(ev => (ev.target))
@@ -43,8 +21,6 @@ function intent(sources) {
     .publishReplay(1).refCount()
 
   return {
-    check_ins$,
-    error$,
     mouseenter$,
     mouseleave$,
     click$
@@ -62,18 +38,6 @@ function getEmptyBuckets() {
 
 function reducers(actions, inputs) {
 
-  const check_ins_r = actions.check_ins$.map(check_ins => state => {
-    const buckets = getEmptyBuckets()
-    //console.log(buckets)
-    check_ins.forEach(x => {
-      //console.log(x.check_in_datetime)
-      //console.log(x.check_in_datetime.date())
-      buckets[x.check_in_datetime.date()].push(x)
-    })
-    //console.log(`buckets`, buckets)
-    return state.set(`buckets`, buckets).set(`in_flight`, false)
-  })
-
   const mouseenter_r = actions.mouseenter$.map(x => state => {
     return state.set(`hover_element`, x)
   })
@@ -86,19 +50,22 @@ function reducers(actions, inputs) {
     return state.set(`click_element`, x)
   })
 
-  return O.merge(check_ins_r, mouseenter_r, mouseleave_r, day_selected_r)
+  return O.merge(mouseenter_r, mouseleave_r, day_selected_r)
 }
 
 function model(actions, inputs) {
   const reducer$ = reducers(actions, inputs)
 
-  return inputs.props$.map(buckets => {      
+  return inputs.props$.map(check_ins => {     
+      const buckets = getEmptyBuckets()
+      check_ins.forEach(x => {
+        buckets[x.check_in_datetime.date()].push(x)
+      })
+
       return {
-        buckets: undefined,
-        in_flight: true,
+        buckets,
         hover_element: null,
-        click_element: null,
-        begins: moment().subtract(28, 'days')
+        click_element: null
       }
     })
     .map(x => Immutable.Map(x))
@@ -168,7 +135,7 @@ function renderTooltip(el) {
   const y = boundingRect.top - 40
   return div({style: {position: "fixed", fontSize: "90%", top: `${y}px`, left: `${x}px`, color: "white", padding: ".5rem", backgroundColor: "rgba(0, 0, 0, 0.8)"}}, [
     strong([`${count ? count : 'No'} mics`]),
-    `, ${date.format('LL')}`
+    ', ' + date.format('LL')
   ])
 }
 
@@ -242,7 +209,7 @@ function view(state$) {
 
 export function main(sources, inputs) {
   const actions = intent(sources)
-  const state$ = model(actions, {props$: O.of(undefined)})
+  const state$ = model(actions, inputs)
   const vtree$ = view(state$) 
   return {
     output$: state$
@@ -257,25 +224,6 @@ export function main(sources, inputs) {
           check_ins: bucket
         }
       }),
-    DOM: vtree$,
-    HTTP: state$.map(state => state.begins.clone())
-      .distinctUntilChanged((x, y) => {
-        const isSame = x.isSame(y)
-        return isSame
-      })
-      .map(begins => {
-        return {
-          url: `/api/user`,
-          method: `post`,
-          category: `homeCheckIns`,
-          send: {
-            route: `/home/check_ins`,
-            data: {
-              begins: begins,
-              ends: begins.clone().add(28, 'days')
-            }
-          }
-        }
-      })
+    DOM: vtree$
   }
 }
