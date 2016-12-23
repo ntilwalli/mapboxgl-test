@@ -217,6 +217,10 @@ address {
 }
 
 
+.dropdown-item {
+  padding-left: .75rem;
+  padding-right: .75rem;
+}
 
 .dropdown-item.highlight {
   color: #2b2d2f;
@@ -250,6 +254,14 @@ address {
 
 .hover-bg-verylightgray:hover {
   background-color: #EEEEEE;
+}
+
+button.close:focus {
+  outline: none;
+}
+
+button.close::after {
+  content: '×';
 }
 
 

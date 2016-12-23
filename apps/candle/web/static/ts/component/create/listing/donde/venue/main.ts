@@ -1,6 +1,6 @@
 import {Observable as O} from 'rxjs'
 
-import {div, input, select, option, h5, li, span} from '@cycle/dom'
+import {div, input, select, option, h5, li, span, strong, button} from '@cycle/dom'
 import Immutable = require('immutable')
 import {combineObj, createProxy, spread} from '../../../../../utils'
 import {toLngLatArray, createFeatureCollection} from '../../../../../mapUtils'
@@ -52,30 +52,30 @@ function view(state$, components) {
       const {state, components} = info
       const {venue_autocomplete} = components
       const {venue} = state
-      return div(`.venue-input`, [
-        div(`.input-section`, [
-          venue ? div(`.display`, [
-            div(`.name-address-container`, [
-              span(`.venue-name`, [getVenueName(venue)]),
-              span([`,`]),
-              span(`.venue-address`, [getVenueAddress(venue)])
-            ]),
-            span(`.appClearVenueButton.clear-button`, [])
-          ]) : div(`.autocomplete`, [
-            venue_autocomplete
-          ])
-        ]),
+      return div(`.row`, [
+        div(`.col-xs-12`, [
+          venue ? div('.row', [
+             span(`.col-xs-11.form-control-static.pt-0`, [
+              strong('.mr-1', [getVenueName(venue)]),
+              getVenueAddress(venue)
+             ]),
+            button(`.col-xs-1.appClearVenueButton.close`, {style: {position: "relative", top: "-.375rem"}, attrs: {type: "button"}}, [])
+          ]) : 
+            //div(`.autocomplete`, [
+              venue_autocomplete,
+            //]),
+          //]),
         venue ? //null
-          div(`.map`, [
+          div(`.row.map`, {style: {display: venue ? 'block' : 'none'}}, [
             div(`.location-info`, [
               div(`.name`, [getVenueName(venue)]),
               div(`.address`, [getVenueAddress(venue)])
             ]),
-            div(`#addSelectVenueMapAnchor`)
-          ]) 
-          : null
+            div(`#addSelectVenueMapAnchor.col-xs-12`)
+          ]) : null
       ])
-    })
+    ])
+  })
 }
 
 function mapview(state$) {

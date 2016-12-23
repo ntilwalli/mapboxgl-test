@@ -98,3 +98,27 @@
     }
   }
 }
+
+.create-component {
+  .donde {
+    .map {
+      position: relative;
+      height: 300px;
+
+      .location-info {
+        position: absolute;
+        z-index: 1;
+        background-color: white;
+        border: 1px solid black;
+        padding: .2rem;
+        top: .5rem;
+        right: .5rem;
+      }
+
+      #addSelectVenueMapAnchor {
+        height: 100%;
+        width: 100%;
+      }
+      }
+  }
+}
