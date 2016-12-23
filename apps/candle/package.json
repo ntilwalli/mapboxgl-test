@@ -42,7 +42,7 @@
     "phoenix_html": "file:../../deps/phoenix_html",
     "query-string": "^4.2.2",
     "rrule": "file:custom_deps/rrule",
-    "rxjs": "^5.0.1",
+    "rxjs": "^5.0.0-rc.2",
     "twitter-validate": "^1.0.4",
     "valid-url": "^1.0.9",
     "validator": "^5.2.0",
