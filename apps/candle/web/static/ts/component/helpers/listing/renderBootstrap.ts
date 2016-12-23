@@ -949,25 +949,31 @@ function getPerformerTierPerkString(cost) {
     if (cost.perk) {
       switch (cost.perk.type) {
         case TierPerkOptions.MINUTES:
-          out = stitchString(cost.perk.data, 'min')
+          out = '/' + stitchString(cost.perk.data, 'min')
+          break
+        case TierPerkOptions.MINUTES_AND_PRIORITY_ORDER:
+          out = '/' + stitchString(cost.perk.data, 'min')
           break
         case TierPerkOptions.ADDITIONAL_MINUTES:
-          out = stitchString(cost.perk.data, 'additional min')
+          out = '/' + stitchString(cost.perk.data, 'additional min')
           break
         case TierPerkOptions.ADDITIONAL_MINUTES_AND_PRIORITY_ORDER:
-          out = stitchString(cost.perk.data, 'additional min', 'priority order')
+          out = '/' + stitchString(cost.perk.data, 'additional min')
           break
         case TierPerkOptions.SONGS:
-          out = stitchString(cost.perk.data, 'song')
+          out = '/' + stitchString(cost.perk.data, 'song')
+          break
+        case TierPerkOptions.SONGS_AND_PRIORITY_ORDER:
+          out = '/' + stitchString(cost.perk.data, 'song')
           break
         case TierPerkOptions.ADDITIONAL_SONGS:
-          out = stitchString(cost.perk.data, 'additional song')
+          out = '/' + stitchString(cost.perk.data, 'additional song')
           break
         case TierPerkOptions.ADDITIONAL_SONGS_AND_PRIORITY_ORDER:
-          out = stitchString(cost.perk.data, 'additional song', 'priority order')
+          out = '/' + stitchString(cost.perk.data, 'additional song')
           break
         default:
-          out = cost.perk.type
+          out = '/' + cost.perk.type
       }
     } else {
       out = ''
@@ -977,7 +983,7 @@ function getPerformerTierPerkString(cost) {
 }
 
 function getPerformerCostTierString(cost) {
-  return getPerformerCostString(cost) + '/' + getPerformerTierPerkString(cost)
+  return getPerformerCostString(cost) + getPerformerTierPerkString(cost)
 }
 
 export function renderFullStageTime(stage_time) {
@@ -992,9 +998,13 @@ export function renderFullStageTime(stage_time) {
     if (stage_time.every(x => deepEqual(base, x))) {
       return span('.float-xs-right', [ '' + length + ' rounds: ' + getSingleRoundText(stage_time[0]) + ' per' ])
     } else {
-      return div('.float-xs-right', stage_time.map((s, index) => {
-        return div('row.float-xs-right', [
-          'Round ' + (index + 1) + ': ' + getSingleRoundText(s)
+      return div(stage_time.map((s, index) => {
+        return div('row', [
+          div('.col-xs-12', [
+            span('float-xs-right', [
+              'Round ' + (index + 1) + ': ' + getSingleRoundText(s)
+            ])
+          ])
         ])
       }))
     }
@@ -1009,9 +1019,13 @@ export function renderFullPerformerCost(performer_cost) {
   } else if (length === 1) {
     return span('.float-xs-right', [ getPerformerCostString(performer_cost[0]) ])
   } else {
-    return div('.float-xs-right', performer_cost.map((c, index) => {
-      return div('.row.float-xs-right', [
-        'Tier ' + (index + 1) + ': ' + getPerformerCostTierString(c)
+    return div(performer_cost.map((c, index) => {
+      return div('.row', [
+        div('.col-xs-12', [
+          span('.float-xs-right', [
+            'Tier ' + (index + 1) + ': ' + getPerformerCostTierString(c)
+          ])
+        ])
       ])
     }))
   }

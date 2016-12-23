@@ -10,10 +10,11 @@ defmodule Standard.TierPerk do
     field :data, :float
   end
 
+  @allowed_fields [:type, :data]
   @required_fields [:type]
   def changeset(schema, params \\ :empty) do
     schema
-    |> cast(params, @required_fields)
+    |> cast(params, @allowed_fields)
     |> validate_required(@required_fields)
     |> validate_inclusion(:type, [
       "drink_ticket",

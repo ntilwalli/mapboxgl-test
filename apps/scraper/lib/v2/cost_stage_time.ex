@@ -246,6 +246,9 @@ defmodule PerformerCostStageTime do
           }
         ]
 
+
+        IO.inspect "Display this one..."
+        IO.inspect cost
         stage_time = []
 
         {cost, stage_time}
