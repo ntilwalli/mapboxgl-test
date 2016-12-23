@@ -5,7 +5,7 @@ import Immutable = require('immutable')
 import {combineObj, createProxy, spread} from '../../../../../utils'
 import {toLngLatArray, createFeatureCollection} from '../../../../../mapUtils'
 
-import {createVenueAutocomplete} from '../../../../../library/venueAutocomplete'
+import {createVenueAutocomplete} from '../../../../../library/bootstrapVenueAutocomplete'
 import {getVenueName, getVenueAddress, getVenueLngLat} from '../../../../../helpers/donde'
 
 function reducers(actions, inputs) {

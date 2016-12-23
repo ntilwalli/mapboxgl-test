@@ -216,6 +216,14 @@ address {
 
 }
 
+
+
+.dropdown-item.highlight {
+  color: #2b2d2f;
+  text-decoration: none;
+  background-color: #f5f5f5;
+}
+
 // .form-control:focus {
 //   border-color: $crayola-orange;
 // }
@@ -231,6 +239,9 @@ address {
   background-color: $crayola-orange;
 }
 
+.v-align-initial {
+  vertical-align: initial;
+}
 
 .wrap-link {
   white-space: normal;

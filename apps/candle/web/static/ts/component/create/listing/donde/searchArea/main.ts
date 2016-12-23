@@ -6,7 +6,7 @@ import {toLngLatArray, geoToLngLat} from '../../../../../mapUtils'
 
 import FactualGeotagService from '../../../../../thirdParty/FactualGeotagService'
 import {getState} from '../../../../../states'
-import {createRegionAutocomplete} from '../../../../../library/regionAutocomplete'
+import {createRegionAutocomplete} from '../../../../../library/bootstrapRegionAutocomplete'
 import clone = require('clone')
 
 
@@ -85,14 +85,16 @@ function renderSearchAreaModalBody(info) {
   const {region} = state
   const {city_state} = region
   const {city, state_abbr} = city_state
-  return div(`.change-search-area-modal`, [
-    div(`.autocomplete`, [
-      components.autocomplete
-    ]),
-    div(`.map`, [
-      div(`.location-info-section`, [`${city}, ${state_abbr}`]),
-      div(`#changeSearchAreaMapAnchor`)
-    ])
+  return div(`.change-search-area-modal.row`, [
+    //div(`.autocomplete`, [
+      div('.col-xs-12', [
+        components.autocomplete,
+        div(`.map`, [
+          div(`.location-info-section`, [`${city}, ${state_abbr}`]),
+          div(`#changeSearchAreaMapAnchor`)
+        ])
+      ])
+    //]),
   ])
 }
 

@@ -1,7 +1,7 @@
 import {Observable as O} from 'rxjs'
 import {blankComponentUndefinedDOM} from '../../../../utils'
 
-import DoneModal from '../../../../library/doneModal'
+import DoneModal from '../../../../library/bootstrapDoneModal'
 
 import SearchArea from './searchArea/main'
 

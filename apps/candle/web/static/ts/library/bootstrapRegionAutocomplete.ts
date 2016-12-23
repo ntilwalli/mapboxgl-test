@@ -4,7 +4,7 @@ import isolate from '@cycle/isolate'
 import {combineObj, createProxy, mergeSinks, normalizeArcGISSingleLineToParts} from '../utils'
 import ArcGISSuggest from '../thirdParty/ArcGISSuggest'
 import ArcGISGetMagicKey from '../thirdParty/ArcGISGetMagicKey'
-import AutocompleteInput from '../library/autocompleteInput'
+import AutocompleteInput from '../library/bootstrapAutocompleteInput'
 
 
 export function createRegionAutocomplete(sources, inputs) {
@@ -18,7 +18,7 @@ export function createRegionAutocomplete(sources, inputs) {
       selectable: true,
       renderer: (suggestion, index, highlighted) => {
         return li(
-          `.dropdown-item${highlighted ? '.light-gray' : ''}`,
+          `.dropdown-item${highlighted ? '.highlight' : ''}`,
           {attrs: {'data-index': index}},
           [
             span(`.populated-place-info`, [suggestion.normalizedName])
@@ -29,12 +29,12 @@ export function createRegionAutocomplete(sources, inputs) {
   }
 
   const results$ = createProxy()
-  const autocompleteInput = AutocompleteInput(sources, {
-    results$,
+  const autocompleteInput = AutocompleteInput(sources, results$, O.of(''), {
     itemConfigs,
     displayFunction: x => x.normalizedName,
     placeholder: `Type city/state here...`,
-    styleClass: `.autocomplete-input`
+    styleClass: `.autocomplete-input`,
+    name: 'venue'
   })
 
   const suggestionComponent = ArcGISSuggest(sources, {

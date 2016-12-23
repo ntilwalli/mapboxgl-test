@@ -178,6 +178,10 @@ function model(actions, inputs) {
     .publishReplay(1).refCount()
 }
 
+function has(arr, type) {
+  return arr.some(val => val === type)
+}
+
 function view(state$, components) {
   return combineObj({
       state$
@@ -223,13 +227,13 @@ function view(state$, components) {
             //div('.form-check', [
             div([
               label('.form-check-inline', [
-                input(`.appEventTypeInput.form-check-input`, {attrs: {type: 'checkbox', name: 'eventTypes', value: EventTypes.OPEN_MIC, checked: type === EventTypes.OPEN_MIC}}, []),
+                input(`.appEventTypeInput.form-check-input`, {attrs: {type: 'checkbox', name: 'eventTypes', value: EventTypes.OPEN_MIC, checked: has(event_types, EventTypes.OPEN_MIC)}}, []),
                 span('.ml-xs', ['open-mic'])
               ]),
             //]),
             //div('.form-check', [
               label('.form-check-inline', [
-                input(`.appEventTypeInput.form-check-input`, {attrs: {type: 'checkbox', name: 'eventTypes', value: EventTypes.SHOW, checked: type === EventTypes.SHOW}}, []),
+                input(`.appEventTypeInput.form-check-input`, {attrs: {type: 'checkbox', name: 'eventTypes', value: EventTypes.SHOW, checked: has(event_types, EventTypes.SHOW)}}, []),
                 span('.ml-xs', ['show'])
               ])
             //])
@@ -240,25 +244,25 @@ function view(state$, components) {
             div([
             //div('.form-check', [
               label('.form-check-inline', [
-                input(`.appCategoriesInput.form-check-input`, {attrs: {type: 'checkbox', name: 'categories', value: CategoryTypes.COMEDY, checked: type === CategoryTypes.COMEDY}}, []),
+                input(`.appCategoriesInput.form-check-input`, {attrs: {type: 'checkbox', name: 'categories', value: CategoryTypes.COMEDY, checked: has(categories, CategoryTypes.COMEDY)}}, []),
                 span('.ml-xs', ['comedy'])
               ]),
             //]),
             //div('.form-check', [
               label('.form-check-inline', [
-                input(`.appCategoriesInput.form-check-input`, {attrs: {type: 'checkbox', name: 'categories', value: CategoryTypes.MUSIC, checked: type === CategoryTypes.MUSIC}}, []),
+                input(`.appCategoriesInput.form-check-input`, {attrs: {type: 'checkbox', name: 'categories', value: CategoryTypes.MUSIC, checked: has(categories, CategoryTypes.MUSIC)}}, []),
                 span('.ml-xs', ['music'])
               ]),
             //]),
             //div('.form-check', [
               label('.form-check-inline', [
-                input(`.appCategoriesInput.form-check-input`, {attrs: {type: 'checkbox', name: 'categories', value: CategoryTypes.POETRY, checked: type === CategoryTypes.POETRY}}, []),
+                input(`.appCategoriesInput.form-check-input`, {attrs: {type: 'checkbox', name: 'categories', value: CategoryTypes.POETRY, checked: has(categories, CategoryTypes.POETRY)}}, []),
                 span('.ml-xs', ['poetry'])
               ]),
             //]),
             //div('.form-check', [
               label('.form-check-inline', [
-                input(`.appCategoriesInput.form-check-input`, {attrs: {type: 'checkbox', name: 'categories', value: CategoryTypes.STORYTELLING, checked: type === CategoryTypes.STORYTELLING}}, []),
+                input(`.appCategoriesInput.form-check-input`, {attrs: {type: 'checkbox', name: 'categories', value: CategoryTypes.STORYTELLING, checked: has(categories, CategoryTypes.STORYTELLING)}}, []),
                 span('.ml-xs', ['storytelling'])
               ])
             //])
