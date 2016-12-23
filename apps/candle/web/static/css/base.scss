@@ -7,8 +7,9 @@
   border: 2px solid black;
   color: black;
   background-color: white;
-  height: 2rem;
+  padding: 0;
   width: 2rem;
+  line-height: 28px;
   font-size: 1.5rem;
   text-decoration: none;
 
@@ -56,9 +57,8 @@ address {
 
 .navbar {
   z-index: 1;
-  button {
-    line-height: 2rem;
-
+  //line-height: 2rem;
+  .nav-text-button {
     &.fa-angle-left, &.fa-angle-right {
       font-size: 1.5rem;
     }

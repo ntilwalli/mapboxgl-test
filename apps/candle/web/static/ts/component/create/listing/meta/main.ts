@@ -1,5 +1,5 @@
 import {Observable as O} from 'rxjs'
-import {div, span, input, textarea, label} from '@cycle/dom'
+import {div, span, input, textarea, label, h6} from '@cycle/dom'
 import Immutable = require('immutable')
 import {combineObj} from '../../../../utils'
 import {
@@ -196,7 +196,7 @@ function view(state$, components) {
       return div(`.row`, [
         div('.col-xs-12', [
           div(`.form-group`, [
-            label('.mr-1', {attrs: {for: 'listingType'}}, ['Listing type']),
+            h6('.mb-0', [label('.mr-1', {attrs: {for: 'listingType'}}, ['Listing type'])]),
             //div('.form-check', [
             div([
               label('.form-check-inline', [
@@ -213,17 +213,17 @@ function view(state$, components) {
             ])
           ]),
           div('.form-group', [
-            label({attrs: {for: 'listingName'}}, ['Name']),
+            h6('.mb-0', [label({attrs: {for: 'listingName'}}, ['Name'])]),
             input(`.appNameInput.form-control`, {attrs: {type: 'text', name: 'listingName', value: name || ''}}, [])
           ]),
           div('.form-group', [
-            label({attrs: {for: 'description'}}, ['Description']),
+            h6('.mb-0', [label({attrs: {for: 'description'}}, ['Description'])]),
             textarea(`.appDescriptionInput.form-control`, {attrs: {name: 'description'}}, [
                 description || ''
             ])
           ]),
           div(`.form-group`, [
-            label('.mr-1', {attrs: {for: 'eventTypes'}}, ['Event type']),
+            h6('.mb-0', [label('.mr-1', {attrs: {for: 'eventTypes'}}, ['Event type'])]),
             //div('.form-check', [
             div([
               label('.form-check-inline', [
@@ -240,7 +240,7 @@ function view(state$, components) {
             ])
           ]),
           div(`.form-group`, [
-            label({attrs: {for: 'categories'}}, ['Categories']),
+            h6('.mb-0', [label({attrs: {for: 'categories'}}, ['Categories'])]),
             div([
             //div('.form-check', [
               label('.form-check-inline', [

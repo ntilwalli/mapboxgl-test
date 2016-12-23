@@ -1,5 +1,5 @@
 import {Observable as O} from 'rxjs'
-import {div, h5, span, button, label} from '@cycle/dom'
+import {div, h6, span, button, label} from '@cycle/dom'
 import Immutable = require('immutable')
 import {
   combineObj, getPreferredRegion$, mergeSinks, normalizeSink, 
@@ -59,7 +59,7 @@ function renderSearchArea(info) {
   const sa = `${city}, ${state_abbr}`
 
   return div(`.form-group`, [
-    label({attrs: {for: 'region'}}, [`Search area`]),
+    h6([`Search area`]),
     div(`.col-form-static`, [
       span([sa]),
       span(`.appChangeSearchAreaButton.btn.btn-link.ml-1.v-align-initial`, [`change`])
@@ -70,7 +70,7 @@ function renderSearchArea(info) {
 function renderModeInput(info) {
   const {components} = info
   return div(`.form-group`, [
-    label({attrs: {for: 'venue'}}, [`Venue`]),
+    h6([`Venue`]),
     components.input_component
   ])
 }

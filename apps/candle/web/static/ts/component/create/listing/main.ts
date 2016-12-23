@@ -213,17 +213,47 @@ function getStepHeading(state) {
   }
 }
 
+function getSmallStepHeading(state) {
+  const {session} = state
+  const {listing} = session
+  const {type} = listing
+  const {current_step} = session
+
+  switch (current_step) {
+    case 'meta':
+      return 'Basics'
+    case 'donde':
+      return 'Venue'
+    case 'cuando':
+      if (type === ListingTypes.RECURRING) {
+        return 'Recurrence'
+      } else {
+        return 'When'
+      }
+    case 'properties':
+      return 'Properties'
+    case 'preview':
+      return 'Post'
+    default:
+      return `Generic heading`
+  }
+}
+
+
 function renderNavigator(state) {
   const {authorization} = state
   const authClass = authorization ? 'Logout' : 'Login'
   return nav('.navbar.navbar-light.bg-faded.container-fluid.pos-f-t', [
     div('.row.no-gutter', [
       div('.col-xs-6', [
-        button('.appBrandButton.hopscotch-icon.btn.btn-link.nav-brand', []),
-        span('.ml-1', [getStepHeading(state)])
+        button('.appBrandButton.hopscotch-icon.nav-brand', []),
+        //span([
+          span('.ml-1.hidden-sm-down.step-description', [getStepHeading(state)]),
+          span('.ml-1.hidden-md-up.step-description', [getSmallStepHeading(state)])
+        //])
       ]),
       div('.col-xs-6', [
-        button(`.appSaveExitButton.text-button.btn.btn-link.float-xs-right`, [`Save/Exit`])
+        button(`.appSaveExitButton.text-button.nav-text-button.btn.btn-link.float-xs-right`, [`Save/Exit`])
         //button('.appShowMenuButton.fa.fa-bars.btn.btn-link.float-xs-right', [])
       ]),
     ])
@@ -250,7 +280,13 @@ function renderNavigator(state) {
 // }
 
 function renderMainContent(info: any) {
-  return div(`.main-content`, [
+  return div(`.main-content`, {
+    hook: {
+      create: (emptyVNode, {elm}) => {
+        elm.scrollTop = 0
+      }
+    }
+  }, [
     info.components.content
   ])
 }
@@ -311,7 +347,13 @@ function view(state$, components) {
     const {show_instruction} = state
     return div(`.screen.create-component`, [
       renderNavigator(state),
-      div(`.content-section`, [
+      div(`.content-section`, {
+        hook: {
+          create: (emptyVNode, {elm}) => {
+            elm.scrollTop = 0
+          }
+        }
+      }, [
         div(`.content`, [
           div(`.main-panel`, [
             renderMainContent(info),

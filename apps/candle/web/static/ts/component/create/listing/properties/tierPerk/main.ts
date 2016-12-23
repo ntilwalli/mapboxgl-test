@@ -163,14 +163,18 @@ export default function main(sources, inputs) {
 
 
   const minutes_component$ = props$.map((props: any) => {
-    switch (props.type) {
-      case TierPerkOptions.MINUTES:
-      case TierPerkOptions.MINUTES_AND_PRIORITY_ORDER:
-      case TierPerkOptions.ADDITIONAL_MINUTES_AND_PRIORITY_ORDER:
-        return MinutesComponent(sources, O.of(props.data), component_id + ' minutes')
-      default:
-        return BlankStructuredUndefined()
+    if (props) {
+      switch (props.type) {
+        case TierPerkOptions.MINUTES:
+        case TierPerkOptions.MINUTES_AND_PRIORITY_ORDER:
+        case TierPerkOptions.ADDITIONAL_MINUTES_AND_PRIORITY_ORDER:
+          return MinutesComponent(sources, O.of(props.data), component_id + ' minutes')
+        default:
+          return BlankStructuredUndefined()
 
+      }
+    } else {
+      return BlankStructuredUndefined()
     }
   }).publishReplay(1).refCount()
 
@@ -180,13 +184,17 @@ export default function main(sources, inputs) {
   }
 
   const songs_component$ = props$.map((props: any) => {
-    switch (props.type) {
-      case TierPerkOptions.SONGS:
-      case TierPerkOptions.SONGS_AND_PRIORITY_ORDER:
-      case TierPerkOptions.ADDITIONAL_SONGS_AND_PRIORITY_ORDER:
-        return SongsComponent(sources, O.of(props.data), component_id + ' songs')
-      default:
-        return BlankStructuredUndefined()
+    if (props) {
+      switch (props.type) {
+        case TierPerkOptions.SONGS:
+        case TierPerkOptions.SONGS_AND_PRIORITY_ORDER:
+        case TierPerkOptions.ADDITIONAL_SONGS_AND_PRIORITY_ORDER:
+          return SongsComponent(sources, O.of(props.data), component_id + ' songs')
+        default:
+          return BlankStructuredUndefined()
+      }
+    } else {
+      return BlankStructuredUndefined()
     }
   }).publishReplay(1).refCount()
 
@@ -196,11 +204,15 @@ export default function main(sources, inputs) {
   }
 
   const bucket_entry_component$ = props$.map((props: any) => {
-    switch (props.type) {
-      case TierPerkOptions.ADDITIONAL_BUCKET_ENTRY:
-        return BucketEntryComponent(sources, O.of(props.data), component_id + ' songs')
-      default:
-        return BlankStructuredUndefined()
+    if (props) {
+      switch (props.type) {
+        case TierPerkOptions.ADDITIONAL_BUCKET_ENTRY:
+          return BucketEntryComponent(sources, O.of(props.data), component_id + ' songs')
+        default:
+          return BlankStructuredUndefined()
+      }
+    } else {
+      return BlankStructuredUndefined()
     }
   }).publishReplay(1).refCount()
 
@@ -210,11 +222,15 @@ export default function main(sources, inputs) {
   }
 
   const drink_ticket_component$ = props$.map((props: any) => {
-    switch (props.type) {
-      case TierPerkOptions.DRINK_TICKET:
-        return NumberInputComponent(sources, O.of(props.data.toString()), component_id + ' drink ticket: Invalid number')
-      default:
-        return BlankStructuredUndefined()
+    if (props) {
+      switch (props.type) {
+        case TierPerkOptions.DRINK_TICKET:
+          return NumberInputComponent(sources, O.of(props.data.toString()), component_id + ' drink ticket: Invalid number')
+        default:
+          return BlankStructuredUndefined()
+      }
+    } else {
+      return BlankStructuredUndefined()
     }
   }).publishReplay(1).refCount()
 

@@ -30,7 +30,9 @@ export default function main(sources, inputs) {
 
 
   const cost = Cost(sources, {inputs, options: cost_options, props$: shared$})
-  const perk = TierPerk(sources, {...inputs, options: inputs.perk_options, props$: shared$.pluck('perk')})
+  const perk = TierPerk(sources, {...inputs, options: inputs.perk_options, props$: shared$.map(x => {
+    return x.type
+  })})
 
 
   const vtree$ = combineObj({
