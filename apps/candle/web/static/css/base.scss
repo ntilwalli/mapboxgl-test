@@ -63,9 +63,14 @@ address {
       font-size: 1.5rem;
     }
 
-    &.fa-cog, &.fa-bars, &.fa-user-o, &.fa-calendar {
-      position: relative;
-      top: 2px;
+    &.fa-bars {
+      height: 2rem;
+      font-size: 1.2rem; 
+    }
+
+    &.fa-cog, &.fa-user-o, &.fa-calendar {
+      //position: relative;
+      //top: 2px;
       font-size: 1.2rem
     }
   }

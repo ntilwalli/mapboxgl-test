@@ -70,7 +70,7 @@ function renderNavigator(state) {
       //   div('.hopscotch-icon.btn.btn-link.nav-brand', []),
       // ]),
       div('.col-xs-6', [
-        button('.appShowMenuButton.fa.fa-bars.btn.btn-link.float-xs-right', []),
+        button('.appShowMenuButton.nav-text-button.fa.fa-bars.btn.btn-link.float-xs-right', []),
       ]),
     ])
   ])

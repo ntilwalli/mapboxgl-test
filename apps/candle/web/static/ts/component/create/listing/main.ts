@@ -247,14 +247,11 @@ function renderNavigator(state) {
     div('.row.no-gutter', [
       div('.col-xs-6', [
         button('.appBrandButton.hopscotch-icon.nav-brand', []),
-        //span([
-          span('.ml-1.hidden-sm-down.step-description', [getStepHeading(state)]),
-          span('.ml-1.hidden-md-up.step-description', [getSmallStepHeading(state)])
-        //])
+        span('.ml-1.hidden-sm-down.step-description', [getStepHeading(state)]),
+        span('.ml-1.hidden-md-up.step-description', [getSmallStepHeading(state)])
       ]),
       div('.col-xs-6', [
         button(`.appSaveExitButton.text-button.nav-text-button.btn.btn-link.float-xs-right`, [`Save/Exit`])
-        //button('.appShowMenuButton.fa.fa-bars.btn.btn-link.float-xs-right', [])
       ]),
     ])
   ])

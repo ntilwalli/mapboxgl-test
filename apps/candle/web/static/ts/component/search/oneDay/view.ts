@@ -39,10 +39,10 @@ function renderDateController(state) {
   const dt = state.searchDateTime
   const [val, status] = getDateDisplayString(dt)
   return div(`.search-controller.clearfix`, [
-    button(`.appSubtractDay.fa.fa-angle-left.btn.btn-link.float-xs-left`, []),
+    button(`.appSubtractDay.nav-text-button.fa.fa-angle-left.btn.btn-link.float-xs-left`, []),
     val,
-    button(`.appAddDay.fa.fa-angle-right.btn.btn-link.float-xs-right`),
-    button(`.appShowFilters.filter-button.fa.fa-cog.btn.btn-link`)
+    button(`.appAddDay.nav-text-button.fa.fa-angle-right.btn.btn-link.float-xs-right`),
+    button(`.appShowFilters.nav-text-button.filter-button.fa.fa-cog.btn.btn-link`)
   ])
 }
 
@@ -79,7 +79,7 @@ function renderNavigator(state) {
         renderDateController(state),
       ]),
       div('.col-xs-4', [
-        button('.appShowMenuButton.fa.fa-bars.btn.btn-link.float-xs-right', []),
+        button('.appShowMenuButton..nav-text-button.fa.fa-bars.btn.btn-link.float-xs-right', []),
         //!authorization ?  button(`.appShowLoginButton.btn.btn-link.float-xs-right`, [`Login`]) : null,
         //authorization ? button(`.appShowUserProfile.fa.fa-user-o.btn.btn-link.float-xs-right.mr-1`, []) : null
       ]),
