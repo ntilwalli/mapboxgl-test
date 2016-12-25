@@ -7,6 +7,11 @@ import {RRule, RRuleSet, rrulestr} from 'rrule'
 import moment = require('moment')
 import clone = require('clone')
 
+import {
+  DayOfWeek
+} from '../../../../../../../listingTypes'
+import {inflateDates, fromCheckbox} from '../../../../../../helpers/listing/utils'
+
 import WeekdaySelector from '../../../../../../../library/weekdaySelector'
 import SetposSelector from '../../../../../../../library/setposSelector'
 import TextInput, {SmartTextInputValidation} from '../../../../../../../library/bootstrapTextInput'
@@ -30,7 +35,8 @@ function intent(sources) {
     clear_dtstart$: DOM.select(`.appClearDTStart`).events(`click`),
     clear_until$: DOM.select(`.appClearUntil`).events(`click`),
     clear_all$: DOM.select(`.appClearAll`).events(`click`),
-    session$: Router.history$.map(x => x.state).publishReplay(1).refCount()
+    session$: Router.history$.map(x => x.state).publishReplay(1).refCount(),
+    byweekday$: DOM.select('.appByWeekdayInput').events('click').map(fromCheckbox)
   }
 }
 
@@ -56,6 +62,18 @@ function getYearMonth(t_year, t_month, inc) {
   return [year, month]
 }
 
+function processCheckboxArray(msg, arr) {
+  const {type, data} = msg
+  const index = arr.indexOf(msg.value)
+  if (index >= 0) {
+    arr.splice(index, 1)
+  } else {
+    arr.push(msg.value)
+  }
+
+  return arr
+}
+
 function reducers(actions, inputs) {
 
   const change_start_month_r = actions.change_start_month$.map(inc => state => {
@@ -70,14 +88,14 @@ function reducers(actions, inputs) {
 
   const dtstart_r = inputs.dtstart$.map(date => state => {
     return state.update(`rrule`, rrule => {
-      rrule.dtstart = date
+      rrule.dtstart = date.clone()
       return rrule
     })
   })
 
   const until_r = inputs.until$.map(date => state => {
     return state.update(`rrule`, rrule => {
-      rrule.unilt = date
+      rrule.until = date
       return rrule
     })
   })
@@ -109,14 +127,14 @@ function reducers(actions, inputs) {
 
   const interval_r = inputs.interval$.skip(1).map(val => state => {
     return state.update(`rrule`, rrule => {
-      rrule.interval = val
+      rrule.interval = val.valid ? val.data : undefined
       return rrule
     })
   })
 
-  const byweekday_r = inputs.byweekday$.skip(1).map(val => state => {
-    return state.update(`rrule`, rrule => {
-      rrule.byweekday = val
+  const byweekday_r = actions.byweekday$.map(val => state => {
+    return state.update(`rrule`, rrule=> {
+      rrule.byweekday = processCheckboxArray(val, rrule.byweekday)
       return rrule
     })
   })
@@ -217,6 +235,10 @@ function renderCalendar(year, month, component, type, title, style_class = '') {
   ])
 }
 
+function has(arr, type) {
+  return arr.some(val => val === type)
+}
+
 function view(state$, components) {
   return combineObj({
     state$,
@@ -225,8 +247,8 @@ function view(state$, components) {
     const {state, components} = info
     //console.log(`state`, state)
     const {rrule, start_year, start_month, end_year, end_month} = state
-    const {freq} = rrule
-    const {byweekday, interval, bysetpos, start_date, end_date} = components
+    const {freq, byweekday, bysetpos} = rrule
+    const {interval, start_date, end_date} = components
     return div(`.advanced-rrule`, [
       div(`.form-group.mt-1`, [
         label([
@@ -241,10 +263,49 @@ function view(state$, components) {
         interval
       ]),
       div(`.form-group`, [
-        label([
-          h6([`By day`])
-        ]),
-        byweekday
+        h6('.mb-0', [label({attrs: {for: 'byweekday'}}, ['By day'])]),
+        div([
+        //div('.form-check', [
+          label('.form-check-inline', [
+            input(`.appByWeekdayInput.form-check-input`, {attrs: {type: 'checkbox', name: 'byweekday', value: DayOfWeek.SUNDAY, checked: has(byweekday, DayOfWeek.SUNDAY)}}, []),
+            span('.ml-xs', ['Su'])
+          ]),
+        //]),
+        //div('.form-check', [
+          label('.form-check-inline', [
+            input(`.appByWeekdayInput.form-check-input`, {attrs: {type: 'checkbox', name: 'byweekday', value: DayOfWeek.MONDAY, checked: has(byweekday, DayOfWeek.MONDAY)}}, []),
+            span('.ml-xs', ['Mo'])
+          ]),
+        //]),
+        //div('.form-check', [
+          label('.form-check-inline', [
+            input(`.appByWeekdayInput.form-check-input`, {attrs: {type: 'checkbox', name: 'byweekday', value: DayOfWeek.TUESDAY, checked: has(byweekday, DayOfWeek.TUESDAY)}}, []),
+            span('.ml-xs', ['Tu'])
+          ]),
+        //]),
+        //div('.form-check', [
+          label('.form-check-inline', [
+            input(`.appByWeekdayInput.form-check-input`, {attrs: {type: 'checkbox', name: 'byweekday', value: DayOfWeek.WEDNESDAY, checked: has(byweekday, DayOfWeek.WEDNESDAY)}}, []),
+            span('.ml-xs', ['We'])
+          ]),
+          label('.form-check-inline', [
+            input(`.appByWeekdayInput.form-check-input`, {attrs: {type: 'checkbox', name: 'byweekday', value: DayOfWeek.THURSDAY, checked: has(byweekday, DayOfWeek.THURSDAY)}}, []),
+            span('.ml-xs', ['Th'])
+          ]),
+        //]),
+        //div('.form-check', [
+          label('.form-check-inline', [
+            input(`.appByWeekdayInput.form-check-input`, {attrs: {type: 'checkbox', name: 'byweekday', value: DayOfWeek.FRIDAY, checked: has(byweekday, DayOfWeek.FRIDAY)}}, []),
+            span('.ml-xs', ['Fr'])
+          ]),
+        //]),
+        //div('.form-check', [
+          label('.form-check-inline', [
+            input(`.appByWeekdayInput.form-check-input`, {attrs: {type: 'checkbox', name: 'byweekday', value: DayOfWeek.SATURDAY, checked: has(byweekday, DayOfWeek.SATURDAY)}}, []),
+            span('.ml-xs', ['Sa'])
+          ])
+        //])
+        ])
       ]),
       div(`.form-group`, {style: {display: freq === `monthly` ? 'block' : 'none'}}, [
         label([
@@ -259,7 +320,10 @@ function view(state$, components) {
         start_date
       ]),
       div(`.form-group`, [
-        renderCalendar(end_year, end_month, end_date, 'until', `Until`, `.small-margin-top`)
+        label([
+          h6([`Ending`])
+        ]),
+        end_date
       ]),
       //button(`.appClearAll.text-button.flex-center.small-margin-top`, [`clear`])
     ])
@@ -299,7 +363,7 @@ export default function main(sources, inputs) {
     initialText$: O.of(undefined)
   })
 
-  const weekday_selector = WeekdaySelector(sources, {...inputs, props$: props$.map(x => !!x ? x.byweekday : [])})
+  //const weekday_selector = WeekdaySelector(sources, {...inputs, props$: props$.map(x => !!x ? x.byweekday : [])})
   //const setpos_selector = SetposSelector(sources, {...inputs, props$: props$.pluck(`bysetpos`)}) 
   const bysetpos$ = createProxy()
   const dtstart$ = createProxy()
@@ -307,7 +371,7 @@ export default function main(sources, inputs) {
   const state$ = model(actions, {
     ...inputs, 
     props$, 
-    byweekday$: weekday_selector.output$,
+    //byweekday$: weekday_selector.output$.letBind(traceStartStop('weekday output$...')),
       //.letBind(traceStartStop(`byweekday trace`)),
     interval$: interval_input.output$,
     bysetpos$,
@@ -335,7 +399,9 @@ export default function main(sources, inputs) {
   const start_date_calendar = isolate(DateInput)(sources, {
     ...inputs,
     props$: state$
-      .map((state: any) => state.rrule.dtstart)
+      .map((state: any) => {
+        return state.rrule.dtstart ? state.rrule.dtstart.clone() : undefined
+      })
       .distinctUntilChanged((x: any, y: any) => {
         return x && x.isSame(y)
       })
@@ -345,22 +411,23 @@ export default function main(sources, inputs) {
   })
 
 
-  const end_date_calendar = isolate(MonthCalendar)(sources, {
-    ...inputs, 
-    props$: state$.map((state: any) => {
-      return {
-        year: state.until_year, 
-        month: state.until_month, 
-        selected: state.rrule.until ? [state.rrule.until] : []
-      }
-    })
+  const end_date_calendar = isolate(DateInput)(sources, {
+    ...inputs,
+    props$: state$
+      .map((state: any) => state.rrule.until ? state.rrule.until.clone() : undefined)
+      .distinctUntilChanged((x: any, y: any) => {
+        return x && x.isSame(y)
+      })
+      .map(x => {
+        return x
+      })
   })
 
   dtstart$.attach(start_date_calendar.output$)
   until$.attach(end_date_calendar.output$)
 
   const components = {
-    byweekday$: weekday_selector.DOM,
+    //byweekday$: weekday_selector.DOM,
     interval$:  interval_input.DOM,
     bysetpos$:  setpos_selector.DOM,
     start_date$:  start_date_calendar.DOM,
@@ -368,7 +435,7 @@ export default function main(sources, inputs) {
   }
 
   const vtree$ = view(state$, components)
-  const merged = mergeSinks(weekday_selector, interval_input, setpos_selector, start_date_calendar, end_date_calendar)
+  const merged = mergeSinks(interval_input, setpos_selector, start_date_calendar, end_date_calendar)
   return {
     ...merged,
     DOM: vtree$,

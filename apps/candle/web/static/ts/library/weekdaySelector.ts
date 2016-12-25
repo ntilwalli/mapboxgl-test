@@ -51,7 +51,7 @@ function model(actions, inputs) {
     })
     .map((x: any) => x.toJS())
     // .do(x => console.log(`weekday selector state`, x))
-    // .letBind(traceStartStop(`weekday selector state trace`))
+    .letBind(traceStartStop(`weekday selector state trace`))
     .publishReplay(1).refCount()
 }
 
@@ -92,6 +92,8 @@ export default function main(sources, inputs) {
   const vtree$ = view(state$, {})
   return {
     DOM: vtree$,
-    output$: state$.pluck(`byweekday`)
+    output$: state$.pluck(`byweekday`).map(x => {
+      return x
+    })
   }
 }

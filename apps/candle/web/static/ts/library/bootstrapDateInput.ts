@@ -3,7 +3,7 @@ import Immutable = require('immutable')
 import {div, span, button, input} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 import {combineObj, createProxy, between, notBetween} from '../utils'
-import SmartMonthCalendar from '../library/smartMonthCalendar'
+import DateInputMonthCalendar from '../library/dateInputMonthCalendar'
 import moment = require('moment')
 import clone = require('clone')
 
@@ -22,9 +22,6 @@ function intent(sources) {
 
   const input_blur$ = DOM.select('.appDateInput').events('blur')
     .do(ev => console.log('blur$'))
-    .map(ev => {
-      return ev.target.value
-    })
     .publish().refCount()
   const dropdown_mousedown$ = DOM.select('.appDateDropdown').events('mousedown')
     .do(x => console.log('mousedown$'))
@@ -99,7 +96,9 @@ function reducers(actions, inputs) {
     return state.set('active', true)
   })
 
-  const blur_r = actions.blur_to_elsewhere$.map(val => state => {
+  const blur_r = actions.blur_to_elsewhere$.map(ev => state => {
+    const val =  ev.target.value
+
     let y, d, m
     let year = state.get('year')
 
@@ -156,9 +155,9 @@ function model(actions, inputs) {
         active: undefined,
         calendar_month: date ? date.month() : moment().month(),
         calendar_year: date ? date.year() : moment().year(),
-        month: undefined,
-        date: undefined,
-        year: undefined
+        month: date ? date.month() : undefined,
+        date: date ? date.date() : undefined,
+        year: date ? date.year() : undefined
       }
 
       return reducer$.startWith(Immutable.Map(init)).scan((acc, f: Function) => f(acc))
@@ -206,7 +205,7 @@ export default function  main(sources, inputs) {
   const calendar_date$ = createProxy()
   const state$ = model(actions, {...inputs, calendar_date$})
 
-  const calendar = isolate(SmartMonthCalendar)(
+  const calendar = isolate(DateInputMonthCalendar)(
     sources, {
       ...inputs, 
       props$: state$.map((state: any) => {
@@ -214,12 +213,12 @@ export default function  main(sources, inputs) {
         return ({
           year: calendar_year, 
           month: calendar_month, 
-          selected: (year && month && date) ? [moment([year, month, date])] : []
+          selected: (year && month >= 0 && date) ? [moment([year, month, date])] : []
         })
       })
     })
 
-  //calendar_date$.attach(calendar.output$)
+  calendar_date$.attach(calendar.output$)
 
   const components = {
     calendar: calendar.DOM

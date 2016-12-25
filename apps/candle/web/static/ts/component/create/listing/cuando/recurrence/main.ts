@@ -1,5 +1,5 @@
 import {Observable as O} from 'rxjs' 
-import {div, span, input, h6, button} from '@cycle/dom'
+import {div, span, input, h6, button, label} from '@cycle/dom'
 import Immutable = require('immutable')
 import {combineObj, createProxy, mergeSinks, componentify, traceStartStop} from '../../../../../utils'
 import moment = require('moment')
@@ -85,7 +85,7 @@ function syncRRuleWithSession(rrule, session) {
     const {dtstart, until} = rrule
     const {start_time, end_time} = session.properties.recurrence
 
-    session.properties.recurrence.rrule = clone(rrule)
+    session.properties.recurrence.rrule = rrule
     //console.log(`sent rrule`, rrule)
     const the_rrule = {
       ...rrule,
@@ -277,14 +277,14 @@ function model(actions, inputs) {
         rrule_expanded: false
       })).scan((acc, f: Function) => f(acc))
     })
-    .map((x: any) => clone(x.toJS()))
+    .map((x: any) => x.toJS())
     .map(state => {
       return {
         ...state,
         valid: isValid(state.session)
       }
     })
-    //.do(x => console.log(`rrule main state`, x))
+    .do(x => console.log(`rrule main state`, x))
     .publishReplay(1).refCount()
 }
 
@@ -305,71 +305,6 @@ function getTimeString(time) {
   return moment([2010, 1, 1, military_hour, minute]).format('h:mm A')
 }
 
-function renderRRule(info) {
-  const {state, components} = info
-  const {rrule_component} = components
-  const {session, rrule_expanded} = state
-  const {properties, listing} = session
-  const {cuando} = listing
-  const {rrule} = cuando
-  // const {recurrence} = properties
-  // const {rrule, data, type} = recurrence
-
-  let rrule_text = 'Not specified'
-  if (rrule) {
-    rrule_text  = getActualRRule(rrule).toText()
-    rrule_text = rrule_text.substring(0, 1).toUpperCase() + rrule_text.substring(1)
-  }
-
-  const out = div('.row.mt-1', [
-    div('.col-xs-12', [
-      div('.row', [
-        div('.col-xs-12.d-flex', [
-          h6('.d-flex.fx-a-c.mr-1.mb-0', [`Rule`]),
-          !rrule_expanded ? span('.d-flex.fx-a-c.mr-1', [!rrule ? `Not specified` : rrule_text]) : null,
-          button(`.d-flex.fx-a-c.btn.btn-link.appRRuleSwitch`, [rrule_expanded ? 'collapse' : 'expand'])
-        ])
-      ]),
-      div('.row', {style: {display: rrule_expanded ? "block" : "none"}}, [
-        div('.col-xs-11.push-xs-1', [
-          rrule_component
-        ])
-      ])
-    ])
-  ])
-
-  return out
-}
-
-function renderTime(state) {
-  //console.log(`state`, state)  
-  const {session} = state
-  const {properties} = session
-  const {recurrence} = properties
-  const {start_time, end_time} = recurrence
-
-  return div(`.d-flex.fx-j-sa.mt-1`, [
-    div(`.d-flex.fx-j-c`, [
-      h6('.d-flex.fx-a-c.mb-0.mr-1', [
-        `Start time`
-      ]),
-      div(`.d-flex.fx-j-c`, [
-        span('.d-flex.fx-a-c.mr-1', [start_time ? getTimeString(start_time) : `Not specified`]),
-        span(`.d-flex.fx-a-c.btn.btn-link.appChangeStartTime.fa.fa-pencil-square-o`, [])
-      ])
-    ]),
-    div(`.d-flex.fx-j-c`, [
-      h6('.d-flex.fx-a-c.mb-0.mr-1', [
-        `End time`
-      ]),
-      div(`.d-flex.fx-j-c`, [
-        span('.d-flex.fx-a-c.mr-1', [end_time ? getTimeString(end_time) : `Not specified`]),
-        span(`.d-flex.fx-a-c.btn.btn-link.appChangeEndTime.fa.fa-pencil-square-o`, [])
-      ])
-    ])
-  ])
-}
-
 function view(state$, components) {
   return combineObj({
       state$,
@@ -379,11 +314,52 @@ function view(state$, components) {
     .map((info: any) => {
       //console.log(`info`, info)
       const {state, components} = info
-      const {rrule, calendar, modal} = components
+      const {rrule, calendar, modal, rrule_component} = components
+      const {session, rrule_expanded} = state
+      const {properties} = session
+      const {recurrence} = properties
+      const {start_time, end_time} = recurrence
+
+      let rrule_text = 'Not specified'
+      if (rrule) {
+        rrule_text  = getActualRRule(rrule).toText()
+        rrule_text = rrule_text.substring(0, 1).toUpperCase() + rrule_text.substring(1)
+      }
+
       return div(`.workflow-step.cuando-recurrence.mb-3`, [
         calendar,
-        renderRRule(info),
-        renderTime(state),
+        div('.row.mt-1', [
+          div('.col-xs-3.d-flex.fx-a-c', [
+            h6('.d-flex.fx-a-c.mb-0', ['Start time']),
+          ]),
+          div('.col-xs-9.d-flex.fx-a-c', [
+            span('.d-flex.fx-a-c.mr-1', [start_time ? getTimeString(start_time) : `Not specified`]),
+            span(`.d-flex.fx-a-c.btn.btn-link.appChangeStartTime.fa.fa-pencil-square-o`, [])
+          ])
+        ]),
+        div('.row.mt-1', [
+          div('.col-xs-3.d-flex.fx-a-c', [
+            h6('.d-flex.fx-a-c.mb-0', ['End time']),
+          ]),
+          div('.col-xs-9.d-flex.fx-a-c', [
+            span('.d-flex.fx-a-c.mr-1', [end_time ? getTimeString(end_time) : `Not specified`]),
+            span(`.d-flex.fx-a-c.btn.btn-link.appChangeEndTime.fa.fa-pencil-square-o`, [])
+          ])
+        ]),
+        div('.row.mt-1', [
+          div('.col-xs-3', [
+            h6('.mb-0', [`Rule`])
+          ]),
+          div('.col-xs-9.d-flex', [
+            !rrule_expanded ? span('.d-flex.fx-a-c.mr-1', [!rrule ? `Not specified` : rrule_text]) : null,
+            button(`.d-flex.fx-a-c.btn.btn-link.appRRuleSwitch`, [rrule_expanded ? 'collapse' : 'expand'])
+          ])
+        ]),
+        div('.row', {style: {display: rrule_expanded ? "block" : "none"}}, [
+          div('.col-xs-11.push-xs-1', [
+            rrule_component
+          ])
+        ]),
         modal
         //input(`.start-time-input`, {attrs: {type: `time`}}, [])
       ])
@@ -423,7 +399,9 @@ export default function main(sources, inputs) {
     ...inputs, 
     props$: state$
       .map(state => state.session.listing.cuando)
-      .distinctUntilChanged((x, y) => deepEqual(x, y))
+      // .distinctUntilChanged((x, y) => {
+      //   return deepEqual(x, y)
+      // })
   })
 
   const rrule_component = RRuleComponent(sources, {
@@ -434,7 +412,7 @@ export default function main(sources, inputs) {
   })
 
   selected$.attach(calendar.output$)
-  //rrule$.attach(rrule_component.output$)
+  rrule$.attach(rrule_component.output$)
   
   const components = {
     calendar$: calendar.DOM,

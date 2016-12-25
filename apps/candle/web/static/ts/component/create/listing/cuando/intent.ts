@@ -5,6 +5,6 @@ export default function intent(sources) {
   const type$ = DOM.select(`.appCuandoTypeComboBox`).events(`click`)
   return {
     type$,
-    session$: Router.history$.pluck(`state`).pluck(`data`),
+    session$: Router.history$.pluck(`state`).pluck(`data`).publishReplay(1).refCount(),
   }
 }

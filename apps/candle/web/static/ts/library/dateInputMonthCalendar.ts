@@ -172,7 +172,7 @@ function view(state$, components) {
       const num_weeks = weeks_array.length
       const today = moment()
       const children = renderWeeksArray(state, weeks_array, today)
-      const out = div(`.smart-month-calendar`, [
+      const out = div(`.date-input-month-calendar`, [
         renderWeekdays(),
         div(`.weeks`, children)
       ])

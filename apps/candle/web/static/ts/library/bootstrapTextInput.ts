@@ -145,7 +145,7 @@ function model(actions, inputs) {
       return reducer$.startWith(init).scan((acc, f: Function) => f(acc))
     })
     .map((x: any) => x.toJS())
-    //.do(x => console.log(`textInput state:`, x))
+    .do(x => console.log(`textInput state:`, x))
     .publishReplay(1).refCount()
 }
 
@@ -188,11 +188,13 @@ function main(sources, inputs) {
         }
       })
       // .letBind(traceStartStop(`output$ trace`))
-      .publishReplay(1).refCount()
+      //.publishReplay(1).refCount()
 
   return {
     DOM: vtree$,
-    output$
+    output$: output$.map(x => {
+      return x
+    })
   }
 }
 
