@@ -79,7 +79,7 @@ function renderNavigator(state) {
         renderDateController(state),
       ]),
       div('.col-xs-4', [
-        button('.appShowMenuButton..nav-text-button.fa.fa-bars.btn.btn-link.float-xs-right', []),
+        button('.appShowMenuButton.nav-text-button.fa.fa-bars.btn.btn-link.float-xs-right', []),
         //!authorization ?  button(`.appShowLoginButton.btn.btn-link.float-xs-right`, [`Login`]) : null,
         //authorization ? button(`.appShowUserProfile.fa.fa-user-o.btn.btn-link.float-xs-right.mr-1`, []) : null
       ]),

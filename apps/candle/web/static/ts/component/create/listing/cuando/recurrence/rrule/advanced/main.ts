@@ -88,7 +88,7 @@ function reducers(actions, inputs) {
 
   const dtstart_r = inputs.dtstart$.map(date => state => {
     return state.update(`rrule`, rrule => {
-      rrule.dtstart = date.clone()
+      rrule.dtstart = date
       return rrule
     })
   })
@@ -156,7 +156,7 @@ function reducers(actions, inputs) {
 
 function getDefault() {
   return {
-    dtstart: undefined,
+    dtstart: moment().startOf('day'),
     byweekday: [],
     interval: undefined,
     bysetpos: [],
@@ -172,7 +172,10 @@ function model(actions, inputs) {
     .switchMap((info: any) => {
       
       const {rrule} = info
-      const init_rrule = rrule || getDefault()
+      const init_rrule = rrule ? {
+        ...rrule,
+        dtstart: rrule.dtstart ? moment().startOf('day') : rrule.dtstart
+      } : getDefault()
       const {dtstart, until} = init_rrule
       const init = {
         rrule: init_rrule,
@@ -252,6 +255,12 @@ function view(state$, components) {
     return div(`.advanced-rrule`, [
       div(`.form-group.mt-1`, [
         label([
+          h6([`Starting`])
+        ]),
+        start_date
+      ]),
+      div(`.form-group`, [
+        label([
           h6([`Frequency`])
         ]),
         renderFreqType(state)
@@ -312,12 +321,6 @@ function view(state$, components) {
           h6([`By position`])
         ]),
         bysetpos
-      ]),
-      div(`.form-group`, [
-        label([
-          h6([`Starting`])
-        ]),
-        start_date
       ]),
       div(`.form-group`, [
         label([
@@ -439,6 +442,8 @@ export default function main(sources, inputs) {
   return {
     ...merged,
     DOM: vtree$,
-    output$: state$.pluck(`rrule`)
+    output$: state$.pluck(`rrule`).map(x => {
+      return x
+    })
   }
 }

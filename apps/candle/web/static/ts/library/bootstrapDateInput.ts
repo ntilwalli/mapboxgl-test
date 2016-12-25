@@ -172,7 +172,7 @@ function view(state$, components) {
     .map((info: any) => {
       const {state, components} = info
       const {calendar_year, calendar_month, year, month, date, active} = state
-      const out = (year && month && date) ? moment([year, month,date]) : undefined
+      const out = (year && month >= 0 && date) ? moment([year, month,date]) : undefined
       const {calendar} = components
       return div('.date-input.form-group.dropdown', {class: {open: !!active}}, [
         input('.appDateInput.form-control', {
@@ -235,11 +235,11 @@ export default function  main(sources, inputs) {
     output$: state$
       .filter(state => {
         const {month, date, year} = state
-        month && date && year
+        return month >= 0 && date && year
       })
       .map(state => {
         const {month, date, year} = state
-        const x = moment().month(month).date(date).year(year)
+        return moment([year, month, date])
       })
   }
 }

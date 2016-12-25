@@ -147,14 +147,14 @@ function intent(sources) {
 function reducers(actions, inputs) {
   const properties_output_r = inputs.properties$.map(message => state => {
     //console.log(`properties message`, message)
-    const properties = state.get(`properties`)
+    let  properties = state.get(`properties`).toJS()
     properties[message.type] = message.data
-    const session = state.get(`session`)
+    const session = state.get(`session`).toJS()
     session.listing.meta[message.type] = message.data.data
 
-    return state.set('properties', properties)
-      .set(`session`, session)
-      .set('component_types', calculateComponentTypes(session))
+    return state.set('properties', Immutable.fromJS(properties))
+      .set(`session`, Immutable.fromJS(session))
+      .set('component_types', Immutable.fromJS(calculateComponentTypes(session)))
   })
 
   return O.merge(properties_output_r)
@@ -194,10 +194,12 @@ function model(actions, inputs) {
       }
 
       return reducer$
-        .startWith(Immutable.Map(init))
+        .startWith(Immutable.fromJS(init))
         .scan((acc, f: Function) => f(acc))
     })
-    .map((x: any) => clone(x.toJS()))
+    .map((x: any) => {
+      return x.toJS()
+    })
     .debounceTime(0)  // ensure all valid flags have been collected before calculating validity
     .map((state: any) => {
       return {

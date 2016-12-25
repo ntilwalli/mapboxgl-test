@@ -80,7 +80,7 @@ function syncEndTimeWithSession(end_time, session) {
 }
 
 function syncRRuleWithSession(rrule, session) {
-  if (rrule && ((rrule.freq === `weekly` && rrule.byweekday.length) || 
+  if (rrule && (rrule.dtstart && (rrule.freq === `weekly` && rrule.byweekday.length) || 
      (rrule.freq === `monthly` && rrule.byweekday.length && rrule.bysetpos.length))) {
     const {dtstart, until} = rrule
     const {start_time, end_time} = session.properties.recurrence
@@ -89,13 +89,13 @@ function syncRRuleWithSession(rrule, session) {
     //console.log(`sent rrule`, rrule)
     const the_rrule = {
       ...rrule,
-      dtstart: dtstart ? start_time ? getDatetime(dtstart, start_time) : dtstart.clone().startOf('day') : moment().startOf('day'),
-      until: until ? until ? getDatetime(until, start_time) : until.clone().endOf('day') : undefined
+      dtstart: start_time ? getDatetime(dtstart, start_time) : dtstart.clone().startOf('day'),
+      until: until ? start_time ? getDatetime(until, start_time) : until.clone().endOf('day') : undefined
     }
 
     session.listing.cuando.rrule = the_rrule
   } else {
-    session.properties.recurrence.rrule = undefined
+    session.properties.recurrence.rrule = rrule
     session.listing.cuando.rrule = undefined
   }
 }
@@ -316,17 +316,17 @@ function view(state$, components) {
       const {state, components} = info
       const {rrule, calendar, modal, rrule_component} = components
       const {session, rrule_expanded} = state
-      const {properties} = session
+      const {properties, listing} = session
       const {recurrence} = properties
       const {start_time, end_time} = recurrence
 
       let rrule_text = 'Not specified'
-      if (rrule) {
-        rrule_text  = getActualRRule(rrule).toText()
+      if (listing.cuando.rrule) {
+        rrule_text  = getActualRRule(listing.cuando.rrule).toText()
         rrule_text = rrule_text.substring(0, 1).toUpperCase() + rrule_text.substring(1)
       }
 
-      return div(`.workflow-step.cuando-recurrence.mb-3`, [
+      return div(`.workflow-step.cuando-recurrence`, [
         calendar,
         div('.row.mt-1', [
           div('.col-xs-3.d-flex.fx-a-c', [
@@ -351,7 +351,7 @@ function view(state$, components) {
             h6('.mb-0', [`Rule`])
           ]),
           div('.col-xs-9.d-flex', [
-            !rrule_expanded ? span('.d-flex.fx-a-c.mr-1', [!rrule ? `Not specified` : rrule_text]) : null,
+            !rrule_expanded ? span('.d-flex.fx-a-c.mr-1', [!listing.cuando.rrule ? `Not specified` : rrule_text]) : null,
             button(`.d-flex.fx-a-c.btn.btn-link.appRRuleSwitch`, [rrule_expanded ? 'collapse' : 'expand'])
           ])
         ]),
@@ -398,7 +398,9 @@ export default function main(sources, inputs) {
   const calendar = Calendar(sources, {
     ...inputs, 
     props$: state$
-      .map(state => state.session.listing.cuando)
+      .map(state => {
+        return state.session.listing.cuando
+      })
       // .distinctUntilChanged((x, y) => {
       //   return deepEqual(x, y)
       // })
@@ -407,8 +409,8 @@ export default function main(sources, inputs) {
   const rrule_component = RRuleComponent(sources, {
     ...inputs, 
     props$: state$
-      .map(state => state.session.listing.cuando.rrule)
-      .distinctUntilChanged((x, y) => deepEqual(x, y))
+      .map(state => state.session.properties.recurrence.rrule)
+      .take(1)
   })
 
   selected$.attach(calendar.output$)

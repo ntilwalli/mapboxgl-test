@@ -3,7 +3,7 @@
   top: 0;
   left: 0;
   width: 100%;
-  height: 100%;
+  //height: 100%;
   padding-top: 3rem;
   padding-bottom: 3rem;
 }
@@ -109,48 +109,7 @@
   .nav-text-button {
     height: 2rem;
   }
-  // .controller {
-  //   border-width: 1px 0 0;
-  //   border-style: solid;
-  //   border-color: lightgray;
 
-  //   .back-section, .next-section {
-  //     height: 100%;
-  //   }
-
-  //   @media (max-width: 767px) {
-  //     .back-section {
-  //       border-width: 0 1px 0 0;
-  //       border-style: solid;
-  //       border-color: lightgray;
-  //       padding-right: 0;
-  //     }
-
-  //     .next-section {
-  //       border-width: 0 0 0 1px;
-  //       border-style: solid;
-  //       border-color: lightgray;
-  //       padding-left: 0;
-  //     }
-
-  //   }
-
-  //   @media (min-width: 768px) {
-  //     .back-section {
-
-  //     }
-
-  //     .next-section:after {
-  //       content: '';
-  //       clear: both;
-  //     }
-
-  //     .next-button {
-  //       float: right
-  //     }
-  //   }
-
-  // }
   .donde {
     .map {
       position: relative;
@@ -170,6 +129,12 @@
         height: 20rem;
         width: 100%;
       }
+    }
+  }
+
+  .cuando-recurrence {
+    .advanced-rrule {
+      padding-bottom: 15rem;
     }
   }
 }
