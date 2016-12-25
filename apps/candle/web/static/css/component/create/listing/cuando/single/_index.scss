@@ -1,5 +1,4 @@
 .cuando-single {
-  .input-area {
     .calendar {
       $boxSize: 2rem;
       $boxMargin: .1rem;
@@ -11,7 +10,7 @@
       flex-flow: column nowrap;
       justify-content: center;
 
-      .controller {
+      .calendar-controller {
         display: flex;
         justify-content: space-around;
       }
@@ -30,5 +29,4 @@
     }
 
     @import './monthCalendar';
-  }
 }

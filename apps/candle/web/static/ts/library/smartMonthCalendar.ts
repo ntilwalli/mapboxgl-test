@@ -26,7 +26,12 @@ function model(actions, inputs) {
     })
     .switchMap((info: any) => {
       const {props} = info
-      const init = props
+      const init = {
+        year: props.year || moment().year(),
+        month: props.month || moment().month(), 
+        selected: []
+      }
+
       return reducer$
         .startWith(Immutable.Map(init))
         .scan((acc, f: Function) => f(acc))

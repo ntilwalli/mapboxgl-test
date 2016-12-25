@@ -1,13 +1,13 @@
 import {Observable as O} from 'rxjs'
-import {div, button, li, span, select, input, option} from '@cycle/dom'
+import {div, button, li, nav, span, select, input, option, label, h6} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 import Immutable = require('immutable')
 import {combineObj, createProxy, mergeSinks, processHTTP, traceStartStop, onlyError, onlySuccess, normalizeArcGISSingleLineToParts} from '../../utils'
 import {renderMenuButton, renderCircleSpinner, renderLoginButton, renderUserProfileButton, renderSearchCalendarButton} from '../helpers/navigator'
 import ArcGISSuggest from '../../thirdParty/ArcGISSuggest'
 import ArcGISGetMagicKey from '../../thirdParty/ArcGISGetMagicKey'
-import AutocompleteInput from '../../library/autocompleteInput'
-import {createRegionAutocomplete} from '../../library/regionAutocomplete'
+import AutocompleteInput from '../../library/bootstrapAutocompleteInput'
+import {createRegionAutocomplete} from '../../library/bootstrapRegionAutocomplete'
 import clone = require('clone')
 
 function intent(sources) {
@@ -15,12 +15,7 @@ function intent(sources) {
   const {success$, error$} = processHTTP(sources, `setApplicationSettings`)
   const show_menu$ = DOM.select(`.appShowMenuButton`).events(`click`)
 
-  const show_login$ = DOM.select(`.appShowLoginButton`).events(`click`)
-  const show_user_profile$ = DOM.select(`.appShowUserProfileButton`).events(`click`)
-    .publishReplay(1).refCount()
-
-  const show_search_calendar$ = DOM.select(`.appShowSearchCalendarButton`).events(`click`)
-    .publishReplay(1).refCount()
+  const brand_button$ = DOM.select(`.appBrandButton`).events(`click`)
 
   const region_type$ = DOM.select(`.appRegionComboBox`).events(`change`)
     .map(ev => ev.target.value)
@@ -37,9 +32,7 @@ function intent(sources) {
     error$,
     got_response$: O.merge(success$, error$),
     show_menu$,
-    show_login$,
-    show_user_profile$,
-    show_search_calendar$,
+    brand_button$,
     region_type$,
     clear_default_region$,
     save_changes$,
@@ -128,18 +121,16 @@ function model(actions, inputs) {
 }
 
 function renderNavigator(state) {
-  const {authorization, save_waiting, default_waiting} = state
-  const waiting = !!(save_waiting || default_waiting)
-
-  return div(`.navigator-section`, [
-    div(`.section`, [
-      renderMenuButton()
-    ]),
-    div(`.section`, [
-      waiting ? renderCircleSpinner() : null,
-      renderSearchCalendarButton(),
-      !authorization ? renderLoginButton() : null,
-      authorization ? renderUserProfileButton() : null
+  const {authorization} = state
+  const authClass = authorization ? 'Logout' : 'Login'
+  return nav('.navbar.navbar-light.bg-faded.container-fluid', [
+    div('.row.no-gutter', [
+      div('.col-xs-6', [
+        button('.appBrandButton.hopscotch-icon.nav-brand', []),
+      ]),
+      div('.col-xs-6', [
+        button('.appShowMenuButton.nav-text-button.fa.fa-bars.btn.btn-link.float-xs-right', []),
+      ]),
     ])
   ])
 }
@@ -151,9 +142,9 @@ function renderRegionMethodCombo(info) {
   const ul  = use_region
 
   //console.log(ul)
-  return div(`.region-combo-section`, [
-    div(`.heading`, [`Region Method`]),
-    select(`.appRegionComboBox.choice`, [
+  return div(`.form-group`, [
+    label({attrs: {for: 'defaultRegion'}}, [h6(['Region Method'])]),
+    select('.appRegionComboBox.form-control', {attrs: {name: 'defaultRegion'}}, [
       option(`.combo-item`, {attrs: {value: `user`, selected: ul === `user`}}, [`Use my location`]),
       option(`.combo-item`, {attrs: {value: `default`, selected: ul === `default`}}, [`Use default region`])
     ])
@@ -167,22 +158,24 @@ function renderDefaultRegion(info) {
   if (default_region) {
     const {position, city_state} = default_region
     const {city, state_abbr} = city_state
-    return div(`.display`, [
-      span([`${city}, ${state_abbr}`]),
-      button(`.appClearDefaultRegion.clear-button`, [])
+    return div(`.row.clearfix`, [
+      div('.col-xs-11', [
+        span([`${city}, ${state_abbr}`])
+      ]),
+      div('.col-xs-1.float-xs-right', [
+        button(`.appClearDefaultRegion.btn.btn-link.close`, {attrs: {type: 'button'}}, [])
+      ])
     ])
   } else {
      const {defaultAutocomplete} = components
-    return div(`.autocomplete`, [
-      defaultAutocomplete,
-    ])
+    return defaultAutocomplete
   }
 }
 
 function renderDefaultRegionSection(info) {
-  return div(`.default-region-section`, [
-    div(`.heading`, [`Default Region`]),
-    div(`.default-region`, [renderDefaultRegion(info)])
+  return div(`.form-group`, [
+    label([h6([`Default Region`])]),
+    renderDefaultRegion(info)
   ])
 }
 
@@ -191,14 +184,17 @@ function renderContent(info) {
   const {state, components} = info
   const {is_valid, save_status} = state
   const disabled = !is_valid
-  return div(`.content-section`, [
-    div(`.content`, [
-      save_status ? div(`.status-section.${save_status.type}`, [save_status.data]) : null,
-      renderRegionMethodCombo(info),
-      renderDefaultRegionSection(info),
-      div(`.button-section`, [
-        button(`.appSaveChanges.save-button`, {attrs: {disabled}}, [`Save`])
-      ])
+  return div(`.container-fluid.mt-1`, [
+    save_status ? div(`.form-group`, [
+      div(`.alerts-area`, [
+        div(`.alert.${save_status.type === 'success' ? 'alert-success' : 'alert-danger'}`, [
+          save_status.data
+      ])])
+    ]) : null,
+    renderRegionMethodCombo(info),
+    renderDefaultRegionSection(info),
+    div(`.form-group`, [
+      button(`.appSaveChanges.save-button`, {attrs: {type: 'button', disabled}}, [`Save`])
     ])
   ])
 }
@@ -210,7 +206,7 @@ function view(state$, components) {
     })
     .map((info: any) => {
       const {state} = info
-      return div(`.settings-component.application`, [
+      return div(`.screen`, [
         renderNavigator(state),
         renderContent(info)
       ])
@@ -279,8 +275,7 @@ function main(sources, inputs) {
             message: settings
           }
         }),
-      actions.show_menu$.mapTo({to: `main`, message: `showLeftMenu`}),
-      actions.show_login$.mapTo({to: `main`, message: `showLogin`})
+      actions.show_menu$.mapTo({to: `main`, message: `showLeftMenu`})
     )
     //.do(x => console.log(`toMessageBus:`, x))
     .publish().refCount()
@@ -317,16 +312,7 @@ function main(sources, inputs) {
     //.do(x => console.log(`settings http`))
     .publish().refCount(),
     Router: O.merge(
-      actions.show_search_calendar$.mapTo({
-        pathname: `/`,
-        type: 'push',
-        action: 'PUSH'
-      }),
-      actions.show_user_profile$.mapTo({
-        pathname: `/home`,
-        type: 'push',
-        action: 'PUSH'
-      })
+      actions.brand_button$.mapTo('/')
     ),
     MessageBus: toMessageBus$
   }

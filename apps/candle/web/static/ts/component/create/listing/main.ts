@@ -8,7 +8,8 @@ import {
   processHTTP, 
   mergeSinks, 
   createProxy,
-  normalizeComponent
+  normalizeComponent,
+  componentify
 } from '../../../utils'
 
 import {
@@ -449,6 +450,8 @@ function main(sources, inputs) {
     //.do(x => console.log(`component$...`, x))
     .publishReplay(1).refCount()
 
+
+
   const components = {
     content: component$.switchMap(x => x.content.DOM),
     controller: component$.switchMap(x => x.controller.DOM),
@@ -496,6 +499,7 @@ function main(sources, inputs) {
 
   const out = {
      DOM: vtree$,
+     Global: component$.switchMap(x => x.content.Global),
      MapJSON: component$
       .switchMap(x => x.content.MapJSON)
       .publish().refCount(),

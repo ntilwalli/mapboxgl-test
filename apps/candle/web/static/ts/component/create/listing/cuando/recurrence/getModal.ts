@@ -1,19 +1,21 @@
 import {Observable as O} from 'rxjs'
 import {blankComponentUndefinedDOM} from '../../../../../utils'
 
-import DoneModal from '../../../../../library/doneModal'
+import DoneModal from '../../../../../library/bootstrapDoneModal'
 
 import TimeInput from '../../../../../library/timeInput/main'
 //import RRuleInput from './rrule/main'
 import AdvancedRRule from './rrule/advanced/main'
 //(sources, {...inputs, props$: O.of(rrule).publishReplay(1).refCount()})
 
+      // props$: O.of({title: `Change Search Area`, styleClass: `.sign-up-height`}),
+
 export default function main(sources, inputs, {modal, session}) {
   if (modal === `start_time`) {
     const out=  DoneModal(sources, {
       ...inputs,
       content: (sources, inputs) => TimeInput(sources, inputs),
-      props$: O.of({title: `Change Start Time`}),
+      props$: O.of({title: `Start Time`, styleClass: '.time-modal-size'}),
       initialState$: O.of(session.properties.recurrence.start_time).publishReplay(1).refCount()
     })
 
@@ -22,7 +24,7 @@ export default function main(sources, inputs, {modal, session}) {
     const out = DoneModal(sources, {
       ...inputs,
       content: (sources, inputs) => TimeInput(sources, inputs),
-      props$: O.of({title: `Change End Time`}),
+      props$: O.of({title: `End Time`, styleClass: '.time-modal-size'}),
       initialState$: O.of(session.properties.recurrence.end_time).publishReplay(1).refCount()
     })
     return out

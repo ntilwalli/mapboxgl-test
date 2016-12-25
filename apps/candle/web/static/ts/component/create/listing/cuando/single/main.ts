@@ -1,5 +1,5 @@
 import {Observable as O} from 'rxjs'
-import {div, span, input, textarea} from '@cycle/dom'
+import {div, span, input, textarea, h6} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 import Immutable = require('immutable')
 import {combineObj, createProxy} from '../../../../../utils'
@@ -27,9 +27,15 @@ function intent(sources) {
     .map(inflateDates)
     .publishReplay(1).refCount()
  
+  const change_month$ = O.merge(
+      DOM.select(`.appIncMonth`).events(`click`).mapTo(1),
+      DOM.select(`.appDecMonth`).events(`click`).mapTo(-1)
+    )
+
 
   return {
-    session$
+    session$,
+    change_month$
   }
 }
 
@@ -38,6 +44,29 @@ function isValid(session) {
 }
 
 function reducers(actions, inputs) {
+
+  const change_month_r = actions.change_month$.map(inc => state => {
+    let month = state.get(`month`)
+    let year = state.get(`year`)
+
+    if (inc > 0) {
+      month = month + inc
+      if (month > 11) {
+        month = month % 12
+        year++
+      }
+
+    } else {
+      month = month + inc
+      if (month < 0) {
+        month = month + 12
+        year--
+      }
+    }
+
+    return state.set(`month`, month).set(`year`, year)
+  })
+
   const begins_date_r = inputs.begins_date$.map(date => state => {
     const begins_date = state.get(`begins_date`)
     const new_date = (!begins_date || !begins_date.isSame(date, 'day')) ? date : undefined
@@ -93,7 +122,7 @@ function reducers(actions, inputs) {
     })
   })
 
-  return O.merge(begins_date_r, begins_time_r, ends_time_r)
+  return O.merge(begins_date_r, begins_time_r, ends_time_r, change_month_r)
 }
 
 function model(actions, inputs) {
@@ -108,8 +137,8 @@ function model(actions, inputs) {
       const {begins, ends} = cuando
       const init = {
         session,
-        begins_month: begins ? begins.month() : moment().month(),
-        begins_year: begins ? begins.year() : moment().year(),
+        month: begins ? begins.month() : moment().month(),
+        year: begins ? begins.year() : moment().year(),
         begins_date: begins,
         begins_time: begins ? to12HourTimeFromMoment(begins) : undefined,
         ends_time: ends ? to12HourTimeFromMoment(ends) : undefined
@@ -136,7 +165,7 @@ function view(state$, components) {
     .map((info: any) => {
       const {state, components} = info
       const {begins_date, begins_time, ends_time} = components
-      const {session, begins_year, begins_month} = state
+      const {session, year, month} = state
       const {listing} = session
       const {cuando} = listing
       const {begins, ends} = cuando
@@ -144,39 +173,31 @@ function view(state$, components) {
       //console.log(`begins, ends`, begins, ends)
       const is_next_day = begins && ends && !begins.isSame(ends, 'day') ? true : false 
       //console.log(`next day?`, is_next_day)
-      return div(`.workflow-step.cuando-single`, [
-        div(`.heading`, []),
-        div(`.body`, [
-          div(`.column.justify-center.margin-bottom`, [
-            div(`.sub-heading.flex.justify-center`, ['Date']),
-            div(`.input-area`, [
-              div(`.flex.justify-center`, [
-                div(`.calendar`, [
-                  div(`.controller`, [
-                    div(`.appDecMonth.text-button.fa.fa-angle-left.fa-2x`, []),
-                    div(`.flex-center`, [moment([begins_year, begins_month]).format('MMM YYYY')]),
-                    div(`.appIncMonth.text-button.fa.fa-angle-right.fa-2x`, []) 
-                  ]),
-                  begins_date
-                ])
-              ])
-            ])
-          ]),
-          div(`.column.justify-center.margin-bottom`, [
-            div(`.sub-heading.flex.justify-center`, ['Start time']),
-            div(`.input-area`, [
-              begins_time
-            ])
-          ]),
-          div(`.column.justify-center`, [
-            div(`.sub-heading.flex.justify-center`, ['End time']),
-            div(`.input-area`, [
-              is_next_day ? span(`.next-day-message.flex-center`, ['(following day)']) : null,
-              ends_time
+      return div('.cuando-single', [
+        div('.form-group', [
+          div('.row', [
+            div('.col-xs-6.push-xs-3', {style: {display: "flex", "justify-content": "center"}}, [
+              span(`.calendar`, [
+                div(`.calendar-controller`, [
+                  div(`.appDecMonth.text-button.fa.fa-angle-left.fa-2x`, []),
+                  div(`.flex-center`, [moment([year, month]).format('MMM YYYY')]),
+                  div(`.appIncMonth.text-button.fa.fa-angle-right.fa-2x`, []) 
+                ]),
+                begins_date
+              ]),
             ])
           ])
+        ]),
+        div('.form-group', [
+          h6('.d-flex.fx-j-c', ['Start time']),
+          begins_time
+        ]),
+        div('.form-group', [
+          h6('.d-flex.fx-j-c', ['End time']),
+            is_next_day ? span(`.d-flex.fx-j-c`, ['(following day)']) : null,
+            ends_time
+          ])
         ])
-      ])
     })
 }
 
@@ -198,8 +219,8 @@ export default function main(sources, inputs) {
     sources, {
       ...inputs, 
       props$: state$.map((state: any) => ({
-        year: state.begins_year, 
-        month: state.begins_month, 
+        year: state.year, 
+        month: state.month, 
         selected: state.begins_date ? [state.begins_date] : []
       }))
     })

@@ -81,12 +81,10 @@ function view(state$, components) {
     components$: combineObj(components)
   }).map((info: any) => {
     const {components} = info
-    return div(`.donde.workflow-step`, [
-      div(`.body`, [
-        renderSearchArea(info),
-        renderModeInput(info),
-        components.modal
-      ])
+    return div(`.donde`, [
+      renderSearchArea(info),
+      renderModeInput(info),
+      components.modal
     ])
   })
 }
@@ -107,6 +105,8 @@ function main(sources, inputs) {
     .map((state: any) => getModal(sources, inputs, {modal: state.modal, session: state.session}))
     .publishReplay(1).refCount()
 
+  const modal = componentify(modal$)
+
   hide_modal$.attach(normalizeSink(modal$, `close$`))
   search_area$.attach(normalizeSink(modal$, `done$`))
 
@@ -125,12 +125,14 @@ function main(sources, inputs) {
         throw new Error(`Invalid mode ${mode}`)
       }
     }).publishReplay(1).refCount()
+  
+  const input_component = componentify(input_component$)
 
-  donde$.attach(input_component$.switchMap(x => x.output$)) 
+  donde$.attach(input_component$.switchMap((x: any) => x.output$)) 
  
   const components = {
-    modal$: modal$.switchMap((x: any) => x.DOM),
-    input_component$: input_component$.switchMap((x: any) => x.DOM)
+    modal$: modal.DOM,
+    input_component$: input_component.DOM
   }
 
   const vtree$ = view(state$, components)
@@ -138,16 +140,13 @@ function main(sources, inputs) {
     DOM: vtree$,
   }
 
-  const out = {
-    DOM: vtree$,
-    HTTP: O.merge(modal$.switchMap((x: any) => x.HTTP), input_component$.switchMap((x: any) => x.HTTP)),
-    MapJSON: O.merge(modal$.switchMap((x: any) => x.MapJSON), input_component$.switchMap((x: any) => x.MapJSON)).publish().refCount(), 
-    Global: input_component$.switchMap((x: any) => x.Global), 
+  const merged = mergeSinks(modal, input_component)
+
+  return {    
+    ...merged,
+    DOM: vtree$, 
+    output$: state$
   }
-
-  const normalized = normalizeComponent(out)
-
-  return {...normalized, output$: state$}
 }
 
 export {

@@ -59,8 +59,8 @@ function renderModal(info) {
   const {props, content} = info
   const title = props.title || ``
   const styleClass = props.styleClass || ``
-  return div(`.appModalContainer.modal${styleClass}`, {style: {display: "inline-block"}}, [
-    div('.modal-dialog.modal-lg', [
+  return div('.appModalContainer.modal', {style: {display: "inline-block"}}, [
+    div(`.modal-dialog.modal-lg`, [
       div(`.modal-content`, [
         div(`.modal-header.container-fluid`, [
           div('.row', [
@@ -72,7 +72,11 @@ function renderModal(info) {
             ])
           ])
         ]),
-        div(`.modal-body`, [content]),
+        div(`.modal-body.d-flex.fx-j-c`, [
+          div(`${styleClass}`, [
+          content
+          ])
+        ]),
         div(`.modal-footer`, [
           button(`.appDoneButton`, [`Done`])
         ])

@@ -157,7 +157,8 @@ function view(state$, props$) {
     const autofocus = props && !!props.autofocus
     const name = props.name
     const disabled = state.disabled
-    return input(`.appInput.form-control`, {class: {disabled}, attrs: {placeholder, name, type, autofocus, value: state.value, disabled}})
+    const styleClass = props.styleClass || ''
+    return input(`.appInput.form-control` + styleClass, {class: {disabled}, attrs: {placeholder, name, type, autofocus, value: state.value, disabled}})
   })
 }
 

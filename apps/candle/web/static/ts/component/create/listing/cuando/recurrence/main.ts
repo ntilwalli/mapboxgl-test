@@ -1,15 +1,17 @@
 import {Observable as O} from 'rxjs' 
-import {div, span, input} from '@cycle/dom'
+import {div, span, input, h6, button} from '@cycle/dom'
 import Immutable = require('immutable')
-import {combineObj, createProxy, traceStartStop} from '../../../../../utils'
+import {combineObj, createProxy, mergeSinks, componentify, traceStartStop} from '../../../../../utils'
 import moment = require('moment')
 import {RRule} from 'rrule'
 import {getActualRRule} from '../../../../helpers/listing/utils'
 import {getDatetime} from '../../../../../helpers/time'
 import clone = require('clone')
+import deepEqual = require('deep-equal')
 import {inflateDates} from '../../../../helpers/listing/utils'
 
 import Calendar from './calendar/main'
+import RRuleComponent from './rrule/advanced/main'
 import TimeInput from '../../../../../library/timeInput/main'
 
 import getModal from './getModal'
@@ -78,13 +80,12 @@ function syncEndTimeWithSession(end_time, session) {
 }
 
 function syncRRuleWithSession(rrule, session) {
-  const {dtstart, until} = rrule
-  const {start_time, end_time} = session.properties.recurrence
+  if (rrule && ((rrule.freq === `weekly` && rrule.byweekday.length) || 
+     (rrule.freq === `monthly` && rrule.byweekday.length && rrule.bysetpos.length))) {
+    const {dtstart, until} = rrule
+    const {start_time, end_time} = session.properties.recurrence
 
-  session.properties.recurrence.rrule = clone(rrule)
-  
-  if ((rrule.freq === `weekly` && rrule.byweekday.length) || 
-      (rrule.freq === `monthly` && rrule.byweekday.length && rrule.bysetpos.length)) {
+    session.properties.recurrence.rrule = clone(rrule)
     //console.log(`sent rrule`, rrule)
     const the_rrule = {
       ...rrule,
@@ -94,6 +95,7 @@ function syncRRuleWithSession(rrule, session) {
 
     session.listing.cuando.rrule = the_rrule
   } else {
+    session.properties.recurrence.rrule = undefined
     session.listing.cuando.rrule = undefined
   }
 }
@@ -130,8 +132,7 @@ function intent(sources) {
     .mapTo(`start_time`)
   const change_end_time$ = DOM.select(`.appChangeEndTime`).events(`click`)
     .mapTo(`end_time`)
-  const change_rrule_time$ = DOM.select(`.appChangeRRule`).events(`click`)
-    .mapTo(`rrule`)
+  const rrule_expand$ = DOM.select(`.appRRuleSwitch`).events(`click`)
 
 
   const clear_start_time$ = DOM.select(`.appClearStartTime`).events(`click`)
@@ -141,9 +142,10 @@ function intent(sources) {
 
   return {
     session$,
-    modal$: O.merge(change_start_time$, change_end_time$, change_rrule_time$),
+    modal$: O.merge(change_start_time$, change_end_time$),
     clear_start_time$,
-    clear_end_time$
+    clear_end_time$,
+    rrule_expand$
   }
 }
 
@@ -178,6 +180,10 @@ const isValid = session => {
 
 function reducers(actions, inputs) {
 
+  const rrule_expand_r = actions.rrule_expand$.map(_ => state => {
+    return state.update('rrule_expanded', x => !x)
+  })
+
   const modal_r = actions.modal$.map(val => state => {
     return state.set(`modal`, val)
   })
@@ -208,8 +214,14 @@ function reducers(actions, inputs) {
         toggleRDate(the_date, session.listing.cuando.rdate, session.properties.recurrence.rdate, session)
       }
 
-
       //console.log(`session`, session)
+      return session
+    })
+  })
+
+  const rrule_r = inputs.rrule$.map(rrule => state => {
+    return state.update('session', session => {
+      syncRRuleWithSession(rrule, session)
       return session
     })
   })
@@ -225,9 +237,6 @@ function reducers(actions, inputs) {
             break;
           case 'end_time':
             syncEndTimeWithSession(val, session)
-            break;
-          case 'rrule':
-            syncRRuleWithSession(val, session)
             break;
           default:
             throw new Error(`Invalid modal type`)
@@ -252,6 +261,7 @@ function reducers(actions, inputs) {
   })
 
   return O.merge(
+    rrule_expand_r, rrule_r,
     modal_r, modal_close_r, 
     selected_r, modal_output_r,
     clear_start_time_r, clear_end_time_r
@@ -263,10 +273,11 @@ function model(actions, inputs) {
   return actions.session$.switchMap(session => {
       return reducer$.startWith(Immutable.Map({
         session,
-        modal: undefined
+        modal: undefined,
+        rrule_expanded: false
       })).scan((acc, f: Function) => f(acc))
     })
-    .map((x: any) => x.toJS())
+    .map((x: any) => clone(x.toJS()))
     .map(state => {
       return {
         ...state,
@@ -296,36 +307,36 @@ function getTimeString(time) {
 
 function renderRRule(info) {
   const {state, components} = info
-  const {rrule_input} = components
-  const {session} = state
+  const {rrule_component} = components
+  const {session, rrule_expanded} = state
   const {properties, listing} = session
   const {cuando} = listing
   const {rrule} = cuando
   // const {recurrence} = properties
   // const {rrule, data, type} = recurrence
-  let out
-  if (!rrule) {
-    out = div(`.rrule-section`, [
-      span(`.not-specified`, [
-        span(`.sub-heading`, [`Rule`]),
-        span([`Not specified`]),
-        span(`.appChangeRRule.edit-button.fa.fa-pencil-square-o`, [])
-      ])
-    ])
-  } else {
-    const text = getActualRRule(rrule).toText()
-    out = div(`.rrule-section`, [
-      div(`.heading-section`, [
-        span(`.heading`, [
-          span(`.bold`, [`Rule`]), 
-          span(`.appChangeRRule.edit-button.fa.fa-pencil-square-o`, [])
-        ]),
-      ]),
-      div(`.value`, [
-        text.substring(0, 1).toUpperCase() + text.substring(1)
-      ])
-    ])
+
+  let rrule_text = 'Not specified'
+  if (rrule) {
+    rrule_text  = getActualRRule(rrule).toText()
+    rrule_text = rrule_text.substring(0, 1).toUpperCase() + rrule_text.substring(1)
   }
+
+  const out = div('.row.mt-1', [
+    div('.col-xs-12', [
+      div('.row', [
+        div('.col-xs-12.d-flex', [
+          h6('.d-flex.fx-a-c.mr-1.mb-0', [`Rule`]),
+          !rrule_expanded ? span('.d-flex.fx-a-c.mr-1', [!rrule ? `Not specified` : rrule_text]) : null,
+          button(`.d-flex.fx-a-c.btn.btn-link.appRRuleSwitch`, [rrule_expanded ? 'collapse' : 'expand'])
+        ])
+      ]),
+      div('.row', {style: {display: rrule_expanded ? "block" : "none"}}, [
+        div('.col-xs-11.push-xs-1', [
+          rrule_component
+        ])
+      ])
+    ])
+  ])
 
   return out
 }
@@ -337,23 +348,23 @@ function renderTime(state) {
   const {recurrence} = properties
   const {start_time, end_time} = recurrence
 
-  return div(`.time-section`, [
-    div(`.start-time`, [
-      div(`.sub-heading`, [
+  return div(`.d-flex.fx-j-sa.mt-1`, [
+    div(`.d-flex.fx-j-c`, [
+      h6('.d-flex.fx-a-c.mb-0.mr-1', [
         `Start time`
       ]),
-      div(`.display`, [
-        span(`.value`, [start_time ? getTimeString(start_time) : `Not specified`]),
-        span(`.appChangeStartTime.edit-button.fa.fa-pencil-square-o`, [])
+      div(`.d-flex.fx-j-c`, [
+        span('.d-flex.fx-a-c.mr-1', [start_time ? getTimeString(start_time) : `Not specified`]),
+        span(`.d-flex.fx-a-c.btn.btn-link.appChangeStartTime.fa.fa-pencil-square-o`, [])
       ])
     ]),
-    div(`.end-time`, [
-      div(`.sub-heading`, [
+    div(`.d-flex.fx-j-c`, [
+      h6('.d-flex.fx-a-c.mb-0.mr-1', [
         `End time`
       ]),
-      div(`.display`, [
-        span(`.value`, [end_time ? getTimeString(end_time) : `Not specified`]),
-        span(`.appChangeEndTime.edit-button.fa.fa-pencil-square-o`, [])
+      div(`.d-flex.fx-j-c`, [
+        span('.d-flex.fx-a-c.mr-1', [end_time ? getTimeString(end_time) : `Not specified`]),
+        span(`.d-flex.fx-a-c.btn.btn-link.appChangeEndTime.fa.fa-pencil-square-o`, [])
       ])
     ])
   ])
@@ -369,7 +380,7 @@ function view(state$, components) {
       //console.log(`info`, info)
       const {state, components} = info
       const {rrule, calendar, modal} = components
-      return div(`.workflow-step.recurrence`, [
+      return div(`.workflow-step.cuando-recurrence.mb-3`, [
         calendar,
         renderRRule(info),
         renderTime(state),
@@ -386,9 +397,12 @@ export default function main(sources, inputs) {
   const selected$ = createProxy()
   const modal_output$ = createProxy()
   const modal_close$ = createProxy()
+  const rrule$ = createProxy()
+
 
   const state$ = model(actions, {
     ...inputs, 
+    rrule$,
     selected$,
     modal_output$,
     modal_close$
@@ -401,30 +415,38 @@ export default function main(sources, inputs) {
     .map((state: any) => getModal(sources, inputs, state))
     .publishReplay(1).refCount()
 
+  const modal = componentify(modal$)
   modal_close$.attach(modal$.switchMap(x => x.close$))
   modal_output$.attach(modal$.switchMap(x => x.done$))
 
   const calendar = Calendar(sources, {
     ...inputs, 
-    // props$: O.of({
-    //   rdate: [],
-    //   exdate: [],
-    //   rrule: undefined
-    // })
     props$: state$
       .map(state => state.session.listing.cuando)
+      .distinctUntilChanged((x, y) => deepEqual(x, y))
+  })
+
+  const rrule_component = RRuleComponent(sources, {
+    ...inputs, 
+    props$: state$
+      .map(state => state.session.listing.cuando.rrule)
+      .distinctUntilChanged((x, y) => deepEqual(x, y))
   })
 
   selected$.attach(calendar.output$)
+  //rrule$.attach(rrule_component.output$)
   
   const components = {
     calendar$: calendar.DOM,
+    rrule_component$: rrule_component.DOM, 
     modal$: modal$.switchMap(x => x.DOM)
   }
 
   const vtree$ = view(state$, components)
+  const merged = mergeSinks(calendar, rrule_component, modal)
 
   return {
+    ...merged,
     DOM: vtree$,
     output$: state$
   }

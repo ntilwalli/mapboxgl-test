@@ -1,17 +1,18 @@
 import {Observable as O} from 'rxjs'
-import {div, span, form, button, input, select, option} from '@cycle/dom'
+import {div, span, form, button, input, select, option, label, h6} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 import Immutable = require('immutable')
-import {combineObj, createProxy, traceStartStop} from '../../../../../../../utils'
+import {combineObj, createProxy, mergeSinks, componentify, traceStartStop} from '../../../../../../../utils'
 import {RRule, RRuleSet, rrulestr} from 'rrule'
 import moment = require('moment')
 import clone = require('clone')
 
 import WeekdaySelector from '../../../../../../../library/weekdaySelector'
 import SetposSelector from '../../../../../../../library/setposSelector'
-import TextInput from '../../../../../../../library/smartTextInput'
+import TextInput, {SmartTextInputValidation} from '../../../../../../../library/bootstrapTextInput'
 
 import MonthCalendar from '../../../../../../../library/monthCalendar'
+import DateInput from '../../../../../../../library/bootstrapDateInput'
 
 function intent(sources) {
   const {DOM, Router} = sources
@@ -69,39 +70,21 @@ function reducers(actions, inputs) {
 
   const dtstart_r = inputs.dtstart$.map(date => state => {
     return state.update(`rrule`, rrule => {
-      if (rrule.dtstart) {
-        if (rrule.dtstart.isSame(date, 'day')) {
-          rrule.dtstart = undefined
-        } else {
-          rrule.dtstart = date
-        }
-      } else {
-        rrule.dtstart = date
-      }
-
+      rrule.dtstart = date
       return rrule
     })
   })
 
   const until_r = inputs.until$.map(date => state => {
     return state.update(`rrule`, rrule => {
-      if (rrule.until) {
-        if (rrule.until.isSame(date, 'day')) {
-          rrule.until = undefined
-        } else {
-          rrule.until = date
-        }
-      } else {
-        rrule.until = date
-      }
-
+      rrule.unilt = date
       return rrule
     })
   })
 
   const clear_dtstart_r = actions.clear_dtstart$.map(_ => state => {
     return state.update(`rrule`, rrule => {
-      rrule.dtstart = moment()
+      rrule.dtstart = undefined
       return rrule
     })
   })
@@ -153,6 +136,15 @@ function reducers(actions, inputs) {
   )
 }
 
+function getDefault() {
+  return {
+    dtstart: undefined,
+    byweekday: [],
+    interval: undefined,
+    bysetpos: [],
+    until: undefined
+  }
+}
 function model(actions, inputs) {
   const reducer$ = reducers(actions, inputs) 
 
@@ -162,12 +154,14 @@ function model(actions, inputs) {
     .switchMap((info: any) => {
       
       const {rrule} = info
+      const init_rrule = rrule || getDefault()
+      const {dtstart, until} = init_rrule
       const init = {
-        rrule,
-        start_month: moment().month(),
-        start_year: moment().year(),
-        end_month: moment().month(),
-        end_year: moment().year()
+        rrule: init_rrule,
+        start_month: dtstart ? dtstart.month() : moment().month(),
+        start_year: dtstart ? dtstart.year() : moment().year(),
+        until_month: until ? until.month() : moment().month(),
+        until_year: until ? until.year() : moment().year(),
       }
 
       //console.log(`rrule advanced init`, clone(init))
@@ -184,8 +178,7 @@ function renderFreqType(state) {
   const {rrule} = state
   const {freq} = rrule
 
-  return div(`.input`, [
-    select(`.appFrequencyComboBox.frequency-input`, [
+  return select(`.appFrequencyComboBox.form-control`, [
       option({
           attrs: {
             value: undefined, 
@@ -205,7 +198,6 @@ function renderFreqType(state) {
           }
         }, [`Monthly`])
     ])
-  ])
 }
 
 function renderCalendar(year, month, component, type, title, style_class = '') {
@@ -214,9 +206,9 @@ function renderCalendar(year, month, component, type, title, style_class = '') {
   return div(`.${type}-date-section.vertical-section${style_class}`, [
     div(`.heading`, [title]),
     div(`.calendar-controller`, [
-      button(`.appDecrement${cased_type}Month.text-button.fa.fa-angle-left.fa-1-5x`),
+      button('.appDecrement' + cased_type + 'Month.text-button.fa.fa-angle-left.fa-1-5x'),
       span(`.flex-center`, [moment([year, month]).format('MMM YYYY')]),
-      button(`.appIncrement${cased_type}Month.text-button.fa.fa-angle-right.fa-1-5x`)
+      button('.appIncrement' + cased_type + 'Month.text-button.fa.fa-angle-right.fa-1-5x')
     ]),
     div(`.input`, [
       component
@@ -236,75 +228,78 @@ function view(state$, components) {
     const {freq} = rrule
     const {byweekday, interval, bysetpos, start_date, end_date} = components
     return div(`.advanced-rrule`, [
-      div(`.frequency-section.section`, [
-        div(`.heading`, [`Frequency`]),
+      div(`.form-group.mt-1`, [
+        label([
+          h6([`Frequency`])
+        ]),
         renderFreqType(state)
       ]),
-      div(`.interval-section.section`, [
-        div(`.heading`, [`Interval`]),
-        div(`.input`, [interval])
+      div(`.form-group`, [
+        label([
+          h6([`Interval`])
+        ]),
+        interval
       ]),
-      div(`.byweekday-section.section`, [
-        div(`.heading`, [`By day`]),
-        div(`.input`, [byweekday])
+      div(`.form-group`, [
+        label([
+          h6([`By day`])
+        ]),
+        byweekday
       ]),
-      freq === `monthly` ? div(`.bysetpos-section.section`, [
-        div(`.heading`, [`By position`]),
-        div(`.input`, [bysetpos])
-      ]) : null,
-      div(`.date-section`, [
-        renderCalendar(start_year, start_month, start_date, 'start', `Beginning`),
+      div(`.form-group`, {style: {display: freq === `monthly` ? 'block' : 'none'}}, [
+        label([
+          h6([`By position`])
+        ]),
+        bysetpos
+      ]),
+      div(`.form-group`, [
+        label([
+          h6([`Starting`])
+        ]),
+        start_date
+      ]),
+      div(`.form-group`, [
         renderCalendar(end_year, end_month, end_date, 'until', `Until`, `.small-margin-top`)
-      ])
+      ]),
       //button(`.appClearAll.text-button.flex-center.small-margin-top`, [`clear`])
     ])
   })
 }
 
-const intervalInputProps = O.of({
-  placeholder: ``,
+function numberValidator(val): SmartTextInputValidation {
+  const parsed = parseInt(val)
+  if (val && !isNaN(parsed)) {
+    return {value: val, errors: []}
+  } else {
+    return {value: undefined, errors: [`Invalid number`]}
+  }
+}
+
+const numberInputProps = O.of({
+  placeholder: '',
   name: `interval`,
-  styleClass: `.interval-input`
+  styleClass: `.small-number-input`,
+  emptyIsError: false
 })
+
 
 export default function main(sources, inputs) {
   const actions = intent(sources)
-  const props$ = inputs.props$.publishReplay(1).refCount()
+  const props$ = inputs.props$
+    .map(x => {
+      return x
+    })
+    .publishReplay(1).refCount()
 
   const interval_input = TextInput(sources, {
-    validator: input => {
-      const output = parseInt(input)
-      if (isNaN(output)) {
-        if (input === undefined) {
-          return {
-            value: input,
-            errors: []
-          }
-        } else {
-          return {
-            value: input,
-            errors: [`Invalid number`]
-          }
-        }
-      } else {
-        if (output > 0) {
-          return {
-            value: output,
-            errors: []
-          }
-        } else {
-          return {
-            value: output,
-            errors: [`Must be empty or greater than zero`]
-          }
-        }
-      }
-    },
-    props$: intervalInputProps, 
-    initialText$: props$.pluck(`interval`)
+    validator: numberValidator,
+    validateOnBlur: true,
+    props$: numberInputProps, 
+    errors$: O.never(),
+    initialText$: O.of(undefined)
   })
 
-  const weekday_selector = WeekdaySelector(sources, {...inputs, props$: props$.pluck(`byweekday`)})
+  const weekday_selector = WeekdaySelector(sources, {...inputs, props$: props$.map(x => !!x ? x.byweekday : [])})
   //const setpos_selector = SetposSelector(sources, {...inputs, props$: props$.pluck(`bysetpos`)}) 
   const bysetpos$ = createProxy()
   const dtstart$ = createProxy()
@@ -328,22 +323,37 @@ export default function main(sources, inputs) {
       .distinctUntilChanged((x: any, y: any) => JSON.stringify(x.sort()) === JSON.stringify(y.sort()))
     }) 
 
-  const start_date_calendar = isolate(MonthCalendar)(sources, {
-    ...inputs, 
-    props$: state$.map((state: any) => ({
-      year: state.start_year, 
-      month: state.start_month, 
-      selected: state.rrule.dtstart ? [state.rrule.dtstart] : []
-    }))
+  // const start_date_calendar = isolate(MonthCalendar)(sources, {
+  //   ...inputs, 
+  //   props$: state$.map((state: any) => ({
+  //     year: state.start_year, 
+  //     month: state.start_month, 
+  //     selected: state.rrule.dtstart ? [state.rrule.dtstart] : []
+  //   }))
+  // })
+
+  const start_date_calendar = isolate(DateInput)(sources, {
+    ...inputs,
+    props$: state$
+      .map((state: any) => state.rrule.dtstart)
+      .distinctUntilChanged((x: any, y: any) => {
+        return x && x.isSame(y)
+      })
+      .map(x => {
+        return x
+      })
   })
+
 
   const end_date_calendar = isolate(MonthCalendar)(sources, {
     ...inputs, 
-    props$: state$.map((state: any) => ({
-      year: state.end_year, 
-      month: state.end_month, 
-      selected: state.rrule.until ? [state.rrule.until] : []
-    }))
+    props$: state$.map((state: any) => {
+      return {
+        year: state.until_year, 
+        month: state.until_month, 
+        selected: state.rrule.until ? [state.rrule.until] : []
+      }
+    })
   })
 
   dtstart$.attach(start_date_calendar.output$)
@@ -351,15 +361,16 @@ export default function main(sources, inputs) {
 
   const components = {
     byweekday$: weekday_selector.DOM,
-    interval$: interval_input.DOM,
-    bysetpos$: setpos_selector.DOM,
-    start_date$: start_date_calendar.DOM,
-    end_date$: end_date_calendar.DOM
+    interval$:  interval_input.DOM,
+    bysetpos$:  setpos_selector.DOM,
+    start_date$:  start_date_calendar.DOM,
+    end_date$:  end_date_calendar.DOM
   }
 
   const vtree$ = view(state$, components)
-
+  const merged = mergeSinks(weekday_selector, interval_input, setpos_selector, start_date_calendar, end_date_calendar)
   return {
+    ...merged,
     DOM: vtree$,
     output$: state$.pluck(`rrule`)
   }

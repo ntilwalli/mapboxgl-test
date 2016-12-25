@@ -1,5 +1,5 @@
 import {Observable as O} from 'rxjs'
-import {li, span} from '@cycle/dom'
+import {li, span, strong, em} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 import {combineObj, createProxy, mergeSinks} from '../utils'
 import FoursquareSuggestVenues from '../thirdParty/FoursquareSuggestVenues'
@@ -27,8 +27,8 @@ export function createVenueAutocomplete(sources, inputs) {
           `.dropdown-item${highlighted ? '.highlight' : ''}`,
           {attrs: {'data-index': index}},
           [
-            span(`.venue-name`, [getVenueName(suggestion)]),
-            span(`.venue-address`, [getVenueAddress(suggestion)])
+            em(`.venue-name.mr-1`, [getVenueName(suggestion)]),
+            getVenueAddress(suggestion)
           ]
         )
       }

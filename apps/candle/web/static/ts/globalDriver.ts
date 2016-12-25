@@ -87,8 +87,9 @@ export default function makeGlobalsDriver() {
       .map(x => x.data)
       .map(ev => {
         ev.preventDefault()
+        //console.log(`preventing default`)
         if(ev.type === `blur`) {
-          console.log(`preventing blur default, keeping input focus`)
+          //console.log(`preventing blur default, keeping input focus`, ev)
           ev.target.focus()
           //setTimeout(() => ev.target.focus(), 4)
         } 

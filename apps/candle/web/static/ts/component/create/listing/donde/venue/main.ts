@@ -2,7 +2,7 @@ import {Observable as O} from 'rxjs'
 
 import {div, input, select, option, h5, li, span, strong, button} from '@cycle/dom'
 import Immutable = require('immutable')
-import {combineObj, createProxy, spread} from '../../../../../utils'
+import {combineObj, normalizeComponent, createProxy, spread} from '../../../../../utils'
 import {toLngLatArray, createFeatureCollection} from '../../../../../mapUtils'
 
 import {createVenueAutocomplete} from '../../../../../library/bootstrapVenueAutocomplete'

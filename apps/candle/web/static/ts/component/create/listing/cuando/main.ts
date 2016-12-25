@@ -1,6 +1,6 @@
 import {Observable as O} from 'rxjs'
 import {div} from '@cycle/dom'
-import {normalizeComponent, componentify} from '../../../../utils'
+import {normalizeComponent, mergeSinks, componentify} from '../../../../utils'
 import intent from './intent'
 
 
@@ -18,20 +18,12 @@ export function main(sources, inputs) {
     }
   }).publishReplay(1).refCount()
 
-  const components = {
-    screen$: screen$.switchMap(x => {
-      return x.DOM
-    })
-  }
-
-  const out = {
-    DOM: screen$.switchMap(screen => screen.DOM)
-  }
-
-  const normalized = normalizeComponent(out)
+  const screen = componentify(screen$)
+  const merged = mergeSinks(screen)
 
   return {
-    ...normalized, 
+    ...merged,
+    DOM: screen.DOM, 
     output$:  screen$.switchMap(screen => {
       return screen.output$
     })
