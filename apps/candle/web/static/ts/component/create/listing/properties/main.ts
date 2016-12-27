@@ -222,7 +222,7 @@ function view(state$, children$) {
     const errors = 
       Object.keys(properties).reduce((acc, val) => acc.concat(properties[val].errors), [])
 
-    return div(`.workflow-step.properties`, [
+    return div(`.properties`, [
       errors.length ? div('.errors', errors.map(x => div([x]))) : null,
       div(`.body`, children.map(x => div(`.large-margin-bottom`, [x])))
     ])

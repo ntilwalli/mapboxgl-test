@@ -142,24 +142,41 @@
   }
 
   .properties {
+
+    .plus-button {
+      border-color: lightgray;
+      border-style: solid;
+      padding: 0 .2rem;
+      background-color: white;
+      border-radius: .25rem;
+    }
+
     .input-line {
       display: flex;
       align-items: center;
       //flex-flow: row wrap;
 
+      // .heading-large {
+      //   flex: 0 1 
+      // }
+
       .heading {
-        flex: 0 1 15%;
+        flex: 1 1 15%;
       }
 
       .content {
         display: flex;
         align-items: center;
-        flex: 1 1 85%;
+        flex: 1 1 auto;
         //flex-flow: row wrap;
       }
     }
 
     .raw-line {
+      display: flex;
+      align-items: center;
+      flex: 1 1 auto;
+
       .content {
         display: flex;
         align-items: center;
@@ -193,4 +210,16 @@
 
 .time-input {
   width: 5rem;
+}
+
+.purchase_type_combo_box {
+  width: 4rem;
+}
+
+.fx-auto-width {
+  flex: 1 1 auto
+}
+
+.fx-half-width {
+  flex: 1 1 50%;
 }

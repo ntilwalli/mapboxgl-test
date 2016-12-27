@@ -268,13 +268,18 @@ export default function main(sources, inputs) {
     drink_ticket: drink_ticket_component.DOM
   }).debounceTime(0).map((components: any) => {
     const {type, minutes, songs, bucket_entry, drink_ticket} = components
-    return div(`.row`, [
-      bucket_entry ? span('.item.bucket-entry', [bucket_entry]) : null,
-      songs ? span('.item.songs', [songs]) : null,
-      minutes ? span('.item.minutes', [minutes]) : null,
-      drink_ticket ? span('.item.drink-ticket', [drink_ticket]) : null,
-      type
-    ]) 
+    const data = bucket_entry || songs || minutes || drink_ticket
+    // return div('.row', [
+    //   div('.col-xs-12', [
+    return div(`.raw-line`, [
+          type,
+          !!data ? span('.ml-xs', [data]) : null
+          // songs ? span('.ml-xs', [songs]) : null,
+          // minutes ? span('.ml-xs', [minutes]) : null,
+          // drink_ticket ? span('.ml-xs', [drink_ticket]) : null,
+        ]) 
+    //   ])
+    // ])
   })
 
   const output$ = combineObj({

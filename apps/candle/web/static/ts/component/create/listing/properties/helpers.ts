@@ -49,16 +49,16 @@ export function MinimumPurchaseComponent(sources, props$, component_id) {
     //p_opts.DRINK_OR_ITEM,
     PurchaseTypeOptions.DOLLARS
   ]
-  const type_input = isolate(PurchaseTypeComboBox)(sources, options, props$.map(x => x.type))
+  const type_input = isolate(StyledComboBox)(sources, options, props$.map(x => x.type), '.purchase_type_combo_box')
 
   const vtree$ = combineObj({
     number: number_input.DOM,
     type: type_input.DOM
   }).map((components: any) => {
     const {number, type} = components
-    return div('.row', [
-      span('.item', [number]),
-      span('.item', [type])
+    return div('.d-fx-a-c', [
+      number,
+      div('.ml-xs', [type])
     ])
   })
 
@@ -182,6 +182,31 @@ function getTextFromOption(opt) {
       return (opt.substring(0, 1).toUpperCase() + opt.substring(1)).replace(/_/g, ' ').replace(/and/g, '+')
   }
 }
+
+export function StyledComboBox(sources, options, props$, style_class = '') {
+  const shared$ = props$
+    .map(x => {
+      return x
+    })
+    .publishReplay(1).refCount()
+  const click$ = sources.DOM.select(`.appComboBoxSelect`).events('change')
+    .map(ev => {
+      return ev.target.value
+    })
+  const state$ = O.merge(shared$, click$).publishReplay(1).refCount()
+  const vtree$ = shared$.map(state => {
+    return select(`.appComboBoxSelect.form-control.form-control-sm` + style_class, options.map(opt => {
+        return option({attrs: {value: opt, selected: state === opt}}, [
+          getTextFromOption(opt)
+        ])
+      }))
+  })
+
+  return {
+    DOM: vtree$,
+    output$: state$
+  }
+} 
 
 export function ComboBox(sources, options, props$, mapper?) {
   const shared$ = props$
@@ -592,49 +617,49 @@ export function TextInputComponent(sources, initialText$, component_id, props) {
   }
 }
 
-export function DayOfWeekTimeComponent(sources, props$, message) {
-  const shared$ = props$.publishReplay(1).refCount()
-  const weekday_radio = WeekdayRadio(sources, {
-    props$: shared$.map(x => x.day)
-  })
-  const time_selector = TimeInput(sources, {
-    props$: shared$
-      .map(x => to12HourTime(x.time))
-  })
+// export function DayOfWeekTimeComponent(sources, props$, message) {
+//   const shared$ = props$.publishReplay(1).refCount()
+//   const weekday_radio = WeekdayRadio(sources, {
+//     props$: shared$.map(x => x.day)
+//   })
+//   const time_selector = TimeInput(sources, {
+//     props$: shared$
+//       .map(x => to12HourTime(x.time))
+//   })
 
-  const state$ = combineObj({
-    day: weekday_radio.output$,
-    time: time_selector.output$.map(toMilitaryTime)
-  })
+//   const state$ = combineObj({
+//     day: weekday_radio.output$,
+//     time: time_selector.output$.map(toMilitaryTime)
+//   })
 
-  const vtree$ = combineObj({
-    day: weekday_radio.DOM,
-    time: time_selector.DOM
-  }).map((components: any) => {
-    return div([
-        div(`.item.flex.justify-center.margin-bottom`, [components.day]),
-        div(`.item.flex.justify-center.bold`, ['@']),
-        div(`.item`, [components.time])
-    ])
-  })
+//   const vtree$ = combineObj({
+//     day: weekday_radio.DOM,
+//     time: time_selector.DOM
+//   }).map((components: any) => {
+//     return div([
+//         div(`.item.flex.justify-center.margin-bottom`, [components.day]),
+//         div(`.item.flex.justify-center.bold`, ['@']),
+//         div(`.item`, [components.time])
+//     ])
+//   })
   
-  return {
-    DOM: vtree$,
-    output$: state$.map((state: any) => {
-      let errors = [message] 
-      let valid = false
-      if (state.day && state.time) {
-        valid = true
-        errors = []
-      }
-      return {
-        errors,
-        valid,
-        value: state
-      }
-    })
-  }
-}
+//   return {
+//     DOM: vtree$,
+//     output$: state$.map((state: any) => {
+//       let errors = [message] 
+//       let valid = false
+//       if (state.day && state.time) {
+//         valid = true
+//         errors = []
+//       }
+//       return {
+//         errors,
+//         valid,
+//         value: state
+//       }
+//     })
+//   }
+// }
 
 export function BootstrapDayOfWeekTimeComponent(sources, props$, component_id) {
   const shared$ = props$.publishReplay(1).refCount()
@@ -800,8 +825,8 @@ export function RelativeTimeComponent(sources, props$, options, component_id, he
     return div('.row ', [
       div('.col-xs-12', [
         div('.row', [
-          div('.col-xs-12.input-line.fx-wrap', [
-            div('.heading', [em([heading_title])]),
+          div('.col-xs-12.raw-line.fx-wrap', [
+            em('.mr-1', [heading_title]),
             div('.content', [
               type,
               data && same_line ? span('.ml-xs', [data]) : null

@@ -326,7 +326,7 @@ function view(state$, components) {
         rrule_text = rrule_text.substring(0, 1).toUpperCase() + rrule_text.substring(1)
       }
 
-      return div(`.workflow-step.cuando-recurrence`, [
+      return div(`.cuando-recurrence`, [
         calendar,
         div('.row.mt-1', [
           div('.col-xs-3.d-flex.fx-a-c', [

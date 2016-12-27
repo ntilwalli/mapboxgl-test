@@ -1,9 +1,9 @@
 import {Observable as O} from 'rxjs'
 import isolate from '@cycle/isolate'
-import {div, span, input} from '@cycle/dom'
+import {div, em, span, input} from '@cycle/dom'
 import deepEqual = require('deep-equal')
 import {combineObj, createProxy, blankComponentUndefinedDOM} from '../../../../../utils'
-import {MinimumPurchaseComponent, minimumPurchaseDefault, CostPerMinuteComponent, costPerMinuteDefault, BlankStructuredUndefined, CostTypeComboBox, PurchaseTypeComboBox, FloatInputComponent, NumberInputComponent} from '../helpers'
+import {StyledComboBox, MinimumPurchaseComponent, minimumPurchaseDefault, CostPerMinuteComponent, costPerMinuteDefault, BlankStructuredUndefined, ComboBox, CostTypeComboBox, PurchaseTypeComboBox, FloatInputComponent, NumberInputComponent} from '../helpers'
 import {CostOptions, PurchaseTypeOptions} from '../../../../../listingTypes'
 import clone = require('clone')
 
@@ -75,7 +75,7 @@ export default function main(sources, inputs) {
     CostOptions.SEE_NOTE
   ]
 
-  const type_component = isolate(CostTypeComboBox)(sources, options, shared$.pluck('type').take(1))
+  const type_component = isolate(StyledComboBox)(sources, options, shared$.pluck('type').take(1), '.fx-half-width')
   const type$ = type_component.output$.publishReplay(1).refCount() 
   const props$ = O.merge(shared$, type$.skip(1).map(toDefault)).publishReplay(1).refCount()
 
@@ -127,7 +127,7 @@ export default function main(sources, inputs) {
     .map((props: any) => {
       switch (props.type) {
         case CostOptions.COST_PER_MINUTE:
-          return  CostPerMinuteComponent(
+          return CostPerMinuteComponent(
             sources, 
             O.of(props.data.cost_per_minute), 
             component_id
@@ -151,24 +151,64 @@ export default function main(sources, inputs) {
     }).debounceTime(0).map((components: any) => {
       const {type, cover, minimum_purchase, cost_per_minute} = components
       const both = cover && minimum_purchase
-
-      return div('.column', [
-        inputs.heading_text ? div('.sub-heading.section-heading ', [inputs.heading_text]) : null,
-        div({class: {row: !both, column: both}}, [
-          span(`.item`, {class: {'small-margin-bottom': both}}, [type]),
-          cover ? div(`.row.align-center.small-margin-bottom`, [
-            both ? span('.sub-sub-heading.align-center', ['Cover']) : null,
-            span(`.item`, [span('.row', [span('.item', [cover]), span('.item.flex.align-center', ['dollars'])])])
+      const line_type = inputs.heading_text ? '.input-line' : '.raw-line'
+      return div('.row', [
+        div('.col-xs-12', [
+          div('.row', [
+            div('.col-xs-12' + line_type, [
+              inputs.heading_text ? div('.heading', [inputs.heading_text]) : null,
+              div('.content.fx-wrap', [
+                div('.d-fx-a-c.mb-xs.fx-auto-width', [type]),
+                !both && cover ? span('.d-fx-a-c.ml-xs.mb-xs', [
+                  cover,
+                  span('.ml-xs', ['dollars'])
+                ]) : null,
+                !both && minimum_purchase ? span('.ml-xs.d-fx-a-c.mb-xs', [
+                  minimum_purchase
+                ]) : null
+              ]),
+            ])
+          ]),
+          both ? div('.row', [
+            div('.col-xs-12', [
+              div('.row', [
+                div('.col-xs-12.raw-line.fx-auto-width.fx-wrap', [
+                  em('.mr-1', ['Cover']),
+                  div('.d-fx-a-c', [
+                    cover,
+                    'dollars'
+                  ])
+                ])
+              ]),
+              div('.row', [
+                div('.col-xs-12.raw-line.fx-auto-width.fx-wrap', [
+                  em('.mr-1', ['Minimum purchase']),
+                  minimum_purchase
+                ])
+              ])
+            ])
           ]) : null,
-          minimum_purchase ? div('.row.align-center', [
-            both ? span('.sub-sub-heading.align-center', ['Minimum purchase']) : null,
-            span('.item', [minimum_purchase]),
-          ]) : null,
-          cost_per_minute ? div('.row.align-center', [
-            span('.item', [minimum_purchase]),
+          cost_per_minute ? div('.row', [
+            span('.col-xs-12', [cost_per_minute]),
           ]) : null
-        ])  
-      ])     
+        ])
+      ])
+      //     div({class: {row: !both, column: both}}, [
+      //       span(`.item`, {class: {'small-margin-bottom': both}}, [type]),
+      //       cover ? div(`.row.align-center.small-margin-bottom`, [
+      //         both ? span('.sub-sub-heading.align-center', ['Cover']) : null,
+      //         span(`.item`, [span('.row', [span('.item', [cover]), span('.item.flex.align-center', ['dollars'])])])
+      //       ]) : null,
+      //       minimum_purchase ? div('.row.align-center', [
+      //         both ? span('.sub-sub-heading.align-center', ['Minimum purchase']) : null,
+      //         span('.item', [minimum_purchase]),
+      //       ]) : null,
+      //       cost_per_minute ? div('.row.align-center', [
+      //         span('.item', [cost_per_minute]),
+      //       ]) : null
+      //     ])  
+      //   ])  
+      // ])   
     })
 
   const output$ = combineObj({

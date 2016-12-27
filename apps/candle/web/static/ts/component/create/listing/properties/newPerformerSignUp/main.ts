@@ -3,7 +3,7 @@ import isolate from '@cycle/isolate'
 import {div, span, input, label, em, strong, i, h4, h5, h6, VNode} from '@cycle/dom'
 import {combineObj, createProxy, traceStartStop} from '../../../../../utils'
 import {
-  DayOfWeekTimeComponent,
+  //DayOfWeekTimeComponent,
   RelativeTimeComponent,
   PreRegistrationInfoComponent, 
   ComboBox, 
@@ -60,15 +60,15 @@ function PreRegistrationRadios(sources, props$) {
       span('.col-xs-12.raw-line', [
         span('.content.fx-wrap', [
           label('.form-check-inline', [
-            input('.appRegistrationTypeInput.form-check-input', {attrs: {type: 'radio', name: 'registration-type', value: 'app', checked: registration_type === 'app'}}, []),
+            input('.appRegistrationTypeInput.form-check-input.mr-xs', {attrs: {type: 'radio', name: 'registration-type', value: 'app', checked: registration_type === 'app'}}, []),
             'Enable in-app'
           ]),
           label('.form-check-inline', [
-            input('.appRegistrationTypeInput.form-check-input', {attrs: {type: 'radio', name: 'registration-type', value: 'email', checked: registration_type === 'email'}}, []),
+            input('.appRegistrationTypeInput.form-check-input.mr-xs', {attrs: {type: 'radio', name: 'registration-type', value: 'email', checked: registration_type === 'email'}}, []),
             'E-mail'
           ]),
           label('.form-check-inline', [
-            input('.appRegistrationTypeInput.form-check-input', {attrs: {type: 'radio', name: 'registration-type', value: 'website', checked: registration_type === 'website'}}, []),
+            input('.appRegistrationTypeInput.form-check-input.mr-xs', {attrs: {type: 'radio', name: 'registration-type', value: 'website', checked: registration_type === 'website'}}, []),
             'Website'
           ])
         ])
@@ -97,15 +97,15 @@ function InPersonStyleComponent(sources, props$) {
 
   const vtree$ = shared$.map(styles =>  {
     return div('.row', [
-      span('.col-xs-12.input-line.fx-wrap', [
-        span('.heading', [em(['Style'])]),
+      span('.col-xs-12.raw-line.fx-wrap', [
+        em('.mr-1', ['Style']),
         span('.content', [
           label('.form-check-inline', [
-            input('.appInPersonStyleInput.form-check-input', {attrs: {type: 'checkbox', name: 'in-person-style', value: 'bucket', checked: styles.some(x => x === 'bucket')}}, []),
+            input('.appInPersonStyleInput.form-check-input.mr-xs', {attrs: {type: 'checkbox', name: 'in-person-style', value: 'bucket', checked: styles.some(x => x === 'bucket')}}, []),
             'Bucket'
           ]),
           label('.form-check-inline', [
-            input('.appInPersonStyleInput.form-check-input', {attrs: {type: 'checkbox', name: 'in-person-style', value: 'list', checked: styles.some(x => x === 'list')}}, []),
+            input('.appInPersonStyleInput.form-check-input.mr-xs', {attrs: {type: 'checkbox', name: 'in-person-style', value: 'list', checked: styles.some(x => x === 'list')}}, []),
             'List'
           ])
         ])
@@ -168,6 +168,7 @@ function InPersonComponent(sources, props$, component_id) {
     RelativeTimeOptions.EVENT_START,
     RelativeTimeOptions.PREVIOUS_WEEKDAY_AT_TIME,
     RelativeTimeOptions.MINUTES_BEFORE_EVENT_START,
+    RelativeTimeOptions.MINUTES_AFTER_EVENT_START,
     RelativeTimeOptions.MINUTES_BEFORE_EVENT_END,
     RelativeTimeOptions.EVENT_END
   ]
@@ -182,8 +183,8 @@ function InPersonComponent(sources, props$, component_id) {
     return div('.row', [
       div('.col-xs-12', [
         div('.row.mb-xs', [
-          div('.col-xs-12.input-line.fx-wrap', [
-            div('.heading', [em(['Begins'])]),
+          div('.col-xs-12.raw-line.fx-wrap', [
+            em('.mr-1 ', ['Begins']),
             div('.content.fx-wrap', [
               span('.d-fx-a-c.mr-xs', [components.begins]),
               span('.d-fx-a-c', ['minutes before event start'])
@@ -252,6 +253,7 @@ function PreRegistrationComponent(sources, props$, component_id) {
     RelativeTimeOptions.PREVIOUS_WEEKDAY_AT_TIME,
     RelativeTimeOptions.MINUTES_BEFORE_EVENT_START,
     RelativeTimeOptions.MINUTES_BEFORE_EVENT_END,
+    RelativeTimeOptions.MINUTES_BEFORE_EVENT_END,
     RelativeTimeOptions.EVENT_END
   ]
   const ends_component = RelativeTimeComponent(sources, shared$.pluck('ends'), ends_options, component_id + ' ends', 'Ends')
@@ -263,13 +265,23 @@ function PreRegistrationComponent(sources, props$, component_id) {
     ends: ends_component.DOM,
     data: data_component.DOM
   }).map((components: any) => {
-    return div('.column', [
-      components.type,
-      components.begins,
-      components.ends,
-      components.data ? components.data : null
+    return div('.row', [
+      div('.col-xs-12', [
+        div('.mb-xs', [components.type]),
+        div('.mb-xs', [components.begins]),
+        div('.mb-xs', {class: {'mb-xs': !!components.data}}, [components.ends]),
+        components.data ? components.data : null
+      ])
     ])
   })
+
+  //   return div('.column', [
+  //     div('.mb-xs', [components.type]),
+  //     div('.mb-xs', [components.begins]),
+  //     div('.mb-xs', {class: {'mb-xs': !!components.data}}, [components.ends]),
+  //     components.data ? components.data : null
+  //   ])
+  // })
 
   const output$ = combineObj({
     type: radios_output$,
@@ -442,7 +454,7 @@ export default function main(sources, inputs): SinksType {
             div('.col-xs-12', [label('.fw-lighter', [em(['In-person'])])])
           ]) : null,
           both ? div('.row', [
-            div('.col-xs-12.ml-1', [in_person])
+            div('.col-xs-12.pl-indent', [in_person])
           ]) : in_person
         ]) 
       ]) : null,
@@ -452,7 +464,7 @@ export default function main(sources, inputs): SinksType {
             div('.col-xs-12', [label('.fw-lighter', [em(['Pre-registration'])])])
           ]) : null,
           both ? div('.row', [
-            div('.col-xs-12.ml-1', [pre_registration])
+            div('.col-xs-12.pl-indent', [pre_registration])
           ]) : pre_registration,
         ])
       ]) : null

@@ -41,11 +41,19 @@ export default function main(sources, inputs) {
     }).debounceTime(0).map((components: any) => {
       const {cost, perk} = components
 
-      return div(`.column`, [
-        cost,
-        div('.row', [
-          span('.item.flex.align-center.perk', [inputs.heading_text || 'Perk?']),
-          perk
+      return div(`.row`, [
+        div('.col-xs-12', [
+          div('.row', [
+            div('.col-xs-12', [
+              cost
+            ])
+          ]),
+          div('.row', [
+            div('.col-xs-12.raw-line', [
+              span('.d-fx-a-c.mr-1', [inputs.heading_text || 'Perk?']),
+              perk
+            ])
+          ])
         ])
       ])
     })

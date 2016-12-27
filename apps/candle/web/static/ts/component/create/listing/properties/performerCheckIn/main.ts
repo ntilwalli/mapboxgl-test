@@ -6,7 +6,7 @@ import {
   RelativeTimeOptions, 
 } from '../../../../../listingTypes'
 import {
-  DayOfWeekTimeComponent,
+  //DayOfWeekTimeComponent,
   PreRegistrationInfoComponent, 
   ComboBox, 
   RelativeTimeComponent,
@@ -102,15 +102,15 @@ export default function main(sources, inputs) {
       //div('.sub-heading.section-heading ', ['Check-in']),
       div('.col-xs-12', [
         div('.row.mb-xs', [
-          div('.col-xs-12.input-line', [
-            div('.heading', [em(['Begins'])]),
+          div('.col-xs-12.raw-line.fx-wrap', [
+            div('.mr-1', [em(['Begins'])]),
             div('.content.fx-wrap', [
-              span('.d-fx-a-c.mr-xs', [components.begins]),
-              span('.d-fx-a-c', ['minutes before event start'])
+              div('.mr-xs', [components.begins]),
+              'minutes before event start'
             ]),
           ])
         ]),
-        div('.mb-xs', [components.ends])
+        components.ends
       ])
     ])
   })
