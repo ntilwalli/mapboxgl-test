@@ -23,7 +23,7 @@ const EventTypeToProperties = {
     MetaPropertyTypes.PERFORMER_SIGN_UP, 
     MetaPropertyTypes.PERFORMER_CHECK_IN,
     MetaPropertyTypes.PERFORMER_COST,
-    // MetaPropertyTypes.STAGE_TIME,
+    MetaPropertyTypes.STAGE_TIME,
     // MetaPropertyTypes.PERFORMER_LIMIT,
     // MetaPropertyTypes.LISTED_HOSTS,
     // MetaPropertyTypes.NOTES,

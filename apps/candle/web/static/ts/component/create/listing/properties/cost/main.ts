@@ -142,7 +142,6 @@ export default function main(sources, inputs) {
     output$: cost_per_minute_component$.switchMap(x => x.output$)
   }
 
-
   const vtree$ = combineObj({
       type: type_component.DOM,
       cover: cover_component.DOM, 
@@ -192,23 +191,7 @@ export default function main(sources, inputs) {
             span('.col-xs-12', [cost_per_minute]),
           ]) : null
         ])
-      ])
-      //     div({class: {row: !both, column: both}}, [
-      //       span(`.item`, {class: {'small-margin-bottom': both}}, [type]),
-      //       cover ? div(`.row.align-center.small-margin-bottom`, [
-      //         both ? span('.sub-sub-heading.align-center', ['Cover']) : null,
-      //         span(`.item`, [span('.row', [span('.item', [cover]), span('.item.flex.align-center', ['dollars'])])])
-      //       ]) : null,
-      //       minimum_purchase ? div('.row.align-center', [
-      //         both ? span('.sub-sub-heading.align-center', ['Minimum purchase']) : null,
-      //         span('.item', [minimum_purchase]),
-      //       ]) : null,
-      //       cost_per_minute ? div('.row.align-center', [
-      //         span('.item', [cost_per_minute]),
-      //       ]) : null
-      //     ])  
-      //   ])  
-      // ])   
+      ])  
     })
 
   const output$ = combineObj({

@@ -1,5 +1,5 @@
 import {Observable as O} from 'rxjs'
-import {div, span, button} from '@cycle/dom'
+import {div, span, button, h6} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 import Immutable = require('immutable')
 import {combineObj, createProxy} from '../../../../../utils'
@@ -14,29 +14,36 @@ function render(state, component_id, item_heading) {
   if (state.length === 0) {
     children = [`Click plus to add ${item_heading}`]
   } else {
-    children = state.map((x, index) => div('.column', [
-      div('.row', [
-        div('.item', [x]),
-        span('.appSubtractButton.list-button.fa.fa-minus', {attrs: {'data-index': index}}, [])
+    children = state.map((x, index) => {
+      const margin_class = index === state.length - 1 ? '.mb-1' : ''
+      return div('.row', [
+        div('.col-xs-12', [
+          div('.row' + margin_class, [
+            div('.col-xs-12.raw-line.mb-xs.fx-auto-width', [
+              span('.d-fx-a-c.mr-1', [`${item_heading} ${index + 1}`]),
+              span('.appCollectionSubtractButton.fa.fa-minus.plus-button.btn.btn-link', {attrs: {'data-index': index}}, [])
+            ])
+          ]),
+          x
+        ])
       ])
-    ]))
+    })
   }
 
-  return div('.column', [
-    div('.row', [
-      div('.sub-heading.section-heading', [component_id]),
-      button('.appAddButton.list-button.item.flex.align-center.fa.fa-plus', [])
+  return div('.card.card-block', [
+    div('.card-title.d-fx-a-c', [
+      h6('.mb-0.mr-1', [component_id]),
+      button('.appCollectionAddButton.fa.fa-plus.plus-button.btn.btn-link', [])
     ]),
-    div('.column', children)
-  ])
+  ].concat(children))
 }
 
 function intent(sources) {
   const {DOM} = sources
 
   return {
-    add$: DOM.select('.appAddButton').events('click'),
-    subtract$: DOM.select('.appSubtractButton').events('click').map(ev => {
+    add$: DOM.select('.appCollectionAddButton').events('click'),
+    subtract$: DOM.select('.appCollectionSubtractButton').events('click').map(ev => {
       return parseInt(ev.target.dataset['index'])
     })
   }

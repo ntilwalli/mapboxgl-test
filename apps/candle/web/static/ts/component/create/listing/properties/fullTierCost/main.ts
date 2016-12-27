@@ -25,7 +25,8 @@ export default function main(sources, inputs) {
     CostOptions.FREE,
     CostOptions.COVER,
     CostOptions.MINIMUM_PURCHASE,
-    CostOptions.COVER_AND_MINIMUM_PURCHASE
+    CostOptions.COVER_AND_MINIMUM_PURCHASE,
+    CostOptions.SEE_NOTE
   ]
 
 

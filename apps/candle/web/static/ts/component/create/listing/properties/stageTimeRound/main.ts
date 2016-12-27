@@ -1,6 +1,6 @@
 import {Observable as O} from 'rxjs'
 import isolate from '@cycle/isolate'
-import {div, span, input} from '@cycle/dom'
+import {div, em, span, input} from '@cycle/dom'
 import deepEqual = require('deep-equal')
 import {combineObj, createProxy, isInteger} from '../../../../../utils'
 import {ComboBox, BlankStructuredUndefined, FloatInputComponent, NumberInputComponent} from '../helpers'
@@ -98,9 +98,9 @@ function RangeMinutesComponent(sources, props$, component_id) {
       return x || getRangeDefault()
     })
     .publishReplay(1).refCount()
-  const max_message = component_id + ': Invalid max number'
+  const max_message = component_id + ' max'
   const max_input = FloatInputComponent(sources, shared$.map(x => x ? x.max.toString() : undefined), max_message)
-  const min_message = component_id + ': Invalid min number'
+  const min_message = component_id + ' min'
   const min_input = FloatInputComponent(sources, shared$.map(x => x ? x.min.toString() : undefined), min_message)
 
   const vtree$ = combineObj({
@@ -108,13 +108,11 @@ function RangeMinutesComponent(sources, props$, component_id) {
     min: min_input.DOM
   }).map((components: any) => {
     const {max, min} = components
-    return div('.col', [
-      div('.row', [
-        span('.sub-sub-heading.item.flex.align-center', ['Min']),
-        span('.item', [min]),
-        span('.sub-sub-heading.item.flex.align-center', ['Max']),
-        span([max])
-      ])
+    return div('.raw-line', [
+      span('.mr-xs', ['Min']),
+      span('.mr-xs', [min]),
+      span('.mr-xs', ['Max']),
+      max
     ])
   })
 
@@ -189,11 +187,9 @@ function MinutesComponent(sources, options, props$, component_id) {
     data: data_component.DOM
   }).map((components: any) => {
     const {type, data} = components
-    return div('.col', [
-      div('.row', [
-        span('.item', [type]),
-        data,
-      ])
+    return div('.raw-line', [
+      span('.mr-xs', [type]),
+      data,
     ])
   })
 
@@ -223,11 +219,7 @@ function SongsComponent(sources, props$, component_id) {
   const songs_input = NumberInputComponent(sources, shared$.map(x => x.toString()), message)
 
   const vtree$ = songs_input.DOM.map(songs => {
-    return div('.col', [
-      div('.row', [
-        span('.item', [songs])
-      ])
-    ])
+    return songs
   })
 
   return {
@@ -280,6 +272,10 @@ function toDefault(type) {
       return {
         type,
         data: getMinutesOrSongsDefault()
+      }
+    case StageTimeOptions.SEE_NOTE:
+      return {
+        type
       }
     default:
       throw new Error()
@@ -354,24 +350,61 @@ export default function main(sources, inputs) {
     const {type, minutes, songs} = components
 
     const both = minutes && songs
+    const line_type = inputs.heading_text ? '.input-line' : '.raw-line'
 
-    const minutes_heading = !!both ? span('.sub-sub-heading.align-center', ['Minutes']) : null
-    const songs_heading = !!both ? span('.sub-sub-heading.align-center', ['Songs']) : null
-    return div({class: {row: !both, column: both}}, [
-        span('.item', [type]),
-        minutes ? div(`.row.align-center`, [
-          minutes_heading, 
-            span('.row', [
-              minutes
+    return div('.row', [
+      div('.col-xs-12', [
+        div('.row', [
+          div('.col-xs-12' + line_type, [
+            inputs.heading_text ? div('.heading', [inputs.heading_text]) : null,
+            div('.content.fx-wrap', [
+              div('.d-fx-a-c.mb-xs.fx-auto-width', [type]),
+              !both && minutes ? span('.d-fx-a-c.ml-xs.mb-xs', [
+                minutes
+              ]) : null,
+              !both && songs ? span('.ml-xs.d-fx-a-c.mb-xs', [
+                songs
+              ]) : null
+            ]),
+          ])
+        ]),
+        both ? div('.row', [
+          div('.col-xs-12', [
+            div('.row.mb-xs', [
+              div('.col-xs-12.raw-line.fx-auto-width.fx-wrap', [
+                em('.mr-1', ['Minutes']),
+                div('.d-fx-a-c', [
+                  minutes,
+                ])
+              ])
+            ]),
+            div('.row', [
+              div('.col-xs-12.raw-line.fx-auto-width.fx-wrap', [
+                em('.mr-1', ['Songs']),
+                songs
+              ])
             ])
-        ]) : null,
-        songs ? div('.row.align-center', [
-          songs_heading,
-            span('.row', [
-              songs
-            ])
+          ])
         ]) : null
-      ]) 
+      ])
+    ])  
+
+
+    // return div({class: {row: !both, column: both}}, [
+    //     span('.item', [type]),
+    //     minutes ? div(`.row.align-center`, [
+    //       minutes_heading, 
+    //         span('.row', [
+    //           minutes
+    //         ])
+    //     ]) : null,
+    //     songs ? div('.row.align-center', [
+    //       songs_heading,
+    //         span('.row', [
+    //           songs
+    //         ])
+    //     ]) : null
+    //   ]) 
   })
 
   const output$ = combineObj({

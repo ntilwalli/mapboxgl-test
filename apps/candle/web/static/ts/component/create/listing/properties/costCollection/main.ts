@@ -14,19 +14,13 @@ function render(state, component_id, item_heading) {
   if (state.length === 0) {
     children = ['Click plus to add item']
   } else if (state.length === 1) {
-    children = state//.map(x => {
-    //   return div('.row', [
-    //     div('.col-xs-12', [
-    //       x
-    //     ])
-    //   ])
-    // })
+    children = state
   } else {
     children = state.map((x, index) => {
-      const margin_class = index === state.length - 1 ? '.mb-1' : ''
-      return div('.row', [
+      const margin_class = index !== state.length - 1 ? '.mb-1' : ''
+      return div('.row' + margin_class, [
         div('.col-xs-12', [
-          div('.row' + margin_class, [
+          div('.row', [
             div('.col-xs-12.raw-line.mb-xs.fx-auto-width', [
               span('.d-fx-a-c.mr-1', [`${item_heading} ${index + 1}`]),
               span('.appCostCollectionSubtractButton.fa.fa-minus.plus-button.btn.btn-link', {attrs: {'data-index': index}}, [])
@@ -38,12 +32,12 @@ function render(state, component_id, item_heading) {
     })
   }
 
-    return div('.card.card-block', [
-      div('.card-title.d-fx-a-c', [
-        h6('.mb-0.mr-1', [component_id]),
-        button('.appCostCollectionAddButton.fa.fa-plus.plus-button.btn.btn-link', [])
-      ]),
-    ].concat(children))
+  return div('.card.card-block', [
+    div('.card-title.d-fx-a-c', [
+      h6('.mb-0.mr-1', [component_id]),
+      button('.appCostCollectionAddButton.fa.fa-plus.plus-button.btn.btn-link', [])
+    ]),
+  ].concat(children))
 }
 
 function intent(sources) {
@@ -137,7 +131,8 @@ export default function main(sources, inputs) {
           CostOptions.COVER,
           CostOptions.MINIMUM_PURCHASE,
           CostOptions.COVER_AND_MINIMUM_PURCHASE,
-          CostOptions.COVER_OR_MINIMUM_PURCHASE
+          CostOptions.COVER_OR_MINIMUM_PURCHASE,
+          CostOptions.SEE_NOTE
         ]
 
         perk_options = [
@@ -152,6 +147,7 @@ export default function main(sources, inputs) {
           CostOptions.COVER,
           CostOptions.MINIMUM_PURCHASE,
           CostOptions.COVER_AND_MINIMUM_PURCHASE,
+          CostOptions.SEE_NOTE
         ]
 
         perk_options = [
