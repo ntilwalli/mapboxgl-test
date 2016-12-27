@@ -46,26 +46,6 @@ function renderDateController(state) {
   ])
 }
 
-// function renderNavigator(state) {
-//   const {authorization} = state
-//   const authClass = authorization ? `Logout` : `Login`
-//   return div(`.navigator-section`, [
-//     div(`.section`, [
-//       renderMenuButton()
-//     ]),
-//     div(`.section`, [
-//       //`Hello`,
-//       renderDateController(state),
-//       renderFiltersController(state)
-//     ]),
-//     div(`.section`, [
-//       !authorization ? renderLoginButton() : null,
-//       authorization ? renderUserProfileButton() : null
-//     ])
-//   ])
-// }
-
-
 
 function renderNavigator(state) {
   const {authorization} = state
@@ -93,7 +73,7 @@ function renderContent(info) {
   const {grid, filters} = components
 
   return div(`.content-section.nav-fixed-offset`, [ 
-    showLoader(state) ? renderLoader() : grid,
+    grid,
   ])
 }
 
@@ -114,7 +94,7 @@ function view(state$, components) {
 
     return div(`.screen.search-results.one-day`, {class: {"no-scroll": showFilters}}, [
       renderNavigator(state),
-      renderContent(info),
+      showLoader(state) ? renderLoader() : renderContent(info),
       showFilters ? filters : null
     ])
   })

@@ -97,7 +97,7 @@ function InPersonStyleComponent(sources, props$) {
 
   const vtree$ = shared$.map(styles =>  {
     return div('.row', [
-      span('.col-xs-12.input-line', [
+      span('.col-xs-12.input-line.fx-wrap', [
         span('.heading', [em(['Style'])]),
         span('.content', [
           label('.form-check-inline', [
@@ -182,7 +182,7 @@ function InPersonComponent(sources, props$, component_id) {
     return div('.row', [
       div('.col-xs-12', [
         div('.row.mb-xs', [
-          div('.col-xs-12.input-line', [
+          div('.col-xs-12.input-line.fx-wrap', [
             div('.heading', [em(['Begins'])]),
             div('.content.fx-wrap', [
               span('.d-fx-a-c.mr-xs', [components.begins]),
@@ -432,7 +432,7 @@ export default function main(sources, inputs): SinksType {
     const {signup_type, in_person, pre_registration} = components
     const both = in_person && pre_registration
     return div('.card.card-block', [
-      h6('.card-title', ['Performer signup']),
+      h6('.card-title', ['Performer sign-up']),
       div('.mb-xs', [
         signup_type
       ]),

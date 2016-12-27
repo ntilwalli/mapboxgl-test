@@ -800,7 +800,7 @@ export function RelativeTimeComponent(sources, props$, options, component_id, he
     return div('.row ', [
       div('.col-xs-12', [
         div('.row', [
-          div('.col-xs-12.input-line', [
+          div('.col-xs-12.input-line.fx-wrap', [
             div('.heading', [em([heading_title])]),
             div('.content', [
               type,

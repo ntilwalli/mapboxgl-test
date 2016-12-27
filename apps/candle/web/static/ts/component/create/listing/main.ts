@@ -302,8 +302,8 @@ function renderSmallInstructionPanel(info) {
         //hide: !show_instruction
       }
     }, [
-      button(`.appCloseInstruction.close`, {style: {display: !!show_instruction ? 'block' : 'none'}}, []),
-      span(`.icon.fa.fa-lightbulb-o`),
+      div('.clearfix', [span(`.appCloseInstruction.close.float-xs-right`, {style: {display: !!show_instruction ? 'inline' : 'none'}}, []),
+      span(`.icon.fa.fa-lightbulb-o`)]),
       div({style: {display: !!show_instruction ? 'block' : 'none'}}, [small_instruction])
     ])
   //   div(`.appOpenInstruction.small-instruction`, {

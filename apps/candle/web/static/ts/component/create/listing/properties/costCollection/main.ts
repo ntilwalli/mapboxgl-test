@@ -1,5 +1,5 @@
 import {Observable as O} from 'rxjs'
-import {div, span, button} from '@cycle/dom'
+import {div, span, h6, button} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 import Immutable = require('immutable')
 import {combineObj, createProxy} from '../../../../../utils'
@@ -25,13 +25,13 @@ function render(state, component_id, item_heading) {
     ]))
   }
 
-  return div('.column', [
-    div('.row', [
-      div('.sub-heading.section-heading', [component_id]),
-      button('.appCostCollectionAddButton.list-button.item.flex.align-center.fa.fa-plus', [])
-    ]),
-    div('.column', children)
-  ])
+    return div('.card.card-block', [
+      h6('.card-title', [
+        component_id,
+        button('.appCostCollectionAddButton.list-button.item.flex.align-center.fa.fa-plus', [])
+      ]),
+      div('.column', children)
+    ])
 }
 
 function intent(sources) {

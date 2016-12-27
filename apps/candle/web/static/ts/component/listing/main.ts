@@ -83,7 +83,15 @@ function view(authorization, components) {
       const {authorization, components} = info
       return div('.screen', [
         renderNavigator({authorization}),
-        components.content ? div('.content-section.listing-profile', [
+        components.content ? div('.content-section.listing-profile.nav-fixed-offset', {
+            hook: {
+              create: (emptyVNode, {elm}) => {
+                //window.scrollTo(0, 0)
+                //console.log('scrolling top')
+                //elm.scrollTop = 0
+              }
+            } 
+          }, [
           components.content
         ]) : span('.loader')
       ])

@@ -301,6 +301,14 @@ button.close::after {
   content: '×';
 }
 
+span.close:focus {
+  outline: none;
+}
+
+span.close::after {
+  content: '×';
+}
+
 
 
 

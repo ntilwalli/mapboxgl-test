@@ -9,7 +9,8 @@ function view(state$, components) {
       const {content, modal} = components
       //state.modal ? console.log(modal) : null
       return div(`.root-container`, [
-        state.modal && state.modal === 'leftMenu' ? undefined : content,
+        //state.modal && state.modal === 'leftMenu' ? undefined : 
+        content,
         state.modal ? modal : null
       ])
     })
