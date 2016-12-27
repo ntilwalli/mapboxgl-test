@@ -145,7 +145,7 @@ function model(actions, inputs) {
       return reducer$.startWith(init).scan((acc, f: Function) => f(acc))
     })
     .map((x: any) => x.toJS())
-    .do(x => console.log(`textInput state:`, x))
+    //.do(x => console.log(`textInput state:`, x))
     .publishReplay(1).refCount()
 }
 
@@ -158,7 +158,8 @@ function view(state$, props$) {
     const name = props.name
     const disabled = state.disabled
     const styleClass = props.styleClass || ''
-    return input(`.appInput.form-control` + styleClass, {class: {disabled}, attrs: {placeholder, name, type, autofocus, value: state.value, disabled}})
+    const valid = state.isValid
+    return div({class: {'has-danger': !valid}}, [input(`.appInput.form-control` + styleClass, {class: {disabled}, attrs: {placeholder, name, type, autofocus, value: state.value, disabled}})])
   })
 }
 

@@ -1,7 +1,7 @@
 import {Observable as O} from 'rxjs'
-import {div, span, select, option, textarea} from '@cycle/dom'
+import {div, em, span, select, option, textarea, label} from '@cycle/dom'
 import isolate from '@cycle/isolate'
-import {default as TextInput, SmartTextInputValidation} from '../../../../library/standardTextInput'
+import {default as TextInput, SmartTextInputValidation} from '../../../../library/bootstrapTextInput'
 import validator = require('validator')
 import validUrl = require('valid-url')
 import {validate as twitterValidate} from 'twitter-validate'
@@ -21,6 +21,8 @@ import {combineObj} from '../../../../utils'
 
 import WeekdayRadio from '../../../../library/weekdayRadio'
 import TimeInput from '../../../../library/timeInput/main'
+import BootstrapTimeInput from '../../../../library/bootstrapTimeInput'
+import BootstrapWeekdaySelect from '../../../../library/bootstrapWeekdaySelect'
 
 const {isEmail} = validator
 
@@ -39,7 +41,7 @@ export function MinimumPurchaseComponent(sources, props$, component_id) {
   const shared$ = props$
     .map(x => x || minimumPurchaseDefault())
     .publishReplay(1).refCount()
-  const number_input = NumberInputComponent(sources, props$.map(x => x.data.toString()), 'Minimum purchase: Invalid number')
+  const number_input = NumberInputComponent(sources, props$.map(x => x.data.toString()), 'Minimum purchase')
   const p_opts = PurchaseTypeOptions
   const options = [
     PurchaseTypeOptions.DRINK,
@@ -94,8 +96,8 @@ export function CostPerMinuteComponent(sources, props$, component_id) {
   const shared$ = props$
     .map(x => x || costPerMinuteDefault())
     .publishReplay(1).refCount()
-  const cost_input = NumberInputComponent(sources, props$.map(x => x.cost.toString()), component_id + ': Invalid number')
-  const max_input = NumberInputComponent(sources, props$.map(x => x.max.toString()), component_id + ' max: Invalid number')
+  const cost_input = NumberInputComponent(sources, props$.map(x => x.cost.toString()), component_id)
+  const max_input = NumberInputComponent(sources, props$.map(x => x.max.toString()), component_id)
 
   const vtree$ = combineObj({
     cost: cost_input.DOM,
@@ -193,13 +195,11 @@ export function ComboBox(sources, options, props$, mapper?) {
     })
   const state$ = O.merge(shared$, click$).publishReplay(1).refCount()
   const vtree$ = shared$.map(state => {
-    return div(`.select-container`, [
-      select(`.appComboBoxSelect`, options.map(opt => {
+    return select(`.appComboBoxSelect.form-control.form-control-sm`, options.map(opt => {
         return option({attrs: {value: opt, selected: state === opt}}, [
           mapper ? mapper(opt) : getTextFromOption(opt)
         ])
       }))
-    ])
   })
 
   return {
@@ -341,7 +341,7 @@ function makeEmailValidator(message, empty_is_error = true): (string) => SmartTe
 const email_input_props = {
   placeholder: `E-mail address`,
   name: `registration-email`,
-  styleClass: `.email-input`,
+  styleClass: `.email-input.form-control-sm`,
   emptyIsError: true
 }
 
@@ -375,7 +375,7 @@ function makeURLValidator(message, empty_is_error = true): (string) => SmartText
 const url_input_props = {
   placeholder: `URL`,
   name: `website-input`,
-  styleClass: `.website-input`,
+  styleClass: `.website-input.form-control-sm`,
   emptyIsError: true
 }
 
@@ -409,7 +409,7 @@ function makeTwitterValidator(message, empty_is_error = true): (string) => Smart
 const twitter_input_props = {
   placeholder: `Twitter handle`,
   name: `twitter-input`,
-  styleClass: `.twitter-input`,
+  styleClass: `.twitter-input.form-control-sm`,
   emptyIsError: true
 }
 
@@ -424,7 +424,7 @@ export function TwitterInputComponent(sources, initialText$, errorMessage, props
 }
           
 
-function createNaturalNumberValidator(message, empty_is_error = true): (string) => SmartTextInputValidation  {
+function createNaturalNumberValidator(empty_is_error = true): (string) => SmartTextInputValidation  {
   return function(input): SmartTextInputValidation {
     if (genericValidator(input, naturalNumberTest, empty_is_error)) {
       return {
@@ -434,7 +434,7 @@ function createNaturalNumberValidator(message, empty_is_error = true): (string) 
     } else {
       return {
         value: input,
-        errors: [message]
+        errors: ['Invalid number']
       }
     }
   }
@@ -443,18 +443,26 @@ function createNaturalNumberValidator(message, empty_is_error = true): (string) 
 const numberInputProps = O.of({
   placeholder: ``,
   name: `number-input`,
-  styleClass: `.number-input.float-input`,
+  styleClass: `.small-number-input.form-control-sm`,
   emptyIsError: true
 })
 
-export function NumberInputComponent(sources, initialText$, errorMessage) {
+export function NumberInputComponent(sources, initialText$, component_id) {
   const out = isolate(TextInput)(sources, {
-    validator: createNaturalNumberValidator(errorMessage),
+    validator: createNaturalNumberValidator(),
     props$: numberInputProps,
     initialText$
   })
 
-  return out
+  return {
+    ...out,
+    output$: out.output$.map(val => {
+      return {
+        ...val,
+        errors: val.errors ? val.errors.map(x => component_id + ': ' + x) : val.errors
+      }
+    })
+  }
 }
 
 function createFloatValidator(message, empty_is_error = true): (string) => SmartTextInputValidation  {
@@ -476,7 +484,7 @@ function createFloatValidator(message, empty_is_error = true): (string) => Smart
 const floatInputProps = O.of({
   placeholder: ``,
   name: `float-input`,
-  styleClass: `.number-input`,
+  styleClass: `.number-input.form-control-sm`,
   emptyIsError: true
 })
 
@@ -511,7 +519,7 @@ function createTextValidator(message, empty_is_error = true): (string) => SmartT
 const nameInputProps = O.of({
   placeholder: `Type name`,
   name: `name-input`,
-  styleClass: `.name-input`,
+  styleClass: `.name-input.form-control-sm`,
   emptyIsError: false
 })
 
@@ -580,6 +588,57 @@ export function DayOfWeekTimeComponent(sources, props$, message) {
   }
 }
 
+export function BootstrapDayOfWeekTimeComponent(sources, props$, component_id) {
+  const shared$ = props$.publishReplay(1).refCount()
+  const weekday_radio = BootstrapWeekdaySelect(sources, shared$.map(x => x.day))
+  const time_selector = BootstrapTimeInput(sources, shared$.map(x => x.time))
+
+  const state$ = combineObj({
+    day: weekday_radio.output$,
+    time: time_selector.output$
+  })
+
+  const vtree$ = combineObj({
+    day: weekday_radio.DOM,
+    time: time_selector.DOM
+  }).map((components: any) => {
+    return div('.d-fx-a-c', [
+        // div('.row', [
+        //   div('.col-xs-12', [
+            span('.mr-1', [components.day]), span('.mr-1', ['@']),
+        //   ])
+        // ]),
+        // div('.row', [
+        //   div('.col-xs-12', ['@'])
+        // ]),
+        // div('.row', [
+        //   div('.col-xs-12', [
+            components.time
+          // ])
+        // ])
+    ])
+  })
+  
+  return {
+    DOM: vtree$,
+    output$: state$.map((state: any) => {
+      let errors = [component_id + ': Requires both day and time'] 
+      let valid = false
+      if (state.day && state.time) {
+        valid = true
+        errors = []
+      }
+
+      return {
+        errors,
+        valid,
+        value: state
+      }
+    })
+  }
+}
+
+
 export function RelativeTimeDataComponent(sources, props$, component_id) {
   const out$ = props$
     .map(toRelativeTimeTypeSelector)
@@ -587,10 +646,10 @@ export function RelativeTimeDataComponent(sources, props$, component_id) {
     .map(([type, props]) => {
       switch (type) {
         case 'time':
-          const out = NumberInputComponent(sources, O.of(props.minutes.toString()), component_id + ': Invalid number')
+          const out = NumberInputComponent(sources, O.of(props.minutes.toString()), component_id)
           return {
             ...out,
-            output$: out.output$.map(x => {
+            output$: out.output$.map((x: any) => {
               return {
                 ...x,
                 data: {
@@ -600,7 +659,7 @@ export function RelativeTimeDataComponent(sources, props$, component_id) {
             })
           }
         case 'day_time':
-          return isolate(DayOfWeekTimeComponent)(sources, O.of(props), component_id + ': Date and time must be set')
+          return isolate(BootstrapDayOfWeekTimeComponent)(sources, O.of(props), component_id)
         default:
           return BlankStructuredUndefined()
       }
@@ -690,9 +749,83 @@ export function RelativeTimeComponent(sources, props$, options, component_id, he
   }).debounceTime(0).map((components: any) => {
     const {relative_type, type, data} = components
     const same_line = relative_type !== RelativeTimeOptions.PREVIOUS_WEEKDAY_AT_TIME 
+    return div('.row ', [
+      div('.col-xs-12', [
+        div('.row', [
+          div('.col-xs-12.input-line', [
+            div('.heading', [em([heading_title])]),
+            div('.content', [
+              type,
+              same_line ? span('.ml-xs', [data]) : null
+            ]),
+          ]), 
+        ]),
+        !same_line ? div('.secondary-line.mt-xs', [
+          div('.content', [data])
+        ]) : null
+      ])
+    ])
+  })
+
+  const output$ = combineObj({
+    type: relative_type$,
+    data: data_component.output$
+  }).debounceTime(0).map((components: any) => {
+    const {type, data} = components
+    const errors = [].concat(data.errors)
+    const valid = !!(data.valid)
+    return {
+      data: {
+        type,
+        data: data.data
+      },
+      valid,
+      errors
+    }
+  })
+
+  return {
+    DOM: vtree$,
+    output$
+  }
+}
+
+export function BootstrapRelativeTimeComponent(sources, props$, options, component_id, heading_title) {
+  const shared$ = props$
+    .map(x => {
+      return x || {
+        type: rt_opts.MINUTES_BEFORE_EVENT_START, 
+        data: getRelativeTimeDefault(rt_opts.MINUTES_BEFORE_EVENT_START)
+      } 
+    })
+    .publishReplay(1).refCount()
+
+  const relative_type_component = isolate(ComboBox)(sources, options, shared$.pluck('type'))
+  const relative_type$ = relative_type_component.output$
+    .map(x => {
+      return x
+    })
+    .publishReplay(1).refCount()
+
+  const input_props$ = O.merge(
+    shared$,
+    relative_type$.skip(1).map(type => {
+      return {type, data: getRelativeTimeDefault(type)}
+    })
+  )
+  
+  const data_component = RelativeTimeDataComponent(sources, input_props$, component_id)
+
+   const vtree$ = combineObj({
+    relative_type: relative_type$,
+    type: relative_type_component.DOM,
+    data: data_component.DOM
+  }).debounceTime(0).map((components: any) => {
+    const {relative_type, type, data} = components
+    const same_line = relative_type !== RelativeTimeOptions.PREVIOUS_WEEKDAY_AT_TIME 
     return div('.column', [
       span('.row', [
-        div(`${style_class}.item.flex.align-center`, [heading_title]), 
+        div(`.item.flex.align-center`, [heading_title]), 
         span({class: {item: same_line}}, [type]),
         same_line ? data : null
       ]),
@@ -722,6 +855,7 @@ export function RelativeTimeComponent(sources, props$, options, component_id, he
     output$
   }
 }
+
 
 
 export function PreRegistrationInfoComponent(sources, props$, component_id) {

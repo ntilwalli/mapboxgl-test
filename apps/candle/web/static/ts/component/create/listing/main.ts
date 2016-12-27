@@ -33,8 +33,9 @@ function createMeta(sources, inputs) {
   const content = Meta(sources, inputs)
   return {
     content,
-    controller: BackNextButtons(sources, {...inputs, props$: O.of({next: 'donde'}), valid$: content.output$.pluck(`valid`)}),
-    instruction: getMetaInstruction()
+    buttons: BackNextButtons(sources, {...inputs, props$: O.of({next: 'donde'}), valid$: content.output$.pluck(`valid`)}),
+    instruction: MetaInstruction(),
+    small_instruction: MetaInstruction()
   }
 }
 
@@ -42,8 +43,9 @@ function createDonde(sources, inputs) {
   const content = Donde(sources, inputs)
   return {
     content,
-    controller: BackNextButtons(sources, {...inputs, props$: O.of({back: `meta`, next: 'cuando'}), valid$: content.output$.pluck(`valid`)}),
-    instruction: getDondeInstruction()
+    buttons: BackNextButtons(sources, {...inputs, props$: O.of({back: `meta`, next: 'cuando'}), valid$: content.output$.pluck(`valid`)}),
+    instruction: DondeInstruction(),
+    small_instruction: DondeInstruction()
   }
 }
 
@@ -51,8 +53,9 @@ function createCuando(sources, inputs) {
   const content = Cuando(sources, inputs)
   return {
     content,
-    controller: BackNextButtons(sources, {...inputs, props$: O.of({back: `donde`, next: 'properties'}), valid$: content.output$.pluck(`valid`)}),
-    instruction: getCuandoInstruction()
+    buttons: BackNextButtons(sources, {...inputs, props$: O.of({back: `donde`, next: 'properties'}), valid$: content.output$.pluck(`valid`)}),
+    instruction: CuandoInstruction(),
+    small_instruction: CuandoInstruction()
   }
 }
 
@@ -60,8 +63,9 @@ function createProperties(sources, inputs) {
   const content = Properties(sources, inputs)
   return {
     content,
-    controller: BackNextButtons(sources, {...inputs, props$: O.of({back: 'cuando', next: 'preview'}), valid$: content.output$.pluck(`valid`)}),
-    instruction: getPropertiesInstruction()
+    buttons: BackNextButtons(sources, {...inputs, props$: O.of({back: 'cuando', next: 'preview'}), valid$: content.output$.pluck(`valid`)}),
+    instruction: PropertiesInstruction(),
+    small_instruction: PropertiesInstruction()
   }
 }
 
@@ -69,8 +73,9 @@ function createPreview(sources, inputs) {
   const content = Preview(sources, inputs)
   return {
     content,
-    controller: BackNextButtons(sources, {...inputs, props$: O.of({back: 'properties'}), valid$: content.output$.pluck(`valid`)}),
-    instruction: getPreviewInstruction()
+    buttons: BackNextButtons(sources, {...inputs, props$: O.of({back: 'properties'}), valid$: content.output$.pluck(`valid`)}),
+    instruction: PreviewInstruction(),
+    small_instruction: PreviewInstruction()
   }
 }
 
@@ -258,27 +263,8 @@ function renderNavigator(state) {
   ])
 }
 
-// function renderNavigator(state: any) {
-//   const {waiting} = state
-//   return div(`.navigator-section`, [
-//     div(`.section`, [
-//       renderMenuButton(),
-//       span(`.step-description`, [
-//         span(`.show-lg`, [getStepHeading(state)]),
-//         span(`.show-sm`, [getStepHeading(state)])
-//       ])
-//     ]),
-//     div(`.section`, [
-//       div(`.buttons`, [
-//         waiting ? renderCircleSpinner() : null,
-//         renderSaveExitButton()
-//       ])
-//     ])
-//   ])
-// }
-
-function renderMainContent(info: any) {
-  return div(`.main-content`, {
+function renderMainPanel(info: any) {
+  return div(`.main-panel.container-fluid.mt-1`, {
     hook: {
       create: (emptyVNode, {elm}) => {
         elm.scrollTop = 0
@@ -289,16 +275,11 @@ function renderMainContent(info: any) {
   ])
 }
 
-function renderController(info: any) {
-  return div(`.controller`, [
-    hr(`.separator`),
-    info.components.controller
-  ])
-}
-
-function renderInstructionSubpanel(info: any) {
-  return div(`.instruction-subpanel`, [
-    `Small instruction`
+function renderButtonPanel(info: any) {
+  return div(`.button-panel`, [
+    //hr(`.separator`),
+      info.components.buttons,
+      renderSmallInstructionPanel(info)
   ])
 }
 
@@ -309,21 +290,41 @@ function renderInstructionPanel(info: any) {
 }
 
 
-function renderMainPanelInstructionSection(info) {
+function renderSmallInstructionPanel(info) {
   const {state, components} = info
   const {show_instruction} = state
-  const {instruction} = components
-  return !show_instruction ? div(`.appOpenInstruction.instruction-section.hide`, [
-    span(`.icon.fa.fa-lightbulb-o`)
-  ]) :
-  div(`.instruction-section.show`, [
-    span(`.appCloseInstruction.close-icon`),
-    span(`.icon.fa.fa-lightbulb-o`),
-    instruction
-  ])
+  const {small_instruction} = components
+  return div('.small-instruction-panel', {
+      class: {
+        appOpenInstruction: !show_instruction,
+        rounded: show_instruction,
+        'rounded-circle': !show_instruction
+        //hide: !show_instruction
+      }
+    }, [
+      button(`.appCloseInstruction.close`, {style: {display: !!show_instruction ? 'block' : 'none'}}, []),
+      span(`.icon.fa.fa-lightbulb-o`),
+      div({style: {display: !!show_instruction ? 'block' : 'none'}}, [small_instruction])
+    ])
+  //   div(`.appOpenInstruction.small-instruction`, {
+  //     style: {
+  //       display: !show_instruction ? 'block' : 'none'
+  //     }
+  //   }, [
+  //     span(`.icon.fa.fa-lightbulb-o`, [])
+  //   ]), div({
+  //     style: {
+  //       display: !!show_instruction ? 'block' : 'none'
+  //     }
+  //   }, [
+  //     button(`.appCloseInstruction.close`),
+  //     span(`.icon.fa.fa-lightbulb-o`),
+  //     small_instruction
+  //   ])
+  // ])
 }
 
-function renderInstructionPanelInstructionSection(info) {
+function renderInstructionSubpanel(info) {
   const {state, components} = info
   const {instruction} = components
   return div(`.instruction-panel`, [
@@ -345,53 +346,61 @@ function view(state$, components) {
     const {show_instruction} = state
     return div(`.screen.create-component`, [
       renderNavigator(state),
-      div(`.content-section`, {
-        hook: {
-          create: (emptyVNode, {elm}) => {
-            elm.scrollTop = 0
-          }
-        }
-      }, [
-        div(`.content`, [
-          div(`.main-panel`, [
-            renderMainContent(info),
-            renderController(info),
-            renderMainPanelInstructionSection(info)
-          ]),
-          renderInstructionPanelInstructionSection(info)
-        ])
+      div('.content-section.nav-fixed-offset', [
+        renderMainPanel(info),
+        renderButtonPanel(info),
+        renderInstructionPanel(info)
       ])
     ])
   })
 }
 
 function getMetaInstruction() {
+  return 'Title + type'
+}
+
+function MetaInstruction() {
   return {
-    DOM: O.of(div([`Title + type`]))
+    DOM: O.of(div([getMetaInstruction()]))
   }
 }
 
 function getDondeInstruction() {
+  return `Set the event location`
+}
+
+function DondeInstruction() {
   return {
-    DOM: O.of(div([`Set the event location`]))
+    DOM: O.of(div([getDondeInstruction()]))
   }
 }
 
 function getCuandoInstruction() {
+  return `Set the event time or recurrence`
+}
+function CuandoInstruction() {
   return {
-    DOM: O.of(div([`Set the event time or recurrence`]))
+    DOM: O.of(div([getCuandoInstruction()]))
   }
 }
 
 function getPropertiesInstruction() {
+  return `Set the listing properties`
+}
+
+function PropertiesInstruction() {
   return {
-    DOM: O.of(div([`Set the listing properties`]))
+    DOM: O.of(div([getPropertiesInstruction()]))
   }
 }
 
 function getPreviewInstruction() {
+  return `Confirm all the information or go back and update`
+}
+
+function PreviewInstruction() {
   return {
-    DOM: O.of(div([`Confirm all the information or go back and update`]))
+    DOM: O.of(div([getPreviewInstruction()]))
   }
 }
 
@@ -453,18 +462,25 @@ function main(sources, inputs) {
 
 
   const components = {
-    content: component$.switchMap(x => x.content.DOM),
-    controller: component$.switchMap(x => x.controller.DOM),
-    instruction: component$.switchMap(x => {
-      if (x.instruction) {
-        return x.instruction.DOM
+    content: component$.switchMap(component => component.content.DOM),
+    buttons: component$.switchMap(component => component.buttons.DOM),
+    instruction: component$.switchMap(component => {
+      if (component.instruction) {
+        return component.instruction.DOM
+      } else {
+        return O.of(undefined)
+      }
+    }),
+    small_instruction: component$.switchMap(component => {
+      if (component.small_instruction) {
+        return component.small_instruction.DOM
       } else {
         return O.of(undefined)
       }
     })
   }
 
-  const navigation$ = component$.switchMap(x => x.controller.navigation$)
+  const navigation$ = component$.switchMap(x => x.buttons.navigation$)
   const session$ = component$.switchMap(x => {
     return x.content.output$.pluck(`session`)
   })

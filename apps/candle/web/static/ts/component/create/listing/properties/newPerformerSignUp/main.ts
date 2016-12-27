@@ -1,6 +1,6 @@
 import {Observable as O} from 'rxjs'
 import isolate from '@cycle/isolate'
-import {div, span, input, VNode} from '@cycle/dom'
+import {div, span, input, label, em, strong, i, h4, h5, h6, VNode} from '@cycle/dom'
 import {combineObj, createProxy, traceStartStop} from '../../../../../utils'
 import {
   DayOfWeekTimeComponent,
@@ -55,18 +55,23 @@ function PreRegistrationRadios(sources, props$) {
      })
 
   const vtree$ = shared$.map(registration_type =>  {
-    return div('.row.margin-bottom', [
-      div('.radio-input', [
-        input('.appRegistrationTypeInput', {attrs: {type: 'radio', name: 'registration-type', value: 'app', checked: registration_type === 'app'}}, []),
-        span('.title', ['Enable in-app'])
-      ]),
-      div('.radio-input', [
-        input('.appRegistrationTypeInput', {attrs: {type: 'radio', name: 'registration-type', value: 'email', checked: registration_type === 'email'}}, []),
-        span(`.title`, ['E-mail'])
-      ]),
-      div('.radio-input', [
-        input('.appRegistrationTypeInput', {attrs: {type: 'radio', name: 'registration-type', value: 'website', checked: registration_type === 'website'}}, []),
-        span('.title', ['Website'])
+
+    return div('.row', [
+      span('.col-xs-12.raw-line', [
+        span('.content', [
+          label('.form-check-inline', [
+            input('.appRegistrationTypeInput.form-check-input', {attrs: {type: 'radio', name: 'registration-type', value: 'app', checked: registration_type === 'app'}}, []),
+            'Enable in-app'
+          ]),
+          label('.form-check-inline', [
+            input('.appRegistrationTypeInput.form-check-input', {attrs: {type: 'radio', name: 'registration-type', value: 'email', checked: registration_type === 'email'}}, []),
+            'E-mail'
+          ]),
+          label('.form-check-inline', [
+            input('.appRegistrationTypeInput.form-check-input', {attrs: {type: 'radio', name: 'registration-type', value: 'website', checked: registration_type === 'website'}}, []),
+            'Website'
+          ])
+        ])
       ])
     ])
   })
@@ -91,15 +96,19 @@ function InPersonStyleComponent(sources, props$) {
     .publishReplay(1).refCount()
 
   const vtree$ = shared$.map(styles =>  {
-    return div('.row.align-center', [
-      span('.sub-heading.align-center', ['Style']),
-      div('.checkbox-input', [
-        input('.appInPersonStyleInput', {attrs: {type: 'checkbox', name: 'in-person-style', value: 'bucket', checked: styles.some(x => x === 'bucket')}}, []),
-        span('.title', ['Bucket'])
-      ]),
-      div('.checkbox-input', [
-        input('.appInPersonStyleInput', {attrs: {type: 'checkbox', name: 'in-person-style', value: 'list', checked: styles.some(x => x === 'list')}}, []),
-        span(`.title`, ['List'])
+    return div('.row', [
+      span('.col-xs-12.input-line', [
+        span('.heading', [em(['Style'])]),
+        span('.content', [
+          label('.form-check-inline', [
+            input('.appInPersonStyleInput.form-check-input', {attrs: {type: 'checkbox', name: 'in-person-style', value: 'bucket', checked: styles.some(x => x === 'bucket')}}, []),
+            'Bucket'
+          ]),
+          label('.form-check-inline', [
+            input('.appInPersonStyleInput.form-check-input', {attrs: {type: 'checkbox', name: 'in-person-style', value: 'list', checked: styles.some(x => x === 'list')}}, []),
+            'List'
+          ])
+        ])
       ])
     ])
   })
@@ -138,11 +147,11 @@ function InPersonComponent(sources, props$, component_id) {
 
   const begins_component = NumberInputComponent(sources, shared$.map(props => {
     return props ? props.begins.data.minutes.toString() : undefined
-  }), component_id + ' begins: Invalid number')
+  }), component_id + ' begins')
 
   const begins_component_normalized = {
     DOM: begins_component.DOM,
-    output$: begins_component.output$.map(x => {
+    output$: begins_component.output$.map((x: any) => {
       return {
         ...x,
         data: {
@@ -170,14 +179,20 @@ function InPersonComponent(sources, props$, component_id) {
     ends: ends_component.DOM,
     styles: styles_component.DOM
   }).map((components: any) => {
-    return div('.column', [
-      div('.row', [
-        span('.sub-heading.item.flex.align-center', ['Begins']),
-        span('.item', [components.begins]),
-        span('flex.align-center', ['minutes before event start'])
-      ]),
-      components.ends,
-      components.styles
+    return div('.row', [
+      div('.col-xs-12', [
+        div('.row.mb-xs', [
+          div('.col-xs-12.input-line', [
+            div('.heading', [em(['Begins'])]),
+            div('.content.fx-wrap', [
+              span('.d-fx-a-c.mr-xs', [components.begins]),
+              span('.d-fx-a-c', ['minutes before event start'])
+            ]),
+          ])
+        ]),
+        div('.mb-xs', [components.ends]),
+        components.styles
+      ])
     ])
   })
 
@@ -416,13 +431,31 @@ export default function main(sources, inputs): SinksType {
   }).debounceTime(0).map((components: any) => {
     const {signup_type, in_person, pre_registration} = components
     const both = in_person && pre_registration
-    return div('.column', [
-      div('.sub-heading.section-heading', ['Performer signup']),
-      signup_type,
-      both ? div('.sub-sub-heading.small-margin-top', ['In-person']) : null,
-      in_person ? div({class: {indented: both, "small-margin-top": !both}}, [in_person]) : null,
-      both ? div('.sub-sub-heading.small-margin-top', ['Pre-registration']) : null,
-      pre_registration ? div({class: {indented: both, "small-margin-top": !both}},[pre_registration]) : null
+    return div('.card.card-block', [
+      h6('.card-title', ['Performer signup']),
+      div('.mb-xs', [
+        signup_type
+      ]),
+      in_person ? div('.row', {class: {'mb-1': both}}, [
+        div('.col-xs-12', [
+          both ? div('.row', [
+            div('.col-xs-12', [label('.fw-lighter', [em(['In-person'])])])
+          ]) : null,
+          both ? div('.row', [
+            div('.col-xs-12.ml-1', [in_person])
+          ]) : in_person
+        ]) 
+      ]) : null,
+      pre_registration ? div('.row', [
+        div('.col-xs-12', [
+          both ? div('.row', [
+            div('.col-xs-12', [label('.fw-lighter', [em(['Pre-registration'])])])
+          ]) : null,
+          pre_registration ? div('.row', [
+            div('.col-xs-12.ml-1', [pre_registration])
+          ]) : pre_registration,
+        ])
+      ]) : null
     ])
   })
 

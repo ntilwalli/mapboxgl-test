@@ -92,7 +92,7 @@ function renderContent(info) {
   const {showFilters} = state
   const {grid, filters} = components
 
-  return div(`.content-section`, [ 
+  return div(`.content-section.nav-fixed-offset`, [ 
     showLoader(state) ? renderLoader() : grid,
   ])
 }

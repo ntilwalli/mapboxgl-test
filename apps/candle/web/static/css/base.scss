@@ -46,6 +46,18 @@
 
 }
 
+.fw-lighter {
+  font-weight: lighter;
+}
+
+.fw-bolder {
+  font-weight: bolder;
+}
+
+.fw-bold {
+  font-weight: bold
+}
+
 pre {
   white-space: normal;
 }
@@ -97,6 +109,25 @@ address {
   }
 }
 
+// .container {
+//   .container {
+//     margin-left: -15px;
+//     margin-right: -15px;
+//   }
+// }
+
+// .container-fluid {
+//   .container {
+//     padding-left: 0;
+//     padding-right: 0;
+//   }
+// }
+
+// .card {
+//   .container-fluid {
+
+//   }
+// }
 .container, .container-fluid {
   &.no-gutter {
     margin-right: 0;
@@ -189,6 +220,19 @@ address {
   justify-content: space-around;
 }
 
+.fx-wrap {
+  flex-wrap: wrap;
+}
+
+.d-fx-a-c {
+  display: flex;
+  align-items: center;
+}
+
+.ws-wrap {
+  white-space: initial;
+}
+
 // .modal {
 //   vertical-align: middle;
 //   // width: 100%;
@@ -269,6 +313,8 @@ button.close:focus {
 button.close::after {
   content: '×';
 }
+
+
 
 
 @font-face {
@@ -363,12 +409,6 @@ html, body {
 .waiting-screen { 
   height: 100%;  
   width: 100%;
-}
-
-.flex-center {
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 
 .form-group {

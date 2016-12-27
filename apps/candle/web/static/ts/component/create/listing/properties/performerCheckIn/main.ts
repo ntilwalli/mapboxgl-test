@@ -63,7 +63,7 @@ export default function main(sources, inputs) {
 
   const begins_component_normalized = {
     DOM: begins_component.DOM,
-    output$: begins_component.output$.map(x => {
+    output$: begins_component.output$.map((x: any) => {
       return {
         ...x,
         data: {

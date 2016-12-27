@@ -3,10 +3,13 @@
   top: 0;
   left: 0;
   width: 100%;
-  //height: 100%;
-  padding-top: 3rem;
   padding-bottom: 3rem;
 }
+
+.nav-fixed-offset {
+  padding-top: 3rem;
+}
+
 
 .loader {
   position: absolute;
@@ -137,6 +140,44 @@
       padding-bottom: 15rem;
     }
   }
+
+  .properties {
+    .input-line {
+      display: flex;
+      align-items: center;
+      flex-flow: row wrap;
+
+      .heading {
+        flex: 0 1 15%;
+      }
+
+      .content {
+        display: flex;
+        align-items: center;
+        flex: 1 1 85%;
+      }
+    }
+
+    .raw-line {
+      .content {
+        display: flex;
+        align-items: center;
+        flex: 1 1 auto;  
+      }
+    }
+    .secondary-line {
+      display: flex;
+      align-items: center;
+      flex-flow: row wrap;
+      margin-left: 15%;
+
+      .content {
+        display: flex;
+        align-items: center;
+        flex: 1 1 auto;
+      }
+    }
+  }
 }
 
 
@@ -145,5 +186,9 @@
 }
 
 .small-number-input {
-  width: 4rem;
+  width: 3rem;
+}
+
+.time-input {
+  width: 5rem;
 }

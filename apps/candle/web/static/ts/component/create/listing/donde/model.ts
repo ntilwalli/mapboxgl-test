@@ -102,5 +102,9 @@ export function model(actions, inputs) {
         .scan((acc, f: Function) => f(acc))
     })
     .map((x: any) => x.toJS())
+    // .map(x => ({
+    //   ...x,
+    //   valid: true
+    // }))
     .publishReplay(1).refCount()
 }

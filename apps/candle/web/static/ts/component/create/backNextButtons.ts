@@ -32,7 +32,7 @@ function view(state$) {
       div(`.button-section.back-section`, [
         props.back ? button(`.appBackButton`, [
           div(`.back`, [
-            span(`.icon.fa.fa-angle-left.fa-2x`),
+            span(`.fa.fa-angle-left.fa-2x`),
             span(`.text`, [`Back`]),
           ]) 
         ]): null
@@ -42,7 +42,7 @@ function view(state$) {
         props.next ? button(`.appNextButton`, {class: {disabled: !valid}}, [
           div(`.next`, [
             span(`.text`, [`Next`]),
-            span(`.icon.fa.fa-angle-right.fa-2x`)
+            span(`.fa.fa-angle-right.fa-2x`)
           ])
         ]) : null
       ])

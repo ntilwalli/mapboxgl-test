@@ -1,6 +1,6 @@
 @import '../../variables';
 
-.controller {
+.button-panel {
   position: fixed;
   height: 3rem;
   bottom: 0;  
@@ -9,7 +9,7 @@
 }
 
 @media (min-width: 768px) {
-  .controller {
+  .button-panel {
     position: fixed;
     height: 3rem;
     bottom: 0;  
@@ -19,12 +19,12 @@
 }
 
 @media (max-width: 767px) {
-  .controller {
+  .button-panel {
     right: 0;
   }
 }
 
-.controller {
+.button-panel {
   .back, .next {
     display: flex;
     align-items: center;
