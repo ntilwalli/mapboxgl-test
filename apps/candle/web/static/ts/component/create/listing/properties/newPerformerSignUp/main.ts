@@ -451,7 +451,7 @@ export default function main(sources, inputs): SinksType {
           both ? div('.row', [
             div('.col-xs-12', [label('.fw-lighter', [em(['Pre-registration'])])])
           ]) : null,
-          pre_registration ? div('.row', [
+          both ? div('.row', [
             div('.col-xs-12.ml-1', [pre_registration])
           ]) : pre_registration,
         ])
