@@ -77,7 +77,7 @@ function MaxMinutesComponent(sources, props$, component_id = '') {
     return max
   })
 
-  const output$ = max_input.output$.map(max => {
+  const output$ = max_input.output$.map((max: any) => {
     return {
       ...max,
       data: {

@@ -1,6 +1,6 @@
 import {Observable as O} from 'rxjs'
 import isolate from '@cycle/isolate'
-import {div, span, input, VNode} from '@cycle/dom'
+import {div, em, span, input, VNode} from '@cycle/dom'
 import {combineObj, createProxy, traceStartStop} from '../../../../../utils'
 import {
   RelativeTimeOptions, 
@@ -98,19 +98,20 @@ export default function main(sources, inputs) {
     ends: ends_component.DOM,
     //radius: radius_component.DOM
   }).debounceTime(0).map((components: any) => {
-    return div('.column.check-in', [
+    return div('.row', [
       //div('.sub-heading.section-heading ', ['Check-in']),
-      div('.row', [
-        span('.sub-sub-heading.item.flex.align-center', ['Begins']),
-        span('.item', [components.begins]),
-        span('flex.align-center', ['minutes before event start'])
-      ]),
-      components.ends,
-      // div('.row.align-center', [
-      //   span('.sub-sub-heading.align-center', ['Radius']),
-      //   span('.item', [components.radius]),
-      //   span('.item', ['meters'])
-      // ])
+      div('.col-xs-12', [
+        div('.row.mb-xs', [
+          div('.col-xs-12.input-line', [
+            div('.heading', [em(['Begins'])]),
+            div('.content.fx-wrap', [
+              span('.d-fx-a-c.mr-xs', [components.begins]),
+              span('.d-fx-a-c', ['minutes before event start'])
+            ]),
+          ])
+        ]),
+        div('.mb-xs', [components.ends])
+      ])
     ])
   })
 

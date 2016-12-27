@@ -21,7 +21,7 @@ const MetaPropertyTypes = {
 const EventTypeToProperties = {
   open_mic: [
     MetaPropertyTypes.PERFORMER_SIGN_UP, 
-    // MetaPropertyTypes.PERFORMER_CHECK_IN,
+    MetaPropertyTypes.PERFORMER_CHECK_IN,
     // MetaPropertyTypes.PERFORMER_COST,
     // MetaPropertyTypes.STAGE_TIME,
     // MetaPropertyTypes.PERFORMER_LIMIT,

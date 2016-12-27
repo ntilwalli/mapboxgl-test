@@ -57,8 +57,8 @@ function PreRegistrationRadios(sources, props$) {
   const vtree$ = shared$.map(registration_type =>  {
 
     return div('.row', [
-      span('.col-xs-12.raw-line.fx-wrap', [
-        span('.content', [
+      span('.col-xs-12.raw-line', [
+        span('.content.fx-wrap', [
           label('.form-check-inline', [
             input('.appRegistrationTypeInput.form-check-input', {attrs: {type: 'radio', name: 'registration-type', value: 'app', checked: registration_type === 'app'}}, []),
             'Enable in-app'
@@ -436,7 +436,7 @@ export default function main(sources, inputs): SinksType {
       div('.mb-xs', [
         signup_type
       ]),
-      in_person ? div('.row', {class: {'mb-1': both}}, [
+      in_person ? div('.row', {class: {'mb-xs': both}}, [
         div('.col-xs-12', [
           both ? div('.row', [
             div('.col-xs-12', [label('.fw-lighter', [em(['In-person'])])])

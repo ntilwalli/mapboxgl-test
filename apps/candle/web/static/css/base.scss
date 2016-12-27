@@ -109,25 +109,6 @@ address {
   }
 }
 
-// .container {
-//   .container {
-//     margin-left: -15px;
-//     margin-right: -15px;
-//   }
-// }
-
-// .container-fluid {
-//   .container {
-//     padding-left: 0;
-//     padding-right: 0;
-//   }
-// }
-
-// .card {
-//   .container-fluid {
-
-//   }
-// }
 .container, .container-fluid {
   &.no-gutter {
     margin-right: 0;
@@ -232,6 +213,12 @@ address {
 .ws-wrap {
   white-space: initial;
 }
+
+.disabled {
+  opacity: .25;
+  pointer-events: none;
+}
+
 
 // .modal {
 //   vertical-align: middle;
@@ -392,11 +379,6 @@ html, body {
 // .disabled {
 //   color: lightgray;
 // }
-
-.disabled {
-  opacity: .25;
-  pointer-events: none;
-}
 
 .fa-1-2x {
   font-size: 1.2rem;

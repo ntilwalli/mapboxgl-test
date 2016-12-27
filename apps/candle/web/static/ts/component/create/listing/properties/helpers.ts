@@ -332,7 +332,7 @@ function makeEmailValidator(message, empty_is_error = true): (string) => SmartTe
     } else {
       return {
         value: input,
-        errors: [message]
+        errors: ['Invalid e-mail address']
       }
     }
   }
@@ -345,17 +345,25 @@ const email_input_props = {
   emptyIsError: true
 }
 
-export function EmailInputComponent(sources, initialText$, errorMessage, props = email_input_props) {
+export function EmailInputComponent(sources, initialText$, component_id, props = email_input_props) {
   const out = isolate(TextInput)(sources, {
-    validator: makeEmailValidator(errorMessage, props.emptyIsError),
+    validator: makeEmailValidator(props.emptyIsError),
     props$: O.of(props),
     initialText$
   })
 
-  return out
+  return {
+    ...out,
+    output$: out.output$.map(val => {
+      return {
+        ...val,
+        errors: val.errors ? val.errors.map(x => component_id + ': ' + x) : val.errors
+      }
+    })
+  }
 }
 
-function makeURLValidator(message, empty_is_error = true): (string) => SmartTextInputValidation  {
+function makeURLValidator(empty_is_error = true): (string) => SmartTextInputValidation  {
   return function(input): SmartTextInputValidation {
     //if (input && input.match(/^[a-zA-Z .]+$/)) {
     if (genericValidator(input, urlTest, empty_is_error)) {
@@ -366,7 +374,7 @@ function makeURLValidator(message, empty_is_error = true): (string) => SmartText
     } else {
       return {
         value: input,
-        errors: [message]
+        errors: ['Invalid URL']
       }
     }
   }
@@ -379,17 +387,25 @@ const url_input_props = {
   emptyIsError: true
 }
 
-export function URLInputComponent(sources, initialText$, errorMessage, props = url_input_props) {
+export function URLInputComponent(sources, initialText$, component_id, props = url_input_props) {
   const out = isolate(TextInput)(sources, {
-    validator: makeURLValidator(errorMessage, props.emptyIsError),
+    validator: makeURLValidator(props.emptyIsError),
     props$: O.of(props),
     initialText$
   })
 
-  return out
+  return {
+    ...out,
+    output$: out.output$.map(val => {
+      return {
+        ...val,
+        errors: val.errors ? val.errors.map(x => component_id + ': ' + x) : val.errors
+      }
+    })
+  }
 }
 
-function makeTwitterValidator(message, empty_is_error = true): (string) => SmartTextInputValidation  {
+function makeTwitterValidator(empty_is_error = true): (string) => SmartTextInputValidation  {
   return function(input): SmartTextInputValidation {
     //if (input && input.match(/^[a-zA-Z .]+$/)) {
     if (genericValidator(input, twitterTest, empty_is_error)) {
@@ -400,7 +416,7 @@ function makeTwitterValidator(message, empty_is_error = true): (string) => Smart
     } else {
       return {
         value: input,
-        errors: [message]
+        errors: ['Invalid twitter handle']
       }
     }
   }
@@ -413,14 +429,22 @@ const twitter_input_props = {
   emptyIsError: true
 }
 
-export function TwitterInputComponent(sources, initialText$, errorMessage, props = url_input_props) {
+export function TwitterInputComponent(sources, initialText$, component_id, props = url_input_props) {
   const out = isolate(TextInput)(sources, {
-    validator: makeTwitterValidator(errorMessage, props.emptyIsError),
+    validator: makeTwitterValidator(props.emptyIsError),
     props$: O.of(props),
     initialText$
   })
 
-  return out
+  return {
+    ...out,
+    output$: out.output$.map(val => {
+      return {
+        ...val,
+        errors: val.errors ? val.errors.map(x => component_id + ': ' + x) : val.errors
+      }
+    })
+  }
 }
           
 
@@ -465,7 +489,7 @@ export function NumberInputComponent(sources, initialText$, component_id) {
   }
 }
 
-function createFloatValidator(message, empty_is_error = true): (string) => SmartTextInputValidation  {
+function createFloatValidator(empty_is_error = true): (string) => SmartTextInputValidation  {
   return function(input): SmartTextInputValidation {
     if (genericValidator(input, floatTest, empty_is_error)) {
       return {
@@ -475,7 +499,7 @@ function createFloatValidator(message, empty_is_error = true): (string) => Smart
     } else {
       return {
         value: input,
-        errors: [message]
+        errors: ['Invalid number']
       }
     }
   }
@@ -488,18 +512,26 @@ const floatInputProps = O.of({
   emptyIsError: true
 })
 
-export function FloatInputComponent(sources, initialText$, errorMessage) {
+export function FloatInputComponent(sources, initialText$, component_id) {
   const out = isolate(TextInput)(sources, {
-    validator: createFloatValidator(errorMessage),
+    validator: createFloatValidator(),
     props$: numberInputProps,
     initialText$
   })
 
-  return out
+  return {
+    ...out,
+    output$: out.output$.map(val => {
+      return {
+        ...val,
+        errors: val.errors ? val.errors.map(x => component_id + ': ' + x) : val.errors
+      }
+    })
+  }
 }
 
 
-function createTextValidator(message, empty_is_error = true): (string) => SmartTextInputValidation  {
+function createTextValidator(empty_is_error = true): (string) => SmartTextInputValidation  {
   return function(input): SmartTextInputValidation {
     //if (input && input.match(/^[a-zA-Z .]+$/)) {
     if (genericValidator(input, passTest, empty_is_error)) {
@@ -510,7 +542,7 @@ function createTextValidator(message, empty_is_error = true): (string) => SmartT
     } else {
       return {
         value: input,
-        errors: [message]
+        errors: ['Invalid text']
       }
     }
   }
@@ -523,25 +555,41 @@ const nameInputProps = O.of({
   emptyIsError: false
 })
 
-export function NameInputComponent(sources, initialText$, errorMessage) {
+export function NameInputComponent(sources, initialText$, component_id) {
   const out = isolate(TextInput)(sources, {
-    validator: createTextValidator(errorMessage),
+    validator: createTextValidator(),
     props$: nameInputProps,
     initialText$
   })
 
-  return out
+  return {
+    ...out,
+    output$: out.output$.map(val => {
+      return {
+        ...val,
+        errors: val.errors ? val.errors.map(x => component_id + ': ' + x) : val.errors
+      }
+    })
+  }
 
 }
 
-export function TextInputComponent(sources, initialText$, errorMessage, props) {
+export function TextInputComponent(sources, initialText$, component_id, props) {
   const out = isolate(TextInput)(sources, {
-    validator: createTextValidator(errorMessage, props.emptyIsError),
+    validator: createTextValidator(props.emptyIsError),
     props$: O.of(props),
     initialText$
   })
 
-  return out
+  return {
+    ...out,
+    output$: out.output$.map(val => {
+      return {
+        ...val,
+        errors: val.errors ? val.errors.map(x => component_id + ': ' + x) : val.errors
+      }
+    })
+  }
 }
 
 export function DayOfWeekTimeComponent(sources, props$, message) {
@@ -756,7 +804,7 @@ export function RelativeTimeComponent(sources, props$, options, component_id, he
             div('.heading', [em([heading_title])]),
             div('.content', [
               type,
-              same_line ? span('.ml-xs', [data]) : null
+              data && same_line ? span('.ml-xs', [data]) : null
             ]),
           ]), 
         ]),
@@ -866,9 +914,9 @@ export function PreRegistrationInfoComponent(sources, props$, component_id) {
     .map(({type, data}) => {
       switch (type) {
         case 'email':
-          return EmailInputComponent(sources, O.of(data), component_id + ': Invalid e-mail')
+          return EmailInputComponent(sources, O.of(data), component_id)
         case 'website':
-          return URLInputComponent(sources, O.of(data), component_id + ': Invalid URL')
+          return URLInputComponent(sources, O.of(data), component_id)
         default:
           return BlankStructuredUndefined()
       }

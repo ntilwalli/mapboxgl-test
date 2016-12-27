@@ -1,6 +1,6 @@
 import {Observable as O} from 'rxjs'
 import isolate from '@cycle/isolate'
-import {div, span, input} from '@cycle/dom'
+import {div, label, span, input, h6} from '@cycle/dom'
 import {combineObj} from '../../../../../utils'
 import {PerformerSignupOptions, PreRegistrationOptions} from '../../../../../listingTypes'
 import {BlankStructuredUndefined} from '../helpers'
@@ -26,9 +26,15 @@ function InAppCheckboxComponent(sources, props$) {
   )
 
   const vtree$ = shared$.map(props => {
+
     return div('.row', [
-      span('.item', [
-        input('.appInAppCheckInCheckbox', {attrs: {type: 'checkbox', checked: props === true}}, [])
+      span('.col-xs-12.raw-line', [
+        span('.content', [
+          label('.form-check-inline', [
+            input('.appInAppCheckInCheckbox.form-check-input', {attrs: {type: 'checkbox', name: 'in-app-checkin', value: 'app', checked: props === true}}, []),
+            'Enable in-app'
+          ])
+        ])
       ])
     ])
   })
@@ -91,13 +97,13 @@ function EnabledComponent(sources, inputs, session) {
     }).debounceTime(0).map((components: any) => {
       const {should_enable_in_app, check_in, in_app} = components
 
-      return div(`.column`, [
-        div('.sub-heading.section-heading ', ['Performer check-in']),
+    return div('.card.card-block', [
+      h6('.card-title', ['Performer check-in']),
         check_in,
         div('.row', {class: {disabled: !should_enable_in_app}}, [
-          span('.item.flex.align-center.perk', ['Enable in-app']),
-          in_app,
-          //!should_enable_in_app ? div('.disable-overlay', []) : null
+          div('.col-xs-12', [
+            in_app
+          ])
         ])
       ])
     })
