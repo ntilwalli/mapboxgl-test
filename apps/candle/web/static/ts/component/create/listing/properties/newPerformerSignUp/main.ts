@@ -57,7 +57,7 @@ function PreRegistrationRadios(sources, props$) {
   const vtree$ = shared$.map(registration_type =>  {
 
     return div('.row', [
-      span('.col-xs-12.raw-line', [
+      span('.col-xs-12.raw-line.fx-wrap', [
         span('.content', [
           label('.form-check-inline', [
             input('.appRegistrationTypeInput.form-check-input', {attrs: {type: 'radio', name: 'registration-type', value: 'app', checked: registration_type === 'app'}}, []),
