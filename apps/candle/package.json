@@ -52,7 +52,6 @@
     "@types/chai": "^3.4.34",
     "@types/clone": "^0.1.30",
     "@types/deep-equal": "0.0.30",
-    "@types/history": "^2.0.38",
     "@types/js-cookie": "^2.0.28",
     "@types/phoenix": "0.0.4",
     "@types/query-string": "^3.0.28",

@@ -35,6 +35,7 @@
         "customTypings/rrule.d.ts",
         "customTypings/cycle-storage.d.ts",
         "customTypings/geolib.d.ts",
+        "customTypings/history.d.ts",
         "web/static/ts/main.ts"
     ],
     "exclude": [
