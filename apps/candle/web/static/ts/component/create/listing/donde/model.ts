@@ -66,7 +66,7 @@ export function model(actions, inputs) {
       const {region, session, authorization} = info
 
       const init = {
-        session: clone(session),
+        session,
         authorization,
         modal: undefined,
         valid: !!(session.listing.donde),

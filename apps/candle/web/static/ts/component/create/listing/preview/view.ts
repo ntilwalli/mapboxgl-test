@@ -14,22 +14,18 @@ function renderButtons() {
   return div('.row', [
     div('.col-xs-12', [
       div('.row.mb-1', [
-        div(`.col-xs-10`, [
-          div(['Staging a listing allows you to invite/confirm performers before going live.  Would you like to stage this listing?'])
-        ]),
-        div('.col-xs-2', [
-          button(`.appStageButton.btn.btn-outline-warning.w-100`, [`Stage`])
+        div(`.col-xs-12.d-fx-a-c`, [
+          div('.mr-1', ['Staging a listing allows you to invite/confirm performers before going live.  Would you like to stage this listing?']),
+          div(`.appStageButton.btn.btn-outline-warning.d-fx-a-c.fx-j-c`, {style: {height: "2rem", 'min-width': "5rem"}}, [`Stage`])
         ])
       ]),
       div('.row.mb-1', [
         div('.col-xs-10.d-flex.fx-j-c.fw-bold', ['Or']),
       ]),
       div('.row', [
-        div(`.col-xs-10`, [
-          div([`Posting makes your listing live.  It will allows you to distribute links/send out invitations and makes events discoverable on search. Would you like to post this event?`])
-        ]),
-        div('.col-xs-2', [
-          button(`.appStageButton.btn.btn-outline-success.w-100`, [`Post`])
+        div(`.col-xs-12.d-fx-a-c`, [
+          div('.mr-1', [`Posting makes your listing live, enabling you to distribute links/send out invitations and makes events discoverable on search. Would you like to post this event?`]),
+          div(`.appStageButton.btn.btn-outline-success.d-fx-a-c.fx-j-c`, {style: {height: "2rem", 'min-width': "5rem"}}, [`Post`])
         ])
       ])
     ])
@@ -54,7 +50,7 @@ export function renderRecurringListingPreview(state) {
     performer_limit, listed_hosts, note
   } = meta
 
-  const new_note = note.replace(/\n/g, ' ')
+  const new_note = note ? note.replace(/\n/g, ' ') : undefined
 
   const [full_cost, full_stage_time, merged_cost_stage_time] = 
     getFullCostAndStageTime(performer_cost, stage_time)
@@ -117,11 +113,11 @@ export function renderRecurringListingPreview(state) {
     merged_cost_stage_time ? div('.row', [div('.col-xs-12', [merged_cost_stage_time])]) : null,
     div('.row', [
       div('.col-xs-12', [
-        renderNote(note)
+        renderNote(new_note)
       ])
     ]),
     div(`.row.no-gutter.map-area`, [
-      div('.col-xs-12.no-gutter', [
+      div('.col-xs-12.no-gutter.h-100', [
         renderMarkerInfo(donde),
         div(`#location-map`)
       ])
@@ -141,6 +137,8 @@ export function renderSingleListingPreview(state) {
 
   const [full_cost, full_stage_time, merged_cost_stage_time] = 
     getFullCostAndStageTime(performer_cost, stage_time)
+
+  const new_note = note ? note.replace(/\n/g, ' ') : undefined
 
   return div('.listing-card.pt-xs', [
     div('.row.mb-1', [
@@ -202,10 +200,10 @@ export function renderSingleListingPreview(state) {
     merged_cost_stage_time ? div('.row', [div('.col-xs-12', [merged_cost_stage_time])]) : null,
     div('.row', [
       div('.col-xs-12', [
-        renderNote(note)
+        renderNote(new_note)
       ])
     ]),
-    div(`.row.no-gutter.map-area`, [
+    div(`.row.no-gutter.map-area.h-100`, [
       renderMarkerInfo(donde),
       div(`#location-map`)
     ])
