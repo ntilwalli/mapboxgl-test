@@ -4,7 +4,7 @@ import {makeDOMDriver, div} from '@cycle/dom'
 import {makeHTTPDriver} from '@cycle/http'
 import makeGlobalDriver from './globalDriver'
 import {makeRouterDriver} from 'cyclic-router'
-import {createHistory} from 'history';
+import * as History from 'history';
 import storageDriver from '@cycle/storage'
 import {makeMapJSONDriver} from 'cycle-mapboxgl'
 //import isolate from '@cycle/isolate'
@@ -130,7 +130,7 @@ Cycle.run(wrappedMain, {
   MapJSON: makeMapJSONDriver(
     `pk.eyJ1IjoibXJyZWRlYXJzIiwiYSI6ImNpbHJsZnJ3NzA4dHZ1bGtub2hnbGVnbHkifQ.ph2UH9MoZtkVB0_RNBOXwA`),
   HTTP: makeHTTPDriver(),
-  Router: makeRouterDriver(createHistory() as any, routeFunction, {capture: true}),
+  Router: makeRouterDriver(History.createHistory() as any, routeFunction, {capture: true}),
   Global: makeGlobalDriver(),
   Storage: storageDriver
 })
