@@ -44,7 +44,7 @@ export default function main(sources, inputs) {
 
       return div(`.row`, [
         div('.col-xs-12', [
-          div('.row', [
+          div('.row.mb-xs', [
             div('.col-xs-12', [
               cost
             ])

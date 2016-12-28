@@ -358,11 +358,11 @@ export default function main(sources, inputs) {
           div('.col-xs-12' + line_type, [
             inputs.heading_text ? div('.heading', [inputs.heading_text]) : null,
             div('.content.fx-wrap', [
-              div('.d-fx-a-c.mb-xs.fx-auto-width', [type]),
-              !both && minutes ? span('.d-fx-a-c.ml-xs.mb-xs', [
+              div('.d-fx-a-c.fx-auto-width', {class: {'mb-xs': both}}, [type]),
+              !both && minutes ? span('.d-fx-a-c.ml-xs', [
                 minutes
               ]) : null,
-              !both && songs ? span('.ml-xs.d-fx-a-c.mb-xs', [
+              !both && songs ? span('.d-fx-a-c.ml-xs', [
                 songs
               ]) : null
             ]),
@@ -388,23 +388,6 @@ export default function main(sources, inputs) {
         ]) : null
       ])
     ])  
-
-
-    // return div({class: {row: !both, column: both}}, [
-    //     span('.item', [type]),
-    //     minutes ? div(`.row.align-center`, [
-    //       minutes_heading, 
-    //         span('.row', [
-    //           minutes
-    //         ])
-    //     ]) : null,
-    //     songs ? div('.row.align-center', [
-    //       songs_heading,
-    //         span('.row', [
-    //           songs
-    //         ])
-    //     ]) : null
-    //   ]) 
   })
 
   const output$ = combineObj({

@@ -4,11 +4,11 @@ export default function main(sources, inputs) {
   const out = TextInputComponent(
     sources, 
     inputs.props$.pluck('data'), 
-    inputs.component_id + ': Invalid name',
+    inputs.component_id,
     {
       placeholder: `Name`,
       name: `name-input`,
-      styleClass: `.name-input`,
+      styleClass: `.name-input.form-control-sm`,
       emptyIsError: true
     })
   return {

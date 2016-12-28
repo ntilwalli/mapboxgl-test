@@ -1,5 +1,5 @@
 import {Observable as O} from 'rxjs'
-import {div, em, span, select, option, textarea, label} from '@cycle/dom'
+import {div, h6, em, span, select, option, textarea, label} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 import {default as TextInput, SmartTextInputValidation} from '../../../../library/bootstrapTextInput'
 import validator = require('validator')
@@ -148,13 +148,9 @@ export function NotesInput(sources, {props$}, styleClass?) {
     })
   const state$ = O.merge(shared$, text$).publishReplay(1).refCount()
   const vtree$ = shared$.map(state => {
-    return div('.column', [
-      div('.row', [
-        div('.sub-heading.section-heading', ['Notes'])
-      ]),
-      div('.column', [
-        textarea(`.appTextareaInput.notes-input`, [state])
-      ])
+    return div('.card.card-block', [
+      h6('.card-title', ['Note']),
+      textarea(`.appTextareaInput.form-control`, [state])
     ])
   })
 

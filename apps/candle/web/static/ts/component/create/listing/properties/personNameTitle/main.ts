@@ -6,22 +6,22 @@ export default function main(sources, inputs) {
   const name = TextInputComponent(
     sources, 
     inputs.props$.pluck('data').pluck('name'), 
-    inputs.component_id + ': Invalid name',
+    inputs.component_id,
     {
       placeholder: `Name`,
       name: `name-input`,
-      styleClass: `.name-input`,
+      styleClass: `.name-input.form-control-sm`,
       emptyIsError: true
     })
 
   const title = TextInputComponent(
     sources, 
     inputs.props$.pluck('data').pluck('title'), 
-    inputs.component_id + ': Invalid title',
+    inputs.component_id,
     {
       placeholder: `Title (optional)`,
       name: `title-input`,
-      styleClass: `.name-input`,
+      styleClass: `.name-input.form-control-sm`,
       emptyIsError: false
     })  
 
@@ -31,8 +31,10 @@ export default function main(sources, inputs) {
   }).map((info: any) => {
     const {name, title} = info
     return div('.row', [
-      div('.item', [name]),
-      div('.item', [title])
+      div('.col-xs-12.raw-line', [
+        div('.mr-xs', [name]),
+        title
+      ])
     ])
   })
 

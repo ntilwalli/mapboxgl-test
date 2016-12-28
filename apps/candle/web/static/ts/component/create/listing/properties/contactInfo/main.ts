@@ -1,6 +1,6 @@
 import {Observable as O} from 'rxjs'
 import isolate from '@cycle/isolate'
-import {div, span, input} from '@cycle/dom'
+import {div, span, input, h6, em} from '@cycle/dom'
 import {combineObj, createProxy, traceStartStop} from '../../../../../utils'
 import {TextInputComponent, EmailInputComponent, URLInputComponent, TwitterInputComponent} from '../helpers'
 import clone = require('clone')
@@ -25,7 +25,7 @@ export default function main(sources, inputs) {
   const email_props = {
     placeholder: `E-mail`,
     name: `email-input`,
-    styleClass: `.text-input`,
+    styleClass: `.form-control-sm.text-input`,
     emptyIsError: false
   }
 
@@ -34,7 +34,7 @@ export default function main(sources, inputs) {
   const twitter_props = {
     placeholder: `Twitter handle`,
     name: `twitter-input`,
-    styleClass: `.text-input`,
+    styleClass: `.form-control-sm.text-input`,
     emptyIsError: false
   }
 
@@ -43,7 +43,7 @@ export default function main(sources, inputs) {
   const facebook_props = {
     placeholder: `Facebook page`,
     name: `facebook-input`,
-    styleClass: `.url-input`,
+    styleClass: `.form-control-sm.url-input`,
     emptyIsError: false
   }
 
@@ -52,7 +52,7 @@ export default function main(sources, inputs) {
   const instagram_props = {
     placeholder: `Instagram handle`,
     name: `facebook-input`,
-    styleClass: `.text-input`,
+    styleClass: `.form-control-sm.text-input`,
     emptyIsError: false
   }
 
@@ -61,7 +61,7 @@ export default function main(sources, inputs) {
   const website_props = {
     placeholder: `Website`,
     name: `website-input`,
-    styleClass: `.url-input`,
+    styleClass: `.form-control-sm.url-input`,
     emptyIsError: false
   }
 
@@ -75,27 +75,37 @@ export default function main(sources, inputs) {
     instagram: instagram_component.DOM,
     website: website_component.DOM
   }).debounceTime(0).map((components: any) => {
-    return div('.column', [
-      div('.sub-heading.section-heading', ['Contact info']),
-      div('.row', [
-        div('.sub-sub-heading.item.flex.align-center', ['E-mail']),
-        components.email
+    return div('.card.card-block', [
+      h6('.card-title', ['Contact info']),
+      div('.row.mb-xs', [
+        div('.col-xs-12.raw-line', [
+          em('.mr-1', ['E-mail']),
+          components.email
+        ])
+      ]),
+      div('.row.mb-xs', [
+        div('.col-xs-12.raw-line', [
+          em('.mr-1', ['Website']),
+          components.website
+        ])
+      ]),
+      div('.row.mb-xs', [
+        div('.col-xs-12.raw-line', [
+          em('.mr-1', ['Twitter']),
+          components.twitter
+        ])
+      ]),
+      div('.row.mb-xs', [
+        div('.col-xs-12.raw-line', [
+          em('.mr-1', ['Facebook']),
+          components.facebook
+        ])
       ]),
       div('.row', [
-        div('.sub-sub-heading.item.flex.align-center', ['Twitter']),
-        components.twitter
-      ]),
-      div('.row', [
-        div('.sub-sub-heading.item.flex.align-center', ['Facebook']),
-        components.facebook
-      ]),
-      div('.row', [
-        div('.sub-sub-heading.item.flex.align-center', ['Instagram']),
-        components.instagram
-      ]),
-      div('.row', [
-        div('.sub-sub-heading.item.flex.align-center', ['Website']),
-        components.website
+        div('.col-xs-12.raw-line', [
+          em('.mr-1', ['Instagram']),
+          components.instagram
+        ])
       ])
     ])
   })

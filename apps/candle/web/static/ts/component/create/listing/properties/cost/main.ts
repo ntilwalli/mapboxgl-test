@@ -157,7 +157,7 @@ export default function main(sources, inputs) {
             div('.col-xs-12' + line_type, [
               inputs.heading_text ? div('.heading', [inputs.heading_text]) : null,
               div('.content.fx-wrap', [
-                div('.d-fx-a-c.mb-xs.fx-auto-width', [type]),
+                div('.d-fx-a-c.fx-auto-width', {class: {'mb-xs': cover || minimum_purchase || cost_per_minute}}, [type]),
                 !both && cover ? span('.d-fx-a-c.ml-xs.mb-xs', [
                   cover,
                   span('.ml-xs', ['dollars'])

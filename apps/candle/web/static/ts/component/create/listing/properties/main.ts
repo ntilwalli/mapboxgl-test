@@ -1,5 +1,5 @@
 import {Observable as O} from 'rxjs'
-import {div} from '@cycle/dom'
+import {div, h6} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 import Immutable = require('immutable')
 import PerformerSignup from './newPerformerSignUp/main'
@@ -125,7 +125,18 @@ function toComponent(type, meta, session$, sources, inputs, authorization) {
         CostOptions.COVER_AND_MINIMUM_PURCHASE
       ]
       
-      component = (sources, inputs) => isolate(Cost)(sources, {...inputs, options, heading_text: 'Audience cost'})
+      component = (sources, inputs) => {
+        const out = isolate(Cost)(sources, {...inputs, options})
+        return {
+          ...out, 
+          DOM: out.DOM.map(x => {
+            return div('.card.card-block', [
+              h6('.card-title', ['Audience cost']),
+              x
+            ])
+          })
+        }
+      }
       break
     case MetaPropertyTypes.CONTACT_INFO:
       component = ContactInfo
@@ -220,10 +231,18 @@ function view(state$, children$) {
     const {state, children} = info
     const {properties} = state
     const errors = 
-      Object.keys(properties).reduce((acc, val) => acc.concat(properties[val].errors), [])
+      Object.keys(properties)
+        .reduce((acc, val) => acc.concat(properties[val].errors), [])
+        .map(x => div(`.form-group`, [
+            div(`.alerts-area`, [
+              div(`.alert.alert-danger`, [
+                x
+            ])
+          ])
+        ]))
 
     return div(`.properties`, [
-      errors.length ? div('.errors', errors.map(x => div([x]))) : null,
+      ...errors,
       div(`.body`, children.map(x => div(`.large-margin-bottom`, [x])))
     ])
   })

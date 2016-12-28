@@ -15,16 +15,11 @@ function render(state, component_id, item_heading) {
     children = [`Click plus to add ${item_heading}`]
   } else {
     children = state.map((x, index) => {
-      const margin_class = index === state.length - 1 ? '.mb-1' : ''
-      return div('.row', [
-        div('.col-xs-12', [
-          div('.row' + margin_class, [
-            div('.col-xs-12.raw-line.mb-xs.fx-auto-width', [
-              span('.d-fx-a-c.mr-1', [`${item_heading} ${index + 1}`]),
-              span('.appCollectionSubtractButton.fa.fa-minus.plus-button.btn.btn-link', {attrs: {'data-index': index}}, [])
-            ])
-          ]),
-          x
+      const margin_class = index !== state.length - 1 ? '.mb-xs' : ''
+      return div('.row' + margin_class, [
+        div('.col-xs-12.raw-line.fx-auto-width', [
+          div('.mr-1', [x]),
+          span('.appCollectionSubtractButton.plus-button.fa.fa-minus.btn.btn-link', {attrs: {'data-index': index}}, [])
         ])
       ])
     })

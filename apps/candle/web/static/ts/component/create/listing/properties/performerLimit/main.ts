@@ -1,6 +1,6 @@
 import {Observable as O} from 'rxjs'
 import isolate from '@cycle/isolate'
-import {div, span, input} from '@cycle/dom'
+import {div, span, input, label, em, h6} from '@cycle/dom'
 import {combineObj, createProxy, traceStartStop} from '../../../../../utils'
 import { ComboBox, BlankUndefined, BlankStructuredUndefined, NumberInputComponent} from '../helpers'
 import {MetaPropertyTypes, PerformerSignupOptions, PerformerLimitOptions} from '../../../../../listingTypes'
@@ -38,9 +38,9 @@ function NumberOfPeopleComponent(sources, props$, component_id) {
   const input = NumberInputComponent(sources, shared$.map(x => x.toString()), message)
 
   const vtree$ = input.DOM.map((input: any) => {
-    return div('.row', [
-      span('.item', [input]),
-      span('.flex.align-center', ['people'])
+    return div('.raw-line', [
+      span('.mr-xs', [input]),
+      'people'
     ])
   })
 
@@ -64,10 +64,14 @@ function EnableWaitlistComponent(sources, props$) {
 
   const vtree$ = shared$.map(props => {
     return div('.row', [
-      span('.item', [
-        input('.appCheckbox', {attrs: {type: 'checkbox', checked: props === true}}, [])
-      ]),
-      span(['Enable in-app waitlist'])
+      span('.col-xs-12.raw-line', [
+        span('.content', [
+          label('.form-check-inline', [
+            input('.appCheckbox.form-check-input.mr-xs', {attrs: {type: 'checkbox', name: 'in-app-waitlist', checked: props === true}}, []),
+            'Enable in-app waitlist'
+          ])
+        ])
+      ])
     ])
   })
 
@@ -116,8 +120,8 @@ function ByTypeComponent(sources, props$, component_id) {
     type: type_combo.DOM, 
     data: input_component.DOM
   }).debounceTime(0).map((components: any) => {
-    return div('.row', [
-      div('.item', [components.type]),
+    return div('.raw-line', [
+      div('.mr-xs', [components.type]),
       components.data
     ])
   })
@@ -198,16 +202,22 @@ function LimitByTypeComponent(sources, props$, in_app_enabled$, component_id) {
     pre_registration: pre_registration.DOM,
     enable_waitlist: enable_waitlist.DOM
   }).debounceTime(0).map((components: any) => {
-    return div('.column', [
-      div('.row', [
-        span('.sub-sub-heading.item.flex.align-center', ['In-person']),
-        components.in_person
-      ]),
-      div('.row', [
-        span('.sub-sub-heading.item.flex.align-center', ['Pre-registration']),
-        components.pre_registration
-      ]),
-      components.enable_waitlist
+    return div('.row', [
+      div('.col-xs-12', [
+        div('.row.mb-xs', [
+          div('.col-xs-12.raw-line', [
+            span('.mr-1', ['In-person']),
+            components.in_person
+          ])
+        ]),
+        div('.row.mb-xs', [
+          div('.col-xs-12.raw-line', [
+            span('.mr-1', ['Pre-registration']),
+            components.pre_registration
+          ])
+        ]),
+        components.enable_waitlist
+      ])
     ])
   })
 
@@ -261,9 +271,19 @@ function LimitComponent(sources, props$, in_app_enabled$, component_id) {
     enable_waitlist: enable_waitlist.DOM
   }).debounceTime(0).map((components: any) => {
     const {input, enable_waitlist} = components
-    return div('.column', [
-      input,
-      enable_waitlist
+    return div('.row', [
+      div('.col-xs-12', [
+        div('.row.mb-xs', [
+          div('.col-xs-12', [
+            input
+          ])
+        ]),
+        div('.row', [
+          div('.col-xs-12', [
+            enable_waitlist
+          ])
+        ])
+      ])
     ])
   })
 
@@ -387,10 +407,10 @@ export default function main(sources, inputs) {
     limit_type: limit_type_component.DOM,
     input: input_component.DOM
   }).debounceTime(0).map((components: any) => {
-    return div('.column', [
-      div('.sub-heading.section-heading', ['Performer limit']),
-      components.limit_type,
-      components.input ? span(`.small-margin-top`, [components.input]) : null
+    return div('.card.card-block', [
+      h6('.card-title', ['Performer limit']),
+      div({class: {'mb-xs': !!components.input}}, [components.limit_type]),
+      components.input ? components.input : null
     ])
   })
 

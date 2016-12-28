@@ -31,7 +31,7 @@ function InAppCheckboxComponent(sources, props$) {
       span('.col-xs-12.raw-line', [
         span('.content', [
           label('.form-check-inline', [
-            input('.appInAppCheckInCheckbox.form-check-input.mr-xs', {attrs: {type: 'checkbox', name: 'in-app-checkin', value: 'app', checked: props === true}}, []),
+            input('.appInAppCheckInCheckbox.form-check-input.mr-xs', {attrs: {type: 'checkbox', name: 'in-app-checkin', checked: props === true}}, []),
             'Enable in-app'
           ])
         ])

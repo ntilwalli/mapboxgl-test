@@ -24,16 +24,16 @@ const EventTypeToProperties = {
     MetaPropertyTypes.PERFORMER_CHECK_IN,
     MetaPropertyTypes.PERFORMER_COST,
     MetaPropertyTypes.STAGE_TIME,
-    // MetaPropertyTypes.PERFORMER_LIMIT,
-    // MetaPropertyTypes.LISTED_HOSTS,
-    // MetaPropertyTypes.NOTES,
-    // MetaPropertyTypes.CONTACT_INFO
+    MetaPropertyTypes.PERFORMER_LIMIT,
+    MetaPropertyTypes.LISTED_HOSTS,
+    MetaPropertyTypes.NOTES,
+    MetaPropertyTypes.CONTACT_INFO
   ],
   show: [
-    // MetaPropertyTypes.LISTED_HOSTS,
-    // MetaPropertyTypes.LISTED_PERFORMERS,
-    // MetaPropertyTypes.AUDIENCE_COST,
-    // MetaPropertyTypes.CONTACT_INFO
+    MetaPropertyTypes.LISTED_HOSTS,
+    MetaPropertyTypes.LISTED_PERFORMERS,
+    MetaPropertyTypes.AUDIENCE_COST,
+    MetaPropertyTypes.CONTACT_INFO
   ]
 }
 
