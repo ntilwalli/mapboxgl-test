@@ -178,7 +178,23 @@ address {
 }
 
 .mb-xs {
-  margin-bottom: $spacer-x * .5;
+  padding-bottom: $spacer-x * .5;
+}
+
+.pr-xs {
+  padding-right: $spacer-x * .5;
+}
+
+.pl-xs {
+  padding-left: $spacer-x * .5;
+}
+
+.pt-xs {
+  padding-top: $spacer-x * .5;
+}
+
+.pb-xs {
+  padding-bottom: $spacer-x * .5;
 }
 
 .pl-indent {

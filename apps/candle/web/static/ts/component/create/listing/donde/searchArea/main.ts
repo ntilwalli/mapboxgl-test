@@ -122,6 +122,9 @@ function mapview(state$) {
         style: {
           cursor: `grab`
         }
+      },
+      options: {
+        scrollZoom: false
       }
     }
 

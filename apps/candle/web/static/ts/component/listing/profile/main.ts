@@ -353,6 +353,9 @@ function mapview(state$) {
                 "text-anchor": `top`
             }
           }
+        },
+        options: {
+          scrollZoom: false
         }
       }
 

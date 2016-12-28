@@ -51,6 +51,9 @@ export default function mapview(state$) {
           style: {
             cursor: `grab`
           }
+        },
+        options: {
+          scrollZoom: false
         }
       }
 

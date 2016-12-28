@@ -239,7 +239,7 @@ function getSmallStepHeading(state) {
     case 'properties':
       return 'Properties'
     case 'preview':
-      return 'Post'
+      return 'Preview'
     default:
       return `Generic heading`
   }
