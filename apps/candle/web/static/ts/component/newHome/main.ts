@@ -118,7 +118,7 @@ export default function main(sources, inputs): any {
 
   const vtree$ = view(state$, components)
 
-  const merged = mergeSinks(content)
+  const merged = mergeSinks(home_menu, content)
 
   return {
     ...merged,

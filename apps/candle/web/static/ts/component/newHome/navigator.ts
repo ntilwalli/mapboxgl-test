@@ -12,12 +12,14 @@ function intent(sources) {
   const calendar$ = DOM.select('.appCalendarButton').events('click').mapTo('calendar')
   const profile$ = DOM.select('.appProfileButton').events('click').mapTo('profile')
   const show_menu$ = DOM.select('.appShowMenuButton').events('click')
+  const brand_button$ = DOM.select(`.appBrandButton`).events(`click`)
 
   return {
     selected$: O.merge(
       listings$, messages$, settings$, calendar$, profile$
     ),
-    show_menu$
+    show_menu$, 
+    brand_button$
   }
 }
 
@@ -79,6 +81,7 @@ export default function main(sources, inputs) {
 
   return {
     DOM: vtree$,
+    Router: actions.brand_button$.mapTo('/'),
     MessageBus: O.merge(
       actions.show_menu$.mapTo({to: `main`, message: `showLeftMenu`}),
     ),

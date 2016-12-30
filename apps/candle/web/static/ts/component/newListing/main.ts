@@ -166,7 +166,8 @@ export default function main(sources, inputs): any {
     DOM: vtree$,
     HTTP: O.merge(merged.HTTP, toHTTP$),
     Router: O.merge(
-      merged.Router
+      merged.Router,
+      actions.brand_button$.mapTo('/'),
     ),
     MessageBus: O.merge(
       merged.MessageBus,
