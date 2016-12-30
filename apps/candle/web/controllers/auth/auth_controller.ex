@@ -1,11 +1,16 @@
 defmodule Candle.AuthController do
   use Candle.Web, :controller
   require Logger
+  plug :save_redirect
   plug Ueberauth
   plug :put_layout, false
 
   alias Candle.Auth.Helpers
   alias Shared.Authorization
+
+  defp save_redirect(conn, _) do
+    Plug.Conn.put_session(conn, "redirect_url", conn.params["redirect_url"]) 
+  end
 
   def request(_conn, _params, _current_user, _claims) do
     raise "Auth request should be redirected before we get here..."
@@ -43,7 +48,10 @@ defmodule Candle.AuthController do
             |> redirect(to: "/?modal=presignup")
         end        
       _ ->  
-        redirect(conn, to: "/")
+        case Plug.Conn.put_session(conn, "redirect_url") do
+          nil -> redirect(conn, to: "/")
+          url -> redirect(conn, to: url)
+        end
     end
   end
 

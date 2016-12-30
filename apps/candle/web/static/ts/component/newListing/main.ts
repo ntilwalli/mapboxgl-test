@@ -29,6 +29,18 @@ function drillInflate(result) {
 
 function intent(sources) {
   const {DOM, HTTP} = sources
+  const {good$, bad$, ugly$} = processHTTP(sources, `getHomeProfile`)
+  const profile$ = good$
+    //.do(x => console.log(`got home/profile response`, x))
+    .filter(onlySuccess)
+    .pluck(`data`)
+    .map(drillInflate)
+    .publish().refCount()
+  
+  const error$ = good$
+    .filter(onlyError)
+    .pluck(`data`)
+    .publish().refCount()
 
   const showMenu$ = DOM.select(`.appShowMenuButton`).events(`click`)
 
@@ -38,6 +50,8 @@ function intent(sources) {
 
 
   return {
+    profile$,
+    error$,
     showMenu$,
     showSearchCalendar$
   }
@@ -90,6 +104,19 @@ function view(state$, components) {
       return div(`.screen.user-profile`, [
         renderNavigator(info),
         content
+        // show_waiting ? div('.loader', []) : div('.container-fluid.nav-fixed-offset.mt-1', [
+        //   profile_info,
+        //   div('.row.mt-1', [
+        //     div('.col-xs-12', [
+        //       my_listings 
+        //     ])
+        //   ]),
+        //   div('.row.mt-1', [
+        //     div('.col-xs-12', [
+        //       participation 
+        //     ])
+        //   ])
+        // ])
       ])
     })
 }
@@ -97,6 +124,8 @@ function view(state$, components) {
 export default function main(sources, inputs): any {
   const actions = intent(sources)
   
+  const participation = Participation(sources, inputs)
+  const profile_info = ProfileInfo(sources, inputs)
   const home_menu = HomeMenu(sources, inputs)
 
   const content$ = home_menu.output$
@@ -117,18 +146,31 @@ export default function main(sources, inputs): any {
   const state$ = model(actions, inputs)
 
   const components = {
+    participation$: participation.DOM,
+    //my_listings$: my_listings.DOM,
+    profile_info$: profile_info.DOM,
     home_menu$: home_menu.DOM,
     content$: content.DOM
   }
 
   const vtree$ = view(state$, components)
+  const toHTTP$ = O.merge(
+    O.of({
+      url: `/api/user`,
+      method: `post`,
+      category: `getHomeProfile`,
+      send: {
+        route: `/home/profile`
+      }
+    }).delay(0),
+  )
 
-  const merged = mergeSinks(content)
+  const merged = mergeSinks(participation, profile_info, content)
 
   return {
     ...merged,
     DOM: vtree$,
-    HTTP: O.merge(merged.HTTP),
+    HTTP: O.merge(merged.HTTP, toHTTP$),
     Router: O.merge(
       merged.Router, 
       actions.showSearchCalendar$.mapTo({
