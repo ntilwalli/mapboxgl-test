@@ -174,11 +174,11 @@ address {
 }
 
 .mt-xs {
-  margin-top: $spacer-x * .5;
+  margin-top: $spacer-y * .5;
 }
 
 .mb-xs {
-  padding-bottom: $spacer-x * .5;
+  padding-bottom: $spacer-y * .5;
 }
 
 .pr-xs {
@@ -190,27 +190,59 @@ address {
 }
 
 .pt-xs {
-  padding-top: $spacer-x * .5;
+  padding-top: $spacer-y * .5;
+}
+
+.pt-xs {
+  padding-top: $spacer-y * .5;
 }
 
 .pb-xs {
-  padding-bottom: $spacer-x * .5;
+  padding-bottom: $spacer-y * .5;
 }
 
 .pl-indent {
   padding-left: 30px;
 }
 
+.pt-25 {
+  padding-top: .25rem !important;
+}
+
+.h-2 {
+  height: 2rem;
+}
+
+.py-xs {
+  padding-bottom: $spacer-y * .5 !important;
+  padding-top: $spacer-y * .5 !important;
+}
+
+.lh-2 {
+  line-height: 2;
+}
+
+.fs-1 {
+  font-size: 1rem;
+}
+
 .d-flex {
   display: flex
 }
 
+.fx-column {
+  flex-direction: column;
+}
 .fx-a-c {
   align-items: center
 }
 
 .fx-j-c {
   justify-content: center;
+}
+
+.fx-j-e {
+  justify-content: flex-end;
 }
 
 .fx-j-sb {

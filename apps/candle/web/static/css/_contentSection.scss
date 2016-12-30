@@ -92,6 +92,47 @@
 }
 
 .user-profile {
+  .navbar {
+    padding-top: .5rem;
+    padding-bottom: 0;
+  }
+
+  .user-navigator {
+    pb-half {
+      padding-bottom: .5rem;
+    }
+
+    .selected, .not-selected {
+      display: inline-block;
+    }
+
+    .selected {
+      padding-bottom: .3rem;
+      border-width: 0 0 .2rem 0;
+      border-style: solid;
+      border-color: $crayola-orange;
+    }
+
+    .not-selected {
+      padding-bottom: .5rem;
+    }
+
+
+    // margin-right: auto;
+    // margin-left: auto;
+    // padding-right: 15px;
+    // padding-left: 15px;
+    .user-menu-item {
+      // padding: .5rem .5rem .5rem;
+      font-size: 1.2rem;
+      padding-left: 1rem;
+      padding-right: 1rem;
+      height: 2rem;
+      //padding-bottom: .5rem;
+    }
+
+  }
+
   .check-in-grid {
     .day-label {
       font-size: 9px;
@@ -101,6 +142,11 @@
       font-size: 10px;
     }
   }
+
+  // .recurrence-filter-combo-box {
+  //   width: 10rem;
+  // }
+
 }
 
 .create-component {

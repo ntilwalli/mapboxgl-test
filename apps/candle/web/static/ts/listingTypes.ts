@@ -138,10 +138,18 @@ const PurchaseTypeOptions = {
   DOLLARS: 'dollars'
 }
 
+const RecurrenceDisplayFilterOptions = {
+    ALL_PAST: "all_past",
+    LAST_30_DAYS: "last_30_days",
+    NEXT_30_DAYS: "next_30_days",
+    ALL_FUTURE: "all_future",
+    ALL: "all"
+}
+
 export {
   EventTypes, MetaPropertyTypes, EventTypeToProperties,
   DayOfWeek, RecurrenceFrequency, ListingTypes, CategoryTypes,
   PerformerSignupOptions, PreRegistrationOptions, PerformerLimitOptions,
   StageTimeOptions, TierPerkOptions, MinutesTypeOptions, RelativeTimeOptions,
-  CostOptions, PurchaseTypeOptions, UndefinedOption
+  CostOptions, PurchaseTypeOptions, UndefinedOption, RecurrenceDisplayFilterOptions
 }

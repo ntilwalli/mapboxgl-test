@@ -1,185 +1,185 @@
-@import './variables';
-.flex-grid {
-  .flex {
-    display: flex;
-  }
+// @import './variables';
+// .flex-grid {
+//   .flex {
+//     display: flex;
+//   }
 
-  .row {
-    display: flex;
-    flex-flow: row wrap;
-    margin-bottom: .2rem;
-  }
+//   .row {
+//     display: flex;
+//     flex-flow: row wrap;
+//     margin-bottom: .2rem;
+//   }
 
-  .column {
-    display: flex;
-    flex-flow: column wrap;
-  }
+//   .column {
+//     display: flex;
+//     flex-flow: column wrap;
+//   }
 
-  .section {
-    margin-bottom: 1em;
-    & > .section-heading {
-      text-decoration: underline;
-      font-weight: bold;
-      margin-bottom: .5em;
-    }
-  }
+//   .section {
+//     margin-bottom: 1em;
+//     & > .section-heading {
+//       text-decoration: underline;
+//       font-weight: bold;
+//       margin-bottom: .5em;
+//     }
+//   }
 
-  .separated-above {
-    margin-top: .5em;
-  }
+//   .separated-above {
+//     margin-top: .5em;
+//   }
 
-  .row-no-wrap {
-    display: flex;
-    flex-flow: row nowrap;
-  }
+//   .row-no-wrap {
+//     display: flex;
+//     flex-flow: row nowrap;
+//   }
 
-  .row, .row-no-wrap {
-    & > .heading {
-      margin-right: .5em;
-    }
-  }
+//   .row, .row-no-wrap {
+//     & > .heading {
+//       margin-right: .5em;
+//     }
+//   }
 
-  .column-no-wrap {
-    display: flex;
-    flex-flow: column no-wrap;
-  }
+//   .column-no-wrap {
+//     display: flex;
+//     flex-flow: column no-wrap;
+//   }
 
-  .align-top {
-    align-items: top;
-  }
+//   .align-top {
+//     align-items: top;
+//   }
 
-  .align-center {
-    align-items: center;
-  }
+//   .align-center {
+//     align-items: center;
+//   }
 
-  .align-bottom {
-    align-items: bottom;
-  }
+//   .align-bottom {
+//     align-items: bottom;
+//   }
 
-  .justify-center {
-    justify-content: center;
-  }
+//   .justify-center {
+//     justify-content: center;
+//   }
 
-  .justify-end {
-    justify-content: flex-end;
-  }
+//   .justify-end {
+//     justify-content: flex-end;
+//   }
 
-  .justify-between {
-    justify-content: space-between;
-  }
+//   .justify-between {
+//     justify-content: space-between;
+//   }
 
-  .justify-around {
-    justify-content: space-around;
-  }
+//   .justify-around {
+//     justify-content: space-around;
+//   }
 
-  .margin-left {
-    margin-left: .5em
-  }
+//   .margin-left {
+//     margin-left: .5em
+//   }
 
-  .margin-right {
-    margin-right: .5em
-  }
+//   .margin-right {
+//     margin-right: .5em
+//   }
 
-  .text-item {
-    display: flex;
-    align-items: center;
-  }
-}
+//   .text-item {
+//     display: flex;
+//     align-items: center;
+//   }
+// }
 
-.listing-card {
-  .name {
-    font-weight: bold;
-    margin-bottom: .3rem;
-  }
+// .listing-card {
+//   .name {
+//     font-weight: bold;
+//     margin-bottom: .3rem;
+//   }
 
-  .cost {
-    margin-right: .5rem;
-  }
+//   .cost {
+//     margin-right: .5rem;
+//   }
 
-  .heading {
-    font-style: italic;
-  }
+//   .heading {
+//     font-style: italic;
+//   }
 
-  .begins, .began, .ends, .ended {
-    margin-right: .5rem;
-  }
+//   .begins, .began, .ends, .ended {
+//     margin-right: .5rem;
+//   }
 
-  .begins:after {
-    content: 'Begins:'
-  }
+//   .begins:after {
+//     content: 'Begins:'
+//   }
 
-  .began:after {
-    content: 'Began:'
-  }
+//   .began:after {
+//     content: 'Began:'
+//   }
 
-  .ends:after {
-    content: 'Ends:'
-  }
+//   .ends:after {
+//     content: 'Ends:'
+//   }
 
-  .ended:after {
-    content: 'Ended:'
-  }
+//   .ended:after {
+//     content: 'Ended:'
+//   }
 
-  .past {
-    font-style: italic;
-    color: gray;
-  }
+//   .past {
+//     font-style: italic;
+//     color: gray;
+//   }
 
-  .ending-soon {
-    color: red;
-  }
+//   .ending-soon {
+//     color: red;
+//   }
 
-  .in-progress {
-    color: green;
-  }
+//   .in-progress {
+//     color: green;
+//   }
 
-  .starting-soon {
-    color: $crayola-orange
-  } 
+//   .starting-soon {
+//     color: $crayola-orange
+//   } 
 
-  .future {
-    color: black
-  }
+//   .future {
+//     color: black
+//   }
 
-  .map {
-    position: relative;
-  }
+//   .map {
+//     position: relative;
+//   }
 
-  .meta {
-    margin: .5rem;
-  }
-}
+//   .meta {
+//     margin: .5rem;
+//   }
+// }
 
-.outline-button {
-  background-color: white;
-  border: none;
-  border-width: 1px;
-  border-style: solid;
-  border-radius: 3px;
-  &.green {
-    color: green;
-    border-color: green;
+// .outline-button {
+//   background-color: white;
+//   border: none;
+//   border-width: 1px;
+//   border-style: solid;
+//   border-radius: 3px;
+//   &.green {
+//     color: green;
+//     border-color: green;
 
-    &:hover {
-      color: white;
-      background-color: green
-    }
-  }
-}
+//     &:hover {
+//       color: white;
+//       background-color: green
+//     }
+//   }
+// }
 
-.outline-button:hover {
-  color: white;
-}
+// .outline-button:hover {
+//   color: white;
+// }
 
-.outline-button:active {
-  outline: none;
-}
+// .outline-button:active {
+//   outline: none;
+// }
 
-.medium-button {
-  height: 2em;
-  width: 6em;
-}
+// .medium-button {
+//   height: 2em;
+//   width: 6em;
+// }
 
-.italic {
-  font-style: italic;
-}
+// .italic {
+//   font-style: italic;
+// }

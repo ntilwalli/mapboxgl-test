@@ -3,7 +3,7 @@ import {combineObj, componentify} from './utils'
 
 import SearchApp from './component/search/oneDay/main'
 import ListingApp from './component/listing/main'
-import HomeApp from './component/home/main'
+import HomeApp from './component/newHome/main'
 import {main as CreateApp} from './component/create/main'
 import {main as SettingsApp} from './component/settings/main'
 
@@ -16,12 +16,18 @@ const routes = [
   {pattern: /.*/, value: {component: SearchApp, auth: false}}
 ]
 
+const scrollTop = _ => {
+  console.log('scrolling top')
+  //window.scrollTo(0, 0)
+}
+
+
 export default function routing(sources, inputs) {
   const {Router} = sources
   const routing$ = combineObj({
     route$: Router.define(routes),
     authorization$: inputs.Authorization.status$
-  })
+  }).do(scrollTop)
     .map((info: any) => {
       const {route, authorization} = info
       const {component, auth} = route.value.info

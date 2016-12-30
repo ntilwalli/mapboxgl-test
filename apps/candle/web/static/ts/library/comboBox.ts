@@ -1,63 +1,33 @@
 import {Observable as O} from 'rxjs'
-import {div} from '@cycle/dom'
+import {div, select, option} from '@cycle/dom'
 import Immutable = require('immutable')
 import {combineObj} from '../utils'
 
-function intent(sources) {
-  const {DOM} = sources
-
-  return {
-
-  }
+function getTextFromOption(opt) {
+  return (opt.substring(0, 1).toUpperCase() + opt.substring(1)).replace(/_/g, ' ').replace(/and/g, '+')
 }
 
-function reducers(actions, inputs) {
-  return O.merge(O.never())
-}
-
-function model(actions, inputs) {
-  const reducer$ = reducers(actions, inputs)
-
-  return combineObj({
-      authorization: inputs.Authorization.status$.take(1)
+export default function StyledComboBox(sources, options, props$, style_class = '') {
+  const shared$ = props$
+    .map(x => {
+      return x
     })
-    .switchMap((info: any) => {
-      const {authorization} = info
-      const init = {
-        authorization,
-        value: undefined
-      }
-      return reducer$
-        .startWith(init)
-        .scan((acc, f: Function) => f(acc))
-    })
-    .map((x: any) => x.toJS())
     .publishReplay(1).refCount()
-}
-
-function view(state$, components) {
-  return combineObj({
-      state$
+  const click$ = sources.DOM.select(`.appComboBoxSelect`).events('change')
+    .map(ev => {
+      return ev.target.value
     })
-    .map((info: any) => {
-      const {state} = info
-      return div([`Hello`])
-    })
-}
-
-function main(sources, inputs) {
-  const actions = intent(sources)
-  const state$ = model(actions, inputs)
-  const components = {}
-  const vtree$ = view(state$, components)
+  const state$ = O.merge(shared$, click$).publishReplay(1).refCount()
+  const vtree$ = shared$.map(state => {
+    return select(`.appComboBoxSelect.form-control.form-control-sm` + style_class, options.map(opt => {
+        return option({attrs: {value: opt, selected: state === opt}}, [
+          getTextFromOption(opt)
+        ])
+      }))
+  })
 
   return {
     DOM: vtree$,
-    output$: state$.pluck(`value`)
+    output$: state$
   }
-}
-
-export {
-  main
-}
-
+} 

@@ -265,11 +265,11 @@ function renderNavigator(state) {
 
 function renderMainPanel(info: any) {
   return div(`.main-panel.container-fluid.mt-1`, {
-    hook: {
-      create: (emptyVNode, {elm}) => {
-        elm.scrollTop = 0
-      }
-    }
+    // hook: {
+    //   create: (emptyVNode, {elm}) => {
+    //     elm.scrollTop = 0
+    //   }
+    // }
   }, [
     info.components.content
   ])

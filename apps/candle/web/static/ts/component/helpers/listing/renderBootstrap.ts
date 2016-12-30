@@ -11,10 +11,55 @@ import deepEqual = require('deep-equal')
 
 
 function getDondeSummary(donde) {
-  if (donde.source === 'foursquare') {
-    const {data} = donde
-    const {name, location} = data
-    return `Where: ${name}\nAddress: ${location.address}, ${location.city}, ${location.state} ${location.postalCode}`
+  const {type} = donde
+  if (type === 'venue') {
+    if (donde.source === 'foursquare') {
+      const {data} = donde
+      const {name, location} = data
+      return `Where: ${name}\nAddress: ${location.address}, ${location.city}, ${location.state} ${location.postalCode}`
+    }
+  } else if (type === 'badslava') {
+    const {name, street, city, stateAbbr} = donde
+    return `Where: ${name}\nAddress: ${street}, ${city}, ${stateAbbr}`  
+  }
+}
+
+export function getDondeNameString(donde) {
+  const {type} = donde
+  if (type === 'venue') {
+    if (donde.source === 'foursquare') {
+      const {data} = donde
+      const {name} = data
+      return name
+    }
+  } else if (type === 'badslava') {
+    const {name} = donde
+    return name  
+  }
+}
+
+export function getDondeCityString(donde) {
+  const {type} = donde
+  if (type === 'venue') {
+    if (donde.source === 'foursquare') {
+      const {data} = donde
+      const {location} = data
+      return location.city + ','
+    } 
+  } else if (type === 'badslava') {
+    return donde.city 
+  }
+}
+export function getDondeStateString(donde) {
+  const {type} = donde
+  if (type === 'venue') {
+    if (donde.source === 'foursquare') {
+      const {data} = donde
+      const {location} = data
+      return location.state
+    } 
+  } else if (type === 'badslava') {
+    return donde.state_abbr
   }
 }
 
@@ -312,7 +357,7 @@ function getFromTo(dtstart, until) {
 }
 
 
-function getFreqSummary(rrule) {
+export function getFreqSummary(rrule) {
   const {freq, byweekday, bysetpos, dtstart, until} = rrule
   const from_to = (dtstart || until) ? getFromTo(dtstart, until) : ''
   switch (freq) {
@@ -540,7 +585,7 @@ function cuandoStatusToText(type) {
 }
 
 
-function getDateTimeString(d) {
+export function getDateTimeString(d) {
   if (moment().isSame(d, "day")) {
     return "Today, " + d.format(`h:mm A`)
   } else if (moment().add(1, "day").isSame(d, "day")) {
@@ -552,7 +597,7 @@ function getDateTimeString(d) {
   }
 }
 
-function getCuandoStatus(cuando) {
+export function getCuandoStatus(cuando) {
   //onsole.log(cuando)
   const {begins} = cuando
   const half_hour_before_start = begins.clone().subtract(30, 'minute')

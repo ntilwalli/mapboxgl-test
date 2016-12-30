@@ -106,7 +106,7 @@ function main(sources) {
       authorizationService.HTTP, 
       fromModalHTTP
     ),//.do(x => console.log(`main/http sink`, x)),
-    Router: O.merge(out.Router.do(scrollTop), toRouter$, fromModalRouter),
+    Router: O.merge(out.Router, toRouter$, fromModalRouter),
     Storage: O.merge(out.Storage, settingsService.Storage, geoService.Storage, fromModalStorage),
     MessageBus: O.merge(
       out.MessageBus, 
@@ -117,12 +117,6 @@ function main(sources) {
     //.letBind(traceStartStop(`main MessageBus trace`)), 
   }
 }
-
-const scrollTop = _ => {
-  console.log('scrolling top')
-  window.scrollTo(0, 0)
-}
-
 const wrappedMain = messageBusify(main)
 
 Cycle.run(wrappedMain, {
