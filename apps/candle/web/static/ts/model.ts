@@ -5,7 +5,7 @@ function reducers(actions, inputs) {
   const show_modal_r = actions.show_modal$.skip(1).map(modal => state => {
     //console.log(modal)
     const curr_modal = state.get('modal')
-    const new_modal = curr_modal === 'leftMenu' ? modal === 'leftMenu' ? undefined : modal : modal
+    const new_modal = curr_modal && curr_modal.type === 'leftMenu' ? modal && modal.type === 'leftMenu' ? undefined : modal : modal
     return state.set(`modal`, new_modal)
   })
 

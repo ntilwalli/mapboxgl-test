@@ -30,16 +30,11 @@ function drillInflate(result) {
 function intent(sources) {
   const {DOM, HTTP} = sources
 
-  const showMenu$ = DOM.select(`.appShowMenuButton`).events(`click`)
-
-  // const showLogin$ = DOM.select(`.appShowLoginButton`).events(`click`)
-  const showSearchCalendar$ = DOM.select(`.appBrandButton`).events(`click`)
-    .publishReplay(1).refCount()
+  const show_menu$ = DOM.select(`.appShowMenuButton`).events(`click`)
 
 
   return {
-    showMenu$,
-    showSearchCalendar$
+    show_menu$
   }
 }
 
@@ -129,17 +124,9 @@ export default function main(sources, inputs): any {
     ...merged,
     DOM: vtree$,
     HTTP: O.merge(merged.HTTP),
-    Router: O.merge(
-      merged.Router, 
-      actions.showSearchCalendar$.mapTo({
-        pathname: `/`,
-        type: 'push',
-        action: 'PUSH'
-      })
-    ),
     MessageBus: O.merge(
       merged.MessageBus,
-      actions.showMenu$.mapTo({to: `main`, message: `showLeftMenu`}),
+      actions.show_menu$.mapTo({to: `main`, message: {type: `showLeftMenu`, data: {redirect_url: '/home'}}}), 
     )
   }
 }

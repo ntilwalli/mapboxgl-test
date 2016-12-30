@@ -26,6 +26,11 @@ function intent(sources) {
   } 
 }
 
+function model(actions, inputs) {
+  return (inputs.props$ || O.of({}))
+    .publishReplay(1).refCount()
+}
+
 function renderNavigator(state) {
   const {authorization} = state
   const authClass = authorization ? 'Logout' : 'Login'
@@ -74,7 +79,7 @@ function view(auth$) {
 
 export default function main(sources, inputs) {
   const actions = intent(sources)
-  
+  const state$ = model(actions, inputs)
   return {
     DOM: view(inputs.Authorization.status$),
     Router: O.merge(
@@ -98,9 +103,12 @@ export default function main(sources, inputs) {
     MessageBus: O.merge(
       actions.close$.mapTo({to: `main`, message: `hideModal`}),
       actions.logout$.mapTo({to: `/authorization/logout`}),
-      actions.login$.mapTo({to: `main`, message: `showLogin`}),
-      actions.signup$.mapTo({to: `main`, message: `showSignup`}),
-      //actions.show_settings$.mapTo({to: `main`, message: `showSettings`})
+      actions.login$.withLatestFrom(state$, (_, state) => {
+        return ({to: `main`, message: {type: 'showLogin', data: state}})
+      }),
+      actions.signup$.withLatestFrom(state$, (_, state) => {
+        return ({to: `main`, message: {type: 'showSignup', data: state}})
+      })
     )
   }
 }

@@ -1,10 +1,12 @@
 defmodule Candle.LoginController do
   use Candle.Web, :controller
-  plug Ueberauth
   require Logger
   import Ecto.Changeset, only: [apply_changes: 1]
-  alias Candle.Auth.Helpers
+  import  Candle.Auth.Helpers, only: [convert_error: 1, save_redirect: 2, manage_redirect: 1]
   alias Shared.Message.Incoming.Authorization.Login, as: LoginMessage
+
+  #plug :save_redirect
+  plug Ueberauth
 
   def index(conn, params, current_user, _claims) do
     IO.inspect current_user
@@ -19,7 +21,7 @@ defmodule Candle.LoginController do
             {:ok, pid} = User.Registry.lookup_anonymous(User.Registry, conn.cookies["aid"])
             case User.Anon.login(pid, credentials) do
               {:error, error} ->
-                render(conn, message: %{type: "error", data: Map.put(%{username: credentials.username}, "errors", [Helpers.convert_error(error)])})
+                render(conn, message: %{type: "error", data: Map.put(%{username: credentials.username}, "errors", [convert_error(error)])})
               {:ok, user} ->
                 conn
                 |> Guardian.Plug.sign_in(user)

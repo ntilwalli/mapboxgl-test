@@ -1,16 +1,13 @@
 defmodule Candle.AuthController do
   use Candle.Web, :controller
   require Logger
+  import Candle.Auth.Helpers, only: [save_redirect: 2, manage_redirect: 1]
+  alias Shared.Authorization
+
   plug :save_redirect
   plug Ueberauth
   plug :put_layout, false
 
-  alias Candle.Auth.Helpers
-  alias Shared.Authorization
-
-  defp save_redirect(conn, _) do
-    Plug.Conn.put_session(conn, "redirect_url", conn.params["redirect_url"]) 
-  end
 
   def request(_conn, _params, _current_user, _claims) do
     raise "Auth request should be redirected before we get here..."
@@ -39,19 +36,18 @@ defmodule Candle.AuthController do
             Logger.info "Successfully found oauth user"
             conn
             |> Guardian.Plug.sign_in(user)
-            |> redirect(to: "/")
+            |> manage_redirect
           :error ->
             Logger.info "Failed to find oauth user"
             conn
             |> Plug.Conn.put_session("partial_authorization", partial)
             |> Plug.Conn.put_resp_cookie("suggested_name", name_from_auth(auth), http_only: false)
+            |> Plug.Conn.put_resp_cookie("redirect_url", Plug.Conn.get_session(conn, "redirect_url"), http_only: false)
             |> redirect(to: "/?modal=presignup")
         end        
       _ ->  
-        case Plug.Conn.put_session(conn, "redirect_url") do
-          nil -> redirect(conn, to: "/")
-          url -> redirect(conn, to: url)
-        end
+        conn
+        |> manage_redirect
     end
   end
 

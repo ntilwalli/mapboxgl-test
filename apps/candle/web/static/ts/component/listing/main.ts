@@ -182,6 +182,6 @@ export default function main(sources, inputs): any {
     DOM: view(inputs.Authorization.status$, {content: content.DOM}),
     HTTP: O.merge(content.HTTP, to_http$),
     Router: O.merge(content.Router, to_router$, actions.brand_button$.mapTo('/')),
-    MessageBus: actions.show_menu$.mapTo({to: `main`, message: `showLeftMenu`})
+    MessageBus: actions.show_menu$.mapTo({to: `main`, message: {type: `showLeftMenu`, data: {redirect_url: '/'}}})
   }
 }

@@ -12,7 +12,7 @@ export default function intent({DOM}) {
 
   const submit$ = DOM.select(`.appSignupButton`).events(`click`)
     .publishReplay(1).refCount()
-  const switchToLogin$ = DOM.select(`.appSwitchToLoginButton`).events(`click`)
+  const login$ = DOM.select(`.appSwitchToLoginButton`).events(`click`)
 
   //submit$.subscribe(x => console.log(`submitted`))
 
@@ -22,6 +22,6 @@ export default function intent({DOM}) {
     github$,
     facebook$,
     twitter$,
-    switchToLogin$
+    login$
   }
 }

@@ -1,12 +1,12 @@
 defmodule Candle.PresignupController do
   use Candle.Web, :controller
-  plug Ueberauth
 
-  alias Candle.Auth.Helpers
+  import Candle.Auth.Helpers, only: [convert_error: 1, manage_redirect: 1]
 
   import Ecto.Changeset, only: [apply_changes: 1]
-  alias Candle.Auth.Helpers
   alias Shared.Message.Incoming.Authorization.Presignup, as: PresignupMessage
+
+  plug Ueberauth
 
   def index(conn, params, current_user, _claims) do
     case current_user do
@@ -26,11 +26,13 @@ defmodule Candle.PresignupController do
                 {:ok, pid} = User.Registry.lookup_anonymous(User.Registry, conn.cookies["aid"])
                 case User.Anon.oauth_signup(pid, {credentials, partial}) do
                   {:error, error} -> 
-                    render(conn, message: %{type: "error", data: Map.put(params, "errors", [Helpers.convert_error(error)])})
+                    render(conn, message: %{type: "error", data: Map.put(params, "errors", [convert_error(error)])})
                   {:ok, user} ->
                     conn
                     |> Guardian.Plug.sign_in(user)
                     |> Plug.Conn.delete_session("partial_authorization")
+                    |> Plug.Conn.delete_session("redirect_url")
+                    |> Plug.Conn.put_resp_cookie("redirect_url", "", max_age: -1)
                     |> render(message: %{type: "success"})
                 end
             end

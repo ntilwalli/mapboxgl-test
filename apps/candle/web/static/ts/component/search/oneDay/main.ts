@@ -116,14 +116,6 @@ function main(sources, inputs) {
         }
       }),
       grid.Router,
-      actions.show_user_profile$.withLatestFrom(state$, (_, state) => {
-        const {authorization} = state
-        return {
-          pathname: `/home`,
-          type: 'push',
-          action: 'PUSH'
-        }
-      }),
       actions.brand_button$.mapTo('/')
     ),
     HTTP: retrieve$,
@@ -141,9 +133,8 @@ function main(sources, inputs) {
       })),
       //.do(x => console.log(`to storage`, JSON.parse(x.value))),
     MessageBus: O.merge(
-      actions.show_menu$.mapTo({to: `main`, message: `showLeftMenu`}), 
-      actions.show_login$.mapTo({to: `main`, message: `showLogin`})
-    )
+      actions.show_menu$.mapTo({to: `main`, message: {type: `showLeftMenu`, data: {redirect_url: '/'}}}), 
+    )//.do(x => console.log(`to MessageBus:`, x))
 
       //.filter(x => false)
       //.do(x => console.log(`to storage:`, x))

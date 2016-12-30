@@ -580,7 +580,7 @@ function main(sources, inputs) {
        }))
      ),//.do(x => console.log(`to router`, x)),
      MessageBus: O.merge(
-       actions.show_menu$.mapTo({to: `main`, message: `showLeftMenu`}), 
+       actions.show_menu$.mapTo({to: `main`, message: {type: `showLeftMenu`, data: {redirect_url: '/create/listing'}}}), 
        O.merge(actions.error_retrieve$, actions.error_save$, actions.error_create$)
          .map(error => {
            return {

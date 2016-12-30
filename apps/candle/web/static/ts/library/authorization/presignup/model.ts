@@ -1,6 +1,6 @@
 import {Observable as O} from 'rxjs'
 import Immutable = require('immutable')
-import {combineObj, spread, checkValidity} from '../../../utils'
+import {combineObj, checkValidity} from '../../../utils'
 
 function isValid(state) {
   const {name, username, email} = state
@@ -52,19 +52,20 @@ export default function model(actions, inputs) {
   const reducer$ = reducers(actions, inputs)
   //const {name$, username$, email$} = inputs
   return combineObj({
-    initialValue$: inputs.initialValue$ || O.of({}),
+    props: inputs.cookie$,
     name$: inputs.name$,//.map(checkValidity),
     username$: inputs.username$,//.map(checkValidity),
     email$: inputs.email$//.map(checkValidity)
   }).take(1)
     .map((info: any) => {
-      const {initialValue, name, username, email} = info
+      const {props, name, username, email} = info
       //const userType = initialValue && initialValue.type || `individual`
-      const state = {name, username, email}//, type: userType}
-      return spread(state, {
-        valid: isValid(state),
+      //const state = {name, username, email}//, type: userType}
+      return {
+        ...info,
+        valid: isValid(info),
         errors: []
-      })
+      }
     })
     .switchMap(state => reducer$.startWith(Immutable.Map(state)).scan((acc, f: Function) => f(acc)))
     .map(x => (<any> x).toJS())

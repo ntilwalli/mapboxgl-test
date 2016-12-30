@@ -61,9 +61,6 @@ export default function intent(sources) {
 
   const show_menu$ = DOM.select(`.appShowMenuButton`).events(`click`)
 
-  const show_login$ = DOM.select(`.appShowLoginButton`).events(`click`)
-  const show_user_profile$ = DOM.select(`.appShowUserProfileButton`).events(`click`)
-
   const brand_button$ = DOM.select(`.appBrandButton`).events(`click`)
 
   return {
@@ -72,8 +69,6 @@ export default function intent(sources) {
     change_date$,
     show_filters$,
     show_menu$,
-    show_login$,
-    show_user_profile$,
     brand_button$
   }
 }

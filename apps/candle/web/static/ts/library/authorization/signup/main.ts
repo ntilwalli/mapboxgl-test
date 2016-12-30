@@ -128,21 +128,25 @@ export default function main(sources, inputs) {
             name: name.data, 
             username: username.data, 
             email: email.data, 
-            password: password.data
+            password: password.data,
+            data: state.props
           }}
         }
       }),
-      actions.switchToLogin$.mapTo({to: `main`, message: `showLogin`}),
+      actions.login$.withLatestFrom(state$, (_, state) => {
+        return {to: `main`, message: {type: `showLogin`, data: state.props}}
+      }),
       O.merge(
-        actions.facebook$.mapTo({type: `facebook`}),
-        actions.twitter$.mapTo({type: `twitter`}),
-        actions.github$.mapTo({type: `github`}),
-      ).map(x => {
-        return {
-          to: `/authorization/login`,
-          message: x
-        }
-      })
+        actions.facebook$.withLatestFrom(state$, (_, state) => {
+          return ({type: `facebook`, data: state.props})
+        }),
+        actions.twitter$.withLatestFrom(state$, (_, state) => {
+          return ({type: `twitter`, data: state.props})
+        }),
+        actions.github$.withLatestFrom(state$, (_, state) => {
+          return ({type: `github`, data: state.props})
+        })
+      ).map(x => ({to: `/authorization/login`, message: x}))
     )
   }
 }

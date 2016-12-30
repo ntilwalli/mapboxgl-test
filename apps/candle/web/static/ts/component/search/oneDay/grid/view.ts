@@ -205,7 +205,7 @@ function applyFilters(results, filters) {
   consistent_results.forEach(x => listings[x.listing.id] = x)
   const normalized = consistent_results.map(normalizeForFiltering)
 
-  console.log('normalized results', normalized)
+  //console.log('normalized results', normalized)
   const filtered = normalized
     // .filter(x => hasCategories(x.meta, filterCategories, categories))
     // .filter(x => hasCosts(x.meta, filterCosts, costs))

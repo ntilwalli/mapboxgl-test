@@ -275,7 +275,7 @@ function main(sources, inputs) {
             message: settings
           }
         }),
-      actions.show_menu$.mapTo({to: `main`, message: `showLeftMenu`})
+      actions.show_menu$.mapTo({to: `main`, message: {type: `showLeftMenu`, data: {redirect_url: '/settings'}}}),
     )
     //.do(x => console.log(`toMessageBus:`, x))
     .publish().refCount()

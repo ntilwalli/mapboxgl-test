@@ -42,18 +42,12 @@ function intent(sources) {
     .pluck(`data`)
     .publish().refCount()
 
-  const showMenu$ = DOM.select(`.appShowMenuButton`).events(`click`)
-
-  // const showLogin$ = DOM.select(`.appShowLoginButton`).events(`click`)
-  const showSearchCalendar$ = DOM.select(`.appBrandButton`).events(`click`)
-    .publishReplay(1).refCount()
-
+  const show_menu$ = DOM.select(`.appShowMenuButton`).events(`click`)
 
   return {
     profile$,
     error$,
-    showMenu$,
-    showSearchCalendar$
+    show_menu$
   }
 }
 
@@ -172,16 +166,11 @@ export default function main(sources, inputs): any {
     DOM: vtree$,
     HTTP: O.merge(merged.HTTP, toHTTP$),
     Router: O.merge(
-      merged.Router, 
-      actions.showSearchCalendar$.mapTo({
-        pathname: `/`,
-        type: 'push',
-        action: 'PUSH'
-      })
+      merged.Router
     ),
     MessageBus: O.merge(
       merged.MessageBus,
-      actions.showMenu$.mapTo({to: `main`, message: `showLeftMenu`}),
+      actions.show_menu$.mapTo({to: `main`, message: {type: `showLeftMenu`, data: {redirect_url: '/'}}}), 
     )
   }
 }

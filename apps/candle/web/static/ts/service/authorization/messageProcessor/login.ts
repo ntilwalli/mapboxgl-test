@@ -31,7 +31,7 @@ function intent(sources) {
 
 
   return {
-    redirect$: success$.mapTo(`/`),
+    redirect$: success$,
     failedLogin$,
     error$: response_bad$
 
@@ -41,18 +41,22 @@ function intent(sources) {
 export default function process(sources) {
   const actions = intent(sources)
 
-  const data$ = sources.MessageBus.address(`/authorization/login`)
+  const message$ = sources.MessageBus.address(`/authorization/login`)
     //.do(x => console.log(`login message:`, x))
     .publishReplay(1).refCount()
 
-  const local$ = data$
+  const local$ = message$
     .filter(x => x.type === 'local')
     .map(x => x.data)
     .map(x => ({
         url: LOGIN_ENDPOINT,
         method: `post`,
         type: `json`,
-        send: x,
+        send: {
+          username: x.username,
+          password: x.password,
+          redirect_url: x.data.redirect_url
+        },
         category: `login`
     }))
     .map(x => {
@@ -60,15 +64,25 @@ export default function process(sources) {
     })
     .publish().refCount()
 
-  const facebook$ = data$
+  const facebook$ = message$
     .filter(x => x.type === `facebook`)
-    .map(() => `/auth/facebook`)
-  const twitter$ = data$
+    .map((x: any) => {
+      console.log('got facebook request', JSON.stringify(x))
+      const redirect = x.data && x.data.redirect_url || ''
+      return `/auth/facebook?redirect_url=${redirect}`
+    })
+  const twitter$ = message$
     .filter(x => x.type === `twitter`)
-    .map(() => `/auth/twitter`)
-  const github$ = data$
+    .map((x: any) => {
+      const redirect = x.data && x.data.redirect_url || ''
+      return `/auth/twitter?redirect_url=${redirect}`
+    })
+  const github$ = message$
     .filter(x => x.type === `github`)
-    .map(() => `/auth/github`)
+    .map((x: any) => {
+      const redirect = x.data && x.data.redirect_url || ''
+      return `/auth/github?redirect_url=${redirect}`
+    })
 
   const toMessageBus$ = O.merge(
     actions.failedLogin$
@@ -91,11 +105,14 @@ export default function process(sources) {
   //local$.subscribe()
   return {
     HTTP: local$.do(x => console.log(`login HTTP`, x)),
-    Global: O.merge(facebook$, twitter$, github$, actions.redirect$)
-      .map(data => ({
-        type: `redirect`,
-        data
-      })),
+    Global: O.merge(
+      facebook$, 
+      twitter$, 
+      github$, 
+      actions.redirect$.withLatestFrom(message$.map((x: any) => x.data), (_, message) => {
+        return message && message.data.redirect_url || '/'
+      })
+    ).map(x => ({type: 'redirect', data: x})),
     MessageBus: toMessageBus$
   }
 

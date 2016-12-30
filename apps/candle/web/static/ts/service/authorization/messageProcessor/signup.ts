@@ -47,9 +47,9 @@ function intent(sources) {
 export default function process(sources) {
   const actions = intent(sources)
 
-  const signup$ = sources.MessageBus.address(`/authorization/signup`)
+  const message$ = sources.MessageBus.address(`/authorization/signup`)
 
-  const attempt$ = signup$
+  const attempt$ = message$
     //.do(x => console.log(`signup message`, x))
     .filter(x => x.type === `attempt`)
     .map(x => x.data)
@@ -81,14 +81,12 @@ export default function process(sources) {
 
   return {
     HTTP: attempt$,
-    Global: actions.success$
-      .map(x => {
-        return x
-      })
-      .mapTo({
+    Global: actions.success$.withLatestFrom(message$.map((x: any) => x.data), (_, message) => {
+      return {
         type: `redirect`,
-        data: `/`
-      }),
+        data: message && message.data.redirect_url || '/'
+      }
+    }),
     MessageBus: toMessageBus$
   }
 

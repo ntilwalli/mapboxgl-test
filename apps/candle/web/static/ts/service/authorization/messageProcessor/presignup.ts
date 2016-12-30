@@ -56,9 +56,9 @@ function intent(sources) {
 export default function process(sources) {
   const actions = intent(sources)
 
-  const signup$ = sources.MessageBus.address(`/authorization/presignup`)
+  const message$ = sources.MessageBus.address(`/authorization/presignup`)
 
-  const attempt$ = signup$
+  const attempt$ = message$
     .filter(x => x.type === `attempt`)
     .map(x => {
       return x.data
@@ -95,14 +95,12 @@ export default function process(sources) {
   return {
     HTTP: attempt$,
     Global: O.merge(
-      actions.success$
-        .map(x => {
-          return x
-        })
-        .mapTo({
-          type: `redirect`,
-          data: `/`
-        }),
+      actions.success$.withLatestFrom(message$.map((x: any) => x.data), (_, message) => {
+        return {
+          type: 'redirect',
+          data: message && message.data && message.data.redirect_url || '/'
+        }
+      }),
       actions.redirect$
     ),
     MessageBus: toMessageBus$

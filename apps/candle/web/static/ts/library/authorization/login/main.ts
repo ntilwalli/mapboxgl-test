@@ -72,18 +72,26 @@ export default function main(sources, inputs) {
     DOM: vtree$,
     MessageBus: O.merge(
       O.merge(
-        actions.facebook$.mapTo({type: `facebook`}),
-        actions.twitter$.mapTo({type: `twitter`}),
-        actions.github$.mapTo({type: `github`}),
+        actions.facebook$.withLatestFrom(state$, (_, state) => {
+          return ({type: `facebook`, data: state.props})
+        }),
+        actions.twitter$.withLatestFrom(state$, (_, state) => {
+          return ({type: `twitter`, data: state.props})
+        }),
+        actions.github$.withLatestFrom(state$, (_, state) => {
+          return ({type: `github`, data: state.props})
+        }),
         actions.submit$.withLatestFrom(state$, (_, state) => {
           const {username, password} = state
           return {
             type: `local`,
-            data: {username: username.data, password: password.data}
+            data: {username: username.data, password: password.data, data: state.props}
           }
         })
       ).map(x => ({to: `/authorization/login`, message: x})),
-      actions.signup$.mapTo({to: `main`, message: `showSignup`})
+      actions.signup$.withLatestFrom(state$, (_, state) => {
+          return {to: `main`, message: {type: `showSignup`, data: state.props}}
+        })
     )
     //.do(x => console.log(`login message`, x))
   }

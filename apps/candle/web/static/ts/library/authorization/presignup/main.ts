@@ -81,13 +81,14 @@ export default function main(sources, inputs) {
   })
 
   const actions = intent(sources)
-  const state$ = model(actions, spread(
-    inputs, {
+  const state$ = model(actions, {
+    ...inputs, 
     email$: emailInput.output$,
     name$: nameInput.output$,
     username$: usernameInput.output$,
-    errors$
-  }))
+    errors$,
+    cookie$: sources.Global.cookie$
+  })
 
   const vtree$ = view(combineObj({
     state$,
@@ -108,7 +109,8 @@ export default function main(sources, inputs) {
           type: "individual", 
           name: name.data, 
           username: username.data, 
-          email: email.data
+          email: email.data,
+          data: state.props
         }}
       }
     })
