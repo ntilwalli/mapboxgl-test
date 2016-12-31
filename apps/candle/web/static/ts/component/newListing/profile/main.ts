@@ -1,6 +1,6 @@
 import {Observable as O} from 'rxjs'
 import {div, span, button, nav, a, em, ul, li} from '@cycle/dom'
-import {combineObj, processHTTP, spread, createProxy} from '../../../utils'
+import {combineObj, processHTTP, createProxy} from '../../../utils'
 import {createFeatureCollection, geoToLngLat} from '../../../mapUtils'
 import Immutable = require('immutable')
 import moment = require('moment')
@@ -77,7 +77,8 @@ function model(actions, inputs) {
     .map((info: any) => {
       const {props, authorization, geolocation} = info
       const {listing, children, distance, status} = props
-      return Immutable.Map(spread(info, {
+      return Immutable.Map({
+        ...info, 
         authorization,
         geolocation,
         listing,
@@ -85,7 +86,7 @@ function model(actions, inputs) {
         distance,
         checked_in: !!(status && status.checked_in),
         in_flight: false
-      }))
+      })
     })
     .switchMap(init => {
       return reducer$
@@ -192,7 +193,7 @@ export function renderRecurringListing(state) {
   const [full_cost, full_stage_time, merged_cost_stage_time] = 
     getFullCostAndStageTime(performer_cost, stage_time)
 
-  return div('.container-fluid.mt-xs', [
+  return div('.container-fluid.nav-fixed-offset.mt-xs', [
     div('.row.mb-1', [
       div('.col-xs-6', [
         div('.row.no-gutter', [
@@ -250,7 +251,7 @@ export function renderSingleListing(state) {
   const [full_cost, full_stage_time, merged_cost_stage_time] = 
     getFullCostAndStageTime(performer_cost, stage_time)
 
-  return div('.container-fluid.mt-xs', [
+  return div('.container-fluid.nav-fixed-offset.mt-xs', [
     div('.row.mb-1', [
       div('.col-xs-6', [
         div('.row.no-gutter', [
@@ -363,7 +364,7 @@ function mapview(state$) {
     })
 }
 
-export function main(sources, inputs) {
+export default function main(sources, inputs) {
   const actions = intent(sources)
   const in_flight$ = createProxy()
   const state$ = model(actions, {...inputs, in_flight$, geolocation$: inputs.Geolocation.cachedGeolocation$})

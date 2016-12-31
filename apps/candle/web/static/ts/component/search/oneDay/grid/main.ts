@@ -29,7 +29,7 @@ function main(sources, inputs) {
           pathname: `/listing/${val.listing.id}`,
           type: 'push',
           action: 'PUSH',
-          state: val
+          //state: val
         }
 
         return out

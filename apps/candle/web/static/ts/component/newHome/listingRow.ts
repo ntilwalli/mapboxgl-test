@@ -222,7 +222,7 @@ export default function main(sources, inputs) {
     RecurrenceDisplayFilterOptions.ALL
   ]
 
-  const filter_type_combo = ComboBox(sources, options, O.of(RecurrenceDisplayFilterOptions.NEXT_30_DAYS), '.recurrence-filter-combo-box')
+  const filter_type_combo = isolate(ComboBox)(sources, options, O.of(RecurrenceDisplayFilterOptions.NEXT_30_DAYS), '.recurrence-filter-combo-box')
 
   const state$ = model(actions, {...inputs, filter_type$: filter_type_combo.output$})
 

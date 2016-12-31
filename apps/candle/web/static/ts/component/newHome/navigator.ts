@@ -58,15 +58,15 @@ function view(state$) {
     return div('.user-navigator.d-flex.fx-j-sb', [
       button('.appBrandButton.h-2.hopscotch-icon.btn.btn-link.nav-brand', []),
       span([
-        span(profile_class, [button('.hidden-md-up.btn.btn-link.appProfileButton.user-menu-item', [span('.fa.fa-user', [])])]),
-        span(listings_class, [button('.hidden-md-up.btn.btn-link.appListingsButton.user-menu-item', [span('.fa.fa-microphone', [])])]),
-        span(messages_class, [button('.hidden-md-up.btn.btn-link.appMessagesButton.user-menu-item', [span('.fa.fa-envelope', [])])]),
-        span(settings_class, [button('.hidden-md-up.btn.btn-link.appSettingsButton.user-menu-item', [span('.fa.fa-gear', [])])]),
+        span(profile_class, [button('.hidden-md-up.btn.btn-link.appProfileButton.menu-item', [span('.fa.fa-user', [])])]),
+        span(listings_class, [button('.hidden-md-up.btn.btn-link.appListingsButton.menu-item', [span('.fa.fa-microphone', [])])]),
+        span(messages_class, [button('.hidden-md-up.btn.btn-link.appMessagesButton.menu-item', [span('.fa.fa-envelope', [])])]),
+        span(settings_class, [button('.hidden-md-up.btn.btn-link.appSettingsButton.menu-item', [span('.fa.fa-gear', [])])]),
         //span(calendar_class, [button('.hidden-md-up.btn.btn-link.appCalendarButton.user-menu-item', [span('.fa.fa-calendar', [])])]),
-        span(profile_class, [button('.hidden-sm-down.btn.btn-link.appProfileButton.user-menu-item', [span('.fa.fa-user.mr-xs', []), span('.fs-1', ['Profile'])])]),
-        span(listings_class, [button('.hidden-sm-down.btn.btn-link.appListingsButton.user-menu-item', [span('.fa.fa-microphone.mr-xs', []), span('.fs-1', ['Listings'])])]),
-        span(messages_class, [button('.hidden-sm-down.btn.btn-link.appMessagesButton.user-menu-item', [span('.fa.fa-envelope.mr-xs', []), span('.fs-1', ['Messages'])])]),
-        span(settings_class, [button('.hidden-sm-down.btn.btn-link.appSettingsButton.user-menu-item', [span('.fa.fa-gear.mr-xs', []), span('.fs-1', ['Settings'])])]),
+        span(profile_class, [button('.hidden-sm-down.btn.btn-link.appProfileButton.menu-item', [span('.fa.fa-user.mr-xs', []), span('.fs-1', ['Profile'])])]),
+        span(listings_class, [button('.hidden-sm-down.btn.btn-link.appListingsButton.menu-item', [span('.fa.fa-microphone.mr-xs', []), span('.fs-1', ['Listings'])])]),
+        span(messages_class, [button('.hidden-sm-down.btn.btn-link.appMessagesButton.menu-item', [span('.fa.fa-envelope.mr-xs', []), span('.fs-1', ['Messages'])])]),
+        span(settings_class, [button('.hidden-sm-down.btn.btn-link.appSettingsButton.menu-item', [span('.fa.fa-gear.mr-xs', []), span('.fs-1', ['Settings'])])]),
         //span(calendar_class, [button('.hidden-sm-down.btn.btn-link.appCalendarButton.user-menu-item', [span('.fa.fa-calendar.mr-xs', []), span('.fs-1', ['Calendar'])])]),
       ]),
       span('.appShowMenuButton.nav-text-button.fa.fa-bars.btn.btn-link.pt-25', [])

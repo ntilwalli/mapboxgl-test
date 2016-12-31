@@ -279,10 +279,12 @@ export function processHTTP(sources, category) {
     ugly$: out$.filter(x => x.type === "ugly").map(x => x.data).publish().refCount(),
     success$: good$.filter(onlySuccess)
       //.do(x => console.log(`good$`, x))
-      .pluck(`data`),
+      .pluck(`data`)
+      .publish().refCount(),
     error$: good$.filter(onlyError)
       //.do(x => console.log(`error$`, x))
       .pluck(`data`)
+      .publish().refCount()
   }
 
 }

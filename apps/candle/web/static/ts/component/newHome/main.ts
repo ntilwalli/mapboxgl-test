@@ -27,58 +27,45 @@ function drillInflate(result) {
   return result
 }
 
-function intent(sources) {
-  const {DOM, HTTP} = sources
+// function reducers(actions, inputs) {
+//   return O.never()
+// }
 
-  const show_menu$ = DOM.select(`.appShowMenuButton`).events(`click`)
-
-
-  return {
-    show_menu$
-  }
-}
-
-function reducers(actions, inputs) {
-  return O.never()
-}
-
-function model(actions, inputs) {
-  const reducer$ = reducers(actions, inputs)
+// function model(actions, inputs) {
+//   const reducer$ = reducers(actions, inputs)
   
-  return inputs.Authorization.status$
-    .map(authorization => {
-      return {
-        authorization
-      }
-    })
-    .map(x => Immutable.Map(x))
-    .switchMap(init => {
-      return reducer$
-        .startWith(init)
-        .scan((acc, f: Function) => f(acc))
-    })
-    .map(x => x.toJS())
-    //.do(x => console.log(`home/profile state`, x))
-    .publishReplay(1).refCount()
-}
+//   return inputs.Authorization.status$
+//     .map(authorization => {
+//       return {
+//         authorization
+//       }
+//     })
+//     .map(x => Immutable.Map(x))
+//     .switchMap(init => {
+//       return reducer$
+//         .startWith(init)
+//         .scan((acc, f: Function) => f(acc))
+//     })
+//     .map(x => x.toJS())
+//     //.do(x => console.log(`home/profile state`, x))
+//     .publishReplay(1).refCount()
+// }
 
 
 function renderNavigator(info: any) {
-  const {state, components} = info
+  const {components} = info
   const {home_menu} = components
-  const {authorization} = state
-  const authClass = authorization ? 'Logout' : 'Login'
-  return nav('.navbar.navbar-light.bg-faded.container-fluid.pos-f-t', [
+  return nav('.navbar.navbar-light.bg-faded.container-fluid.pos-f-t.navigator', [
     home_menu
   ])
 }
 
 
-function view(state$, components) {
-  return combineObj({state$, components$: combineObj(components)})
+function view(components) {
+  return combineObj({components$: combineObj(components)})
     .debounceTime(0)
     .map((info: any) => {
-      const {state, components} = info
+      const {components} = info
       //const {authorization, profile, selected_check_in} = state
       const {profile_info, my_listings, participation, content} = components
       const show_waiting = !(profile_info && my_listings && participation)
@@ -90,8 +77,7 @@ function view(state$, components) {
 }
 
 export default function main(sources, inputs): any {
-  const actions = intent(sources)
-  
+
   const home_menu = HomeMenu(sources, inputs)
 
   const content$ = home_menu.output$
@@ -107,16 +93,12 @@ export default function main(sources, inputs): any {
 
   const content = componentify(content$)
 
-
-
-  const state$ = model(actions, inputs)
-
   const components = {
     home_menu$: home_menu.DOM,
     content$: content.DOM
   }
 
-  const vtree$ = view(state$, components)
+  const vtree$ = view(components)
 
   const merged = mergeSinks(home_menu, content)
 
@@ -125,8 +107,7 @@ export default function main(sources, inputs): any {
     DOM: vtree$,
     HTTP: O.merge(merged.HTTP),
     MessageBus: O.merge(
-      merged.MessageBus,
-      actions.show_menu$.mapTo({to: `main`, message: {type: `showLeftMenu`, data: {redirect_url: '/home'}}}), 
+      merged.MessageBus
     )
   }
 }

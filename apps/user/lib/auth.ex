@@ -128,9 +128,14 @@ defmodule User.Auth do
   end
 
   def handle_call({:retrieve_listing, listing_id} = msg, _from, %{user: user, listing_registry: l_reg} = state) when is_integer(listing_id) do
-    {:ok, pid} = Listing.Registry.lookup(l_reg, listing_id)
-    {:ok, result} = Listing.Worker.retrieve(pid, user)
-    {:reply, {:ok, result}, state}
+
+    case Listing.Registry.lookup(l_reg, listing_id) do
+      {:ok, pid} ->
+        {:ok, result} = Listing.Worker.retrieve(pid, user)
+        {:reply, {:ok, result}, state}
+      {:error, message} ->
+        {:reply, {:error, message}, state}
+    end
   end
 
   def handle_call({:retrieve_listing, listing_id} = msg, _from, %{user: user, listing_registry: l_reg} = state) do
