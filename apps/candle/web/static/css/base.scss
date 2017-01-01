@@ -213,6 +213,10 @@ address {
   height: 2rem;
 }
 
+.mw-2 {
+  min-width: 2rem;
+}
+
 .py-xs {
   padding-bottom: $spacer-y * .5 !important;
   padding-top: $spacer-y * .5 !important;
