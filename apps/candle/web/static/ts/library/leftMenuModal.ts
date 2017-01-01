@@ -4,8 +4,11 @@ import {combineObj, normalizeComponent, targetIsOwner, createProxy, spread} from
 
 function intent(sources) { 
   const {DOM} = sources
-  const close$ = DOM.select(`.appModalBackdrop`).events(`click`)
-    .filter(targetIsOwner)
+  const close$ = O.merge(
+      DOM.select('.appModalBackdrop').events('click')
+        .filter(targetIsOwner),
+      DOM.select('.appShowMenuButton').events('click')
+  )
 
   const logout$ = DOM.select(`.appShowLogoutButton`).events(`click`)
   const login$ = DOM.select(`.appShowLoginButton`).events(`click`)

@@ -132,7 +132,7 @@ export function mergeSinks(...components) {
   const Global = mergeSelective(...components.map(c => c.Global).filter(x => !!x)).publish().refCount()
   const Storage = mergeSelective(...components.map(c => c.Storage).filter(x => !!x)).publish().refCount()
   //const Heartbeat = mergeSelective(...components.map(c => c.Heartbeat).filter(x => !!x)).publish().refCount()
-  const MessageBus = mergeSelective(...components.map(c => c.MessageBus$).filter(x => !!x)).publish().refCount()
+  const MessageBus = mergeSelective(...components.map(c => c.MessageBus).filter(x => !!x)).publish().refCount()
   return {
     MapJSON, HTTP, Router, Global, Storage, MessageBus
   }

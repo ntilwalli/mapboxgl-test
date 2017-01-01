@@ -6,47 +6,55 @@ import {combineObj} from '../../utils'
 function intent(sources) {
   const {DOM} = sources
 
-  const listings$ = DOM.select('.appListingsButton').events('click').mapTo('listings')
+  const recurrences$ = DOM.select('.appRecurrencesButton').events('click').mapTo('recurrences')
   const messages$ = DOM.select('.appMessagesButton').events('click').mapTo('messages')
   const settings$ = DOM.select('.appSettingsButton').events('click').mapTo('settings')
   const calendar$ = DOM.select('.appCalendarButton').events('click').mapTo('calendar')
   const profile$ = DOM.select('.appProfileButton').events('click').mapTo('profile')
   const show_menu$ = DOM.select('.appShowMenuButton').events('click')
+    .do(x =>{
+      console.log('show_menu')
+    })
+    .publish().refCount()
+
   const brand_button$ = DOM.select(`.appBrandButton`).events(`click`)
+    .do(x =>{
+      console.log('brand_button')
+    })
 
   return {
     selected$: O.merge(
-      listings$, messages$, settings$, calendar$, profile$
-    ),
+      recurrences$, messages$, settings$, calendar$, profile$
+    ).publishReplay(1).refCount(),
     show_menu$,
     brand_button$
   }
 }
 
-function reducers(actions, inputs) {
-  const selected_r = actions.selected$.map(val => state => state.set('selected', val))
-  return O.merge(selected_r)
-}
+// function reducers(actions, inputs) {
+//   const selected_r = actions.selected$.map(val => state => state.set('selected', val))
+//   return O.merge(selected_r)
+// }
 
-function model(actions, inputs) {
-  const reducer$ = reducers(actions, inputs)
-  return combineObj({
-      props$: inputs.props$
-    })
-    .switchMap((info: any) => {
-      return reducer$
-        .startWith(Immutable.Map(info.props))
-        .scan((acc, f: Function) => f(acc))
-    })
-    .map((x: any) => x.toJS())
-    .publishReplay(1).refCount()
-} 
+// function model(actions, inputs) {
+//   const reducer$ = reducers(actions, inputs)
+//   return combineObj({
+//       props$: inputs.props$
+//     })
+//     .switchMap((info: any) => {
+//       return reducer$
+//         .startWith(Immutable.Map(info.props))
+//         .scan((acc, f: Function) => f(acc))
+//     })
+//     .map((x: any) => x.toJS())
+//     .publishReplay(1).refCount()
+// } 
 
 function view(state$) {
   return state$.map(state => {
     console.log('state', state)
-    const {authorization, page, listing} = state
-    const type = listing && listing.type
+    const {authorization, page, listing_result} = state
+    const type = listing_result && listing_result.listing && listing_result.listing.type
     const recurrences_class = page === 'recurrences' ? '.selected' : '.not-selected'
     const messages_class = page === 'messages' ? '.selected' : '.not-selected'
     const settings_class = page === 'settings' ? '.selected' : '.not-selected'
@@ -73,15 +81,23 @@ function view(state$) {
 
 export default function main(sources, inputs) {
   const actions = intent(sources)
-  const state$ = model(actions, inputs)
+  const state$ = inputs.props$.publishReplay(1).refCount()
   const vtree$ = view(state$)
+
+  const to_message_bus$ = actions.show_menu$
+    .withLatestFrom(state$, (_, state) => {
+      return {
+        to: `main`, message: {
+          type: `showLeftMenu`, 
+          data: {redirect_url: state.listing_result && state.listing_result.listing && state.listing_result.listing.id ? '/listing/' + state.listing_result.listing.id : '/' }
+        }
+      }
+    }).publish().refCount()
 
   return {
     DOM: vtree$,
     Router: actions.brand_button$.mapTo('/'),
-    MessageBus: O.merge(
-      actions.show_menu$.mapTo({to: `main`, message: `showLeftMenu`}),
-    ),
-    output$: state$.pluck('selected')
+    MessageBus: to_message_bus$,
+    output$: actions.selected$
   }
 }

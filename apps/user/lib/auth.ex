@@ -128,24 +128,25 @@ defmodule User.Auth do
   end
 
   def handle_call({:retrieve_listing, listing_id} = msg, _from, %{user: user, listing_registry: l_reg} = state) when is_integer(listing_id) do
-
-    case Listing.Registry.lookup(l_reg, listing_id) do
-      {:ok, pid} ->
-        {:ok, result} = Listing.Worker.retrieve(pid, user)
-        {:reply, {:ok, result}, state}
-      {:error, message} ->
-        {:reply, {:error, message}, state}
-    end
+    {:reply, retrieve_listing(listing_id, l_reg, user), state}
   end
 
   def handle_call({:retrieve_listing, listing_id} = msg, _from, %{user: user, listing_registry: l_reg} = state) do
     out = case Integer.parse(listing_id) do
       {whole, _} -> 
-        {:ok, pid} = Listing.Registry.lookup(l_reg, whole)
-        {:ok, result} = Listing.Worker.retrieve(pid, user)
-        {:reply, {:ok, result}, state}
+        {:reply, retrieve_listing(whole, l_reg, user), state}
       :error ->
         {:reply, {:error, "Sent listing id (#{listing_id}) invalid"}, state}
+    end
+  end
+
+  defp retrieve_listing(listing_id, l_reg, user) do
+    case Listing.Registry.lookup(l_reg, listing_id) do
+      {:ok, pid} ->
+        {:ok, result} = Listing.Worker.retrieve(pid, user)
+        {:ok, result}
+      {:error, message} ->
+        {:error, message}
     end
   end
 

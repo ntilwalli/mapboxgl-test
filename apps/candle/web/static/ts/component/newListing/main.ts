@@ -1,10 +1,10 @@
 import {Observable as O} from 'rxjs'
 import Immutable = require('immutable')
 import {div, nav, span, button} from '@cycle/dom'
-import {combineObj, mergeSinks, createProxy, processHTTP, componentify} from '../../utils'
-import {main as Invalid} from './invalid'
+import isolate from '@cycle/isolate'
+import {combineObj, mergeSinks, createProxy, traceStartStop, processHTTP, componentify} from '../../utils'
 
-import BasicNav from './basicNav'
+//import BasicNav from './basicNav'
 import AdminNav from './adminNav'
 import ListingProfile from './profile/main'
 import TimeoutLoader from '../../library/timeoutLoader'
@@ -62,7 +62,10 @@ function muxRouter(sources) {
     .publishReplay(1).refCount()
   const listing_id$ = route$.filter(route => route.value.info.type === 'success')
     .publishReplay(1).refCount()
-  const listing_from_router$ = listing_id$.filter(route => route.location.state)
+  const listing_result_from_router$ = listing_id$.filter(route => route.location.state)
+    .do(x => {
+      console.log('result from router', x)
+    })
     .publishReplay(1).refCount()
   const li_wo_push_state$ = listing_id$.filter(route => !route.location.state)
   const retrieve_listing_id$ = li_wo_push_state$
@@ -72,42 +75,38 @@ function muxRouter(sources) {
     .publishReplay(1).refCount()
 
   return {
-    listing_from_router$,
+    listing_result_from_router$,
     retrieve_listing_id$,
     no_listing_id$
   }
 }
 
-
-
 function muxHTTP(sources) {
   const {HTTP} = sources
   const {success$, error$, good$, bad$, ugly$} = processHTTP(sources, `getListingById`)
-  const listing_from_http$ = success$.map(drillInflate)
 
   return {
-    listing_from_http$,
-    listing_error_from_http$: error$
+    listing_result_from_http$: success$.map(drillInflate),
+    listing_result_error_from_http$: error$
   }
 }
 
 function reducers(actions, inputs) {
-
   const page_r = O.merge(
     inputs.page$,
-  inputs.listing_not_found$.mapTo('listing_not_found').do(x => console.log('got here'))
+  inputs.listing_result_not_found$.mapTo('listing_not_found').do(x => console.log('got here'))
   ).map(page => state => {
     return state.set('page', page)
   })
 
-  const listing_r = O.merge(
-      inputs.listing_from_http$, 
-      inputs.listing_from_router$
-    ).map(listing => state => {
-      return state.set('listing', listing)
+  const listing_result_r = O.merge(
+      inputs.listing_result_from_http$, 
+      inputs.listing_result_from_router$
+    ).map(result => state => {
+      return state.set('listing_result', result)
     })
 
-  return O.merge(listing_r, page_r)
+  return O.merge(listing_result_r, page_r)
 }
 
 function model(actions, inputs) {
@@ -118,7 +117,7 @@ function model(actions, inputs) {
     }).map((info: any) => {
       const init = {
         authorization: info.authorization,
-        listing: undefined,
+        listing_result: undefined,
         page: 'profile'
       }
 
@@ -143,26 +142,24 @@ export default function main(sources, inputs): any {
   const page$ = createProxy()
   const state$ = model({}, {
     ...inputs,
-    listing_from_http$: muxed_http.listing_from_http$,
-    listing_from_router$: muxed_router.listing_from_router$,
-    listing_not_found$: muxed_http.listing_error_from_http$,
+    listing_result_from_http$: muxed_http.listing_result_from_http$,
+    listing_result_from_router$: muxed_router.listing_result_from_router$,
+    listing_result_not_found$: muxed_http.listing_result_error_from_http$,
     page$
   })
-  
-  const navigator$ = state$
-    .distinctUntilChanged((x, y) => !!x.listing == !!y.listing)
-    .map((info: any) => {
-      return AdminNav(sources, {...inputs, props$: O.of(info)})
-    }).publishReplay(1).refCount()
 
-  const navigator: any = componentify(navigator$)
-  page$.attach(navigator$.switchMap(x => x.output$))
+  const navigator = isolate(AdminNav)(sources, {
+    ...inputs, 
+    props$: state$.distinctUntilChanged((x, y) => x.listing !== y.listing)
+  })
+  
+  page$.attach(navigator.output$)
 
   const content$ = state$
     .map((state: any) => {
-      if (state.authorization && state.listing) {
+      if (state.listing_result) {
         if (!state.page || state.page === 'profile') {
-          const out = ListingProfile(sources, {...inputs, props$: O.of(state.listing)})
+          const out = ListingProfile(sources, {...inputs, props$: O.of(state.listing_result)})
           return out
         } else {
           return NotImplemented(sources, inputs)
@@ -181,7 +178,6 @@ export default function main(sources, inputs): any {
   }
 
   const vtree$ = view(state$, components)
-  const merged = mergeSinks(navigator, content)
 
   const to_http$ = muxed_router.retrieve_listing_id$
     .map(listing_id => {
@@ -196,6 +192,8 @@ export default function main(sources, inputs): any {
       }
     })
     .do(x => console.log(`retrieve listing toHTTP`, x))
+
+  const merged = mergeSinks(navigator, content)
 
   return {
     ...merged,

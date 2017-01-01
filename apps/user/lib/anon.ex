@@ -91,14 +91,27 @@ defmodule User.Anon do
     end
   end
 
+  def handle_call({:retrieve_listing, listing_id} = msg, _from, %{listing_registry: l_reg} = state) when is_integer(listing_id) do
+    {:reply, retrieve_listing(listing_id, l_reg), state}
+  end
+
   def handle_call({:retrieve_listing, listing_id} , _from, %{listing_registry: l_reg} = state) do
     out = case Integer.parse(listing_id) do
       {whole, _} -> 
-        {:ok, pid} = Listing.Registry.lookup(l_reg, whole)
-        {:ok, listing} = Listing.Worker.retrieve(pid, nil)
-        {:reply, {:ok, listing}, state}
+        {:reply, retrieve_listing(whole, l_reg), state}
       :error ->
         {:reply, {:error, "Sent listing id (#{listing_id}) invalid"}, state}
     end
   end
+
+  defp retrieve_listing(listing_id, l_reg) do
+    case Listing.Registry.lookup(l_reg, listing_id) do
+      {:ok, pid} ->
+        {:ok, result} = Listing.Worker.retrieve(pid, nil)
+        {:ok, result}
+      {:error, message} ->
+        {:error, message}
+    end
+  end
+
 end
