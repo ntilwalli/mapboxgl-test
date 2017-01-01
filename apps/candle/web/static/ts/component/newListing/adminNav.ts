@@ -62,7 +62,7 @@ function view(state$) {
     const profile_class = page === 'profile' ? '.selected' : '.not-selected'
     return div('.user-navigator.d-flex.fx-j-sb', [
       button('.appBrandButton.h-2.hopscotch-icon.btn.btn-link.nav-brand', []),
-      type === 'recurring' || authorization ? span([
+      type === 'recurring' || authorization ? span('.navigator', [
         type === 'recurring' || authorization ? span(profile_class, [button('.hidden-md-up.btn.btn-link.appProfileButton.menu-item', [span('.fa.fa-user', [])])]) : null,
         type === 'recurring' ? span(recurrences_class, [button('.hidden-md-up.btn.btn-link.appRecurrencesButton.menu-item', [span('.fa.fa-microphone', [])])]) : null,
         authorization ? span(messages_class, [button('.hidden-md-up.btn.btn-link.appMessagesButton.menu-item', [span('.fa.fa-envelope', [])])]) : null,
@@ -73,7 +73,7 @@ function view(state$) {
         authorization ? span(messages_class, [button('.hidden-sm-down.btn.btn-link.appMessagesButton.menu-item', [span('.fa.fa-envelope.mr-xs', []), span('.fs-1', ['Messages'])])]) : null,
         authorization ? span(settings_class, [button('.hidden-sm-down.btn.btn-link.appSettingsButton.menu-item', [span('.fa.fa-gear.mr-xs', []), span('.fs-1', ['Settings'])])]) : null,
         //span(calendar_class, [button('.hidden-sm-down.btn.btn-link.appCalendarButton.menu-item', [span('.fa.fa-calendar.mr-xs', []), span('.fs-1', ['Calendar'])])]),
-      ]) : null,
+      ]) : span('.navigator', []),
       span('.appShowMenuButton.nav-text-button.fa.fa-bars.btn.btn-link.pt-25', [])
     ])
   })
