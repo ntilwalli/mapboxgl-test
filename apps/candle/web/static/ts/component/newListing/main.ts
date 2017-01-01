@@ -14,7 +14,7 @@ import ListingNotFound from '../../library/listingNotFound'
 import {inflateListing} from '../helpers/listing/utils'
 
 const routes = [
-  {pattern: /^\/\d*$/, value: {type: "success"}},
+  {pattern: /^\/(\d+)/, value: {type: "success"}},
   {pattern: /^\/notFound$/, value: {type: "error"}},
   {pattern: /.*/, value: {type: "error"}}
 ]
@@ -35,11 +35,10 @@ function drillInflate(result) {
   return result
 }
 
-function view(state$, components) {
-  return combineObj({state$, components$: combineObj(components)})
+function view(components) {
+  return combineObj(components)
     .debounceTime(0)
-    .map((info: any) => {
-      const {state, components} = info
+    .map((components: any) => {
       const {navigator, content} = components
       return div(`.screen.listing-profile`, [
         nav('.navbar.navbar-light.bg-faded.container-fluid.pos-f-t.navigator', [
@@ -50,6 +49,37 @@ function view(state$, components) {
     })
 }
 
+function reducers(actions, inputs) {
+  // const page_r = O.merge(
+  //   inputs.page$,
+  // inputs.listing_result_not_found$.mapTo('listing_not_found').do(x => console.log('got here'))
+  // ).map(page => state => {
+  //   return state.set('page', page)
+  // })
+
+  const listing_result_r = inputs.listing_result_from_http$
+    .map(result => state => {
+      return state.set('listing_result', result)
+    })
+
+  return O.merge(listing_result_r)
+}
+
+function model(actions, inputs) {
+  const reducer$ = reducers(actions, inputs)
+
+  return combineObj({
+      listing_result$: inputs.props$,
+    }).map((init: any) => {
+      return Immutable.Map(init)
+    }).switchMap((init: any) => {
+      return reducer$
+        .startWith(init)
+        .scan((acc, f: Function) => f(acc))
+    })
+    .map((x: any) => x.toJS())
+    .publishReplay(1).refCount()
+}
 
 // Check if listing id given in route. If no, check if pushState has listing,
 // if yes, reroute to path with associated listing id, else show wtf screen, 
@@ -60,22 +90,29 @@ function muxRouter(sources) {
   const {Router} = sources
   const route$ = Router.define(routes)
     .publishReplay(1).refCount()
-  const listing_id$ = route$.filter(route => route.value.info.type === 'success')
+  const success$ = route$.filter(route => route.value.info.type === 'success')
+    // .do(route => {
+    //   console.log('success route', route)
+    // })
     .publishReplay(1).refCount()
-  const listing_result_from_router$ = listing_id$.filter(route => route.location.state)
-    .do(x => {
-      console.log('result from router', x)
-    })
+  const listing$ = success$
+    .filter(route => !!route.location.state)
+    .map(route => route.location.state)
+    // .do(x => {
+    //   console.log('result from router', x)
+    // })
     .publishReplay(1).refCount()
-  const li_wo_push_state$ = listing_id$.filter(route => !route.location.state)
+  const li_wo_push_state$ = success$.filter(route => !route.location.state)
   const retrieve_listing_id$ = li_wo_push_state$
-    .map(route => parseInt(route.path.substring(1)))
+    .map(route => parseInt(route.value.match[1]))
     .publishReplay(1).refCount()
-  const no_listing_id$ = route$.filter(route => route.value.info.type === 'error')
+  const no_listing_id$ = route$.filter(route => {
+      return route.value.info.type === 'error'
+    })
     .publishReplay(1).refCount()
 
   return {
-    listing_result_from_router$,
+    listing_result_from_router$: listing$.map(drillInflate),
     retrieve_listing_id$,
     no_listing_id$
   }
@@ -91,93 +128,48 @@ function muxHTTP(sources) {
   }
 }
 
-function reducers(actions, inputs) {
-  const page_r = O.merge(
-    inputs.page$,
-  inputs.listing_result_not_found$.mapTo('listing_not_found').do(x => console.log('got here'))
-  ).map(page => state => {
-    return state.set('page', page)
-  })
-
-  const listing_result_r = O.merge(
-      inputs.listing_result_from_http$, 
-      inputs.listing_result_from_router$
-    ).map(result => state => {
-      return state.set('listing_result', result)
-    })
-
-  return O.merge(listing_result_r, page_r)
-}
-
-function model(actions, inputs) {
-  const reducer$ = reducers(actions, inputs)
-
-  return combineObj({
-      authorization: inputs.Authorization.status$
-    }).map((info: any) => {
-      const init = {
-        authorization: info.authorization,
-        listing_result: undefined,
-        page: 'profile'
-      }
-
-      return Immutable.Map(init)
-    }).switchMap((init: any) => {
-      return reducer$
-        .startWith(init)
-        .scan((acc, f: Function) => f(acc))
-    })
-    .map((x: any) => x.toJS())
-    .publishReplay(1).refCount()
-}
+//function toComponent(sources, inputs)
 
 export default function main(sources, inputs): any {
 
   const {Router} = sources
-  //const actions = intent(sources)
-
   const muxed_router = muxRouter(sources)
   const muxed_http = muxHTTP(sources)
 
-  const page$ = createProxy()
-  const state$ = model({}, {
-    ...inputs,
-    listing_result_from_http$: muxed_http.listing_result_from_http$,
-    listing_result_from_router$: muxed_router.listing_result_from_router$,
-    listing_result_not_found$: muxed_http.listing_result_error_from_http$,
-    page$
-  })
+  const component$ = O.merge(
+    muxed_router.retrieve_listing_id$.map(_ => TimeoutLoader(sources, inputs)),
+    muxed_router.listing_result_from_router$.map(result => {
+      const navigator = isolate(AdminNav)({...sources, Router: sources.Router.path(result.listing.id.toString())}, {
+        ...inputs, 
+        props$: O.of(result)
+      })
 
-  const navigator = isolate(AdminNav)(sources, {
-    ...inputs, 
-    props$: state$.distinctUntilChanged((x, y) => x.listing !== y.listing)
-  })
-  
-  page$.attach(navigator.output$)
+      const content$ = navigator.output$
+        .map(page => {
+          if (!page || page === 'profile') {
+            const out = ListingProfile(sources, {...inputs, props$: O.of(result)})
+            return out
+          } else {
+            return NotImplemented(sources, inputs)
+          }
+        }).publishReplay(1).refCount()
+      
+      const content = componentify(content$)
 
-  const content$ = state$
-    .map((state: any) => {
-      if (state.listing_result) {
-        if (!state.page || state.page === 'profile') {
-          const out = ListingProfile(sources, {...inputs, props$: O.of(state.listing_result)})
-          return out
-        } else {
-          return NotImplemented(sources, inputs)
-        }
-      } else if (state.page === 'listing_not_found') {
-        return ListingNotFound(sources, inputs)
-      } else {
-        return TimeoutLoader(sources, inputs)
+      const components = {
+        navigator: navigator.DOM,
+        content: content.DOM
       }
-    }).publishReplay(1).refCount()
 
-  const content = componentify(content$)
-  const components = {
-    navigator$: navigator.DOM,
-    content$: content.DOM
-  }
+      const merged = mergeSinks(navigator, content)
+      return {
+        ...merged,
+        DOM: view(components)
+      }
+    })
+  ).publishReplay(1).refCount()
 
-  const vtree$ = view(state$, components)
+  const component = componentify(component$)
 
   const to_http$ = muxed_router.retrieve_listing_id$
     .map(listing_id => {
@@ -191,23 +183,30 @@ export default function main(sources, inputs): any {
           category: `getListingById`
       }
     })
-    .do(x => console.log(`retrieve listing toHTTP`, x))
-
-  const merged = mergeSinks(navigator, content)
+    //.do(x => console.log(`retrieve listing toHTTP`, x))
 
   return {
-    ...merged,
-    DOM: vtree$,
+    ...component,
     Router: O.merge(
-      merged.Router,
-      muxed_router.no_listing_id$.mapTo({
+      component.Router,
+      muxed_http.listing_result_from_http$.map(x => {
+        return {
+          type: 'replace',
+          action: 'REPLACE',
+          path: '/listing/' + x.listing.id,
+          state: x
+        }
+      }),
+      muxed_router.no_listing_id$.map(x => {
+        return {
           type: 'replace',
           action: 'REPLACE',
           path: '/'
-        })
+        }
+      })
     ),
     HTTP: O.merge(
-      merged.Router,
+      component.Router,
       to_http$
     )
   }

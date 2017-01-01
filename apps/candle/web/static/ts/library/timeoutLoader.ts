@@ -14,22 +14,22 @@ function intent(sources) {
   }
 }
 
-// function renderNavigator() {
-//   return nav('.navbar.navbar-light.bg-faded.container-fluid', [
-//     div('.row.no-gutter', [
-//       div('.col-xs-6', [
-//         button('.appBrandButton.hopscotch-icon.nav-brand', []),
-//       ]),
-//       div('.col-xs-6', [
-//         button('.appShowMenuButton.nav-text-button.fa.fa-bars.btn.btn-link.float-xs-right', []),
-//       ]),
-//     ])
-//   ])
-// }
+function renderNavigator() {
+  return nav('.navbar.navbar-light.bg-faded.container-fluid', [
+    div('.row.no-gutter', [
+      div('.col-xs-6', [
+        button('.appBrandButton.hopscotch-icon.nav-brand', []),
+      ]),
+      div('.col-xs-6', [
+        button('.appShowMenuButton.nav-text-button.fa.fa-bars.btn.btn-link.float-xs-right', []),
+      ]),
+    ])
+  ])
+}
 
 function view() {
   return O.of(div(`.screen`, [
-    //renderNavigator(),
+    renderNavigator(),
     div('.loader-container.nav-fixed-offset', [
       div('.loader', [])
     ])

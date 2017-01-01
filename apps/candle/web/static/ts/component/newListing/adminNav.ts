@@ -3,6 +3,15 @@ import {div, span, button} from '@cycle/dom'
 import Immutable = require('immutable')
 import {combineObj} from '../../utils'
 
+const routes = [
+  {pattern: /^\/profile$/, value: {type: 'success', data: 'profile'}},
+  {pattern: /^\/recurrences$/, value: {type: 'success', data: 'recurrences'}},
+  {pattern: /^\/messages$/, value: {type: 'success', data: 'messages'}},
+  {pattern: /^\/settings$/, value: {type: 'success', data: 'settings'}},
+  {pattern: /^\/$/, value: {type: 'success', data: 'profile'}},
+  {pattern: /.*/, value: {type: "error"}}
+]
+
 function intent(sources) {
   const {DOM} = sources
 
@@ -23,7 +32,7 @@ function intent(sources) {
     })
 
   return {
-    selected$: O.merge(
+    page$: O.merge(
       recurrences$, messages$, settings$, calendar$, profile$
     ).publishReplay(1).refCount(),
     show_menu$,
@@ -31,28 +40,32 @@ function intent(sources) {
   }
 }
 
-// function reducers(actions, inputs) {
-//   const selected_r = actions.selected$.map(val => state => state.set('selected', val))
-//   return O.merge(selected_r)
-// }
+function reducers(actions, inputs) {
+  return O.never()
+}
 
-// function model(actions, inputs) {
-//   const reducer$ = reducers(actions, inputs)
-//   return combineObj({
-//       props$: inputs.props$
-//     })
-//     .switchMap((info: any) => {
-//       return reducer$
-//         .startWith(Immutable.Map(info.props))
-//         .scan((acc, f: Function) => f(acc))
-//     })
-//     .map((x: any) => x.toJS())
-//     .publishReplay(1).refCount()
-// } 
+function model(actions, inputs) {
+  const reducer$ = reducers(actions, inputs)
+  return combineObj({
+      authorization$: inputs.Authorization.status$,
+      listing_result$: inputs.props$,
+      page$: inputs.page$
+    })
+    .switchMap((info: any) => {
+      return reducer$
+        .startWith(Immutable.Map({
+          listing_result: info.listing_result,
+          authorization: info.authorization,
+          page: info.page
+        }))
+        .scan((acc, f: Function) => f(acc))
+    })
+    .map((x: any) => x.toJS())
+    .publishReplay(1).refCount()
+} 
 
 function view(state$) {
   return state$.map(state => {
-    console.log('state', state)
     const {authorization, page, listing_result} = state
     const type = listing_result && listing_result.listing && listing_result.listing.type
     const recurrences_class = page === 'recurrences' ? '.selected' : '.not-selected'
@@ -79,9 +92,28 @@ function view(state$) {
   })
 }
 
+function muxRouter(sources) {
+  const {Router} = sources
+  const route$ = Router.define(routes)
+    .publishReplay(1).refCount()
+  const valid_path$ = route$.filter(route => route.value.info.type === 'success')
+    .map(route => {
+      return route.value.info.data
+    })
+    .publishReplay(1).refCount()
+  const invalid_path$ = route$.filter(route => route.value.info.type === 'error')
+    .publishReplay(1).refCount()
+
+  return {
+    valid_path$,
+    invalid_path$
+  }
+}
+
 export default function main(sources, inputs) {
+  const muxed_router = muxRouter(sources)
   const actions = intent(sources)
-  const state$ = inputs.props$.publishReplay(1).refCount()
+  const state$ = model(actions, {...inputs, page$: muxed_router.valid_path$})// inputs.props$.publishReplay(1).refCount()
   const vtree$ = view(state$)
 
   const to_message_bus$ = actions.show_menu$
@@ -96,8 +128,19 @@ export default function main(sources, inputs) {
 
   return {
     DOM: vtree$,
-    Router: actions.brand_button$.mapTo('/'),
+    Router: O.merge(
+      actions.brand_button$.mapTo('/'),
+      actions.page$.withLatestFrom(state$, (page, state) => {
+        const out = page === 'profile' ? sources.Router.createHref('') : sources.Router.createHref('/' + page)
+        return {
+          action: 'PUSH',
+          type: 'push', 
+          pathname: out,
+          state: state.listing_result
+        }
+      })
+    ),
     MessageBus: to_message_bus$,
-    output$: actions.selected$
+    output$: state$.pluck('page').distinctUntilChanged()
   }
 }
