@@ -149,7 +149,7 @@ function main(sources, inputs) {
       actions.show_search_area_screen$.withLatestFrom(state$, (_, state) => {
         const session = deflateDates(state.session)
         session.properties['donde_modal'] = 'search_area'
-        return session
+        return clone(session)
       })
       .map(session => {
         return {
@@ -158,36 +158,35 @@ function main(sources, inputs) {
           action: 'PUSH',
           state: {
             type: 'session',
-            data: {...session, current_step: 'donde'}
+            data: {...session, current_step: 'donde', seed: Math.random()}
           }
         }
       }),
       hide_modal$.withLatestFrom(state$, (_, state) => {
         const session = deflateDates(state.session)
         session.properties['donde_modal'] = undefined
-        return session
-      })
-      .map(session => {
-        return {
-          pathname: `/create/listing`,
-          type: `replace`,
-          action: 'REPLACE',
-          state: {
-            type: 'session',
-            data: {...session, current_step: 'donde'}
-          }
-        }
-      }),
+        return clone(session)
+      }).mapTo({type: 'goBack'}),
+      // .map(session => {
+      //   return {
+      //     pathname: `/create/listing`,
+      //     type: `replace`,
+      //     action: 'REPLACE',
+      //     state: {
+      //       type: 'session',
+      //       data: {...session, current_step: 'donde'}
+      //     }
+      //   }
+      // }),
       search_area$.withLatestFrom(state$, (sa, state) => {
         const session = deflateDates(state.session)
         session.properties['donde_modal'] = undefined
         session.properties.search_area = sa
-        return session
+        return clone(session)
       }).map(session => {
         return {
           pathname: `/create/listing`,
           type: `replace`,
-          action: 'REPLACE',
           state: {
             type: 'session',
             data: {...session, current_step: 'donde'}
