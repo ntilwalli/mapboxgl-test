@@ -193,7 +193,7 @@ export default function main(sources, inputs): any {
         return {
           type: 'replace',
           action: 'REPLACE',
-          path: '/listing/' + x.listing.id,
+          pathname: '/listing/' + x.listing.id,
           state: x
         }
       }),
@@ -201,7 +201,7 @@ export default function main(sources, inputs): any {
         return {
           type: 'replace',
           action: 'REPLACE',
-          path: '/'
+          pathname: '/'
         }
       })
     ),

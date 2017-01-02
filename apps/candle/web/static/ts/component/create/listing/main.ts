@@ -20,7 +20,7 @@ import {
 } from '../../helpers/navigator'
 
 import {main as Meta} from './meta/main'
-import {main as Donde} from './donde/main'
+import {main as Donde} from './dondeWithModalRouting/main'//NoModal'
 import {main as Cuando} from './cuando/main'
 import {main as Properties} from './properties/main'
 import {main as Preview} from './preview/main'
@@ -108,7 +108,7 @@ function intent(sources) {
   const error_create$ = creation.error$
 
   const saved = processHTTP(sources, `saveSession`)
-  const success_save$ = saved.success$
+  const success_save_exit$ = saved.success$
   const error_save$ = saved.error$
 
   const push_state$ = Router.history$.map(x => {
@@ -130,7 +130,7 @@ function intent(sources) {
     error_retrieve$,
     success_create$,
     error_create$,
-    success_save$,
+    success_save_exit$,
     error_save$,
     push_state$,
     open_instruction$,
@@ -150,7 +150,7 @@ function reducers(actions, inputs: any) {
     return state.set(`show_instruction`, false)
   })
 
-  const success_save_r = actions.success_save$.map(val => state => {
+  const success_save_exit_r = actions.success_save_exit$.map(val => state => {
     return state.set(``)
   })
 
@@ -161,7 +161,7 @@ function reducers(actions, inputs: any) {
 
   return O.merge(
     open_instruction_r, close_instruction_r, 
-    success_save_r, session_r
+    success_save_exit_r, session_r
   )
 }
 
@@ -527,8 +527,9 @@ function main(sources, inputs) {
      ).publish().refCount(),
       //.do(x => console.log(`to http`, x)),
      Router: O.merge(
+       component$.switchMap(x => x.content.Router),
        actions.brand_button$.mapTo('/'), 
-       actions.success_save$
+       actions.success_save_exit$
          .delay(4)
          .map(val => {
            return {
@@ -541,7 +542,7 @@ function main(sources, inputs) {
          const session = deflateDates(state.session)
          return {
            pathname: `/create/listing`,
-           type: `replace`,
+           type: `push`,
            state: {
              type: 'session',
              data: {...session, current_step: nav}
@@ -591,7 +592,7 @@ function main(sources, inputs) {
              }
            }
          }),
-       actions.success_save$
+       actions.success_save_exit$
          .map(_ => {
            return {
              to: `main`,

@@ -62,23 +62,23 @@ function renderModal(info) {
   return div('.appModalContainer.modal', {style: {display: "inline-block"}}, [
     div(`.modal-dialog.modal-lg`, [
       div(`.modal-content`, [
-        div(`.modal-header.container-fluid`, [
-          div('.row', [
-            div('.col-xs-6', [
-              div(`.modal-title.modal-header-text`, [title]),
-            ]),
-            div('.col-xs-6.float-xs-right', [
-              span(`.appModalClose.close.fa-2x`, [`×`])
-            ])
-          ])
+        div(`.modal-header`, [
+            //div('.col-xs-6', [
+              span(`.modal-title.modal-header-text`, [title]),
+            //]),
+            //div('.col-xs-6.float-xs-right', [
+              span(`.appModalClose.close.fa-2x.float-xs-right`, [])
+            //])
         ]),
-        div(`.modal-body.d-flex.fx-j-c`, [
-          div(`${styleClass}`, [
-          content
-          ])
+        div(`.modal-body.d-flex.fx-j-c.container-fluid`, [
+          //div(`.col-xs-12${styleClass}`, [
+            content
+          //])
         ]),
         div(`.modal-footer`, [
-          button(`.appDoneButton`, [`Done`])
+          div('.d-flex.fx-j-c', [
+            button(`.appDoneButton`, [`Done`])
+          ])
         ])
       ])
     ])

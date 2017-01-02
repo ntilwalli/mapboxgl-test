@@ -68,7 +68,7 @@ function renderModal(info) {
               div(`.modal-title.modal-header-text`, [title]),
             ]),
             div('.col-xs-6.float-xs-right', [
-              span(`.appModalClose.close.fa-2x`, [`×`])
+              span(`.appModalClose.close.fa-2x`, [])
             ])
           ])
         ]),

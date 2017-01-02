@@ -223,6 +223,18 @@
         width: 100%;
       }
     }
+
+    @media(min-width: 768px) {
+      .change-search-area-modal {
+        width: 400px;
+      }
+    }
+
+    @media(max-width: 767px) {
+      .change-search-area-modal {
+        width: 100%;
+      }
+    }
   }
 
   .cuando-recurrence {

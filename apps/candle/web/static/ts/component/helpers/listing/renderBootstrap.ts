@@ -1044,9 +1044,9 @@ export function renderFullStageTime(stage_time) {
       return span('.float-xs-right', [ '' + length + ' rounds: ' + getSingleRoundText(stage_time[0]) + ' per' ])
     } else {
       return div(stage_time.map((s, index) => {
-        return div('row', [
+        return div('.row', [
           div('.col-xs-12', [
-            span('float-xs-right', [
+            span('.float-xs-right', [
               'Round ' + (index + 1) + ': ' + getSingleRoundText(s)
             ])
           ])
