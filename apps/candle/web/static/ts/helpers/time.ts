@@ -82,3 +82,16 @@ export function getDatetime(date, time) {
     return moment().startOf('day')
   }
 }
+
+export function getDatetimeFromObj(date, time) {
+  if (date) {
+    if (time) {
+      return date.clone().hour(time.hour).minute(time.minute)
+    } else {
+      return date.clone().startOf('day')
+    }
+
+  } else {
+    return moment().startOf('day')
+  }
+}

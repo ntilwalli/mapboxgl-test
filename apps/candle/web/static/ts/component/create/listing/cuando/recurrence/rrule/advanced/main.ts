@@ -408,9 +408,6 @@ export default function main(sources, inputs) {
       .distinctUntilChanged((x: any, y: any) => {
         return x && x.isSame(y)
       })
-      .map(x => {
-        return x
-      })
   })
 
 
@@ -420,9 +417,6 @@ export default function main(sources, inputs) {
       .map((state: any) => state.rrule.until ? state.rrule.until.clone() : undefined)
       .distinctUntilChanged((x: any, y: any) => {
         return x && x.isSame(y)
-      })
-      .map(x => {
-        return x
       })
   })
 

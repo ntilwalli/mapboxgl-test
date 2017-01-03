@@ -183,11 +183,11 @@ function view(state$, components) {
           },
           attrs: {
             type: 'text', 
-            value: out ? out.format('M/D/YY') : undefined
+            value: out ? out.format('M/D/YYYY') : undefined
           }
         }),
         div('.appDateDropdown.dropdown-menu', [
-          div(`.calendar-controller`, [
+          div(`.calendar-controller.d-flex.fx-j-sa`, [
             div(`.appDecMonth.btn.btn-link.fa.fa-angle-left.fa-2x`, []),
             div(`.flex-center`, [moment([calendar_year, calendar_month]).format('MMM YYYY')]),
             div(`.appIncMonth.btn.btn-link.fa.fa-angle-right.fa-2x`, []) 
@@ -233,13 +233,17 @@ export default function  main(sources, inputs) {
       }
     }),
     output$: state$
-      .filter(state => {
-        const {month, date, year} = state
-        return month >= 0 && date && year
-      })
+      // .filter(state => {
+      //   const {month, date, year} = state
+      //   return month >= 0 && date && year
+      // })
       .map(state => {
         const {month, date, year} = state
-        return moment([year, month, date])
+        return month >= 0 && date && year ? moment([year, month, date]) : undefined
+      })
+      .distinctUntilChanged((x, y) => {
+        const out = (x && y && x.isSame(y))
+        return out
       })
   }
 }

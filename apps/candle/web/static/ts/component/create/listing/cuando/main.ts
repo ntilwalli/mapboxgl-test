@@ -5,7 +5,7 @@ import intent from './intent'
 
 
 import Recurrence from './recurrence/main'
-import Single from './single/main'
+import Single from './singleNoModal/main'
 //import RecurrenceCalendar from './recurrenceCalendar/main'
 
 export function main(sources, inputs) {

@@ -55,8 +55,11 @@ function intent(sources) {
       return ev.target.value
     })
 
+  const clear$ = sources.DOM.select(`.appClearButton`).events('click')
+
   return {
     click$,
+    clear$,
     blur_to_dropdown$,
     close_dropdown$: O.merge(blur_to_elsewhere$, enter_pressed$),
     hour$,
@@ -75,7 +78,6 @@ function reducers(actions, inputs) {
     const val =  ev.target.value
 
     let h, m
-    let year = state.get('year')
     let meridiem = 'P'
     let out = /^(\d\d?):(\d\d) ?(a|p).?m.?$/i.exec(val)
     if (out) {
@@ -106,41 +108,73 @@ function reducers(actions, inputs) {
     }
 
     if (h >= 0 && h < 24 && m >= 0 && m < 60) {
-        const input_hour = h === 0 ? 12 : h > 12 ? h - 12 : h
-        const input_meridiem =  h >= 12 ? "PM" : "AM"
-      return state.set('input_hour', input_hour).set('input_minute', m).set('input_meridiem', input_meridiem).set('hour', h).set('minute', m).set('active', false)
+      const input_hour = h === 0 ? 12 : h > 12 ? h - 12 : h
+      const input_meridiem =  h >= 12 ? "PM" : "AM"
+      return state
+        .set('input_hour', input_hour)
+        .set('input_minute', m)
+        .set('input_meridiem', input_meridiem)
+        .set('hour', h)
+        .set('minute', m)
+        .set('active', false)
     } else {
       return state.set('active', false)
     }
   })
 
   const hour_r = actions.hour$.map(input_hour => state => {
-    const parsed = parseInt(input_hour)
-
     const meridiem = state.get('input_meridiem')
-
-    const hour = getMilitaryHour(parsed, meridiem)
-    return state.set('hour', hour).set('input_hour', parsed)
+    if (input_hour) {
+      const parsed = parseInt(input_hour)
+      if (meridiem) {
+        const hour = getMilitaryHour(parsed, meridiem)
+        return state.set('hour', hour).set('input_hour', parsed)
+      } else {
+        return state.set('input_hour', parsed)
+      }
+    } else {
+      return state.set('input_hour', undefined).set('hour', undefined)
+    }
   })
 
   const minute_r = actions.minute$.map(input_minute => state => {
-    const parsed = parseInt(input_minute)
-    return state.set('input_minute', input_minute).set('minute', parsed)
+    if (input_minute) {
+      const parsed = parseInt(input_minute)
+      return state.set('input_minute', input_minute).set('minute', parsed)
+    } else {
+      return state.set('input_minute', undefined).set('minute', undefined)
+    }
   })
 
   const meridiem_r = actions.meridiem$.map(meridiem => state => {
-    const hour = getMilitaryHour(state.get('input_hour'), meridiem)
-    return state.set('input_meridiem', meridiem).set('hour', hour)
+    if (meridiem) {
+      const input_hour = state.get('input_hour')
+      if (input_hour) {
+        const hour = getMilitaryHour(input_hour, meridiem)
+        return state.set('input_meridiem', meridiem).set('hour', hour)
+      } else {
+        return state.set('input_meridiem', meridiem)
+      }
+    } else {
+      return state.set('input_meridiem', meridiem).set('hour', undefined)
+    }
   })
 
-  return O.merge(click_r, close_dropdown_r, hour_r, minute_r, meridiem_r)
+  const clear_r = actions.clear$.map(_ => state => {
+    return state
+      .set('input_meridiem', undefined)
+      .set('input_minute', undefined)
+      .set('input_hour', undefined)
+      .set('hour', undefined)
+      .set('minute', undefined)
+  })
+
+  return O.merge(click_r, close_dropdown_r, hour_r, minute_r, meridiem_r, clear_r)
 }
 
 function getMilitaryHour(hour, meridiem) {
   return meridiem === 'AM' ? hour === 12 ? 0 : hour : hour === 12 ? 12 : hour + 12
 }
-
-
 
 function model(actions, inputs) {
   const reducer$ = reducers(actions, inputs)
@@ -159,11 +193,11 @@ function model(actions, inputs) {
       console.log('initializing', time)
       const init = {
         active: undefined,
-        input_hour: time ? time.hour === 0 ? 12 : time.hour > 12 ? time.hour - 12 : time.hour : 12,
-        input_minute: time ? time.minute : 0,
-        input_meridiem: time ? time.hour >= 12 ? "PM" : "AM" : "PM",
-        hour: time ? time.hour : 12,
-        minute: time ? time.minute : 0,
+        input_hour: time ? time.hour === 0 ? 12 : time.hour > 12 ? time.hour - 12 : time.hour : undefined,
+        input_minute: time ? time.minute : undefined,
+        input_meridiem: time ? time.hour >= 12 ? "PM" : "AM" : undefined,
+        hour: time ? time.hour : undefined,
+        minute: time ? time.minute : undefined,
         style_class
       }
 
@@ -174,13 +208,14 @@ function model(actions, inputs) {
     .publishReplay(1).refCount()
 }
 
-function view(state$) {
+function view(state$, props_style_class) {
   return state$
     .map((state: any) => {
-      const {input_hour, input_minute, input_meridiem, hour, minute, active, style_class} = state
+      const style_class = props_style_class || ''
+      const {input_hour, input_minute, input_meridiem, hour, minute, active} = state
       const out = (hour >= 0 && minute >= 0) ? moment().hour(hour).minute(minute) : undefined
-      return div('.time-input.dropdown', {class: {open: !!active}}, [
-        input('.appTimeInput.form-control' + style_class, {
+      return div('.bootstrap-time-input-component.dropdown', {class: {open: !!active}}, [
+        input('.appTimeInput.time-input.form-control' + style_class, {
           hook: {
             update: (vNode, {elm}) => {
               elm.value = out ? out.format('h:mm a') : ''
@@ -191,23 +226,25 @@ function view(state$) {
             value: out ? out.format('h:mm a') : undefined
           }
         }),
-        div('.appTimeDropdown.dropdown-menu', [
-          div('.row', [
-            div('.col-xs-12.d-flex', [
+        div('.appTimeDropdown.time-input-dropdown.dropdown-menu', [
+          //div('.row', [
+          //  div('.col-xs-12.d-flex', [
+            div('.d-fx-a-c', [
               select(
-                `.appHourSelect.form-control.form-control-sm`, 
+                `.appHourSelect.form-control.mr-xs` + style_class, 
                 {style: {widtH: "5rem"}},
-                [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(opt => {
+                [undefined, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(opt => {
                   return option({attrs: {value: opt, selected: input_hour === opt}}, [
-                    opt.toString()
+                    opt ? opt.toString() : ''
                   ])
                 })
               ),
+              ':',
               select(
-                `.appMinuteSelect.form-control.form-control-sm`, 
+                `.appMinuteSelect.form-control.ml-xs` + style_class, 
                 {style: {widtH: "5rem"}},
                 [
-                  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 
+                  undefined, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 
                   10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
                   20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
                   30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
@@ -215,35 +252,36 @@ function view(state$) {
                   50, 51, 52, 53, 54, 55, 56, 57, 58, 59
                 ].map(opt => {
                   return option({attrs: {value: opt, selected: input_minute === opt}}, [
-                    opt < 10 ? '0' + opt.toString() : opt.toString()
+                    opt === undefined ? '' : opt < 10 ? '0' + opt.toString() : opt.toString()
                   ])
                 })
               ),
               select(
-                `.appMeridiemSelect.form-control.form-control-sm`, 
+                `.appMeridiemSelect.form-control.ml-xs` + style_class, 
                 {style: {widtH: "5rem"}},
-                ['AM', 'PM'].map(opt => {
+                [undefined, 'AM', 'PM'].map(opt => {
                   return option({attrs: {value: opt, selected: input_meridiem === opt}}, [
-                    opt
+                    opt ? opt : ''
                   ])
                 })
-              )
+              ),
+              button('.appClearButton.btn.btn-link.d-fx-a-c.ml-1', ['Clear'])
             ])
           ])
         ])
-      ])
+      //])
   })
 
 }
 
 
-export default function  main(sources, props$) {
+export default function  main(sources, props$, style_class?) {
   const actions = intent(sources)
   const calendar_date$ = createProxy()
   const state$ = model(actions, {props$, calendar_date$})
 
   return {
-    DOM: view(state$),
+    DOM: view(state$, style_class),
     Global: actions.blur_to_dropdown$.map(ev => {
       return {
         type: 'preventDefault',
@@ -251,14 +289,14 @@ export default function  main(sources, props$) {
       }
     }),
     output$: state$
-      .filter(state => {
-        const {hour, minute} = state
-        return hour >= 0 && minute >= 0
-      })
+      // .filter(state => {
+      //   const {hour, minute} = state
+      //   return hour >= 0 && minute >= 0
+      // })
       .map(state => {
         const {hour, minute} = state
-        return {hour, minute}
+        return hour >= 0 && minute >= 0 ? {hour, minute} : undefined
       })
-      .distinctUntilChanged((x, y) => deepEqual(x, y))
+      .distinctUntilChanged((x, y) => x && y && deepEqual(x, y))
   }
 }
