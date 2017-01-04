@@ -1,7 +1,7 @@
 import {Observable as O} from 'rxjs'
 import isolate from '@cycle/isolate'
 import {div, span, input, label, em, strong, i, h4, h5, h6, VNode} from '@cycle/dom'
-import {combineObj, createProxy, traceStartStop} from '../../../../../utils'
+import {combineObj, createProxy, traceStartStop, mergeSinks, componentify} from '../../../../../utils'
 import {
   //DayOfWeekTimeComponent,
   RelativeTimeComponent,
@@ -198,9 +198,18 @@ function InPersonComponent(sources, props$, component_id) {
   })
 
   const output$ = combineObj({
-    begins: begins_component_normalized.output$,
-    ends: ends_component.output$,
+    begins: begins_component_normalized.output$
+      .map(x => {
+        return x
+      }),
+    ends: ends_component.output$      
+      .map(x => {
+        return x
+      }),
     styles: styles_component.output$
+      .map(x => {
+        return x
+      }),
   }).map((components: any) => {
     const {begins, ends, styles} = components
     const errors = [].concat(ends.errors).concat(begins.errors)
@@ -217,6 +226,7 @@ function InPersonComponent(sources, props$, component_id) {
   })
 
   return {
+    ...ends_component,
     DOM: vtree$,
     output$
   }
@@ -304,7 +314,10 @@ function PreRegistrationComponent(sources, props$, component_id) {
     }
   })
 
+  const merged = mergeSinks(begins_component, ends_component)
+
   return {
+    ...merged,
     DOM: vtree$,
     output$
   }
@@ -416,10 +429,12 @@ export default function main(sources, inputs): SinksType {
     }
   }).publishReplay(1).refCount()
 
-  const in_person_component = {
-    DOM: in_person_component$.switchMap(x => x.DOM),
-    output$: in_person_component$.switchMap(x => x.output$)  //.do(x => console.log('sign_up output$ 2', x))
-  }
+  const in_person_component = componentify(in_person_component$)
+
+  // const in_person_component = {
+  //   DOM: in_person_component$.switchMap(x => x.DOM),
+  //   output$: in_person_component$.switchMap(x => x.output$)  //.do(x => console.log('sign_up output$ 2', x))
+  // }
 
   const pre_registration_component$ = input_props$.map((props: any) => {
     switch (props.type) {
@@ -431,10 +446,12 @@ export default function main(sources, inputs): SinksType {
     }
   }).publishReplay(1).refCount()
 
-  const pre_registration_component = {
-    DOM: pre_registration_component$.switchMap(x => x.DOM),
-    output$: pre_registration_component$.switchMap(x => x.output$)  //.do(x => console.log('sign_up output$ 3', x))
-  }
+  const pre_registration_component = componentify(pre_registration_component$)
+
+  // const pre_registration_component = {
+  //   DOM: pre_registration_component$.switchMap(x => x.DOM),
+  //   output$: pre_registration_component$.switchMap(x => x.output$)  //.do(x => console.log('sign_up output$ 3', x))
+  // }
 
   const vtree$ = combineObj({
     signup_type: signup_type_component.DOM,
@@ -478,8 +495,8 @@ export default function main(sources, inputs): SinksType {
   // })
 
   const output$ = combineObj({
-    in_person: in_person_component.output$,
-    pre_registration: pre_registration_component.output$,
+    in_person: in_person_component$.switchMap(x => x.output$),
+    pre_registration: pre_registration_component$.switchMap(x => x.output$),
     type: signup_type$
   })
   .debounceTime(5).map((info: any) => {
@@ -501,7 +518,9 @@ export default function main(sources, inputs): SinksType {
   .publishReplay(1).refCount()
 
 
+  const merged = mergeSinks(in_person_component, pre_registration_component)
   return {
+    ...merged,
     DOM: vtree$,
     output$
   }

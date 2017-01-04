@@ -22,7 +22,7 @@ import {
 } from '../../../../listingTypes'
 import {getSessionStream} from '../../../helpers/listing/utils'
 import {NotesInput} from './helpers'
-import {combineObj, createProxy, traceStartStop} from '../../../../utils'
+import {combineObj, createProxy, traceStartStop, componentify, mergeSinks} from '../../../../utils'
 import clone = require('clone')
 import deepEqual = require('deep-equal')
 
@@ -265,16 +265,22 @@ export function main(sources, inputs) {
       const DOM = O.combineLatest(...components.map(c => c.DOM))
       const output$ = O.merge(...components.map(c => c.output$))
 
+      const merged = mergeSinks(...components)
+
       return {
-        DOM, output$
+        ...merged,
+        DOM, 
+        output$
       }
     })
     .publishReplay(1).refCount()
   
+  const components = componentify(components$)
   properties$.attach(components$.switchMap(x => x.output$))
-  const properties_dom$ = components$.switchMap(x => x.DOM)
+  const properties_dom$ = components.DOM
 
   return {
+    ...components,
     DOM: view(state$, properties_dom$),
     output$: state$
   }

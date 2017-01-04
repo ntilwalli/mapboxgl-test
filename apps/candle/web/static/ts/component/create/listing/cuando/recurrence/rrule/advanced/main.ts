@@ -166,26 +166,12 @@ function getDefault() {
 function model(actions, inputs) {
   const reducer$ = reducers(actions, inputs) 
 
-  return combineObj({
-      rrule$: inputs.props$
-    })
-    .switchMap((info: any) => {
-      
-      const {rrule} = info
-      const init_rrule = rrule ? {
-        ...rrule,
-        dtstart: rrule.dtstart ? moment().startOf('day') : rrule.dtstart
-      } : getDefault()
-      const {dtstart, until} = init_rrule
+  return inputs.props$
+    .switchMap((rrule: any) => {
+    
       const init = {
-        rrule: init_rrule,
-        start_month: dtstart ? dtstart.month() : moment().month(),
-        start_year: dtstart ? dtstart.year() : moment().year(),
-        until_month: until ? until.month() : moment().month(),
-        until_year: until ? until.year() : moment().year(),
+        rrule
       }
-
-      //console.log(`rrule advanced init`, clone(init))
 
       return reducer$.startWith(Immutable.Map(init)).scan((acc, f: Function) => f(acc))
     })
@@ -353,8 +339,13 @@ const numberInputProps = O.of({
 export default function main(sources, inputs) {
   const actions = intent(sources)
   const props$ = inputs.props$
-    .map(x => {
-      return x
+    .map(rrule => {
+      const out = rrule ? {
+        ...rrule,
+        dtstart: rrule.dtstart ? moment().startOf('day') : rrule.dtstart
+      } : getDefault()
+
+      return out
     })
     .publishReplay(1).refCount()
 
@@ -366,44 +357,20 @@ export default function main(sources, inputs) {
     initialText$: O.of(undefined)
   })
 
-  //const weekday_selector = WeekdaySelector(sources, {...inputs, props$: props$.map(x => !!x ? x.byweekday : [])})
-  //const setpos_selector = SetposSelector(sources, {...inputs, props$: props$.pluck(`bysetpos`)}) 
-  const bysetpos$ = createProxy()
-  const dtstart$ = createProxy()
-  const until$ = createProxy()
-  const state$ = model(actions, {
-    ...inputs, 
-    props$, 
-    //byweekday$: weekday_selector.output$.letBind(traceStartStop('weekday output$...')),
-      //.letBind(traceStartStop(`byweekday trace`)),
-    interval$: interval_input.output$,
-    bysetpos$,
-    dtstart$, 
-    until$
-  })
   
   const setpos_selector = SetposSelector(sources, {
     ...inputs, 
-    props$: state$
-      .pluck(`rrule`)
+    props$: props$
+      //.pluck(`rrule`)
       .pluck(`bysetpos`)
       .distinctUntilChanged((x: any, y: any) => JSON.stringify(x.sort()) === JSON.stringify(y.sort()))
     }) 
 
-  // const start_date_calendar = isolate(MonthCalendar)(sources, {
-  //   ...inputs, 
-  //   props$: state$.map((state: any) => ({
-  //     year: state.start_year, 
-  //     month: state.start_month, 
-  //     selected: state.rrule.dtstart ? [state.rrule.dtstart] : []
-  //   }))
-  // })
-
   const start_date_calendar = isolate(DateInput)(sources, {
     ...inputs,
-    props$: state$
-      .map((state: any) => {
-        return state.rrule.dtstart ? state.rrule.dtstart.clone() : undefined
+    props$: props$
+      .map((props: any) => {
+        return props.dtstart ? props.dtstart.clone() : undefined
       })
       .distinctUntilChanged((x: any, y: any) => {
         return x && x.isSame(y)
@@ -413,23 +380,30 @@ export default function main(sources, inputs) {
 
   const end_date_calendar = isolate(DateInput)(sources, {
     ...inputs,
-    props$: state$
-      .map((state: any) => state.rrule.until ? state.rrule.until.clone() : undefined)
+    props$: props$
+      .map((props: any) => props.until ? props.until.clone() : undefined)
       .distinctUntilChanged((x: any, y: any) => {
         return x && x.isSame(y)
       })
   })
 
-  dtstart$.attach(start_date_calendar.output$)
-  until$.attach(end_date_calendar.output$)
+  const state$ = model(actions, {
+    ...inputs, 
+    props$, 
+    interval$: interval_input.output$,
+    bysetpos$: setpos_selector.output$,
+    dtstart$: start_date_calendar.output$, 
+    until$: end_date_calendar.output$
+  })
 
   const components = {
-    //byweekday$: weekday_selector.DOM,
     interval$:  interval_input.DOM,
     bysetpos$:  setpos_selector.DOM,
     start_date$:  start_date_calendar.DOM,
     end_date$:  end_date_calendar.DOM
   }
+
+
 
   const vtree$ = view(state$, components)
   const merged = mergeSinks(interval_input, setpos_selector, start_date_calendar, end_date_calendar)

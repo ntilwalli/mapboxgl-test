@@ -17,7 +17,7 @@ import {
 } from '../../../../listingTypes'
 
 import {to12HourTime, toMilitaryTime} from '../../../../helpers/time'
-import {combineObj} from '../../../../utils'
+import {combineObj, componentify, mergeSinks} from '../../../../utils'
 
 import WeekdayRadio from '../../../../library/weekdayRadio'
 import TimeInput from '../../../../library/timeInput/main'
@@ -658,17 +658,23 @@ export function TextInputComponent(sources, initialText$, component_id, props) {
 // }
 
 export function BootstrapDayOfWeekTimeComponent(sources, props$, component_id) {
-  const shared$ = props$.publishReplay(1).refCount()
-  const weekday_radio = BootstrapWeekdaySelect(sources, shared$.map(x => x.day))
-  const time_selector = BootstrapTimeInput(sources, shared$.map(x => x.time))
+  const shared$ = props$
+    .map(x => {
+      return x 
+    })
+    .publishReplay(1).refCount()
+  const weekday_select = BootstrapWeekdaySelect(sources, shared$.map(x => x ? x.day : undefined))
+  const time_selector = BootstrapTimeInput(sources, shared$.map((x: any) => {
+    return x ? x.time : undefined
+  }))
 
   const state$ = combineObj({
-    day: weekday_radio.output$,
+    day: weekday_select.output$,
     time: time_selector.output$
   })
 
   const vtree$ = combineObj({
-    day: weekday_radio.DOM,
+    day: weekday_select.DOM,
     time: time_selector.DOM
   }).map((components: any) => {
     return div('.d-fx-a-c', [
@@ -688,7 +694,10 @@ export function BootstrapDayOfWeekTimeComponent(sources, props$, component_id) {
     ])
   })
   
+  const merged = mergeSinks(weekday_select, time_selector)
+
   return {
+    ...merged,
     DOM: vtree$,
     output$: state$.map((state: any) => {
       let errors = [component_id + ': Requires both day and time'] 
@@ -701,7 +710,7 @@ export function BootstrapDayOfWeekTimeComponent(sources, props$, component_id) {
       return {
         errors,
         valid,
-        value: state
+        data: state
       }
     })
   }
@@ -710,7 +719,9 @@ export function BootstrapDayOfWeekTimeComponent(sources, props$, component_id) {
 
 export function RelativeTimeDataComponent(sources, props$, component_id) {
   const out$ = props$
-    .map(toRelativeTimeTypeSelector)
+    .map(x => {
+      return toRelativeTimeTypeSelector(x)
+    })
     .distinctUntilChanged((x, y) => x[0] === y[0])
     .map(([type, props]) => {
       switch (type) {
@@ -735,9 +746,15 @@ export function RelativeTimeDataComponent(sources, props$, component_id) {
     })
     .publishReplay(1).refCount()
 
+  const out = componentify(out$)
+
   return {
-    DOM: out$.switchMap(x => x.DOM),
+    ...out,
+    DOM: out.DOM,
     output$: out$.switchMap(x => x.output$)
+      .map(x => {
+        return x
+      })
   }
 }
 
@@ -853,7 +870,10 @@ export function RelativeTimeComponent(sources, props$, options, component_id, he
     }
   })
 
+  const merged = mergeSinks(data_component, relative_type_component)
+
   return {
+    ...merged,
     DOM: vtree$,
     output$
   }
@@ -919,7 +939,10 @@ export function BootstrapRelativeTimeComponent(sources, props$, options, compone
     }
   })
 
+  const merged = mergeSinks(data_component, relative_type_component)
+
   return {
+    ...merged,
     DOM: vtree$,
     output$
   }
@@ -944,8 +967,11 @@ export function PreRegistrationInfoComponent(sources, props$, component_id) {
     })
     .publishReplay(1).refCount()
 
+  const out = componentify(out$)
+
   return {
-    DOM: out$.switchMap(x => x.DOM),
+    ...out, 
+    DOM: out.DOM,
     output$: out$.switchMap(x => x.output$)
   }
 
