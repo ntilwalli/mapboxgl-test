@@ -87,7 +87,7 @@ function fromRRuleArray(arr) {
 
 function reducers(actions, inputs) {
   const add_r = actions.add$.map(_ => state => {
-    return state.push(Immutable.fromJS(inputs.itemDefault()))
+    return state.push(Immutable.fromJS(addStructure(inputs.itemDefault())))
   })
 
   const subtract_r = inputs.remove$.map(index => state => {
@@ -152,7 +152,7 @@ export default function main(sources, inputs) {
     })
     .map(state => {
       const components = state.map((props, index) => {
-        return isolate(inputs.item)(sources, {...inputs, props$: O.of(props), component_index: index})
+        return isolate(inputs.item)(sources, {...inputs, props$: O.of(props.data), component_index: index})
       })
       
       const components_dom = components.map(x => x.DOM)
@@ -162,7 +162,7 @@ export default function main(sources, inputs) {
 
       return {
         DOM: length ? O.combineLatest(...components_dom) : O.of([]),
-        output$: length ? O.combineLatest(...components_output) : O.of([]),
+        output$: length ? O.merge(...components_output) : O.never(),
         remove$: length ? O.merge(...components_remove) : O.never()
       }
     }).publishReplay(1).refCount()
@@ -171,7 +171,7 @@ export default function main(sources, inputs) {
   const components_output$ = components$.switchMap(x => x.output$)
   remove$.attach(components$.switchMap(x => x.remove$))
 
-  //change$.attach(components_output$)
+  change$.attach(components_output$)
 
   const vtree$ = components_dom$.map(x => {
     return render(x, inputs.component_id || 'Component id not supplied', inputs.item_heading || 'item')
@@ -179,16 +179,15 @@ export default function main(sources, inputs) {
 
   return {
     DOM: vtree$,
-    output$: components_output$.map(x => {
-      return x.map(item => item.data)
-    }).map(state => {
-      return state.length ? {
-        data: state.map(x => {
-          return x.data
-        }),
-        valid: state.every(x => x.valid === true),
-        errors: state.reduce((acc, item) => acc.concat(item.errors), [])
-      } : {data: [], valid: true, errors: []}
-    })
+    output$: state$
+      .map(state => {
+        return state.length ? {
+          data: state.map(x => {
+            return x.data
+          }),
+          valid: state.every(x => x.valid === true),
+          errors: state.reduce((acc, item) => acc.concat(item.errors), [])
+        } : {data: [], valid: true, errors: []}
+      })
   }
 }

@@ -5,13 +5,13 @@ defmodule Shared.Model.Recurring do
   @derive {Poison.Encoder, exclude: [:__meta__]}
   @primary_key false
   embedded_schema do
-    field :rdate, {:array, :naive_datetime}
+    field :rdates, {:array, :naive_datetime}
     embeds_many :rrules, Shared.Model.RRule
-    field :exdate, {:array, :naive_datetime}
+    field :exdates, {:array, :naive_datetime}
     field :duration, :float
   end
 
-  @allowed_fields [:rdate, :exdate, :duration]
+  @allowed_fields [:rdates, :exdates, :duration]
   @required_fields []
   def changeset(schema, params \\ :empty) do
     schema
@@ -28,10 +28,10 @@ defmodule Shared.Model.Recurring do
           val
       end)
 
-    with_rdate = case recurrable.rdate do
+    with_rdates = case recurrable.rdates do
       nil -> recurrences
       val ->
-        rdate_normalized = val 
+        rdates_normalized = val 
           |> Enum.filter(fn x -> 
             {:ok, _, _, after_status} = Calendar.NaiveDateTime.diff(x, start_datetime)
             {:ok, _, _, before_status} = Calendar.NaiveDateTime.diff(x, end_datetime)
@@ -39,14 +39,14 @@ defmodule Shared.Model.Recurring do
             (after_status == :after or after_status == :same_time) and 
               (before_status == :before or before_status == :same_time)
           end)
-        (recurrences ++ rdate_normalized)
+        (recurrences ++ rdates_normalized)
           |> Enum.sort(&Calendar.NaiveDateTime.before?/2)
     end
 
-    with_exdate = case recurrable.exdate do
-      nil -> with_rdate
+    with_exdates = case recurrable.exdates do
+      nil -> with_rdates
       val ->
-        with_rdate 
+        with_rdates 
           |> Enum.filter(
             fn x -> not Enum.any?(
               val, 
@@ -59,7 +59,7 @@ defmodule Shared.Model.Recurring do
     end
 
     #IO.inspect with_exdate
-    with_exdate
+    with_exdates
 
   end
 

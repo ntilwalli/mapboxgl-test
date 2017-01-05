@@ -25,7 +25,7 @@ export default function main(sources, props$) {
       shared$.map(props => {
         return props || SetPositionTypes.FIRST
       }), 
-      sources.DOM.select('.appSetPositionInput').events('click').map(ev => ev.target.value)
+      sources.DOM.select('.appSetPositionInput').events('change').map(ev => parseInt(ev.target.value))
     )
   }
 }

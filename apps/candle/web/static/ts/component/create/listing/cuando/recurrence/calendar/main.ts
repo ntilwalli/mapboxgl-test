@@ -54,7 +54,7 @@ function model(actions, inputs) {
     //const {rrule, rdates, exdates} = cuando
     const m = moment()//.add(1, 'day')
     const init = {
-      cuando: props,
+      recurrence: props,
       month: m.month(),
       year: m.year()
     }
@@ -100,8 +100,8 @@ export default function main(sources, inputs) {
     ...inputs,
     props$: state$.map(state => {
       //console.log(`cuando to month calendar`, state.cuando)
-      const {cuando, year, month} = state
-      const rruleset = recurrenceToRRuleSet(cuando)
+      const {recurrence, year, month} = state
+      const rruleset = recurrenceToRRuleSet(recurrence)
 
       // console.log({
       //   year, month

@@ -276,7 +276,12 @@ export default function main(sources, inputs) {//props$) {
 
   return {
     DOM: vtree$,
-    output$,
+    output$: output$.map(msg => {
+      return {
+        index: inputs.component_index,
+        data: msg
+      }
+    }),
     remove$: sources.DOM.select('.appSubtractButton').events('click').mapTo(inputs.component_index)
   }
 }

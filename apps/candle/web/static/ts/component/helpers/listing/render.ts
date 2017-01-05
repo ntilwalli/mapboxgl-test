@@ -4,7 +4,7 @@ import {combineObj} from '../../../utils'
 import {to12HourTime} from '../../../helpers/time'
 import {ListingTypes, EventTypes, PerformerSignupOptions, RelativeTimeOptions, CostOptions, TierPerkOptions, PurchaseTypeOptions, StageTimeOptions, MinutesTypeOptions, PerformerLimitOptions} from '../../../listingTypes'
 import moment = require('moment')
-import {recurrenceToRRuleSet} from './utils'
+import {cuandoToRRuleSet} from './utils'
 import {getBadslavaName, getVenueName, getVenueAddress, getVenueLngLat} from '../../../helpers/donde'
 
 import deepEqual = require('deep-equal')
@@ -564,7 +564,7 @@ function renderSingle(cuando) {
 }
 
 function renderRecurring(cuando) {
-  const rruleset = recurrenceToRRuleSet(cuando)
+  const rruleset = cuandoToRRuleSet(cuando)
   const upcoming_dates = rruleset.between(moment().toDate(), moment().add(90, 'day').toDate())
   const upcoming_date = upcoming_dates.length ? moment(upcoming_dates[0].toISOString()) : undefined
   const upcoming = upcoming_date ? 

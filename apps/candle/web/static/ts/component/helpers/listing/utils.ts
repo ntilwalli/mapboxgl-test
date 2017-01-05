@@ -1,5 +1,6 @@
 import moment = require('moment')
 import {RRule, RRuleSet} from 'rrule'
+import {getDatetimeFromObj} from '../../../helpers/time'
 
 import {
   EventTypes, MetaPropertyTypes, EventTypeToProperties,
@@ -189,15 +190,15 @@ function freqToRRuleFreq(freq) {
   }
 }
 
-export function getActualRRule(rrule) {
+export function getActualRRule(rule) {
   const options = {
-    ...rrule,
-    wkst: rrule.wkst ? dayToRRuleDay(rrule.wkst) : RRule.MO,
-    freq: freqToRRuleFreq(rrule.freq),
-    interval: rrule.interval || 1,
-    byweekday: rrule.byweekday ? rrule.byweekday.map(dayToRRuleDay) : [RRule.MO],
-    dtstart: rrule.dtstart.toDate(),
-    until: rrule.until ? rrule.until.clone().endOf('day').toDate() : undefined,
+    wkst: rule.wkst ? dayToRRuleDay(rule.wkst) : RRule.MO,
+    freq: freqToRRuleFreq(rule.freq),
+    interval: rule.interval || 1,
+    byweekday: rule.byweekday ? rule.byweekday.map(dayToRRuleDay) : [RRule.MO],
+    bysetpos: rule.bysetpos, 
+    dtstart: rule.dtstart.toDate(),
+    until: rule.until ? rule.until.clone().endOf('day').toDate() : null,
   }
   //console.log(`rrule options`, options)
   const out = new RRule(options)
@@ -205,8 +206,35 @@ export function getActualRRule(rrule) {
   return out
 }
 
-export function recurrenceToRRuleSet(cuando) {
-  const {rrules, rdate, exdate} = cuando
+export function recurrenceToRRuleSet(recurrence) {
+  const {rules, rdates, exdates, start_date, end_date, start_time} = recurrence
+  const rruleset = new RRuleSet()
+  //console.log(`rrule`, rrule)
+  if (rules.length) {
+    rules.map(fromRule).map(r => normalizeRule(r, start_date, end_date, start_time)).forEach(rrule => {
+      const the_rule = getActualRRule(rrule)
+      rruleset.rrule(the_rule)
+    })
+  }
+
+  if (rdates && rdates.length) {
+    rdates.forEach(x => {
+      return rruleset.rdate(x.toDate())
+    })
+  } 
+
+  if (exdates && exdates.length) {
+    exdates.forEach(x => {
+      return rruleset.exdate(x.toDate())
+    })
+  }
+
+  //console.log(`rruleset`, JSON.stringify(rruleset))
+  return rruleset
+}
+
+export function cuandoToRRuleSet(cuando) {
+  const {rrules, rdates, exdates} = cuando
   const rruleset = new RRuleSet()
   //console.log(`rrule`, rrule)
   if (rrules.length) {
@@ -216,18 +244,50 @@ export function recurrenceToRRuleSet(cuando) {
     })
   }
 
-  if (rdate && rdate.length) {
-    rdate.forEach(x => {
+  if (rdates && rdates.length) {
+    rdates.forEach(x => {
       return rruleset.rdate(x.toDate())
     })
   } 
 
-  if (exdate && exdate.length) {
-    exdate.forEach(x => {
+  if (exdates && exdates.length) {
+    exdates.forEach(x => {
       return rruleset.exdate(x.toDate())
     })
   }
 
   //console.log(`rruleset`, JSON.stringify(rruleset))
   return rruleset
+}
+
+export function normalizeRule(rule, start_date, end_date, start_time) {
+  return {
+    wkst: rule.wkst || DayOfWeek.MONDAY,
+    freq: rule.freq || RecurrenceFrequency.WEEKLY,
+    interval: rule.interval || 1,
+    bysetpos: Array.isArray(rule.bysetpos) && rule.bysetpos.length ? rule.bysetpos : rule.bysetpos ? [rule.bysetpos] : null,
+    byweekday: Array.isArray(rule.byweekday) && rule.byweekday.length ? rule.byweekday : rule.byweekday ? [rule.bysetpos] : null,
+    dtstart: getDatetimeFromObj(start_date, start_time),
+    until: end_date ? getDatetimeFromObj(end_date, start_time) : null
+  }
+}
+
+export function fromRule(rule) {
+  return {
+    freq: rule.type,
+    byweekday: Array.isArray(rule.data.day) && rule.data.day.length ? rule.data.day : rule.data.day ? [rule.data.day] : null,
+    bysetpos: Array.isArray(rule.data.setpos) && rule.data.setpos.length ? rule.data.setpos : rule.data.setpos ? [rule.data.setpos] : null,
+    interval: !!rule.data.interval ? rule.data.interval : null
+  }
+}
+
+export function toRule(rule) {
+  return {
+    type: rule.freq,
+    data: {
+      day: Array.isArray(rule.byweekday) && rule.byweekday.length ? rule.byweekday : rule.byweekday ? [rule.byweekday] : null,
+      setpos: Array.isArray(rule.bysetpos) && rule.bysetpos.length ? rule.bysetpos : rule.bysetpos ? [rule.bysetpos] : null,
+      interval: rule.interval || 1
+    }
+  }
 }

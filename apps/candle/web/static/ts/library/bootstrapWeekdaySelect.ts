@@ -22,7 +22,7 @@ export default function main(sources, props$) {
     }),
     output$: O.merge(
       props$.map(props => props || DayOfWeek.SUNDAY), 
-      sources.DOM.select('.appWeekdayInput').events('click').map(ev => ev.target.value)
+      sources.DOM.select('.appWeekdayInput').events('change').map(ev => ev.target.value)
     )
   }
 }
