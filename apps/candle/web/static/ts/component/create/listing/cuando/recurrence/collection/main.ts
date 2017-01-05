@@ -68,6 +68,23 @@ function intent(sources) {
   }
 }
 
+function toRRuleArray(rrule) {
+  return [{
+
+  }]
+}
+
+function fromRRuleArray(arr) {
+  if (arr.length) {
+    return {
+      freq: "weekly",
+      byweekday: ["monday"],
+      interval: 1
+    }
+  }
+}
+
+
 function reducers(actions, inputs) {
   const add_r = actions.add$.map(_ => state => {
     return state.push(Immutable.fromJS(inputs.itemDefault()))

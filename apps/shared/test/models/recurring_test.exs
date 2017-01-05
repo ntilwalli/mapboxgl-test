@@ -7,11 +7,11 @@ defmodule Test.Listing.GenerateRecurring do
     tz = "America/New_York"
     weekly_rrule_map = %{
       "rdate" => [~N[2016-10-31 08:00:00], ~N[2016-11-01 08:00:00]],
-      "rrule" => %{
+      "rrules" => [%{
         "freq" => "weekly",
         "interval" => 2,
         "dtstart" => ~N[2016-10-29 08:00:00]
-      },
+      }],
       "exdate" => []
     }
     
@@ -30,7 +30,7 @@ defmodule Test.Listing.GenerateRecurring do
     assert cs.valid? == true
     recurrable = apply_changes(cs)
     #IO.inspect recurrable
-    assert recurrable.rrule.freq == "weekly"
+    assert Enum.at(recurrable.rrules, 0).freq == "weekly"
     #out = Recurring.between(recurrable, ~N[2016-10-21 00:00:00], ~N[2016-11-21 00:00:00], tz)
     #IO.inspect out
   end
@@ -39,12 +39,12 @@ defmodule Test.Listing.GenerateRecurring do
     tz = "America/New_York"
     monthly_rrule_map = %{
       "exdate" => [],
-      "rrule" =>  %{
+      "rrules" =>  [%{
         "bysetpos" => [-1], 
         "byweekday" => ["thursday"],
         "dtstart" => ~N[2016-10-27 20:00:00],
         "freq" => "monthly"
-      }
+      }]
     }
 
     cs = Recurring.changeset(%Recurring{}, monthly_rrule_map)
@@ -52,7 +52,7 @@ defmodule Test.Listing.GenerateRecurring do
     assert cs.valid? == true
     recurrable = apply_changes(cs)
     #IO.inspect recurrable
-    assert recurrable.rrule.freq == "monthly"
+    assert Enum.at(recurrable.rrules, 0).freq == "monthly"
     #out = Recurring.between(recurrable, ~N[2016-10-01 00:00:00], ~N[2016-12-01 00:00:00], tz)
     #IO.inspect out
   end  

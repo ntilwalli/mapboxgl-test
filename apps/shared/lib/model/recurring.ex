@@ -6,7 +6,7 @@ defmodule Shared.Model.Recurring do
   @primary_key false
   embedded_schema do
     field :rdate, {:array, :naive_datetime}
-    embeds_one :rrule, Shared.Model.RRule
+    embeds_many :rrules, Shared.Model.RRule
     field :exdate, {:array, :naive_datetime}
     field :duration, :float
   end
@@ -16,13 +16,57 @@ defmodule Shared.Model.Recurring do
   def changeset(schema, params \\ :empty) do
     schema
     |> cast(params, @allowed_fields)
-    |> cast_embed(:rrule)
+    |> cast_embed(:rrules)
   end
 
+
   def between(%Shared.Model.Recurring{} = recurrable, start_datetime, end_datetime, tz) do
-    rrule = recurrable.rrule
-    freq = rrule.freq
+    recurrences = recurrable.rrules
+      |> Enum.flat_map(fn rrule -> single_between(rrule, start_datetime, end_datetime, tz) end) 
+      |> Enum.uniq_by(fn x -> 
+          {:ok, val, _, _} = Calendar.NaiveDateTime.diff(x, end_datetime)
+          val
+      end)
+
+    with_rdate = case recurrable.rdate do
+      nil -> recurrences
+      val ->
+        rdate_normalized = val 
+          |> Enum.filter(fn x -> 
+            {:ok, _, _, after_status} = Calendar.NaiveDateTime.diff(x, start_datetime)
+            {:ok, _, _, before_status} = Calendar.NaiveDateTime.diff(x, end_datetime)
+
+            (after_status == :after or after_status == :same_time) and 
+              (before_status == :before or before_status == :same_time)
+          end)
+        (recurrences ++ rdate_normalized)
+          |> Enum.sort(&Calendar.NaiveDateTime.before?/2)
+    end
+
+    with_exdate = case recurrable.exdate do
+      nil -> with_rdate
+      val ->
+        with_rdate 
+          |> Enum.filter(
+            fn x -> not Enum.any?(
+              val, 
+              fn y -> 
+                {:ok, _, _, status} = Calendar.NaiveDateTime.diff(x, end_datetime)
+                status == :same_time
+              end
+            ) 
+          end)
+    end
+
+    #IO.inspect with_exdate
+    with_exdate
+
+  end
+
+  def single_between(%Shared.Model.RRule{} = rrule, start_datetime, end_datetime, tz) do
     now_dt = Calendar.DateTime.to_naive(Calendar.DateTime.now! tz)
+    freq = rrule.freq
+
     dtstart = case rrule.dtstart do
       nil -> now_dt
       val -> val
@@ -92,38 +136,7 @@ defmodule Shared.Model.Recurring do
       _ -> raise ArgumentError, message: "freq: #{freq} is unsupported"
     end
 
-    with_rdate = case recurrable.rdate do
-      nil -> recurrences
-      val ->
-        rdate_normalized = val 
-          |> Enum.filter(fn x -> 
-            {:ok, _, _, after_status} = Calendar.NaiveDateTime.diff(x, start_datetime)
-            {:ok, _, _, before_status} = Calendar.NaiveDateTime.diff(x, end_datetime)
-
-            (after_status == :after or after_status == :same_time) and 
-              (before_status == :before or before_status == :same_time)
-          end)
-        (recurrences ++ rdate_normalized)
-          |> Enum.sort(&Calendar.NaiveDateTime.before?/2)
-    end
-
-    with_exdate = case recurrable.exdate do
-      nil -> with_rdate
-      val ->
-        with_rdate 
-          |> Enum.filter(
-            fn x -> not Enum.any?(
-              val, 
-              fn y -> 
-                {:ok, _, _, status} = Calendar.NaiveDateTime.diff(x, end_datetime)
-                status == :same_time
-              end
-            ) 
-          end)
-    end
-
-    #IO.inspect with_exdate
-    with_exdate
+    recurrences
   end
 
   defp gen_monthly(year, month, time, weekdays, tz) do

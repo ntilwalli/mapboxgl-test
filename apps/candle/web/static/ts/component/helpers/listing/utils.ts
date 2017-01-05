@@ -18,14 +18,18 @@ export {
 } 
 
 function inflateRecurringCuandoDates(container) {
-  const {rrule, rdate, exdate} = container
+  const {rrules, rdate, exdate} = container
 
-  if (rrule && rrule.dtstart) {
-    container.rrule.dtstart = moment(rrule.dtstart)
-  }
+  if (rrules && rrules.length) {
+    rrules.forEach(rule => {
+      if (rule && rule.dtstart) {
+        rule.dtstart = moment(rule.dtstart)
+      }
 
-  if (rrule && rrule.until) {
-    container.rrule.until = moment(rrule.until)
+      if (rule && rule.until) {
+        rule.until = moment(rule.until)
+      }
+    })
   }
   
   if (rdate && rdate.length) {
@@ -38,15 +42,19 @@ function inflateRecurringCuandoDates(container) {
 }
 
 function deflateRecurringCuandoDates(container) {
-  const {rrule, rdate, exdate} = container
+  const {rrules, rdate, exdate} = container
 
-  if (rrule && rrule.dtstart) {
-    container.rrule.dtstart = rrule.dtstart.toDate().toISOString()
+  if (rrules && rrules.length) {
+    rrules.forEach(rule => {
+      if (rule && rule.dtstart) {
+        rule.dtstart = rule.dtstart.toDate().toISOString()
+      }
+
+      if (rule && rule.until) {
+        rule.until = rule.until.toDate().toISOString()
+      }
+    })
   }
-
-  if (rrule && rrule.until) {
-    container.rrule.until = rrule.until.toDate().toISOString()
-  }  
 
   if (rdate && rdate.length) {
     container.rdate = container.rdate.map(x => x.toDate().toISOString())
@@ -147,7 +155,6 @@ export function fromCheckbox(ev) {
   }
 }
 
-
 function dayToRRuleDay(day) {
   switch (day) {
     case DayOfWeek.MONDAY:
@@ -199,12 +206,14 @@ export function getActualRRule(rrule) {
 }
 
 export function recurrenceToRRuleSet(cuando) {
-  const {rrule, rdate, exdate} = cuando
+  const {rrules, rdate, exdate} = cuando
   const rruleset = new RRuleSet()
   //console.log(`rrule`, rrule)
-  if (rrule) {
-    const the_rule = getActualRRule(rrule)
-    rruleset.rrule(the_rule)
+  if (rrules.length) {
+    rrules.forEach(rrule => {
+      const the_rule = getActualRRule(rrule)
+      rruleset.rrule(the_rule)
+    })
   }
 
   if (rdate && rdate.length) {
@@ -213,7 +222,7 @@ export function recurrenceToRRuleSet(cuando) {
     })
   } 
 
-  if (rdate && exdate.length) {
+  if (exdate && exdate.length) {
     exdate.forEach(x => {
       return rruleset.exdate(x.toDate())
     })

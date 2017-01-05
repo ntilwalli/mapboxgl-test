@@ -17,6 +17,8 @@ defmodule Shared.Model.RRule do
   @allowed_fields [:freq, :dtstart, :interval, :wkst, :count, :bysetpos, :byweekday]
   @required_fields [:freq]
   def changeset(schema, params \\ :empty) do
+    #IO.inspect {:params, params}
+
     schema
     |> cast(params, @allowed_fields)
     |> validate_required(@required_fields)

@@ -371,7 +371,8 @@ export function getFreqSummary(rrule) {
 }
 
 
-function getRRuleSummary(rrule) {
+function getRRuleSummary(rrules) {
+  const rrule = rrules[0]
   const {freq, byweekday, bysetpos, dtstart, until} = rrule
   const from_to = (dtstart || until) ? getFromTo(dtstart, until) : ''
   const freq_summary = getFreqSummary(rrule)
@@ -386,14 +387,14 @@ function getRRuleSummary(rrule) {
 }
 
 function getRecurringSummary(info) {
-  const {rrule, rdate, exdate} = info
+  const {rrules, rdate, exdate} = info
   let out = ''
-  if (rrule) {
-    out += 'Recurrence rule: ' + getRRuleSummary(rrule)
+  if (rrules.length) {
+    out += 'Recurrence rule: ' + getRRuleSummary(rrules)
   }
 
   if (rdate.length) {
-    if (rrule) {
+    if (rrules.length) {
       out += `\nAdditional date${rdate.length > 1 ? 's' : ''}:\n`
     } else {
       out += `Date${rdate.length > 1 ? 's' : ''}:\n`
@@ -404,7 +405,7 @@ function getRecurringSummary(info) {
   } 
 
   if (exdate.length) {
-    if (rrule) {
+    if (rrules.length) {
       out += `\nExcluding date${exdate.length > 1 ? 's' : ''}:\n`
     }
 
@@ -686,20 +687,24 @@ export function renderRecurring(cuando) {
       span([upcoming_date.format('ddd, M/D/YY h:mm a')])
     ]) : null
 
-  const {rrule, rdate, exdate} = cuando
+  const {rrules, rdate, exdate} = cuando
   if (rdate.length || exdate.length) {
     return div([
       span('.mr-xs', ['Recurring']),
       upcoming
     ])
-  } else if (rrule) {
-    return div([
-      div([
-        span('.mr-xs', ['Recurs:']),
-        span([getFreqSummary(rrule)])
-      ]),
-      upcoming
-    ])
+  } else if (rrules.length) {
+    //if(rrules.length === 1) {
+      return div([
+        div([
+          span('.mr-xs', ['Recurs:']),
+          span([getFreqSummary(rrules[0])])
+        ]),
+        upcoming
+      ])
+    // } else {
+
+    // }
   } else {
     return null
   }

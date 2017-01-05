@@ -48,28 +48,28 @@ defmodule Cuando do
     end
 
     week_day = listing["week_day"]
-    rrule = case String.downcase(listing["frequency"]) do
+    rrules = case String.downcase(listing["frequency"]) do
       "weekly" -> 
-        %{
+        [%{
           freq: "weekly",
           dtstart: dtstart,
           byweekday: [week_day |> String.downcase]
 
-        }
+        }]
       "monthly" -> 
         get_monthly_rrule(week_day, dtstart, note_string)
       "bi-weekly" ->
-        %{
+        [%{
           freq: "weekly",
           dtstart: dtstart,
           byweekday: [week_day |> String.downcase],
           interval: 2
-        }
+        }]
     end
 
     #exdates = extract_exdates(listing)
 
-    out = %{rrule: rrule, rdate: [], exdate: []}
+    out = %{rrules: rrules, rdate: [], exdate: []}
     out = case duration do
       nil -> out
       val -> Map.put(out, :duration, val)
@@ -144,7 +144,7 @@ defmodule Cuando do
     captures = case note do
       nil -> nil
       val -> 
-        exp = ~r/(?<regularity>(:?4th and 5th|first and third|first|second|third|fourth|last|1st|2nd|3rd|4th|5th)) (?<day>.*day)/Ui
+        exp = ~r/(?<regularity>(:?4th and 5th|first and third|2nd and 4th|second and fourth|first|second|third|fourth|last|1st|2nd|3rd|4th|5th)) (?<day>.*day)/Ui
         Regex.named_captures(exp, val)
     end
 
@@ -154,17 +154,19 @@ defmodule Cuando do
         day = NaiveDateTime.to_date(dtstart).day
         #IO.inspect day
         week_num = round(Float.ceil(day/7))
-        %{
+        [%{
           freq: "monthly",
           dtstart: dtstart, #|> Calendar.DateTime.to_naive,
           bysetpos: [if week_num == 5 do -1 else week_num end],
           byweekday: [week_day |> String.downcase],
-        }
+        }]
       %{"regularity" => regularity, "day" => week_day} -> 
         n_regularity = String.downcase(regularity)
         bysetpos = case n_regularity do
           "4th and 5th" -> [4, 5]
           "first and third" -> [1, 3]
+          "2nd and 4th" -> [2, 4]
+          "second and fourth" -> [2, 4]
           "first" -> [1]
           "1st" -> [1]
           "second" -> [2]
@@ -178,12 +180,12 @@ defmodule Cuando do
           "last" -> [-1]
         end
 
-        %{
+        Enum.map(bysetpos, fn pos -> %{
           freq: "monthly",
           dtstart: dtstart, #|> Calendar.DateTime.to_naive,
-          bysetpos: bysetpos,
+          bysetpos: [pos],
           byweekday: [week_day |> String.downcase]
-        }
+        } end)
     end
   end  
 

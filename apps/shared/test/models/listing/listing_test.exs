@@ -145,4 +145,74 @@ defmodule Test.Listing do
     cs = Listing.changeset(%Listing{user_id: 1}, listing)
     refute cs.valid? == true
   end
+
+  #@tag :pending
+  test "add new type of listing" do
+    listing = %{
+      cuando: %{
+        exdate: [], 
+        rdate: [], 
+        rrules: [%{
+          bysetpos: [1], 
+          byweekday: ["thursday"], 
+          dtstart: ~N[2017-01-05 19:00:00], 
+          freq: "monthly"
+        }]
+      }, 
+      donde: %{
+        city: "Brooklyn", 
+        lng_lat: %{
+          lat: 40.67845, 
+          lng: -73.9104471
+        }, 
+        name: "Armond's Lounge", 
+        state_abbr: "NY", 
+        street: "2065 Fulton Street", 
+        type: "badslava"
+      }, 
+      meta: %{
+        categories: ["comedy"], 
+        contact_info: %{
+          email: "melgarlick719@gmail.com", 
+          phone: "(718) 356-7039"
+        }, 
+        event_types: ["open_mic"], 
+        listed_hosts: [], 
+        name: "Thirsty Thursdays Of Laffs (STARTS 12/15/16)", 
+        note: "STARTS 12/15/16. Free to perform, Free to watch, Sign up: 7PM Start time: 7:30PM One drink purchase to peform, 6 minute set", 
+        performer_check_in: nil, 
+        performer_cost: [
+          %{data: nil, type: "free"}, 
+          %{data: %{
+            minimum_purchase: %{data: 1, type: "drink"}}, 
+            perk: %{data: 6, type: "minutes"}, 
+            type: "minimum_purchase"
+          }
+        ], 
+        performer_limit: nil, 
+        performer_sign_up: nil, 
+        stage_time: [], 
+        type: "standard"
+      }, 
+      release: "posted", 
+      settings: %{
+        check_in: %{
+          begins: %{
+            data: %{minutes: 30}, 
+            type: "minutes_before_event_start"
+          }, 
+          ends: %{type: "event_end"}, 
+          radius: 30
+        }
+      }, 
+      source: "badslava", 
+      type: "recurring", 
+      visibility: "public"
+    }
+
+    cs = Listing.changeset(%Listing{user_id: 1}, listing)
+    assert cs.valid? == true
+  end
+
+
 end

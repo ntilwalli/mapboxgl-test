@@ -182,7 +182,7 @@ defmodule Scraper.BadslavaScraper.V2 do
       source: "badslava"
     }
 
-    IO.inspect out
+    #IO.inspect out
 
     out
   end

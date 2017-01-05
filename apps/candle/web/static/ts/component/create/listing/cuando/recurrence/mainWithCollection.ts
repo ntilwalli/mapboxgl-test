@@ -12,8 +12,8 @@ import {inflateDates} from '../../../../helpers/listing/utils'
 
 import Calendar from './calendar/main'
 import RRuleComponent from './rrule/advanced/main'
-import TimeInput from '../../../../../library/timeInput/main'
-
+import TimeInput from '../../../../../library/bootstrapTimeInputWithUndefined'
+import DateInput from '../../../../../library/bootstrapDateInput'
 import getModal from './getModal'
 import {RRule} from 'rrule'
 import Collection from './collection/main'
@@ -29,6 +29,14 @@ function getDuration(start_time, end_time) {
   }
 
   return end.diff(start, 'minutes');
+}
+
+function syncStartDateWithSession(start_date, session) {
+
+}
+
+function syncEndDateWithSession(start_date, session) {
+  
 }
 
 function syncStartTimeWithSession(start_time, session) {
@@ -67,13 +75,13 @@ function syncEndTimeWithSession(end_time, session) {
   const {properties, listing} = session
   const {recurrence} = properties
   const {cuando} = listing
-  const {rrule, start_time, exdate, rdate} = recurrence
+  const {rrules, start_time, exdate, rdate} = recurrence
 
   properties.recurrence.end_time = end_time
 
   if (end_time) {
     if (start_time) {
-      if (cuando.rrule || cuando.rdate.length) {
+      if (cuando.rrules.length || cuando.rdate.length) {
         listing.cuando.duration = getDuration(start_time, end_time)
       }
     }
@@ -112,7 +120,7 @@ function intent(sources) {
       session.properties.recurrence = session.properties.recurrence || {
         type: undefined,
         data: undefined,
-        rrule: undefined,
+        rrules: [],
         start_time: undefined,
         end_time: undefined,
         rdate: [],
@@ -120,7 +128,7 @@ function intent(sources) {
       }
 
       session.listing.cuando = session.listing.cuando || {
-        rrule: undefined,
+        rrules: [],
         rdate: [],
         exdate: [],
         duration: undefined
@@ -131,24 +139,10 @@ function intent(sources) {
     .map(inflateDates)
     .publishReplay(1).refCount()
 
-  const change_start_time$ = DOM.select(`.appChangeStartTime`).events(`click`)
-    .mapTo(`start_time`)
-  const change_end_time$ = DOM.select(`.appChangeEndTime`).events(`click`)
-    .mapTo(`end_time`)
-  const rrule_expand$ = DOM.select(`.appRRuleSwitch`).events(`click`)
 
-
-  const clear_start_time$ = DOM.select(`.appClearStartTime`).events(`click`)
-    .mapTo(`start_time`)
-  const clear_end_time$ = DOM.select(`.appClearEndTime`).events(`click`)
-    .mapTo(`end_time`)
 
   return {
-    session$,
-    modal$: O.merge(change_start_time$, change_end_time$),
-    clear_start_time$,
-    clear_end_time$,
-    rrule_expand$
+    session$
   }
 }
 
@@ -187,17 +181,6 @@ function reducers(actions, inputs) {
     return state
   })
 
-  const rrule_expand_r = actions.rrule_expand$.map(_ => state => {
-    return state.update('rrule_expanded', x => !x)
-  })
-
-  const modal_r = actions.modal$.map(val => state => {
-    return state.set(`modal`, val)
-  })
-
-  const modal_close_r = inputs.modal_close$.map(_ => state => {
-    return state.set(`modal`, undefined)
-  })
 
   const selected_r = inputs.selected$.map(date => state => {
     //console.log(`click`, date)
@@ -226,52 +209,79 @@ function reducers(actions, inputs) {
     })
   })
 
-  const rrule_r = inputs.rrule$.map(rrule => state => {
+  // const rrule_r = inputs.rrule$.map(rrule => state => {
+  //   return state.update('session', session => {
+  //     syncRRuleWithSession(rrule, session)
+  //     return session
+  //   })
+  // })
+
+  const start_time_r = inputs.start_time$.map(val => state => {
     return state.update('session', session => {
-      syncRRuleWithSession(rrule, session)
+      syncStartTimeWithSession(val, session)
       return session
     })
   })
 
-  const modal_output_r = inputs.modal_output$.map(val => state => {
-    //console.log(`modal output`, val)
-    const modal = state.get(`modal`)
-    return state.set(`modal`, undefined)
-      .update(`session`, session => {
-        switch (modal) {
-          case 'start_time':
-            syncStartTimeWithSession(val, session)
-            break;
-          case 'end_time':
-            syncEndTimeWithSession(val, session)
-            break;
-          default:
-            throw new Error(`Invalid modal type`)
-        }
-
-        return session
-      })
-  })
-
-  const clear_start_time_r = actions.clear_start_time$.map(_ => state => {
-    return state.update(`session`, session => {
-      session.properties.recurrence.start_time = undefined
+  const end_time_r = inputs.end_time$.map(val => state => {
+    return state.update('session', session => {
+      syncEndTimeWithSession(val, session)
       return session
     })
   })
 
-  const clear_end_time_r = actions.clear_end_time$.map(_ => state => {
-    return state.update(`session`, session => {
-      session.properties.recurrence.end_time = undefined
+  const start_date_r = inputs.start_date$.map(val => state => {
+    return state.update('session', session => {
+      syncStartDateWithSession(val, session)
       return session
     })
   })
+
+  const end_date_r = inputs.end_date$.map(val => state => {
+    return state.update('session', session => {
+      syncEndDateWithSession(val, session)
+      return session
+    })
+  })
+
+
+  // const modal_output_r = inputs.modal_output$.map(val => state => {
+  //   //console.log(`modal output`, val)
+  //   const modal = state.get(`modal`)
+  //   return state.set(`modal`, undefined)
+  //     .update(`session`, session => {
+  //       switch (modal) {
+  //         case 'start_time':
+  //           syncStartTimeWithSession(val, session)
+  //           break;
+  //         case 'end_time':
+  //           syncEndTimeWithSession(val, session)
+  //           break;
+  //         default:
+  //           throw new Error(`Invalid modal type`)
+  //       }
+
+  //       return session
+  //     })
+  // })
+
+  // const clear_start_time_r = actions.clear_start_time$.map(_ => state => {
+  //   return state.update(`session`, session => {
+  //     session.properties.recurrence.start_time = undefined
+  //     return session
+  //   })
+  // })
+
+  // const clear_end_time_r = actions.clear_end_time$.map(_ => state => {
+  //   return state.update(`session`, session => {
+  //     session.properties.recurrence.end_time = undefined
+  //     return session
+  //   })
+  // })
 
   return O.merge(
-    rules_r, rrule_expand_r, rrule_r,
-    modal_r, modal_close_r, 
-    selected_r, modal_output_r,
-    clear_start_time_r, clear_end_time_r
+    rules_r, 
+    selected_r
   )
 }
 
@@ -321,17 +331,7 @@ function view(state$, components) {
     .map((info: any) => {
       //console.log(`info`, info)
       const {state, components} = info
-      const {rrule, calendar, modal, rrule_component, rules_component} = components
-      const {session, rrule_expanded} = state
-      const {properties, listing} = session
-      const {recurrence} = properties
-      const {start_time, end_time} = recurrence
-
-      let rrule_text = 'Not specified'
-      if (listing.cuando.rrule) {
-        rrule_text  = getActualRRule(listing.cuando.rrule).toText()
-        rrule_text = rrule_text.substring(0, 1).toUpperCase() + rrule_text.substring(1)
-      }
+      const {start_time, end_time, calendar, rules_component} = components
 
       return div(`.cuando-recurrence`, [
         //div('.form-group', [
@@ -344,8 +344,7 @@ function view(state$, components) {
             h6('.d-flex.fx-a-c.mb-0', ['Start time']),
           ]),
           div('.col-xs-9.d-flex.fx-a-c', [
-            span('.d-flex.fx-a-c.mr-1', [start_time ? getTimeString(start_time) : `Not specified`]),
-            span(`.d-flex.fx-a-c.btn.btn-link.appChangeStartTime.fa.fa-pencil-square-o`, [])
+            start_time
           ])
         ]),
         div('.row.mt-1', [
@@ -353,26 +352,9 @@ function view(state$, components) {
             h6('.d-flex.fx-a-c.mb-0', ['End time']),
           ]),
           div('.col-xs-9.d-flex.fx-a-c', [
-            span('.d-flex.fx-a-c.mr-1', [end_time ? getTimeString(end_time) : `Not specified`]),
-            span(`.d-flex.fx-a-c.btn.btn-link.appChangeEndTime.fa.fa-pencil-square-o`, [])
+            end_time
           ])
-        ]),
-        div('.row.mt-1', [
-          div('.col-xs-3', [
-            h6('.mb-0', [`Rule`])
-          ]),
-          div('.col-xs-9.d-flex', [
-            !rrule_expanded ? span('.d-flex.fx-a-c.mr-1', [!listing.cuando.rrule ? `Not specified` : rrule_text]) : null,
-            button(`.d-flex.fx-a-c.btn.btn-link.appRRuleSwitch`, [rrule_expanded ? 'collapse' : 'expand'])
-          ])
-        ]),
-        div('.row', {style: {display: rrule_expanded ? "block" : "none"}}, [
-          div('.col-xs-11.push-xs-1', [
-            rrule_component
-          ])
-        ]),
-        modal
-        //input(`.start-time-input`, {attrs: {type: `time`}}, [])
+        ])
       ])
     })
 }
@@ -398,10 +380,12 @@ function fromRRuleArray(arr) {
 export default function main(sources, inputs) {
   const actions = intent(sources)
   const selected$ = createProxy()
-  const modal_output$ = createProxy()
-  const modal_close$ = createProxy()
-  const rrule$ = createProxy()
+  const start_date = isolate(DateInput)(sources, {...inputs, props$: actions.session$.map(session => session.properties.recurrence.start_date)})
+  const end_date = isolate(DateInput)(sources, {...inputs, props$: actions.session$.map(session => session.properties.recurrence.end_date)})
 
+
+  const start_time = isolate(TimeInput)(sources, actions.session$.map(session => session.properties.recurrence.start_time))
+  const end_time = isolate(TimeInput)(sources, actions.session$.map(session => session.properties.recurrence.end_time))
 
   const rules_component: any = isolate(Collection)(sources, {
     ...inputs, 
@@ -418,10 +402,11 @@ export default function main(sources, inputs) {
   const state$ = model(actions, {
     ...inputs, 
     rules$: rules_component.output$,
-    rrule$,
     selected$,
-    modal_output$,
-    modal_close$
+    start_time$: start_time.output$,
+    end_time$: end_time.output$,
+    start_date$: start_date.output$,
+    end_date$: end_date.output$
   })
 
   const calendar = Calendar(sources, {
@@ -435,24 +420,19 @@ export default function main(sources, inputs) {
       // })
   })
 
-  const rrule_component = RRuleComponent(sources, {
-    ...inputs, 
-    props$: state$
-      .map(state => state.session.properties.recurrence.rrule)
-      .take(1)
-  })
-
   selected$.attach(calendar.output$)
-  rrule$.attach(rrule_component.output$)
-  
+
   const components = {
     rules_component$: rules_component.DOM,
-    calendar$: calendar.DOM,
-    rrule_component$: rrule_component.DOM
+    start_date$: start_date.DOM, 
+    end_date$: end_date.DOM,
+    start_time$: start_time.DOM,
+    end_time$: end_time.DOM,
+    calendar$: calendar.DOM
   }
 
   const vtree$ = view(state$, components)
-  const merged = mergeSinks(rules_component, calendar, rrule_component)
+  const merged = mergeSinks(rules_component, calendar, start_date, end_date, start_time, end_time)
 
   return {
     ...merged,
