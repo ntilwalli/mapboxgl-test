@@ -4,7 +4,7 @@ import {normalizeComponent, mergeSinks, componentify} from '../../../../utils'
 import intent from './intent'
 
 
-import Recurrence from './recurrence/main'
+import Recurrence from './recurrence/mainWithCollection'
 import Single from './singleNoModal/main'
 //import RecurrenceCalendar from './recurrenceCalendar/main'
 

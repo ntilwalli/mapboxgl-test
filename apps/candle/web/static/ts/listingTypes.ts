@@ -53,6 +53,14 @@ const RecurrenceFrequency = {
   MONTHLY: 'monthly'
 }
 
+const SetPositionTypes = {
+  FIRST: 1,
+  SECOND: 2,
+  THIRD: 3,
+  FOURTH: 4,
+  LAST: -1
+}
+
 const ListingTypes = {
   SINGLE: 'single',
   RECURRING: 'recurring'
@@ -151,5 +159,6 @@ export {
   DayOfWeek, RecurrenceFrequency, ListingTypes, CategoryTypes,
   PerformerSignupOptions, PreRegistrationOptions, PerformerLimitOptions,
   StageTimeOptions, TierPerkOptions, MinutesTypeOptions, RelativeTimeOptions,
-  CostOptions, PurchaseTypeOptions, UndefinedOption, RecurrenceDisplayFilterOptions
+  CostOptions, PurchaseTypeOptions, UndefinedOption, RecurrenceDisplayFilterOptions,
+  SetPositionTypes
 }

@@ -5,6 +5,10 @@ import {geoToLngLat} from './mapUtils'
 import moment = require('moment')
 import clone = require('clone')
 
+export function capitalize(val) {
+  return val.substring(0, 1).toUpperCase() + val.substring(1)
+}
+
 export function toMoment(c) { return moment(c.toISOString()) }
 export function inflateListing(listing) {
   const {cuando, meta} = listing

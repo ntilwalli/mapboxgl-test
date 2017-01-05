@@ -183,7 +183,7 @@ function main(sources, inputs) {
       .map((state: any) => { 
         return {
           //data: state.isValid ? state.validatedValue : undefined,
-          data: state.value,
+          data: state.isValid ? state.validatedValue : state.value,
           errors: state.errors,
           valid: state.isValid
         }

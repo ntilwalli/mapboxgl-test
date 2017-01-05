@@ -54,7 +54,7 @@ function intent(sources) {
 function reducers(actions, inputs) {
   const add_r = actions.add$.map(_ => state => {
     const data = inputs.itemDefault()
-    const structured = add_structure(data)
+    const structured = addStructure(data)
     return state.push(Immutable.fromJS(structured))
   })
 
@@ -69,7 +69,7 @@ function reducers(actions, inputs) {
   return O.merge(add_r, subtract_r, change_r)
 }
 
-function add_structure(x) {
+function addStructure(x) {
   return {
     data: x,
     errors: [],
@@ -83,8 +83,8 @@ function model(actions, inputs) {
   return inputs.props$
     .switchMap(props => {
       // should be
-      const init = props ? props.map(add_structure) : 
-        [inputs.itemDefault()].map(add_structure)
+      const init = props ? props.map(addStructure) : 
+        [inputs.itemDefault()].map(addStructure)
 
       return reducer$.startWith(Immutable.fromJS(init)).scan((acc, f: Function) => f(acc))
     })

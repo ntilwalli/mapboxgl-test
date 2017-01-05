@@ -47,31 +47,7 @@ export function model(actions, inputs) {
         valid: !!(session.listing.donde),
         mode: `venue`
       }
-
-      // if (!init.session.properties) {
-      //   init.session[`properties`] = {}
-      // }
-
-      // if (!init.session.properties.search_area) {
-      //   init.session[`properties`][`search_area`] = {
-      //     region,
-      //     radius: 30000
-      //   }
-      // }
-
-      // if (!init.session.current_step) {
-      //   init.session[`current_step`] = `donde`
-      // }
-
-      // if (!init.session.listing) {
-      //   init.session.listing = {
-      //   }
-      // }
-
-      // if (!init.session.listing) {
-      //   init.session.listing.donde = undefined
-      // }
-
+      
       return reducer$
         .startWith(Immutable.Map(init))
         .scan((acc, f: Function) => f(acc))
