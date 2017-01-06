@@ -116,15 +116,13 @@ function mapview(state$) {
         style: `mapbox://styles/mapbox/bright-v9`, //stylesheet location
         center: toLngLatArray(searchArea.region.position), // starting position
         zoom: 12, // starting zoom,
-        dragPan: true
+        dragPan: false,
+        scrollZoom: false
       },
       canvas: {
         style: {
           cursor: `grab`
         }
-      },
-      options: {
-        scrollZoom: false
       }
     }
 

@@ -330,7 +330,8 @@ function mapview(state$) {
           style: tile,
           center,
           zoom,
-          dragPan: true
+          dragPan: false,
+          scrollZoom: false
         },
         sources: {
           marker: {
@@ -354,9 +355,6 @@ function mapview(state$) {
                 "text-anchor": `top`
             }
           }
-        },
-        options: {
-          scrollZoom: false
         }
       }
 
