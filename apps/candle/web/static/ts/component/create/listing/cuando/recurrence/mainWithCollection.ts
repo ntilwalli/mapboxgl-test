@@ -1,5 +1,5 @@
 import {Observable as O} from 'rxjs' 
-import {div, span, input, h6, button, label} from '@cycle/dom'
+import {div, em, span, input, h6, button, label} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 import Immutable = require('immutable')
 import {combineObj, createProxy, mergeSinks, componentify, traceStartStop} from '../../../../../utils'
@@ -38,19 +38,25 @@ function syncCuando(session) {
   const {start_date, end_date, start_time, end_time, rules, rdates, exdates} = recurrence
   const {cuando} = listing
 
-  if (start_date && start_time && rules.length) {
+  if (rules.length && start_time) {
     cuando.rrules = rules.map(fromRule).map(rule => {
       const n_rule = normalizeRule(rule, start_date, end_date, start_time)
       return n_rule
     })
+  } else {
+    cuando.rrules = []
   }
 
-  if (start_time && rdates.length) {
+  if (rdates.length && start_time) {
     cuando.rdates = rdates.map(rdate => getDatetimeFromObj(rdate, start_time))
+  } else {
+    cuando.rdates = []
   }
 
-  if (start_time && exdates.length) {
+  if (exdates.length && start_time) {
     cuando.exdates = exdates.map(exdate => getDatetimeFromObj(exdate, start_time))
+  } else {
+    cuando.exdates = []
   }
 
   if (start_time && end_time) {
@@ -178,15 +184,16 @@ function reducers(actions, inputs) {
   const selected_r = inputs.selected$.map(date => state => {
     return state.update(`session`, session => {
       const rules = session.properties.recurrence.rules
-
+      const start_time = session.properties.recurrence.start_time
+      const the_date = getDatetimeFromObj(date, start_time)
       if (rules.length > 0) {
         if (rulesIncludeDate(session, date)) {
-          toggleExDate(date, session)
+          toggleExDate(the_date, session)
         } else {
-          toggleRDate(date, session)
+          toggleRDate(the_date, session)
         }
       } else {
-        toggleRDate(date, session)
+        toggleRDate(the_date, session)
       }
 
       return session
@@ -285,21 +292,23 @@ function view(state$, components) {
 
       return div(`.cuando-recurrence`, [
         span('.form-group', ['Recurring events will cause listings to be automatically generated and staged, allowing you to post when you\'re ready.  Add rules for simple recurrences, and/or add dates directly by clicking unselected boxes in the calendar below.  Exclude dates by clicking selected boxes.']),
-        rules_component,
-        rules.length > 0 ? div([
-          h6('.d-flex', ['Beginning']),
-          start_date
+        div([rules_component]),
+        rules.length > 0 ? div('.mt-xs', [
+          div([
+            em('.d-flex.mb-xs', ['Beginning']),
+            start_date
+          ]),
+          div('.mt-xs', [
+            em('.d-flex.mb-xs', ['Ending']),
+            end_date
+          ])
         ]) : null,
-        rules.length > 0 ? div('.form-group', [
-          h6('.d-flex', ['Ending']),
-          end_date
-        ]) : null,
-        div('.form-group', [
-          h6('.d-flex', ['Start time (required)']),
+        div('.mt-1.mb-xs', [
+          h6('.d-flex.mb-xs', ['Start time (required)']),
           start_time
         ]),
-        div('.form-group', [
-          h6('.d-flex', ['End time']),
+        div('.mb-xs', [
+          h6('.d-flex.mb-xs', ['End time']),
           end_time
         ]),
         calendar

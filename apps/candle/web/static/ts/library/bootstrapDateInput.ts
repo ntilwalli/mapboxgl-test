@@ -174,7 +174,7 @@ function view(state$, components) {
       const {calendar_year, calendar_month, year, month, date, active} = state
       const out = (year && month >= 0 && date) ? moment([year, month,date]) : undefined
       const {calendar} = components
-      return div('.bootstrap-date-input.form-group.dropdown', {class: {open: !!active}}, [
+      return div('.bootstrap-date-input.dropdown', {class: {open: !!active}}, [
         input('.appDateInput.date-input.form-control.form-control-sm', {
           hook: {
             update: (vNode, {elm}) => {

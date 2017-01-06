@@ -1,6 +1,3 @@
-@import '_loader';
-@import '_loaderSmall';
-@import '_loaderCircleSmall';
 @import '_modal';
 @import '_smartTextInput';
 @import '_smarterTextInput';
@@ -16,4 +13,5 @@
 @import '_timeInput';
 @import '_weekdaySelector';
 @import '_setposSelector';
-@import 'authorization/_index';
+@import 'spinners/index';
+@import 'authorization/index';

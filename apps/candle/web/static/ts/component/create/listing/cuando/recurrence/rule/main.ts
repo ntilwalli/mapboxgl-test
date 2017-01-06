@@ -237,7 +237,7 @@ export default function main(sources, inputs) {//props$) {
       div('.col-xs-12', [
         div('.row', [
           div('.d-fx-a-c.col-xs-12', [
-            div('.mb-xs.d-fx-a-c', [
+            div('.d-fx-a-c', [
               div('.mr-xs', [type]), 
               div('.mr-1', [data]), 
               button('.d-fx-a-c.btn.btn-link.mr-2', {

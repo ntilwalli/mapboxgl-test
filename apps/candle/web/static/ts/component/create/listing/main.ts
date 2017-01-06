@@ -2,6 +2,8 @@ import {Observable as O} from 'rxjs'
 import {div, span, button, hr, nav} from '@cycle/dom'
 import Immutable = require('immutable')
 import {ListingTypes, deflateSession} from '../../helpers/listing/utils'
+import moment = require('moment')
+import deepEqual = require('deep-equal')
 
 import {
   combineObj, 
@@ -18,6 +20,10 @@ import {
   renderLoginButton, 
   renderSearchCalendarButton
 } from '../../helpers/navigator'
+
+import {
+  renderSKFadingCircle6
+} from '../../../library/spinners'
 
 import {main as Meta} from './meta/main'
 import {main as Donde} from './dondeWithModalRouting/main'//NoModal'
@@ -107,9 +113,14 @@ function intent(sources) {
   const success_create$ = creation.success$
   const error_create$ = creation.error$
 
+  const saved_exit = processHTTP(sources, `saveExitSession`)
+  const success_save_exit$ = saved_exit.success$
+  const error_save_exit$ = saved_exit.error$
+
   const saved = processHTTP(sources, `saveSession`)
-  const success_save_exit$ = saved.success$
+  const success_save$ = saved.success$
   const error_save$ = saved.error$
+
 
   const push_state$ = Router.history$.map(x => {
     return x.state
@@ -124,13 +135,16 @@ function intent(sources) {
 
   const show_menu$ = DOM.select(`.appShowMenuButton`).events(`click`)
   const save_exit$ = DOM.select(`.appSaveExitButton`).events(`click`)
-
+  const from_http$ = O.merge(success_save$, success_save_exit$)
   return{
+    from_http$,
     success_retrieve$,
     error_retrieve$,
     success_create$,
     error_create$,
     success_save_exit$,
+    success_save$,
+    error_save_exit$,
     error_save$,
     push_state$,
     open_instruction$,
@@ -150,8 +164,12 @@ function reducers(actions, inputs: any) {
     return state.set(`show_instruction`, false)
   })
 
-  const success_save_exit_r = actions.success_save_exit$.map(val => state => {
-    return state.set(``)
+  const saving_r = inputs.saving$.map(val => state => {
+    return state.set(`waiting`, true)
+  })
+
+  const saved_r = actions.from_http$.map(val => state => {
+    return state.set(`waiting`, true).set('last_saved', moment())
   })
 
   const session_r = inputs.session$.map(session => state => {
@@ -161,7 +179,7 @@ function reducers(actions, inputs: any) {
 
   return O.merge(
     open_instruction_r, close_instruction_r, 
-    success_save_exit_r, session_r
+    saving_r, saved_r, session_r
   )
 }
 
@@ -173,7 +191,7 @@ function model(actions, inputs) {
       session$: actions.push_state$.take(1)
     })
     .switchMap((info: any) => {
-      const init = Immutable.Map({
+      const init = Immutable.fromJS({
         ...info,
         show_instruction: false,
         waiting: false
@@ -247,7 +265,7 @@ function getSmallStepHeading(state) {
 
 
 function renderNavigator(state) {
-  const {authorization} = state
+  const {authorization, waiting} = state
   const authClass = authorization ? 'Logout' : 'Login'
   return nav('.navbar.navbar-light.bg-faded.container-fluid.pos-f-t', [
     div('.row.no-gutter', [
@@ -256,8 +274,9 @@ function renderNavigator(state) {
         span('.ml-1.hidden-sm-down.step-description', [getStepHeading(state)]),
         span('.ml-1.hidden-md-up.step-description', [getSmallStepHeading(state)])
       ]),
-      div('.col-xs-6', [
-        button(`.appSaveExitButton.text-button.nav-text-button.btn.btn-link.float-xs-right`, [`Save/Exit`])
+      div('.col-xs-6.d-fx-a-c.fx-j-e', [
+        waiting ? span('.mr-1', [renderSKFadingCircle6()]) : null,
+        button(`.appSaveExitButton.text-button.nav-text-button.btn.btn-link`, [`Save/Exit`])
       ]),
     ])
   ])
@@ -485,8 +504,9 @@ function main(sources, inputs) {
     return x.content.output$.pluck(`session`)
   })
 
+  const saving$ = createProxy()
 
-  const state$ = model(actions, {...inputs, session$})
+  const state$ = model(actions, {...inputs, session$, saving$})
   const vtree$ = view(state$, components)
 
   const to_new$ = push_state$.filter(should_create_new)
@@ -499,19 +519,37 @@ function main(sources, inputs) {
           route: `/listing_session/new`
         }
       }
-    })
+    }).publish().refCount()
 
   const to_save_exit$ = actions.save_exit$.withLatestFrom(state$, (_, state) => {
     return {
       url: `/api/user`,
       method: `post`,
-      category: `saveListingSession`,
+      category: `saveExitSession`,
       send: {
         route: `/listing_session/save`,
         data: state.session
       }
     }
-  })
+  }).publish().refCount()
+
+  const to_save$ = state$.pluck('session')
+    .filter(Boolean)
+    .distinctUntilChanged((x, y) => deepEqual(x, y))
+    .withLatestFrom(state$, (_, state: any) => {
+      return {
+        url: `/api/user`,
+        method: `post`,
+        category: `saveSession`,
+        send: {
+          route: `/listing_session/save`,
+          data: state.session
+        }
+      }
+    }).publish().refCount()
+
+  //const to_http$ = O.merge(to_retrieve$,)
+
 
   const out = {
      DOM: vtree$,

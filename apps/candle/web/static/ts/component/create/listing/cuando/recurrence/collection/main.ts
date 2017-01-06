@@ -12,7 +12,7 @@ import clone = require('clone')
 function render(state, component_id, item_heading) {
   let children
   if (state.length === 0) {
-    children = ['Click plus to add ' + item_heading]
+    children = [em(['Click plus to add ' + item_heading])]
   } else if (state.length === 1) {
     children = [
       div('.row', [
@@ -23,21 +23,21 @@ function render(state, component_id, item_heading) {
     ]
   } else {
     children = state.map((x, index) => {
-      const margin_class = index !== state.length - 1 ? '.mb-1' : ''
-      return div('.row' + margin_class, [
+      const item_margin_class = index !== state.length - 1 ? '.mb-xs' : ''
+      return div('.row', [
         div('.col-xs-12', [
           div('.row', [
             div('.col-xs-12.d-fx-a-c.mb-xs.fx-auto-width', [
               span('.d-fx-a-c.mr-1', [em([capitalize(item_heading) + ' ' + (index + 1)])]),
             ])
           ]),
-          div('.ml-1', [x])
+          div('.ml-1' + item_margin_class, [x])
         ])
       ])
     })
   }
 
-  return div('.form-group', [
+  return div([
     div('.row', [
       div('.col-xs-12', [
         div('.d-fx-a-c.mb-xs', [
