@@ -11,7 +11,7 @@ import {
   renderSearchCalendarButton
 } from '../../../helpers/navigator'
 import clone = require('clone')
-import {inflateDates} from '../../../helpers/listing/utils'
+import {inflateSession} from '../../../helpers/listing/utils'
 
 import {model} from './model'
 import {main as getModal} from './getModal'
@@ -39,7 +39,7 @@ function intent(sources, inputs) {
 
       return session
     })
-    .map(inflateDates)
+    .map(inflateSession)
   
   return {
     session$,

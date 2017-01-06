@@ -10,7 +10,7 @@ import clone = require('clone')
 import {
   DayOfWeek
 } from '../../../../../../../listingTypes'
-import {inflateDates, fromCheckbox} from '../../../../../../helpers/listing/utils'
+import {fromCheckbox} from '../../../../../../helpers/listing/utils'
 
 import WeekdaySelector from '../../../../../../../library/weekdaySelector'
 import SetposSelector from '../../../../../../../library/setposSelector'

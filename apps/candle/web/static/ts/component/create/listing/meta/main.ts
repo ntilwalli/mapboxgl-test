@@ -6,7 +6,7 @@ import {
   ListingTypes, EventTypes, CategoryTypes, 
   EventTypeToProperties
 } from '../../../../listingTypes'
-import {inflateDates, fromCheckbox} from '../../../helpers/listing/utils'
+import {inflateSession, fromCheckbox} from '../../../helpers/listing/utils'
 import clone = require('clone')
 
 function intent(sources) {
@@ -27,7 +27,7 @@ function intent(sources) {
 
       return session
     })
-    .map(inflateDates)
+    .map(inflateSession)
     .publishReplay(1).refCount()
   
   const type$ = DOM.select('.appTypeInput').events('click')

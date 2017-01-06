@@ -4,7 +4,7 @@ import isolate from '@cycle/isolate'
 import Immutable = require('immutable')
 import {combineObj, createProxy, mergeSinks} from '../../../../../utils'
 import moment = require('moment')
-import {inflateDates} from '../../../../helpers/listing/utils'
+import {inflateSession} from '../../../../helpers/listing/utils'
 import {getDatetimeFromObj,  to12HourTimeFromMoment} from '../../../../../helpers/time'
 
 import BootstrapDateInput from '../../../../../library/bootstrapDateInput'
@@ -24,7 +24,7 @@ function intent(sources) {
 
       return session
     })
-    .map(inflateDates)
+    .map(inflateSession)
     .publishReplay(1).refCount()
 
   return {

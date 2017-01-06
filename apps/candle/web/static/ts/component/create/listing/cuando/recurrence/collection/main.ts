@@ -49,11 +49,11 @@ function render(state, component_id, item_heading) {
     div('.row', [
       div('.col-xs-12', children)
     ]),
-    state.length ? div('.row', [
-      div('.col-xs-12', [
+    // state.length ? div('.row', [
+    //   div('.col-xs-12', [
 
-      ])
-    ]) : null
+    //   ])
+    // ]) : null
   ])
 }
 
@@ -67,23 +67,6 @@ function intent(sources) {
     })
   }
 }
-
-function toRRuleArray(rrule) {
-  return [{
-
-  }]
-}
-
-function fromRRuleArray(arr) {
-  if (arr.length) {
-    return {
-      freq: "weekly",
-      byweekday: ["monday"],
-      interval: 1
-    }
-  }
-}
-
 
 function reducers(actions, inputs) {
   const add_r = actions.add$.map(_ => state => {

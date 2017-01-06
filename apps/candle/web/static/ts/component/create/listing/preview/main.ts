@@ -3,13 +3,13 @@ import Immutable = require('immutable')
 import {combineObj} from '../../../../utils'
 import mapview from './mapview'
 import view from './view'
-import {inflateDates, fromCheckbox} from '../../../helpers/listing/utils'
+import {inflateSession, fromCheckbox} from '../../../helpers/listing/utils'
 
 function intent(sources) {
   const {DOM, Router} = sources
   const session$ = Router.history$
     .map(x => x.state.data)
-    .map(inflateDates)
+    .map(inflateSession)
     .publishReplay(1).refCount()
   
   const attempt_post$ = DOM.select('.appPostButton').events('click')

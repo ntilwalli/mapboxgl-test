@@ -8,7 +8,7 @@ import {getActualRRule} from '../../../../helpers/listing/utils'
 import {getDatetime} from '../../../../../helpers/time'
 import clone = require('clone')
 import deepEqual = require('deep-equal')
-import {inflateDates} from '../../../../helpers/listing/utils'
+import {inflateSession} from '../../../../helpers/listing/utils'
 
 import Calendar from './calendar/main'
 import RRuleComponent from './rrule/advanced/main'
@@ -125,7 +125,7 @@ function intent(sources) {
 
       return session
     })
-    .map(inflateDates)
+    .map(inflateSession)
     .publishReplay(1).refCount()
 
   const change_start_time$ = DOM.select(`.appChangeStartTime`).events(`click`)

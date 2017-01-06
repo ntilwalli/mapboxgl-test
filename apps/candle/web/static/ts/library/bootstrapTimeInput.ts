@@ -179,8 +179,8 @@ function view(state$) {
     .map((state: any) => {
       const {input_hour, input_minute, input_meridiem, hour, minute, active, style_class} = state
       const out = (hour >= 0 && minute >= 0) ? moment().hour(hour).minute(minute) : undefined
-      return div('.time-input.dropdown', {class: {open: !!active}}, [
-        input('.appTimeInput.form-control' + style_class, {
+      return div('.bootstrap-time-input.dropdown', {class: {open: !!active}}, [
+        input('.appTimeInput.time-input.form-control.form-control-sm' + style_class, {
           hook: {
             update: (vNode, {elm}) => {
               elm.value = out ? out.format('h:mm a') : ''
@@ -191,7 +191,7 @@ function view(state$) {
             value: out ? out.format('h:mm a') : undefined
           }
         }),
-        div('.appTimeDropdown.dropdown-menu', [
+        div('.appTimeDropdown.time-input-dropdown.dropdown-menu', [
           div('.row', [
             div('.col-xs-12.d-flex', [
               select(

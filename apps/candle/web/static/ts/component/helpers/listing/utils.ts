@@ -18,8 +18,49 @@ export {
   CostOptions, PurchaseTypeOptions, UndefinedOption
 } 
 
-function inflateRecurringCuandoDates(container) {
-  const {rrules, rdate, exdate} = container
+function inflateRecurrence(recurrence) {
+  const {start_date, end_date, rdates, exdates} = recurrence
+
+  if (start_date) {
+    recurrence.start_date = moment(start_date)
+  }
+
+  if (end_date) {
+    recurrence.end_date = moment(end_date)
+  }
+
+  
+  if (rdates && rdates.length) {
+    recurrence.rdate = recurrence.rdate.map(x => moment(x))
+  }
+
+  if (exdates && exdates.length) {
+    recurrence.exdate = recurrence.exdate.map(x => moment(x))
+  }
+}
+
+function deflateRecurrence(recurrence) {
+  const {start_date, end_date, rdates, exdates} = recurrence
+
+  if (start_date) {
+    recurrence.start_date = start_date.toDate().toISOString()
+  }
+
+  if (end_date) {
+    recurrence.end_date = end_date.toDate().toISOString()
+  }
+
+  if (rdates && rdates.length) {
+    recurrence.rdates = recurrence.rdate.map(x => x.toDate().toISOString())
+  }
+
+  if (exdates && exdates.length) {
+    recurrence.exdates = recurrence.exdate.map(x => x.toDate().toISOString())
+  }
+}
+
+function inflateCuando(container) {
+  const {rrules, rdates, exdates} = container
 
   if (rrules && rrules.length) {
     rrules.forEach(rule => {
@@ -33,17 +74,17 @@ function inflateRecurringCuandoDates(container) {
     })
   }
   
-  if (rdate && rdate.length) {
+  if (rdates && rdates.length) {
     container.rdate = container.rdate.map(x => moment(x))
   }
 
-  if (exdate && exdate.length) {
+  if (exdates && exdates.length) {
     container.exdate = container.exdate.map(x => moment(x))
   }
 }
 
-function deflateRecurringCuandoDates(container) {
-  const {rrules, rdate, exdate} = container
+function deflateCuando(container) {
+  const {rrules, rdates, exdates} = container
 
   if (rrules && rrules.length) {
     rrules.forEach(rule => {
@@ -57,12 +98,12 @@ function deflateRecurringCuandoDates(container) {
     })
   }
 
-  if (rdate && rdate.length) {
-    container.rdate = container.rdate.map(x => x.toDate().toISOString())
+  if (rdates && rdates.length) {
+    container.rdates = container.rdate.map(x => x.toDate().toISOString())
   }
 
-  if (exdate && exdate.length) {
-    container.exdate = container.exdate.map(x => x.toDate().toISOString())
+  if (exdates && exdates.length) {
+    container.exdates = container.exdate.map(x => x.toDate().toISOString())
   }
 }
 
@@ -72,7 +113,7 @@ export function inflateListing(listing) {
 
 
   if (type === ListingTypes.RECURRING) {
-    if (listing.cuando) { inflateRecurringCuandoDates(listing.cuando) }
+    if (listing.cuando) { inflateCuando(listing.cuando) }
   } else {
     if (listing.cuando) {
       const {begins, ends} = listing.cuando
@@ -89,7 +130,7 @@ export function deflateListing(listing) {
   const {type} = listing
 
   if (type === ListingTypes.RECURRING) {
-    if (listing.cuando) { deflateRecurringCuandoDates(listing.cuando) }
+    if (listing.cuando) { deflateCuando(listing.cuando) }
   } else {
     if (listing.cuando) {
       const {begins, ends} = listing.cuando
@@ -104,15 +145,18 @@ export function deflateListing(listing) {
 
 
 
-export function inflateDates(session) {
-  //console.log(`inflateDates`, session)
+export function inflateSession(session) {
   const {properties, listing} = session
   const {type} = listing
 
 
   if (type === ListingTypes.RECURRING) {
-    if (session.listing.cuando) { inflateRecurringCuandoDates(session.listing.cuando) }
-    if (session.properties.recurrence) { inflateRecurringCuandoDates(session.properties.recurrence) }
+    if (session.listing.cuando) { 
+      inflateCuando(session.listing.cuando) 
+    }
+    if (session.properties.recurrence) {
+      inflateRecurrence(session.properties.recurrence) 
+    }
   } else {
     if (session.listing.cuando) {
       const {begins, ends} = listing.cuando
@@ -124,13 +168,13 @@ export function inflateDates(session) {
   return session
 }
 
-export function deflateDates(session) {
+export function deflateSession(session) {
   const {properties, listing} = session
   const {type} = listing
 
   if (type === ListingTypes.RECURRING) {
-    if (listing.cuando) { deflateRecurringCuandoDates(session.listing.cuando) }
-    if (properties.recurrence) { deflateRecurringCuandoDates(session.properties.recurrence) }
+    if (listing.cuando) { deflateCuando(session.listing.cuando) }
+    if (properties.recurrence) { deflateRecurrence(session.properties.recurrence) }
   } else {
     if (listing.cuando) {
       const {begins, ends} = listing.cuando
@@ -145,7 +189,7 @@ export function deflateDates(session) {
 export function getSessionStream(sources) {
   return sources.Router.history$
     .map(x => x.state.data)
-    .map(inflateDates)
+    .map(inflateSession)
 }
 
 export function fromCheckbox(ev) {

@@ -11,7 +11,7 @@ import {
   renderSearchCalendarButton
 } from '../../../helpers/navigator'
 import clone = require('clone')
-import {inflateDates, deflateDates} from '../../../helpers/listing/utils'
+import {inflateSession, deflateSession} from '../../../helpers/listing/utils'
 
 import {model} from './model'
 import {main as getModal} from './getModal'
@@ -39,7 +39,7 @@ function intent(sources, inputs) {
 
       return session
     })
-    .map(inflateDates)
+    .map(inflateSession)
   
   return {
     session$,
@@ -147,7 +147,7 @@ function main(sources, inputs) {
     DOM: vtree$,
     Router: O.merge(
       actions.show_search_area_screen$.withLatestFrom(state$, (_, state) => {
-        const session = deflateDates(state.session)
+        const session = deflateSession(state.session)
         session.properties['donde_modal'] = 'search_area'
         return clone(session)
       })
@@ -163,7 +163,7 @@ function main(sources, inputs) {
         }
       }),
       hide_modal$.withLatestFrom(state$, (_, state) => {
-        const session = deflateDates(state.session)
+        const session = deflateSession(state.session)
         session.properties['donde_modal'] = undefined
         return clone(session)
       }).mapTo({type: 'goBack'}),
@@ -179,7 +179,7 @@ function main(sources, inputs) {
       //   }
       // }),
       search_area$.withLatestFrom(state$, (sa, state) => {
-        const session = deflateDates(state.session)
+        const session = deflateSession(state.session)
         session.properties['donde_modal'] = undefined
         session.properties.search_area = sa
         return clone(session)

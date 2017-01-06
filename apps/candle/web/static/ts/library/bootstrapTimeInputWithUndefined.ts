@@ -214,8 +214,8 @@ function view(state$, props_style_class) {
       const style_class = props_style_class || ''
       const {input_hour, input_minute, input_meridiem, hour, minute, active} = state
       const out = (hour >= 0 && minute >= 0) ? moment().hour(hour).minute(minute) : undefined
-      return div('.bootstrap-time-input-component.dropdown', {class: {open: !!active}}, [
-        input('.appTimeInput.time-input.form-control' + style_class, {
+      return div('.bootstrap-time-input.dropdown', {class: {open: !!active}}, [
+        input('.appTimeInput.time-input.form-control.form-control-sm' + style_class, {
           hook: {
             update: (vNode, {elm}) => {
               elm.value = out ? out.format('h:mm a') : ''
@@ -231,7 +231,7 @@ function view(state$, props_style_class) {
           //  div('.col-xs-12.d-flex', [
             div('.d-fx-a-c', [
               select(
-                `.appHourSelect.form-control.mr-xs` + style_class, 
+                `.appHourSelect.form-control.form-control-sm.mr-xs` + style_class, 
                 {style: {widtH: "5rem"}},
                 [undefined, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(opt => {
                   return option({attrs: {value: opt, selected: input_hour === opt}}, [
@@ -241,7 +241,7 @@ function view(state$, props_style_class) {
               ),
               ':',
               select(
-                `.appMinuteSelect.form-control.ml-xs` + style_class, 
+                `.appMinuteSelect.form-control.form-control-sm.ml-xs` + style_class, 
                 {style: {widtH: "5rem"}},
                 [
                   undefined, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 
@@ -257,7 +257,7 @@ function view(state$, props_style_class) {
                 })
               ),
               select(
-                `.appMeridiemSelect.form-control.ml-xs` + style_class, 
+                `.appMeridiemSelect.form-control.form-control-sm.ml-xs` + style_class, 
                 {style: {widtH: "5rem"}},
                 [undefined, 'AM', 'PM'].map(opt => {
                   return option({attrs: {value: opt, selected: input_meridiem === opt}}, [

@@ -1,7 +1,7 @@
 import {Observable as O} from 'rxjs'
 import {div, span, button, hr, nav} from '@cycle/dom'
 import Immutable = require('immutable')
-import {ListingTypes, deflateDates} from '../../helpers/listing/utils'
+import {ListingTypes, deflateSession} from '../../helpers/listing/utils'
 
 import {
   combineObj, 
@@ -539,7 +539,7 @@ function main(sources, inputs) {
            }
          }),
        navigation$.withLatestFrom(state$, (nav, state) => {
-         const session = deflateDates(state.session)
+         const session = deflateSession(state.session)
          return {
            pathname: `/create/listing`,
            type: `push`,

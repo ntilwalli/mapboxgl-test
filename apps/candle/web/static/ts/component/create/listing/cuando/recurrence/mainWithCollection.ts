@@ -8,7 +8,7 @@ import {getActualRRule} from '../../../../helpers/listing/utils'
 import {getDatetimeFromObj} from '../../../../../helpers/time'
 import clone = require('clone')
 import deepEqual = require('deep-equal')
-import {inflateDates, fromRule, toRule, normalizeRule} from '../../../../helpers/listing/utils'
+import {inflateSession, fromRule, toRule, normalizeRule} from '../../../../helpers/listing/utils'
 
 import Calendar from './calendar/main'
 import RRuleComponent from './rrule/advanced/main'
@@ -115,7 +115,7 @@ function intent(sources) {
 
       return session
     })
-    .map(inflateDates)
+    .map(inflateSession)
     .publishReplay(1).refCount()
 
   return {
@@ -276,46 +276,33 @@ function view(state$, components) {
       //console.log(`info`, info)
       const {state, components} = info
       const {session} = state
-      const {listing} = session
+      const {properties, listing} = session
+      const {recurrence} = properties
+      const {rules} = recurrence
       const {cuando} = listing
       const {rrules} = cuando
       const {start_time, end_time, calendar, rules_component, start_date, end_date} = components
 
       return div(`.cuando-recurrence`, [
+        span('.form-group', ['Recurring events will cause listings to be automatically generated and staged, allowing you to post when you\'re ready.  Add rules for simple recurrences, and/or add dates directly by clicking unselected boxes in the calendar below.  Exclude dates by clicking selected boxes.']),
         rules_component,
-        rrules.length > 0 ? div('.row', [
-          div('.col-xs-3.d-flex.fx-a-c', [
-            h6('.d-flex.fx-a-c.mb-0', ['Start date']),
-          ]),
-          div('.col-xs-9.d-flex.fx-a-c', [
-            start_date
-          ])
+        rules.length > 0 ? div([
+          h6('.d-flex', ['Beginning']),
+          start_date
         ]) : null,
-        rrules.length ? div('.row', [
-          div('.col-xs-3.d-flex.fx-a-c', [
-            h6('.d-flex.fx-a-c.mb-0', ['End date']),
-          ]),
-          div('.col-xs-9.d-flex.fx-a-c', [
-            end_date
-          ])
+        rules.length > 0 ? div('.form-group', [
+          h6('.d-flex', ['Ending']),
+          end_date
         ]) : null,
-        calendar,
-        div('.row.mt-1', [
-          div('.col-xs-3.d-flex.fx-a-c', [
-            h6('.d-flex.fx-a-c.mb-0', ['Start time']),
-          ]),
-          div('.col-xs-9.d-flex.fx-a-c', [
-            start_time
-          ])
+        div('.form-group', [
+          h6('.d-flex', ['Start time (required)']),
+          start_time
         ]),
-        div('.row.mt-1', [
-          div('.col-xs-3.d-flex.fx-a-c', [
-            h6('.d-flex.fx-a-c.mb-0', ['End time']),
-          ]),
-          div('.col-xs-9.d-flex.fx-a-c', [
-            end_time
-          ])
-        ])
+        div('.form-group', [
+          h6('.d-flex', ['End time']),
+          end_time
+        ]),
+        calendar
       ])
     })
 }
@@ -364,9 +351,6 @@ export default function main(sources, inputs) {
       .map(state => {
         return state.session.properties.recurrence
       })
-      // .distinctUntilChanged((x, y) => {
-      //   return deepEqual(x, y)
-      // })
   })
 
   selected$.attach(calendar.output$)

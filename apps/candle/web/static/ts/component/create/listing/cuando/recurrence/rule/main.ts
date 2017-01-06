@@ -146,6 +146,14 @@ function toDefault(type) {
   }
 }
 
+function addStructure(val) {
+  return {
+    data: val,
+    errors: [],
+    valid: true
+  }
+}
+
 export default function main(sources, inputs) {//props$) {
   const component_id = 'Recurrence rule'
   const shared$ = inputs.props$
@@ -187,14 +195,26 @@ export default function main(sources, inputs) {//props$) {
     component_id
   )
 
-  const interval_output$ = interval_input.output$.publishReplay(1).refCount()
-  const show_interval$ = sources.DOM.select('.appShowIntervalButton').events('click').mapTo(true)
-  const hide_interval$ = sources.DOM.select('.appHideIntervalButton').events('click').mapTo(false)
+  const ii_output$ = interval_input.output$.publishReplay(1).refCount()
+
+  const has_interval$ = sources.DOM.select('.appHasIntervalButton').events('click')
+    .mapTo(true)
+    .publishReplay(1).refCount()
+  const no_interval$ = sources.DOM.select('.appNoIntervalButton').events('click')
+    .mapTo(false)
+    .publishReplay(1).refCount()
+  
+  const interval_output$ = O.merge(
+    ii_output$.take(1),
+    has_interval$.withLatestFrom(ii_output$, (_, out) => out),
+    no_interval$.mapTo(addStructure(1))
+  )
+  
   const display_interval$ = interval_output$
     .take(1)
     .map((x: any) => x.valid ? x.data > 1 ? true : false : false)
     .switchMap(init => {
-      return O.merge(show_interval$, hide_interval$).startWith(init)
+      return O.merge(has_interval$, no_interval$).startWith(init)
     })
 
   const vtree$ = combineObj({
@@ -222,11 +242,11 @@ export default function main(sources, inputs) {//props$) {
               div('.mr-1', [data]), 
               button('.d-fx-a-c.btn.btn-link.mr-2', {
                   class: {
-                    appShowIntervalButton: !display_interval,
-                    appHideIntervalButton: display_interval
+                    appHasIntervalButton: !display_interval,
+                    appNoIntervalButton: display_interval
                   }
                 }, [
-                small([display_interval ? 'Hide interval' : 'Show interval'])
+                small([display_interval ? 'No interval' : 'w/ interval'])
               ]),
               button('.appSubtractButton.d-fx-a-c.fa.fa-minus.plus-button.btn.btn-link', [])
             ])
