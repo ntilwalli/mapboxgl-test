@@ -387,29 +387,29 @@ function getRRuleSummary(rrules) {
 }
 
 function getRecurringSummary(info) {
-  const {rrules, rdate, exdate} = info
+  const {rrules, rdates, exdates} = info
   let out = ''
   if (rrules.length) {
     out += 'Recurrence rule: ' + getRRuleSummary(rrules)
   }
 
-  if (rdate.length) {
+  if (rdates.length) {
     if (rrules.length) {
-      out += `\nAdditional date${rdate.length > 1 ? 's' : ''}:\n`
+      out += `\nAdditional date${rdates.length > 1 ? 's' : ''}:\n`
     } else {
-      out += `Date${rdate.length > 1 ? 's' : ''}:\n`
+      out += `Date${rdates.length > 1 ? 's' : ''}:\n`
     }
 
-    out += `${rdate.length ? '  ' : ''}` + rdate.map(x => x.format('LLLL')).join('\n  ')
+    out += `${rdates.length ? '  ' : ''}` + rdates.map(x => x.format('LLLL')).join('\n  ')
    
   } 
 
-  if (exdate.length) {
+  if (exdates.length) {
     if (rrules.length) {
-      out += `\nExcluding date${exdate.length > 1 ? 's' : ''}:\n`
+      out += `\nExcluding date${exdates.length > 1 ? 's' : ''}:\n`
     }
 
-    out += `${exdate.length ? '  ' : ''}` + exdate.map(x => x.format('LLLL')).join('\n  ')
+    out += `${exdates.length ? '  ' : ''}` + exdates.map(x => x.format('LLLL')).join('\n  ')
   } 
 
   return out
@@ -687,8 +687,8 @@ export function renderRecurring(cuando) {
       span([upcoming_date.format('ddd, M/D/YY h:mm a')])
     ]) : null
 
-  const {rrules, rdate, exdate} = cuando
-  if (rdate.length || exdate.length) {
+  const {rrules, rdates, exdates} = cuando 
+  if (rdates.length || exdates.length) {
     return div([
       span('.mr-xs', ['Recurring']),
       upcoming

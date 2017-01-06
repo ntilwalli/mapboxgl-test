@@ -345,29 +345,29 @@ function getRRuleSummary(rrule) {
 }
 
 function getRecurringSummary(info) {
-  const {rrule, rdate, exdate} = info
+  const {rrules, rdates, exdates} = info
   let out = ''
-  if (rrule) {
-    out += 'Recurrence rule: ' + getRRuleSummary(rrule)
+  if (rrules && rrules.length) {
+    out += 'Recurrence rule: ' + getRRuleSummary(rrules)
   }
 
-  if (rdate.length) {
-    if (rrule) {
-      out += `\nAdditional date${rdate.length > 1 ? 's' : ''}:\n`
+  if (rdates.length) {
+    if (rrules && rrules.length) {
+      out += `\nAdditional date${rdates.length > 1 ? 's' : ''}:\n`
     } else {
-      out += `Date${rdate.length > 1 ? 's' : ''}:\n`
+      out += `Date${rdates.length > 1 ? 's' : ''}:\n`
     }
 
-    out += `${rdate.length ? '  ' : ''}` + rdate.map(x => x.format('LLLL')).join('\n  ')
+    out += `${rdates.length ? '  ' : ''}` + rdates.map(x => x.format('LLLL')).join('\n  ')
    
   } 
 
-  if (exdate.length) {
-    if (rrule) {
-      out += `\nExcluding date${exdate.length > 1 ? 's' : ''}:\n`
+  if (exdates.length) {
+    if (rrules && rrules.length) {
+      out += `\nExcluding date${exdates.length > 1 ? 's' : ''}:\n`
     }
 
-    out += `${exdate.length ? '  ' : ''}` + exdate.map(x => x.format('LLLL')).join('\n  ')
+    out += `${exdates.length ? '  ' : ''}` + exdates.map(x => x.format('LLLL')).join('\n  ')
   } 
 
   return out
@@ -573,17 +573,17 @@ function renderRecurring(cuando) {
       span('.text-item', [upcoming_date.format('llll')])
     ]) : null
 
-  const {rrule, rdate, exdate} = cuando
-  if (rdate.length || exdate.length) {
+  const {rrules, rdates, exdates} = cuando
+  if (rdates.length || exdates.length) {
     return div('.column', [
       span('.row.heading.text-item', ['Recurring']),
       upcoming
     ])
-  } else if (rrule) {
+  } else if (rrules && rrules.length) {
     return div('.column', [
       div('.row', [
         span('.heading.text-item', ['Recurs:']),
-        span('.text-item', [getFreqSummary(rrule)])
+        span('.text-item', [getFreqSummary(rrules)])
       ]),
       upcoming
     ])
