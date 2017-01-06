@@ -97,7 +97,7 @@ function mapview(state$) {
           style: `mapbox://styles/mapbox/bright-v9`, //stylesheet location
           center: toLngLatArray(lng_lat), // starting position
           zoom: 15, // starting zoom,
-          dragPan: true,
+          dragPan: false,
           scrollZoom: false
         },
         sources: {

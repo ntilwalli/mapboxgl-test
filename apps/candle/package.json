@@ -26,7 +26,7 @@
     "@cycle/storage": "3.0.0-rc3",
     "bootstrap": "^4.0.0-alpha.5",
     "clone": "^2.0.0",
-    "cycle-mapboxgl": "0.0.10",
+    "cycle-mapboxgl": "0.0.12",
     "cyclic-router": "^3.0.1",
     "deep-assign": "^2.0.0",
     "deep-equal": "^1.0.1",
