@@ -23,7 +23,7 @@ defmodule Shared.Mixfile do
   defp deps do
     [
       {:calendar, "~> 0.16.1"},
-      #{:calecto, "~> 0.16.0"},
+      {:calecto, "~> 0.16.1"},
       {:postgrex, "~> 1.0.0-rc"},
       {:ecto, "~> 2.1.0-rc", override: true},
       {:geo, "~> 1.2", path: "../../custom_deps/geo", override: true},

@@ -86,8 +86,8 @@ function renderSession(session) {
           ]),
           button('.appDeleteSession.fa.fa-1-5x.fa-trash-o.btn.btn-link', {props: {session}}, [])
         ]),
-        span([span(['Started: ']), span([inserted_at.format('lll')])]),
-        span([span(['Last updated: ']), span([updated_at.format('lll')])])
+        span([span(['Started: ']), span([inserted_at.local().format('lll')])]),
+        span([span(['Last updated: ']), span([updated_at.local().format('lll')])])
       ])
     ])
   ])

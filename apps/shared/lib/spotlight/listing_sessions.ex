@@ -3,13 +3,14 @@ defmodule Shared.ListingSession do
 
   @derive {Poison.Encoder, except: [:__meta__, :user_id, :user]}
   @primary_key {:id, :id, autogenerate: true}
+  @timestamp_opts [type: :utc_datetime, usec: true]
   schema "listing_sessions" do
     field :listing, :map
     embeds_one :properties, ListingSession.Properties
     field :current_step, :string
 
     belongs_to :user, Shared.User
-    
+
     timestamps
   end
 
