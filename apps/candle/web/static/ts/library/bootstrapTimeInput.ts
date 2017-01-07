@@ -148,7 +148,7 @@ function model(actions, inputs) {
   return inputs.props$
     .switchMap((info: any) => {
       let style_class, time
-      if (typeof info === 'object' && info.hasOwnProperty('style_class')) {
+      if (info !== null && typeof info === 'object' && info.hasOwnProperty('style_class')) {
         style_class = info.style_class
         time = info.time
       } else {

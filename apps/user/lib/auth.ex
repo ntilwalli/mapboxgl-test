@@ -98,7 +98,7 @@ defmodule User.Auth do
   end
 
   def handle_call({:retrieve_listing_session, id}, _from, %{user: user} = state) do
-    {:ok, result} = Shared.Repo.get(Shared.ListingSession, id)
+    result = Shared.Repo.get(Shared.ListingSession, id)
     {:reply, {:ok, result}, state}
   end
 

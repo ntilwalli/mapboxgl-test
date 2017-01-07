@@ -591,7 +591,7 @@ function main(sources, inputs) {
          .delay(4)
          .map(val => {
            return {
-             pathname: `/home/listing`,
+             pathname: `/home/listings`,
              action: 'REPLACE',
              type: 'replace'
            }
@@ -608,35 +608,38 @@ function main(sources, inputs) {
          }
        }),
        O.merge(
-         actions.success_retrieve$, 
-         actions.success_create$
-         .map(val => {
-           const session = {
-             ...val, 
-             listing: {
-             }, 
-             properties: {
-             }, 
-             current_step: `meta`
-           }
-
-           return {
-             pathname: `/create/listing`,
-             type: 'replace',
-             action: `REPLACE`,
-             state: {
-               type: 'session',
-               data: session
+         O.merge(
+           actions.success_retrieve$,
+           actions.success_create$
+             .map(val => {
+               return {
+                 ...val, 
+                 listing: {}, 
+                 properties: {}, 
+                 current_step: `meta`
+               }
+             })
+         )
+         .map(session => {
+             return {
+               pathname: `/create/listing`,
+               type: 'replace',
+               action: `REPLACE`,
+               state: {
+                 type: 'session',
+                 data: session
+               }
              }
-           }
-         }),
-       push_state$.filter(is_invalid).map(x => {
-         return {
-           pathname: `/create`,
-           type: 'replace',
-           action: `REPLACE`,
-         }
-       }))
+           }),
+         push_state$.filter(is_invalid)
+           .map(x => {
+             return {
+               pathname: `/create`,
+               type: 'replace',
+               action: `REPLACE`,
+             }
+           })
+       )
      ),//.do(x => console.log(`to router`, x)),
      MessageBus: O.merge(
        actions.show_menu$.mapTo({to: `main`, message: {type: `showLeftMenu`, data: {redirect_url: '/create/listing'}}}), 

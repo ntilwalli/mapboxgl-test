@@ -31,7 +31,10 @@ function intent(sources) {
     .map(ev => ev.target.session)
 
   const go_to_session$ = DOM.select('.appGoToSession').events('click')
-    .map(ev => ev.target.session)
+    .map(ev => ev.ownerTarget.session)
+    .map(x => {
+      return x
+    })
 
   const {success$, error$} = processHTTP(sources, `deleteSession`)
   const delete_success$ = success$
@@ -135,7 +138,7 @@ export default function main(sources, inputs) {
     Router: O.merge(
       actions.go_to_session$.map(x => {
         return  {
-          pathname: '/create',
+          pathname: '/create/listing',
           type: 'push',
           state: {
             type: 'retrieve',
