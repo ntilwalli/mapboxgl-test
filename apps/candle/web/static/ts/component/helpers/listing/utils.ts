@@ -146,41 +146,59 @@ export function deflateListing(listing) {
 
 
 export function inflateSession(session) {
-  const {properties, listing} = session
-  const {type} = listing
+  const {properties, listing, inserted_at, updated_at} = session
+  if (properties && listing) {
+    const {type} = listing
+    if (type === ListingTypes.RECURRING) {
+      if (session.listing.cuando) { 
+        inflateCuando(session.listing.cuando) 
+      }
+      if (session.properties.recurrence) {
+        inflateRecurrence(session.properties.recurrence) 
+      }
+    } else {
+      if (session.listing.cuando) {
+        const {begins, ends} = listing.cuando
+        if (begins) { session.listing.cuando.begins = moment(begins) }
+        if (ends) { session.listing.cuando.ends = moment(ends) }
+      }
+    }
+  }
 
+  if (inserted_at) {
+    session.inserted_at = moment(session.inserted_at)
+  }
 
-  if (type === ListingTypes.RECURRING) {
-    if (session.listing.cuando) { 
-      inflateCuando(session.listing.cuando) 
-    }
-    if (session.properties.recurrence) {
-      inflateRecurrence(session.properties.recurrence) 
-    }
-  } else {
-    if (session.listing.cuando) {
-      const {begins, ends} = listing.cuando
-      if (begins) { session.listing.cuando.begins = moment(begins) }
-      if (ends) { session.listing.cuando.ends = moment(ends) }
-    }
+  if (updated_at) {
+    session.updated_at = moment(session.updated_at)
   }
 
   return session
 }
 
 export function deflateSession(session) {
-  const {properties, listing} = session
-  const {type} = listing
+  const {properties, listing, inserted_at, updated_at} = session
+  if (properties && listing) {
+    const {type} = listing
 
-  if (type === ListingTypes.RECURRING) {
-    if (listing.cuando) { deflateCuando(session.listing.cuando) }
-    if (properties.recurrence) { deflateRecurrence(session.properties.recurrence) }
-  } else {
-    if (listing.cuando) {
-      const {begins, ends} = listing.cuando
-      if (begins) { session.listing.cuando.begins = begins.toDate().toISOString() }
-      if (ends) { session.listing.cuando.ends = ends.toDate().toISOString() }
+    if (type === ListingTypes.RECURRING) {
+      if (listing.cuando) { deflateCuando(session.listing.cuando) }
+      if (properties.recurrence) { deflateRecurrence(session.properties.recurrence) }
+    } else {
+      if (listing.cuando) {
+        const {begins, ends} = listing.cuando
+        if (begins) { session.listing.cuando.begins = begins.toDate().toISOString() }
+        if (ends) { session.listing.cuando.ends = ends.toDate().toISOString() }
+      }
     }
+  }
+  
+  if (inserted_at) {
+    session.inserted_at = inserted_at.toDate().toISOString()
+  }
+
+  if (updated_at) {
+    session.updated_at = updated_at.toDate().toISOString()
   }
 
   return session

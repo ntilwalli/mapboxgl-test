@@ -169,12 +169,12 @@ function reducers(actions, inputs: any) {
   })
 
   const saved_r = actions.from_http$.map(val => state => {
-    return state.set(`waiting`, true).set('last_saved', moment())
+    return state.set(`waiting`, false).set('last_saved', moment())
   })
 
   const session_r = inputs.session$.map(session => state => {
     //console.log(`updated workflow session`, session)
-    return state.set(`session`, session)
+    return state.set(`session`, Immutable.fromJS(session))
   })
 
   return O.merge(
@@ -194,6 +194,7 @@ function model(actions, inputs) {
       const init = Immutable.fromJS({
         ...info,
         show_instruction: false,
+        last_saved: undefined,
         waiting: false
       })
       return reducer$.startWith(init).scan((acc, f: Function) => f(acc))
@@ -440,7 +441,7 @@ function main(sources, inputs) {
           data: val
         }
       }
-    })
+    }).publish().refCount()
 
   const to_render$ = push_state$.filter(should_render)
     .pluck(`data`)
@@ -534,8 +535,17 @@ function main(sources, inputs) {
   }).publish().refCount()
 
   const to_save$ = state$.pluck('session')
-    .filter(Boolean)
-    .distinctUntilChanged((x, y) => deepEqual(x, y))
+    .filter(x => !!x)
+    .map(x => {
+      return x
+    })
+    .distinctUntilChanged((x, y) => {
+      return deepEqual(x, y)
+    })
+    .map(x => {
+      return x
+    })
+    .debounceTime(5000)
     .withLatestFrom(state$, (_, state: any) => {
       return {
         url: `/api/user`,
@@ -548,8 +558,18 @@ function main(sources, inputs) {
       }
     }).publish().refCount()
 
-  //const to_http$ = O.merge(to_retrieve$,)
+  const save$ = O.merge(
+    to_save_exit$      
+      .map(x => {
+        return x
+      }), 
+    to_save$
+      .map(x => {
+        return x
+      })
+  ).publish().refCount()
 
+  saving$.attach(save$)
 
   const out = {
      DOM: vtree$,
@@ -560,7 +580,7 @@ function main(sources, inputs) {
      HTTP: O.merge(
        to_retrieve$, 
        to_new$,
-       to_save_exit$,
+       save$,
        component$.switchMap(x => x.content.HTTP)
      ).publish().refCount(),
       //.do(x => console.log(`to http`, x)),
@@ -571,7 +591,7 @@ function main(sources, inputs) {
          .delay(4)
          .map(val => {
            return {
-             pathname: `/home`,
+             pathname: `/home/listing`,
              action: 'REPLACE',
              type: 'replace'
            }

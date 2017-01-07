@@ -1,11 +1,11 @@
-defmodule Shared.Model.Session.Properties do
+defmodule ListingSession.Properties do
   use Shared.Lib, :model
 
   @derive {Poison.Encoder, except: [:__meta__]}
   @primary_key false
   embedded_schema do
-    embeds_one :search_area, Shared.Model.Session.SearchArea
-    embeds_one :recurrence, Shared.Model.Session.Recurrence
+    embeds_one :search_area, ListingSession.SearchArea
+    embeds_one :recurrence, ListingSession.Recurrence
   end
 
   @allowed_fields []

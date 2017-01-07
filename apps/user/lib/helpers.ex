@@ -10,6 +10,8 @@ defmodule User.Helpers do
   alias Shared.Message.Outgoing.Home.CheckIns, as: CheckInsMessage
   alias Shared.Message.Outgoing.CheckIn, as: CheckInItem
   alias Shared.Model.Listing.Cuando.Once, as: CuandoOnce
+
+  alias Shared.ListingSession
   def gather_check_ins(
     %DateTimeRangeMessage{begins: begins, ends: ends}, 
     %Shared.User{id: user_id}
@@ -93,4 +95,34 @@ defmodule User.Helpers do
   #   listings
   # end
 
+
+  def gather_listing_sessions(
+    # %DateTimeRangeMessage{dtstart: begins, dtend: ends}, 
+    %Shared.User{id: user_id}
+  ) do
+    query = from s in Shared.ListingSession,
+        where: s.user_id == ^user_id,
+        select: s
+
+    IO.puts "gather_listing_sessions..."
+    IO.inspect query
+
+    results = Repo.all(query)
+    IO.inspect {:user_sessions, results}
+    results
+  end
+
+  def gather_listings(%Shared.User{id: user_id}, release_type) do
+    query = from s in Shared.Listing,
+        where: s.user_id == ^user_id and
+          s.release == ^release_type,
+        select: s
+
+    IO.puts "gather " <> release_type <> " listings..."
+    IO.inspect query
+
+    results = Repo.all(query)
+    IO.inspect {:user_listings, results}
+    results
+  end
 end

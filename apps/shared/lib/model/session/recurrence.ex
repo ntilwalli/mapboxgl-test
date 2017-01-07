@@ -1,20 +1,20 @@
-defmodule Shared.Model.Session.Recurrence do
+defmodule ListingSession.Recurrence do
   use Shared.Lib, :model
 
   @derive {Poison.Encoder, except: [:__meta__]}
   @primary_key false
   embedded_schema do
-    field :type, :string
-    field :data, :string
-    field :rrule, :map
+    field :rules, {:array, :map}
+    field :rdates, {:array, :naive_datetime}
+    field :exdates, {:array, :naive_datetime}
     field :start_time, :map
     field :end_time, :map
-    field :start_date, :map
-    field :end_date, :map
+    field :start_date, :naive_datetime
+    field :end_date, :naive_datetime
   end
 
   @required_fields []
-  @allowed_fields [:type, :data, :rrule, :start_time, :end_time, :start_date, :end_date]
+  @allowed_fields [:rules, :rdates, :exdates, :start_time, :end_time, :start_date, :end_date]
   def changeset(model, params \\ :empty) do
     model
     |> cast(params, @allowed_fields)

@@ -1,4 +1,4 @@
-defmodule Shared.Model.Session.SearchArea do
+defmodule ListingSession.SearchArea do
   use Shared.Lib, :model
 
   @derive {Poison.Encoder, except: [:__meta__]}

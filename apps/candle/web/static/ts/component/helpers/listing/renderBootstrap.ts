@@ -2,7 +2,7 @@ import {Observable as O} from 'rxjs'
 import {div, a, pre, span, input, button, strong, h6, em, b, address, small, ul, li} from '@cycle/dom'
 import {combineObj} from '../../../utils'
 import {to12HourTime} from '../../../helpers/time'
-import {ListingTypes, EventTypes, PerformerSignupOptions, PreRegistrationOptions, RelativeTimeOptions, CostOptions, TierPerkOptions, PurchaseTypeOptions, StageTimeOptions, MinutesTypeOptions, PerformerLimitOptions} from '../../../listingTypes'
+import {ListingTypes, RecurrenceFrequency, EventTypes, PerformerSignupOptions, PreRegistrationOptions, RelativeTimeOptions, CostOptions, TierPerkOptions, PurchaseTypeOptions, StageTimeOptions, MinutesTypeOptions, PerformerLimitOptions} from '../../../listingTypes'
 import moment = require('moment')
 import {cuandoToRRuleSet} from './utils'
 import {getBadslavaName, getVenueName, getVenueAddress, getVenueLngLat} from '../../../helpers/donde'
@@ -357,17 +357,39 @@ function getFromTo(dtstart, until) {
 }
 
 
-export function getFreqSummary(rrule) {
-  const {freq, byweekday, bysetpos, dtstart, until} = rrule
-  const from_to = (dtstart || until) ? getFromTo(dtstart, until) : ''
-  switch (freq) {
-    case 'weekly':
-      return 'Weekly ' + getWeekdaySummary(byweekday, dtstart) + 's'
-    case 'monthly':
-      return getSetPosSummary(bysetpos) + getWeekdaySummary(byweekday, dtstart)
-    default:
+export function getFreqSummary(rrules) {
+  if (rrules && Array.isArray(rrules)) {
+    if (rrules.length) {
+      if (rrules.length === 1) {
+        const rrule = rrules[0]
+        const {freq, byweekday, bysetpos, dtstart, until} = rrule
+        const from_to = (dtstart || until) ? getFromTo(dtstart, until) : ''
+        switch (freq) {
+          case 'weekly':
+            return 'Weekly ' + getWeekdaySummary(byweekday, dtstart) + 's'
+          case 'monthly':
+            return getSetPosSummary(bysetpos) + getWeekdaySummary(byweekday, dtstart)
+          default:
+            return ''
+        }
+      } else {
+        if (rrules.every(rrule => rrule.freq === RecurrenceFrequency.WEEKLY)) {
+          return 'Weekly ' + rrules.reduce((arr, rrule) => arr.concat(rrule.byweekday)).join(', ')
+        } else if (rrules.every(rrule => rrule.freq === RecurrenceFrequency.MONTHLY)) {
+          const setpos = getSetPosSummary(rrules.reduce((arr, rrule) => arr.concat(rrule.bysetpos)))
+          const day = rrules[0].byweekday[0]
+          return 'Monthly ' + setpos + ' ' + day
+        } else {
+          return 'Multiple rule types'
+        }
+      }
+    } else {
       return ''
+    }
   }
+
+  throw new Error('Invalid value given for rrules')
+
 }
 
 

@@ -3,33 +3,65 @@ import Immutable = require('immutable')
 import {div, button, img, span, i, a} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 import {combineObj, createProxy, mergeSinks, componentify, processHTTP} from '../../../utils'
-import {inflateListing} from '../../helpers/listing/utils'
+import {inflateListing, inflateSession} from '../../helpers/listing/utils'
 
-import ListingRow from '../listingRow'
+import ListingRow from './listingRow'
+import SessionRow from './sessionRow'
 
 function drillInflate(result) {
-  result.listing = inflateListing(result.listing)
-  result.children.map(inflateListing)
+  result.sessions = result.sessions.map(inflateSession)
+  result.staged = result.staged.map(inflateListing)
+  result.posted = result.posted.map(inflateListing)
   return result
+}
+function hasParent(l) { return !!l.parent_id}
+function addChild(l, children_map) {
+  const pid = l.parent_id
+  if (children_map[pid]) {
+    children_map[pid].push(l)
+  } else {
+    children_map[pid] = [l]
+  }
+}
+function withChildren(l, children_map) {
+  return {
+    listing: l,
+    children: children_map[l.id] 
+  }
+}
+function toHierarchy(listings) {
+  const children_map = {}
+  listings.filter(l => hasParent(l)).forEach(l => addChild(l, children_map))
+  const no_parent_listings = listings.filter(l => !hasParent(l)).map(withChildren)
+  return no_parent_listings
 }
 
 function intent(sources) {
   const {DOM, HTTP} = sources
   const {success$, error$} = processHTTP(sources, `getTreeListing`)
-  const listings$ = success$
+  const results$ = success$
+    .map(x => {
+      return x
+    })
     .map(drillInflate)
-    .map(x => [x])
+    .map(resp => {
+      return {
+        ...resp,
+        staged: toHierarchy(resp.staged),
+        posted: toHierarchy(resp.posted)
+      }
+    })
     .publish().refCount()
 
   return {
-    listings$,
+    results$,
     not_found$: error$,
   }
 }
 
 function reducers(actions, inputs) {
-  const listings_r = actions.listings$.map(listings => state =>  {
-    return state.set('listings', listings).set('waiting', false)
+  const listings_r = actions.results$.map(results => state =>  {
+    return state.set('results', results).set('waiting', false)
   })
 
   const waiting_r = inputs.waiting$.map(_ => state => {
@@ -45,7 +77,7 @@ function model(actions, inputs) {
   return inputs.Authorization.status$
     .map(authorization => {
       return {
-        listings: undefined,
+        results: undefined,
         waiting: true
       }
     })
@@ -75,13 +107,18 @@ function view(state$, components) {
     components: combineObj(components)
   }).map((info: any) => {
     const {state, components} = info
-    const {trees} = components
+    const {posted, sessions} = components
     const {waiting} = state
     console.log('state', state)
     return waiting ? div('.loader') : div('.container.nav-fixed-offset.user-listings.mt-1', [
       div('.row', [
         div('.col-xs-12', [
-          trees ? trees : renderSimpleRow(['No current listings'])
+          posted ? posted : renderSimpleRow(['No posted listings'])
+        ])
+      ]),
+      div('.row', [
+        div('.col-xs-12', [
+          sessions ? sessions : renderSimpleRow(['No listings in progress'])
         ])
       ])
     ])
@@ -97,10 +134,50 @@ export default function main(sources, inputs) {
   const waiting$ = createProxy()
   const state$ = model(actions, {...inputs, waiting$})
 
-  const trees$ = state$.pluck('listings')
-    .map(listings => {
-      if (listings && listings.length) {
-        const items = listings.map(x => isolate(ListingRow)(sources, {...inputs, props$: O.of(x)}))
+  const sessions$ = state$
+    .map(state => {
+      const {results} = state
+      if (results && results.sessions && results.sessions.length) {
+        const items = results.sessions.map(x => isolate(SessionRow)(sources, {...inputs, props$: O.of(x)}))
+        const merged = mergeSinks(...items)
+        const errors$ = O.merge(items.map(x => x.errors$))
+        const m_http$ = merged.HTTP.publish().refCount()
+        return {
+          ...merged,
+          HTTP: m_http$,
+          DOM: O.combineLatest(...items.map(x => x.DOM))
+            .do(x => {
+              console.log('listing trees: ', x)
+            }),
+          errors$
+        }
+      } else {
+        return {
+          DOM: O.of(undefined),
+          errors$: O.never()
+        }
+      }
+    }).publishReplay(1).refCount()
+
+  const sessions = componentify(sessions$)
+  const sessions_w_row = {
+    ...sessions,
+    DOM: sessions.DOM.map(x => {
+      if (x) {
+        return div('.trees.row', [
+          div('.col-xs-12', x)
+        ])
+      } else {
+        return undefined
+      }
+    })
+  }
+
+  const posted$ = state$
+    .map(state => {
+      const {results} = state
+      if (results && results.posted && results.posted.length) {
+        const items = results.posted.map(x => isolate(ListingRow)(sources, {...inputs, props$: O.of(x)}))
         const merged = mergeSinks(...items)
         return {
           ...merged,
@@ -116,12 +193,14 @@ export default function main(sources, inputs) {
       }
     }).publishReplay(1).refCount()
 
-  const trees_component = componentify(trees$)
-  const trees = {
-    ...trees_component,
-    DOM: trees_component.DOM.map(x => {
+  const posted = componentify(posted$)
+  const posted_w_row = {
+    ...posted,
+    DOM: posted.DOM.map(x => {
       if (x) {
-        return div('.trees.row', [div('.col-xs-12', x)])
+        return div('.trees.row', [
+          div('.col-xs-12', x)
+        ])
       } else {
         return undefined
       }
@@ -129,8 +208,25 @@ export default function main(sources, inputs) {
   }
 
   const components = {
-    trees: trees.DOM
+    sessions: sessions_w_row.DOM,
+    posted: posted_w_row.DOM
   }
+
+  // const to_http$ = O.of(undefined)
+  //   .map(x => {
+  //     return {
+  //         url: `/api/user`,
+  //         method: `post`,
+  //         send: {
+  //           route: "/retrieve_listing",
+  //           data: 1
+  //         },
+  //         category: `getTreeListing`
+  //     }
+  //   })
+  //   .delay(0)
+  //   .do(x => console.log(`retrieve listing toHTTP`, x))
+  //   .publishReplay(1).refCount()
 
   const to_http$ = O.of(undefined)
     .map(x => {
@@ -138,8 +234,7 @@ export default function main(sources, inputs) {
           url: `/api/user`,
           method: `post`,
           send: {
-            route: "/retrieve_listing",
-            data: 1
+            route: "/home/listings"
           },
           category: `getTreeListing`
       }
@@ -148,11 +243,17 @@ export default function main(sources, inputs) {
     .do(x => console.log(`retrieve listing toHTTP`, x))
     .publishReplay(1).refCount()
 
+
+
   waiting$.attach(to_http$)
 
+  const merged = mergeSinks(posted_w_row, sessions_w_row)
+
   return {
-    ...trees,
+    ...merged,
     DOM: view(state$, components),
-    HTTP: to_http$
+    HTTP: O.merge(
+      merged.HTTP, to_http$
+    )
   }
 }

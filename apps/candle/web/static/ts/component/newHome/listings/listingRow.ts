@@ -2,9 +2,9 @@ import {Observable as O} from 'rxjs'
 import Immutable = require('immutable')
 import {div, em, ul, li, strong, button, img, span, i, a} from '@cycle/dom'
 import isolate from '@cycle/isolate'
-import {combineObj, mergeSinks, componentify} from '../../utils'
-import ComboBox from '../../library/comboBox'
-import {RecurrenceDisplayFilterOptions} from '../../listingTypes'
+import {combineObj, mergeSinks, componentify} from '../../../utils'
+import ComboBox from '../../../library/comboBox'
+import {RecurrenceDisplayFilterOptions} from '../../../listingTypes'
 import moment = require('moment')
 
 import {
@@ -13,7 +13,7 @@ import {
   renderPerformerLimit, renderTextList, renderNote, getFullCostAndStageTime,
   renderContactInfo, getFreqSummary, getDateTimeString, getCuandoStatus,
   getDondeNameString, getDondeCityString, getDondeStateString
-}  from '../helpers/listing/renderBootstrap'
+}  from '../../helpers/listing/renderBootstrap'
 
 function getListingLine(listing) {
   const {type, parent_id, cuando, meta} = listing
@@ -88,8 +88,8 @@ function renderCuandoRecurringInfo(listing) {
   return div('.row', [
     div('.col-xs-12.d-flex.fx-column', [
       renderRightAligned(span('.tag.tag-success', ['Recurring'])),
-      renderRightAligned(getFreqSummary(listing.cuando.rrule)),
-      renderRightAligned(listing.cuando.rrule.dtstart.format('h:mm a'))
+      renderRightAligned(getFreqSummary(listing.cuando.rrules)),
+      renderRightAligned(listing.cuando.rrules[0].dtstart.format('h:mm a'))
     ])
   ])
 }
@@ -266,6 +266,7 @@ export default function main(sources, inputs) {
       merged.Router,
       actions.edit$.map(x => '/listing/' + x.id),
       actions.go_to_listing$.map(x => '/listing/' + x.id)
-    )
+    ),
+    errors$: O.never()
   }
 }

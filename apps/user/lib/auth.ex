@@ -41,6 +41,14 @@ defmodule User.Auth do
     GenServer.call(server, {:save_listing_session, params})
   end
 
+  def route(server, "/listing_session/delete", params) do
+    GenServer.call(server, {:delete_listing_session, params})
+  end
+
+  def route(server, "/home/listings") do
+    GenServer.call(server, {:home_listings})
+  end
+
   def route(server, "/search", query) do
     GenServer.call(server, {:search, query})
   end
@@ -102,8 +110,10 @@ defmodule User.Auth do
       true -> 
         #session = apply_changes(session_cs)
         {:ok, session_info} = Shared.Repo.update(session_cs)
+        IO.inspect {:session_save_ok, session_info}
         {:reply, {:ok, session_info}, state}
       false -> 
+        IO.inspect {:session_save_error, session_cs}
         {:reply, {:error, "Sent session params invalid"}, state}
     end
   end
@@ -164,6 +174,21 @@ defmodule User.Auth do
         {:reply, {:error, "Sent invalid check-in parameters"}, state}
     end
   end
+
+  def handle_call({:home_listings} = msg, _from, %{user: user, listing_registry: l_reg} = state) do
+    listing_sessions = User.Helpers.gather_listing_sessions(user)
+    staged = User.Helpers.gather_listings(user, "staged")
+    posted = User.Helpers.gather_listings(user, "posted")
+    out = %Home.Listings.Outgoing{
+      sessions: listing_sessions,
+      staged: staged,
+      posted: posted
+    }
+    # IO.puts "Check-in output..."
+    # IO.inspect out
+    {:reply, {:ok, out}, state}
+  end
+
 
   def handle_call({:home_check_ins, params}, _from, %{user: user} = state) do
     cs = DateTimeRangeMessage.changeset(%DateTimeRangeMessage{}, params)

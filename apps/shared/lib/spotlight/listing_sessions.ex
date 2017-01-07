@@ -5,9 +5,11 @@ defmodule Shared.ListingSession do
   @primary_key {:id, :id, autogenerate: true}
   schema "listing_sessions" do
     field :listing, :map
-    embeds_one :properties, Shared.Model.Session.Properties
+    embeds_one :properties, ListingSession.Properties
     field :current_step, :string
+
     belongs_to :user, Shared.User
+    
     timestamps
   end
 

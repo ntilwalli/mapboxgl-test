@@ -75,9 +75,12 @@ defmodule Candle.UserController do
           {:ok, pid} = User.Registry.lookup_anonymous(User.Registry, conn.cookies["aid"])
           User.Anon.route(pid, route)
         _ -> 
-          #IO.puts "User"
+          IO.puts "User"
+          IO.inspect route
           {:ok, pid} = User.Registry.lookup_user(User.Registry, current_user)
-          User.Auth.route(pid, route)
+          out = User.Auth.route(pid, route)
+          IO.inspect {:out, out}
+          out
       end
 
     case response do
