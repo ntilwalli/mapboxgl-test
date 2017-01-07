@@ -1,6 +1,6 @@
 import {Observable as O} from 'rxjs'
 import Immutable = require('immutable')
-import {div, button, img, span, i, a} from '@cycle/dom'
+import {div, button, img, span, i, a, h6, em, strong} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 import {combineObj, createProxy, mergeSinks, componentify, processHTTP} from '../../../utils'
 import {inflateListing, inflateSession} from '../../helpers/listing/utils'
@@ -93,12 +93,12 @@ function model(actions, inputs) {
 }
 
 
-function renderSimpleRow(item) {
-  return div('.row', [div('.col-xs-12', [item])])
+function renderSimpleRow(children) {
+  return div('.row', [div('.col-xs-12', children)])
 }
 
-function renderSimpleTextCenterRow(item) {
-  return div('.row', [div('.col-xs-12.text-xs-center', [item])])
+function renderSimpleTextCenterRow(children) {
+  return div('.row', [div('.col-xs-12.text-xs-center', children)])
 }
 
 function view(state$, components) {
@@ -107,17 +107,25 @@ function view(state$, components) {
     components: combineObj(components)
   }).map((info: any) => {
     const {state, components} = info
-    const {posted, sessions} = components
+    const {posted, sessions, staged} = components
     const {waiting} = state
     console.log('state', state)
     return waiting ? div('.loader') : div('.container.nav-fixed-offset.user-listings.mt-1', [
-      div('.row', [
+      div('.row.mb-1', [
         div('.col-xs-12', [
+          h6([strong(['Posted'])]),
           posted ? posted : renderSimpleRow(['No posted listings'])
+        ])
+      ]),
+      div('.row.mb-1', [
+        div('.col-xs-12', [
+          h6([strong(['Staged'])]),
+          staged ? staged : renderSimpleRow(['No staged listings'])
         ])
       ]),
       div('.row', [
         div('.col-xs-12', [
+          h6([strong(['In progress'])]),
           sessions ? sessions : renderSimpleRow(['No listings in progress'])
         ])
       ])
@@ -145,10 +153,7 @@ export default function main(sources, inputs) {
         return {
           ...merged,
           HTTP: m_http$,
-          DOM: O.combineLatest(...items.map(x => x.DOM))
-            .do(x => {
-              console.log('listing trees: ', x)
-            }),
+          DOM: O.combineLatest(...items.map(x => x.DOM)),
           errors$
         }
       } else {
@@ -182,9 +187,6 @@ export default function main(sources, inputs) {
         return {
           ...merged,
           DOM: O.combineLatest(...items.map(x => x.DOM))
-            .do(x => {
-              console.log('listing trees: ', x)
-            })
         }
       } else {
         return {
@@ -207,9 +209,43 @@ export default function main(sources, inputs) {
     })
   }
 
+  const staged$ = state$
+    .map(state => {
+      const {results} = state
+      if (results && results.staged && results.staged.length) {
+        const items = results.staged.map(x => isolate(ListingRow)(sources, {...inputs, props$: O.of(x)}))
+        const merged = mergeSinks(...items)
+        return {
+          ...merged,
+          DOM: O.combineLatest(...items.map(x => x.DOM))
+        }
+      } else {
+        return {
+          DOM: O.of(undefined)
+        }
+      }
+    }).publishReplay(1).refCount()
+
+  const staged = componentify(staged$)
+  const staged_w_row = {
+    ...staged,
+    DOM: staged.DOM.map(x => {
+      if (x) {
+        return div('.trees.row', [
+          div('.col-xs-12', x)
+        ])
+      } else {
+        return undefined
+      }
+    })
+  }
+
+
+
   const components = {
     sessions: sessions_w_row.DOM,
-    posted: posted_w_row.DOM
+    posted: posted_w_row.DOM,
+    staged: staged_w_row.DOM
   }
 
   // const to_http$ = O.of(undefined)
