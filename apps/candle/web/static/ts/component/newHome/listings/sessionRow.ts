@@ -79,7 +79,7 @@ function renderSession(session) {
   const {properties, listing, updated_at, inserted_at} = session
   return div('.card-block', [
     div('.row', [
-      div('.col-xs-12.d-flex.fx-column', [
+      div('.col-12.d-flex.flex-column', [
         span('.d-fx-a-c.fx-j-sb', [
           button('.appGoToSession.btn.btn-link', {props: {session}}, [
             strong([listing && listing.meta && listing.meta.name ? listing.meta.name : 'Unnamed listing ' + session.id])

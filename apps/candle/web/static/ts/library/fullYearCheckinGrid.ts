@@ -250,7 +250,7 @@ function view(state$) {
     }
 
     return in_flight ? null : div(`.row`, [
-      div('.col-xs-12', [
+      div('.col-12', [
         // 'Hello'
         svg({attrs: {width: total_x , height: total_y, class: `check-in-grid`}}, [
           g({attrs: {transform: `translate(8, 20)`}}, [

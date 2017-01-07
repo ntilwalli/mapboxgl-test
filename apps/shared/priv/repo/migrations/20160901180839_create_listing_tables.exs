@@ -44,5 +44,6 @@ defmodule Shared.Repo.Migrations.CreateListingTables do
     # create unique_index(:group_child_listings, [:listing_id])
     # create unique_index(:group_child_listings, [:parent_id, :sequence_id])
     # create unique_index(:group_child_listings, [:parent_id, :handle])
+    # create unique_index(:group_child_listings, [:handle, :sequence_id])
   end
 end

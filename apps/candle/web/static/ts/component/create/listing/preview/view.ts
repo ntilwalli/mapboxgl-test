@@ -12,19 +12,19 @@ import {
 
 function renderButtons() {
   return div('.row', [
-    div('.col-xs-12', [
-      div('.row.mb-1', [
-        div(`.col-xs-12.d-fx-a-c`, [
-          div('.mr-1', ['Staging a listing allows you to invite/confirm performers before going live.  Would you like to stage this listing?']),
+    div('.col-12', [
+      div('.row.mb-4', [
+        div(`.col-12.d-fx-a-c`, [
+          div('.mr-4', ['Staging a listing allows you to invite/confirm performers before going live.  Would you like to stage this listing?']),
           div(`.appStageButton.btn.btn-outline-warning.d-fx-a-c.fx-j-c`, {style: {height: "2rem", 'min-width': "5rem"}}, [`Stage`])
         ])
       ]),
-      div('.row.mb-1', [
-        div('.col-xs-10.d-flex.fx-j-c.fw-bold', ['Or']),
+      div('.row.mb-4', [
+        div('.col-10.d-flex.fx-j-c.fw-bold', ['Or']),
       ]),
       div('.row', [
-        div(`.col-xs-12.d-fx-a-c`, [
-          div('.mr-1', [`Posting makes your listing live, enabling you to distribute links/send out invitations and makes events discoverable on search. Would you like to post this event?`]),
+        div(`.col-12.d-fx-a-c`, [
+          div('.mr-4', [`Posting makes your listing live, enabling you to distribute links/send out invitations and makes events discoverable on search. Would you like to post this event?`]),
           div(`.appStageButton.btn.btn-outline-success.d-fx-a-c.fx-j-c`, {style: {height: "2rem", 'min-width': "5rem"}}, [`Post`])
         ])
       ])
@@ -56,68 +56,32 @@ export function renderRecurringListingPreview(state) {
     getFullCostAndStageTime(performer_cost, stage_time)
 
   return div('.listing-card.pt-xs', [
-    div('.row.mb-1', [
-      div('.col-xs-6', [
-        div('.row', [
-          div('.col-xs-12', [
-            renderName(name)
-          ])
-        ]),
-        div('.row', [
-          div('.col-xs-12', [
-            renderCuando(listing)
-          ])
-        ]),
-        div('.row', [
-          div('.col-xs-12', [
-            renderDonde(donde)
-          ])
-        ]),
-        div('row', [
-          div('.col-xs-12', [
-            renderContactInfo(contact_info)
-          ])
-        ])
+    div('.row.mb-4', [
+      div('.col-6.d-flex.flex-column', [
+        renderName(name),
+        renderCuando(listing),
+        renderDonde(donde),
+        renderContactInfo(contact_info)
       ]),
-      div('.col-xs-6', [
-        full_cost ? div('.row.clearfix', [
-          div('.col-xs-12', [
-            full_cost
-          ])
-        ]) : null,
-        full_stage_time ? div('.row.clearfix', [
-          div('.col-xs-12', [
-            full_stage_time
-          ])
-        ]) : null,
-        performer_sign_up ? div('.row.clearfix', [
-          div('.col-xs-12', [
-            renderPerformerSignup(performer_sign_up)
-          ])
-        ]) : null,
-        performer_limit ? div('.row.clearfix', [
-          div('.col-xs-12', [
-            renderPerformerLimit(performer_limit)
-          ])
-        ]) : null,
-        categories.length ? div('.row.clearfix', [
-          div('.col-xs-12', [
-            renderTextList(categories)
-          ])
-        ]) : null,
-        // event_types.length ? div('.row.no-gutter.clearfix', [
+      div('.col-6.d-flex.flex-column', [
+        full_cost ? full_cost : null,
+        full_stage_time ? full_stage_time : null,
+        performer_sign_up ? renderPerformerSignup(performer_sign_up) : null,
+        performer_limit ? renderPerformerLimit(performer_limit) : null,
+        categories.length ? renderTextList(categories) : null,
+        // event_types.length ? div('.row.no-gutter', [
         //   renderTextList(event_types)
         // ]) : null
       ])
     ]),
-    merged_cost_stage_time ? div('.row', [div('.col-xs-12', [merged_cost_stage_time])]) : null,
+    merged_cost_stage_time ? div('.row', [div('.col-12', [merged_cost_stage_time])]) : null,
     div('.row', [
-      div('.col-xs-12', [
+      div('.col-12', [
         renderNote(new_note)
       ])
     ]),
-    div(`.row.no-gutter.map-area`, [
-      div('.col-xs-12.no-gutter.h-100', [
+    div(`.row.no-gutters.map-area`, [
+      div('.col-12.h-100', [
         renderMarkerInfo(donde),
         div(`#location-map`)
       ])
@@ -141,69 +105,29 @@ export function renderSingleListingPreview(state) {
   const new_note = note ? note.replace(/\n/g, ' ') : undefined
 
   return div('.listing-card.pt-xs', [
-    div('.row.mb-1', [
-      div('.col-xs-6', [
-        div('.row', [
-          div('.col-xs-12', [
-            renderNameWithParentLink(listing)
-          ])
-        ]),
-        div('.row', [
-          div('.col-xs-12', [
-            renderCuando(listing)
-          ])
-        ]),
-        div('.row', [
-          div('.col-xs-12', [
-            renderDonde(donde)
-          ])
-        ]),
-        div('.row', [
-          div('.col-xs-12', [
-            renderContactInfo(contact_info)
-          ])
-        ])
+    div('.row.mb-4', [
+      div('.col-6.d-flex.flex-column', [
+        renderNameWithParentLink(listing),
+        renderCuando(listing),
+        renderDonde(donde),
+        renderContactInfo(contact_info),
       ]),
-      div('.col-xs-6', [
-        div('.row.clearfix', [
-          div('.col-xs-12', [
-            renderCuandoStatus(cuando)
-          ])
-        ]),
-        full_cost ? div('.row.clearfix', [
-          div('.col-xs-12', [
-            full_cost
-          ])
-        ]) : null,
-        full_stage_time ? div('.row.clearfix', [
-          div('.col-xs-12', [
-            full_stage_time
-          ])
-        ]) : null,
-        performer_sign_up ? div('.row.clearfix', [
-          div('.col-xs-12', [
-            renderPerformerSignup(performer_sign_up)
-          ])
-        ]) : null,
-        performer_limit ? div('.row.clearfix', [
-          div('.col-xs-12', [
-            renderPerformerLimit(performer_limit)
-          ])
-        ]) : null,
-        categories.length ? div('.row.clearfix', [
-          div('.col-xs-12', [
-            renderTextList(categories)
-          ])
-        ]) : null,
+      div('.col-6.d-flex.flex-column', [
+        renderCuandoStatus(cuando),
+        full_cost ? full_cost : null,
+        full_stage_time ? full_stage_time : null,
+        performer_sign_up ? renderPerformerSignup(performer_sign_up) : null,
+        performer_limit ? renderPerformerLimit(performer_limit) : null,
+        categories.length ? renderTextList(categories) : null,
       ])
     ]),
-    merged_cost_stage_time ? div('.row', [div('.col-xs-12', [merged_cost_stage_time])]) : null,
+    merged_cost_stage_time ? div('.row', [div('.col-12', [merged_cost_stage_time])]) : null,
     div('.row', [
-      div('.col-xs-12', [
+      div('.col-12', [
         renderNote(new_note)
       ])
     ]),
-    div(`.row.no-gutter.map-area.h-100`, [
+    div(`.row.no-gutter.map-area`, [
       renderMarkerInfo(donde),
       div(`#location-map`)
     ])
@@ -257,19 +181,19 @@ export default function view(state$, components) {
       const {type} = listing
       return div(`.preview`, [
         //div(`.heading`, ['Preview listing']),
-        div(`.row.mb-1`, [
-          div('.col-xs-12', [
+        div(`.row.mb-4`, [
+          div('.col-12', [
             type === "single" ? renderSingleListingPreview(session) : renderRecurringListingPreview(session)         
           ]),
         ]),
-        div('.row.mb-1', [
-          div('.col-xs-12', [
+        div('.row.mb-4', [
+          div('.col-12', [
             h6('.mb-xs', ['Interaction properties']),
             renderSummary(listing)    
           ]),
         ]),
         div('.row', [
-          div('.col-xs-12', [
+          div('.col-12', [
             h6('.mb-xs', ['Stage or post']),
             renderButtons()  
           ])

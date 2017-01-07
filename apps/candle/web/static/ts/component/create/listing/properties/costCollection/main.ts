@@ -17,12 +17,12 @@ function render(state, component_id, item_heading) {
     children = state
   } else {
     children = state.map((x, index) => {
-      const margin_class = index !== state.length - 1 ? '.mb-1' : ''
+      const margin_class = index !== state.length - 1 ? '.mb-4' : ''
       return div('.row' + margin_class, [
-        div('.col-xs-12', [
+        div('.col-12', [
           div('.row', [
-            div('.col-xs-12.raw-line.mb-xs.fx-auto-width', [
-              span('.d-fx-a-c.mr-1', [`${item_heading} ${index + 1}`]),
+            div('.col-12.raw-line.mb-xs.fx-auto-width', [
+              span('.d-fx-a-c.mr-4', [`${item_heading} ${index + 1}`]),
               span('.appCostCollectionSubtractButton.fa.fa-minus.plus-button.btn.btn-link', {attrs: {'data-index': index}}, [])
             ])
           ]),
@@ -34,7 +34,7 @@ function render(state, component_id, item_heading) {
 
   return div('.card.card-block', [
     div('.card-title.d-fx-a-c', [
-      h6('.mb-0.mr-1', [component_id]),
+      h6('.mb-0.mr-4', [component_id]),
       button('.appCostCollectionAddButton.fa.fa-plus.plus-button.btn.btn-link', [])
     ]),
   ].concat(children))

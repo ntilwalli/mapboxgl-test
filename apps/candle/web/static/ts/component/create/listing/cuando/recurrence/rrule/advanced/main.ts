@@ -239,7 +239,7 @@ function view(state$, components) {
     const {freq, byweekday, bysetpos} = rrule
     const {interval, start_date, end_date} = components
     return div(`.advanced-rrule`, [
-      div(`.form-group.mt-1`, [
+      div(`.form-group.mt-4`, [
         label([
           h6([`Starting`])
         ]),

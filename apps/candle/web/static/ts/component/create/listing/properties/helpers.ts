@@ -679,15 +679,15 @@ export function BootstrapDayOfWeekTimeComponent(sources, props$, component_id) {
   }).map((components: any) => {
     return div('.d-fx-a-c', [
         // div('.row', [
-        //   div('.col-xs-12', [
-            span('.mr-1', [components.day]), span('.mr-1', ['@']),
+        //   div('.col-12', [
+            span('.mr-4', [components.day]), span('.mr-4', ['@']),
         //   ])
         // ]),
         // div('.row', [
-        //   div('.col-xs-12', ['@'])
+        //   div('.col-12', ['@'])
         // ]),
         // div('.row', [
-        //   div('.col-xs-12', [
+        //   div('.col-12', [
             components.time
           // ])
         // ])
@@ -836,10 +836,10 @@ export function RelativeTimeComponent(sources, props$, options, component_id, he
     const {relative_type, type, data} = components
     const same_line = relative_type !== RelativeTimeOptions.PREVIOUS_WEEKDAY_AT_TIME 
     return div('.row ', [
-      div('.col-xs-12', [
+      div('.col-12', [
         div('.row', [
-          div('.col-xs-12.raw-line.fx-wrap', [
-            em('.mr-1', [heading_title]),
+          div('.col-12.raw-line.fx-wrap', [
+            em('.mr-4', [heading_title]),
             div('.content', [
               type,
               data && same_line ? span('.ml-xs', [data]) : null

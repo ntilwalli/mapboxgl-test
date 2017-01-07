@@ -62,11 +62,11 @@ function model(actions, inputs) {
 
 
 function renderSimpleRow(item) {
-  return div('.row', [div('.col-xs-12', [item])])
+  return div('.row', [div('.col-12', [item])])
 }
 
 function renderSimpleTextCenterRow(item) {
-  return div('.row', [div('.col-xs-12.text-xs-center', [item])])
+  return div('.row', [div('.col-12.text-xs-center', [item])])
 }
 
 function view(state$, components) {
@@ -79,7 +79,7 @@ function view(state$, components) {
     const {waiting} = state
     console.log('state', state)
     return waiting ? undefined  : div('.my-listings.row', [
-      div('.col-xs-12', [
+      div('.col-12', [
         renderSimpleRow('My Listings'),
         trees ? trees : renderSimpleRow(['No current listings'])
       ])
@@ -116,7 +116,7 @@ export default function main(sources, inputs) {
   const trees_component = componentify(trees$)
   const trees = {
     ...trees_component,
-    DOM: trees_component.DOM.map(x => x ? div('.trees.row', [div('.col-xs-12', x)]) : undefined)
+    DOM: trees_component.DOM.map(x => x ? div('.trees.row', [div('.col-12', x)]) : undefined)
   }
 
   const components = {

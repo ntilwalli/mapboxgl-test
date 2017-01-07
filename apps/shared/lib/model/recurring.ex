@@ -27,6 +27,7 @@ defmodule Shared.Model.Recurring do
           {:ok, val, _, _} = Calendar.NaiveDateTime.diff(x, end_datetime)
           val
       end)
+      |> Enum.sort(&Calendar.NaiveDateTime.before?/2)
 
     with_rdates = case recurrable.rdates do
       nil -> recurrences

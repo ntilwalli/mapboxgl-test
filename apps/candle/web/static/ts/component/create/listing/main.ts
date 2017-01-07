@@ -268,15 +268,15 @@ function getSmallStepHeading(state) {
 function renderNavigator(state) {
   const {authorization, waiting} = state
   const authClass = authorization ? 'Logout' : 'Login'
-  return nav('.navbar.navbar-light.bg-faded.container-fluid.pos-f-t', [
+  return nav('.navbar.navbar-light.bg-faded.container-fluid.fixed-top', [
     div('.row.no-gutter', [
-      div('.col-xs-6', [
+      div('.col-6', [
         button('.appBrandButton.hopscotch-icon.nav-brand', []),
-        span('.ml-1.hidden-sm-down.step-description', [getStepHeading(state)]),
-        span('.ml-1.hidden-md-up.step-description', [getSmallStepHeading(state)])
+        span('.ml-4.hidden-sm-down.step-description', [getStepHeading(state)]),
+        span('.ml-4.hidden-md-up.step-description', [getSmallStepHeading(state)])
       ]),
-      div('.col-xs-6.d-fx-a-c.fx-j-e', [
-        waiting ? span('.mr-1', [renderSKFadingCircle6()]) : null,
+      div('.col-6.d-fx-a-c.fx-j-e', [
+        waiting ? span('.mr-4', [renderSKFadingCircle6()]) : null,
         button(`.appSaveExitButton.text-button.nav-text-button.btn.btn-link`, [`Save/Exit`])
       ]),
     ])
@@ -284,7 +284,7 @@ function renderNavigator(state) {
 }
 
 function renderMainPanel(info: any) {
-  return div(`.main-panel.container-fluid.mt-1`, {
+  return div(`.main-panel.container-fluid.mt-4`, {
     // hook: {
     //   create: (emptyVNode, {elm}) => {
     //     elm.scrollTop = 0
@@ -322,7 +322,7 @@ function renderSmallInstructionPanel(info) {
         //hide: !show_instruction
       }
     }, [
-      div('.clearfix', [span(`.appCloseInstruction.close.float-xs-right`, {style: {display: !!show_instruction ? 'inline' : 'none'}}, []),
+      div([span(`.appCloseInstruction.close`, {style: {display: !!show_instruction ? 'inline' : 'none'}}, []),
       span(`.icon.fa.fa-lightbulb-o`)]),
       div({style: {display: !!show_instruction ? 'block' : 'none'}}, [small_instruction])
     ])

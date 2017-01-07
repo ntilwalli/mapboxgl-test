@@ -7,7 +7,7 @@ export default function main(sources, props$) {
   return {
     DOM: shared$.map(props => {
       //return div('.row', [
-      //  div('.col-xs-12', [
+      //  div('.col-12', [
           return select(
             `.appSetPositionInput.form-control.form-control-sm`, 
             {style: {width: "5rem"}},

@@ -100,10 +100,10 @@ export default function main(sources, inputs) {
   }).debounceTime(0).map((components: any) => {
     return div('.row', [
       //div('.sub-heading.section-heading ', ['Check-in']),
-      div('.col-xs-12', [
+      div('.col-12', [
         div('.row.mb-xs', [
-          div('.col-xs-12.raw-line.fx-wrap', [
-            div('.mr-1', [em(['Begins'])]),
+          div('.col-12.raw-line.fx-wrap', [
+            div('.mr-4', [em(['Begins'])]),
             div('.content.fx-wrap', [
               div('.mr-xs', [components.begins]),
               'minutes before event start'

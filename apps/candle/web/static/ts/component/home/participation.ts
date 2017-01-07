@@ -96,9 +96,9 @@ function render_participation(info) {
   const {check_in_grid} = components
   const num_string = check_ins && check_ins.length ? check_ins.length.toString() : 'No'
   return div(`.row`, [
-    div('.col-xs-12', [
+    div('.col-12', [
       div ('.row.hidden-sm-down', [
-        div('.col-xs-12', [
+        div('.col-12', [
           h6([
             num_string + ' check-ins in the last year'
           ]),
@@ -106,11 +106,11 @@ function render_participation(info) {
           selected_check_in ? render_selected_check_in_date(selected_check_in) : null
         ])
       ]),
-      div('.row.mt-1', [
-        div('.col-xs-12', [
+      div('.row.mt-4', [
+        div('.col-12', [
           h6(['Check-in activity']),
           div('.row', [
-            div('.col-xs-12', check_ins.length ? check_ins.map(x => div(['Check in'])) : ['No activity'])
+            div('.col-12', check_ins.length ? check_ins.map(x => div(['Check in'])) : ['No activity'])
           ])
         ])
       ]),

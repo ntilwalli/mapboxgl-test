@@ -57,19 +57,25 @@ function PreRegistrationRadios(sources, props$) {
   const vtree$ = shared$.map(registration_type =>  {
 
     return div('.row', [
-      span('.col-xs-12.raw-line', [
+      span('.col-12.raw-line', [
         span('.content.fx-wrap', [
-          label('.form-check-inline', [
-            input('.appRegistrationTypeInput.form-check-input.mr-xs', {attrs: {type: 'radio', name: 'registration-type', value: 'app', checked: registration_type === 'app'}}, []),
-            'Enable in-app'
+          div('.form-check.form-check-inline.mb-0', [
+            label('.form-check-label', [
+              input('.appRegistrationTypeInput.form-check-input.mr-xs', {attrs: {type: 'radio', name: 'registration-type', value: 'app', checked: registration_type === 'app'}}, []),
+              'Enable in-app'
+            ])
           ]),
-          label('.form-check-inline', [
-            input('.appRegistrationTypeInput.form-check-input.mr-xs', {attrs: {type: 'radio', name: 'registration-type', value: 'email', checked: registration_type === 'email'}}, []),
-            'E-mail'
+          div('.form-check.form-check-inline.mb-0', [
+            label('.form-check-label', [
+              input('.appRegistrationTypeInput.form-check-input.mr-xs', {attrs: {type: 'radio', name: 'registration-type', value: 'email', checked: registration_type === 'email'}}, []),
+              'E-mail'
+            ])
           ]),
-          label('.form-check-inline', [
-            input('.appRegistrationTypeInput.form-check-input.mr-xs', {attrs: {type: 'radio', name: 'registration-type', value: 'website', checked: registration_type === 'website'}}, []),
-            'Website'
+          div('.form-check.form-check-inline.mb-0', [
+            label('.form-check-label', [
+              input('.appRegistrationTypeInput.form-check-input.mr-xs', {attrs: {type: 'radio', name: 'registration-type', value: 'website', checked: registration_type === 'website'}}, []),
+              'Website'
+            ])
           ])
         ])
       ])
@@ -97,16 +103,20 @@ function InPersonStyleComponent(sources, props$) {
 
   const vtree$ = shared$.map(styles =>  {
     return div('.row', [
-      span('.col-xs-12.raw-line.fx-wrap', [
-        em('.mr-1', ['Style']),
+      span('.col-12.raw-line.fx-wrap', [
+        em('.mr-4', ['Style']),
         span('.content', [
-          label('.form-check-inline', [
-            input('.appInPersonStyleInput.form-check-input.mr-xs', {attrs: {type: 'checkbox', name: 'in-person-style', value: 'bucket', checked: styles.some(x => x === 'bucket')}}, []),
-            'Bucket'
+          div('.form-check.form-check-inline.mb-0', [
+            label('.form-check-label', [
+              input('.appInPersonStyleInput.form-check-input.mr-xs', {attrs: {type: 'checkbox', name: 'in-person-style', value: 'bucket', checked: styles.some(x => x === 'bucket')}}, []),
+              'Bucket'
+            ])
           ]),
-          label('.form-check-inline', [
-            input('.appInPersonStyleInput.form-check-input.mr-xs', {attrs: {type: 'checkbox', name: 'in-person-style', value: 'list', checked: styles.some(x => x === 'list')}}, []),
-            'List'
+          div('.form-check.form-check-inline.mb-0', [
+            label('.form-check-label', [
+              input('.appInPersonStyleInput.form-check-input.mr-xs', {attrs: {type: 'checkbox', name: 'in-person-style', value: 'list', checked: styles.some(x => x === 'list')}}, []),
+              'List'
+            ])
           ])
         ])
       ])
@@ -181,10 +191,10 @@ function InPersonComponent(sources, props$, component_id) {
     styles: styles_component.DOM
   }).map((components: any) => {
     return div('.row', [
-      div('.col-xs-12', [
+      div('.col-12', [
         div('.row.mb-xs', [
-          div('.col-xs-12.raw-line.fx-wrap', [
-            em('.mr-1 ', ['Begins']),
+          div('.col-12.raw-line.fx-wrap', [
+            em('.mr-4 ', ['Begins']),
             div('.content.fx-wrap', [
               span('.d-fx-a-c.mr-xs', [components.begins]),
               span('.d-fx-a-c', ['minutes before event start'])
@@ -276,7 +286,7 @@ function PreRegistrationComponent(sources, props$, component_id) {
     data: data_component.DOM
   }).map((components: any) => {
     return div('.row', [
-      div('.col-xs-12', [
+      div('.col-12', [
         div('.mb-xs', [components.type]),
         div('.mb-xs', [components.begins]),
         div('.mb-xs', {class: {'mb-xs': !!components.data}}, [components.ends]),
@@ -466,22 +476,22 @@ export default function main(sources, inputs): SinksType {
         signup_type
       ]),
       in_person ? div('.row', {class: {'mb-xs': both}}, [
-        div('.col-xs-12', [
+        div('.col-12', [
           both ? div('.row', [
-            div('.col-xs-12', [label('.fw-lighter', [em(['In-person'])])])
+            div('.col-12', [label('.fw-lighter', [em(['In-person'])])])
           ]) : null,
           both ? div('.row', [
-            div('.col-xs-12.pl-indent', [in_person])
+            div('.col-12.pl-indent', [in_person])
           ]) : in_person
         ]) 
       ]) : null,
       pre_registration ? div('.row', [
-        div('.col-xs-12', [
+        div('.col-12', [
           both ? div('.row', [
-            div('.col-xs-12', [label('.fw-lighter', [em(['Pre-registration'])])])
+            div('.col-12', [label('.fw-lighter', [em(['Pre-registration'])])])
           ]) : null,
           both ? div('.row', [
-            div('.col-xs-12.pl-indent', [pre_registration])
+            div('.col-12.pl-indent', [pre_registration])
           ]) : pre_registration,
         ])
       ]) : null

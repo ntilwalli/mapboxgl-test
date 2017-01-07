@@ -86,7 +86,7 @@ function renderLeftAligned(val) {
 
 function renderCuandoRecurringInfo(listing) {
   return div('.row', [
-    div('.col-xs-12.d-flex.fx-column', [
+    div('.col-12.d-flex.flex-column', [
       renderRightAligned(span('.tag.tag-success', ['Recurring'])),
       renderRightAligned(getFreqSummary(listing.cuando.rrules)),
       renderRightAligned(listing.cuando.rrules[0].dtstart.format('h:mm a'))
@@ -96,7 +96,7 @@ function renderCuandoRecurringInfo(listing) {
 
 function renderCuandoSingleInfo(listing) {
   return div('.row', [
-    div('.col-xs-12.d-flex.fx-j-e.fx-column', [
+    div('.col-12.d-flex.fx-j-e.flex-column', [
       renderRightAligned(getCuandoStatus(listing.cuando)),
       renderRightAligned(getDateTimeString(listing.cuando.begins))
     ])
@@ -107,12 +107,12 @@ function renderListing(listing) {
   const {type, donde, cuando, meta} = listing
   return div('.appGoToListing.card-block.hover-bg-verylightgray', {props: {listing}}, [
     div('.row', [
-      div('.col-xs-6.d-flex.fx-column', [
+      div('.col-6.d-flex.flex-column', [
         strong([meta.name]),
         em([getDondeNameString(donde)]),
         getDondeCityString(donde) + ', ' + getDondeStateString(donde)
       ]),
-      div('.col-xs-6', [
+      div('.col-6', [
         type === 'single' ? renderCuandoSingleInfo(listing) : renderCuandoRecurringInfo(listing)
       ])
     ])
@@ -165,11 +165,11 @@ function renderRecurrences(info) {
 
   return div('.card-block', [
     div('.row', [
-      div('.col-xs-5', [strong([em(['Recurrences'])])]),
-      div('.col-xs-7', [info.components.filter_type])
+      div('.col-5', [strong([em(['Recurrences'])])]),
+      div('.col-7', [info.components.filter_type])
     ]),
     div('.row', [
-      div('.col-xs-12', [
+      div('.col-12', [
         renderChildren(info)
       ])
     ])
@@ -188,18 +188,18 @@ function view(state$, components) {
       const out =  div('.card', [
         //div('.card-block', [
           //div('.row', [
-            // div('.col-xs-6.hover-bg-verylightgray', [
-            //   has_children ? span('.appTreeSwitch.tree-switch.btn.btn-link.fa.mr-1', {class: {
+            // div('.col-6.hover-bg-verylightgray', [
+            //   has_children ? span('.appTreeSwitch.tree-switch.btn.btn-link.fa.mr-4', {class: {
             //     "fa-minus-square": !!open,
             //     "fa-plus-square": !open
             //   }}, []) : null,
               // button('.appGoToListing.btn.btn-link', {props: {listing}}, [getListingLine(listing)]),
               renderListing(listing),
-            //   span('.float-xs-right.appEditListing.btn.btn-link.fa.fa-gear', {props: {listing}}, [])
+            //   span('.d-flex.justify-content-end.appEditListing.btn.btn-link.fa.fa-gear', {props: {listing}}, [])
             // ])
           //]),
           // has_children && open ? div('.card-block', [
-          //   div('.col-xs-11.push-xs-1', 
+          //   div('.col-11.push-xs-1', 
           //     children
           //   )
           // ]) : null

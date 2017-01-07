@@ -179,7 +179,7 @@ function view(state$) {
     .map((state: any) => {
       const {input_hour, input_minute, input_meridiem, hour, minute, active, style_class} = state
       const out = (hour >= 0 && minute >= 0) ? moment().hour(hour).minute(minute) : undefined
-      return div('.bootstrap-time-input.dropdown', {class: {open: !!active}}, [
+      return div('.bootstrap-time-input.dropdown', {class: {show: !!active}}, [
         input('.appTimeInput.time-input.form-control.form-control-sm' + style_class, {
           hook: {
             update: (vNode, {elm}) => {
@@ -193,7 +193,7 @@ function view(state$) {
         }),
         div('.appTimeDropdown.time-input-dropdown.dropdown-menu', [
           div('.row', [
-            div('.col-xs-12.d-flex', [
+            div('.col-12.d-flex', [
               select(
                 `.appHourSelect.form-control.form-control-sm`, 
                 {style: {widtH: "5rem"}},

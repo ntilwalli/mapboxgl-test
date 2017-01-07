@@ -6,7 +6,7 @@ export default function main(sources, props$) {
   return {
     DOM: props$.map(props => {
       //return div('.row', [
-      //  div('.col-xs-12', [
+      //  div('.col-12', [
           return select(
             `.appWeekdayInput.form-control.form-control-sm`, 
             {style: {width: "5rem"}},

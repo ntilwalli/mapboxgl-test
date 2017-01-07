@@ -87,7 +87,7 @@ function renderSearchAreaModalBody(info) {
   const {city, state_abbr} = city_state
   return div(`.change-search-area-modal.row`, [
     //div(`.autocomplete`, [
-      div('.col-xs-12', [
+      div('.col-12', [
         components.autocomplete,
         div(`.map`, [
           div(`.location-info-section`, [`${city}, ${state_abbr}`]),

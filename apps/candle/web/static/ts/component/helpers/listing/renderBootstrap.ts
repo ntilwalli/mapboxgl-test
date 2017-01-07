@@ -561,7 +561,7 @@ export function renderCost(listing) {
     return null
   }
 
-  return span('.float-xs-right', [out])
+  return span('.d-flex.justify-content-end', [out])
 }
 
 const CuandoStatusTypes = {
@@ -664,7 +664,7 @@ export function renderCuandoStatus(cuando) {
     return null
   }
 
-  return strong(`${getCuandoStatusClass(cuando)}.float-xs-right`, [
+  return strong(`${getCuandoStatusClass(cuando)}.d-flex.justify-content-end`, [
     cuandoStatusToText(status)
   ])
 }
@@ -780,7 +780,7 @@ export function renderStageTime(stage_time) {
     text = 'Multi-round'
   }
 
-  return div('.float-xs-right', [text])  
+  return div('.d-flex.justify-content-end', [text])  
 
 }
 
@@ -851,7 +851,7 @@ export function renderPerformerSignup(info) {
      throw new Error()
   }
 
-  return span('.float-xs-right', [out])
+  return span('.d-flex.justify-content-end', [out])
 }
 
 function getPerformerLimitInfo(info) {
@@ -880,7 +880,7 @@ export function renderPerformerLimit(info) {
       throw new Error() 
   }
 
-  return div('.float-xs-right', [text])
+  return div('.d-flex.justify-content-end', [text])
 }
 
 function renderDondeVenue(donde) {
@@ -908,7 +908,7 @@ export function renderDonde(donde) {
 
 export function renderTextList(info) {
   if (info.length) {
-    return div('.float-xs-right', [small([info.join(`, `).replace('_', '-')])])
+    return div('.d-flex.justify-content-end', [small([info.join(`, `).replace('_', '-')])])
   } else {
     return null
   }
@@ -1064,16 +1064,16 @@ export function renderFullStageTime(stage_time) {
   if (length === 0) {
     return null
   } else if (length === 1) {
-    return span('.float-xs-right', [ getSingleRoundText(stage_time[0]) ])
+    return span('.d-flex.justify-content-end', [ getSingleRoundText(stage_time[0]) ])
   } else {
     const base = stage_time[0]
     if (stage_time.every(x => deepEqual(base, x))) {
-      return span('.float-xs-right', [ '' + length + ' rounds: ' + getSingleRoundText(stage_time[0]) + ' per' ])
+      return span('.d-flex.justify-content-end', [ '' + length + ' rounds: ' + getSingleRoundText(stage_time[0]) + ' per' ])
     } else {
       return div(stage_time.map((s, index) => {
         return div('.row', [
-          div('.col-xs-12', [
-            span('.float-xs-right', [
+          div('.col-12', [
+            span('.d-flex.justify-content-end', [
               'Round ' + (index + 1) + ': ' + getSingleRoundText(s)
             ])
           ])
@@ -1089,12 +1089,12 @@ export function renderFullPerformerCost(performer_cost) {
   if (length === 0) {
     return null
   } else if (length === 1) {
-    return span('.float-xs-right', [ getPerformerCostString(performer_cost[0]) ])
+    return span('.d-flex.justify-content-end', [ getPerformerCostString(performer_cost[0]) ])
   } else {
     return div(performer_cost.map((c, index) => {
       return div('.row', [
-        div('.col-xs-12', [
-          span('.float-xs-right', [
+        div('.col-12', [
+          span('.d-flex.justify-content-end', [
             'Tier ' + (index + 1) + ': ' + getPerformerCostTierString(c)
           ])
         ])
@@ -1260,7 +1260,7 @@ export function getFullCostAndStageTime(performer_cost, stage_time) {
 }
 
 function getRowDiv(info) {
-  return div('.row', [div('.col-xs-12', [info])])
+  return div('.row', [div('.col-12', [info])])
 }
 
 export function renderContactInfo(info) {
@@ -1288,5 +1288,5 @@ export function renderContactInfo(info) {
     out.push(getRowDiv(a({attrs: {href: normalizeWebAddress(website)}}, [website])))
   }
 
-  return div('.row.no-gutter.mb-1', out)
+  return div('.row.no-gutter.mb-4', out)
 }

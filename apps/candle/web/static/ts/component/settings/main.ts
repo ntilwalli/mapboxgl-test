@@ -124,12 +124,12 @@ function renderNavigator(state) {
   const {authorization} = state
   const authClass = authorization ? 'Logout' : 'Login'
   return nav('.navbar.navbar-light.bg-faded.container-fluid', [
-    div('.row.no-gutter', [
-      div('.col-xs-6', [
+    div('.row.no-gutters', [
+      div('.col-6', [
         button('.appBrandButton.hopscotch-icon.nav-brand', []),
       ]),
-      div('.col-xs-6', [
-        button('.appShowMenuButton.nav-text-button.fa.fa-bars.btn.btn-link.float-xs-right', []),
+      div('.col-6.d-flex.justify-content-end', [
+        button('.appShowMenuButton.nav-text-button.fa.fa-bars.btn.btn-link.d-flex.justify-content-end', []),
       ]),
     ])
   ])
@@ -158,11 +158,11 @@ function renderDefaultRegion(info) {
   if (default_region) {
     const {position, city_state} = default_region
     const {city, state_abbr} = city_state
-    return div(`.row.clearfix`, [
-      div('.col-xs-11', [
+    return div(`.row`, [
+      div('.col-11', [
         span([`${city}, ${state_abbr}`])
       ]),
-      div('.col-xs-1.float-xs-right', [
+      div('.col-1.d-flex.justify-content-end', [
         button(`.appClearDefaultRegion.btn.btn-link.close`, {attrs: {type: 'button'}}, [])
       ])
     ])
@@ -184,7 +184,7 @@ function renderContent(info) {
   const {state, components} = info
   const {is_valid, save_status} = state
   const disabled = !is_valid
-  return div(`.container-fluid.mt-1`, [
+  return div(`.container-fluid.mt-4`, [
     save_status ? div(`.form-group`, [
       div(`.alerts-area`, [
         div(`.alert.${save_status.type === 'success' ? 'alert-success' : 'alert-danger'}`, [

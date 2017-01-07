@@ -39,11 +39,11 @@ function renderNavigator(state) {
   const authClass = authorization ? 'Logout' : 'Login'
   return nav('.navbar.navbar-light.bg-faded.container-fluid', [
     div('.row.no-gutter', [
-      div('.col-xs-6', [
+      div('.col-6.d-flex', [
         button('.appBrandButton.hopscotch-icon.btn.btn-link.nav-brand', []),
       ]),
-      div('.col-xs-6', [
-        button('.appShowMenuButton.nav-text-button.fa.fa-bars.btn.btn-link.float-xs-right', [])
+      div('.col-6.d-flex.justify-content-end', [
+        button('.appShowMenuButton.nav-text-button.fa.fa-bars.btn.btn-link.d-flex.justify-content-end', [])
       ]),
     ])
   ])

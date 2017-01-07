@@ -16,7 +16,7 @@ function render(state, component_id, item_heading) {
   } else if (state.length === 1) {
     children = [
       div('.row', [
-        div('.col-xs-12.d-fx-a-c', [
+        div('.col-12.d-fx-a-c', [
           state[0],
         ])
       ])
@@ -25,13 +25,13 @@ function render(state, component_id, item_heading) {
     children = state.map((x, index) => {
       const item_margin_class = index !== state.length - 1 ? '.mb-xs' : ''
       return div('.row', [
-        div('.col-xs-12', [
+        div('.col-12', [
           div('.row', [
-            div('.col-xs-12.d-fx-a-c.mb-xs.fx-auto-width', [
-              span('.d-fx-a-c.mr-1', [em([capitalize(item_heading) + ' ' + (index + 1)])]),
+            div('.col-12.d-fx-a-c.mb-xs.fx-auto-width', [
+              span('.d-fx-a-c.mr-4', [em([capitalize(item_heading) + ' ' + (index + 1)])]),
             ])
           ]),
-          div('.ml-1' + item_margin_class, [x])
+          div('.ml-4' + item_margin_class, [x])
         ])
       ])
     })
@@ -39,18 +39,18 @@ function render(state, component_id, item_heading) {
 
   return div([
     div('.row', [
-      div('.col-xs-12', [
+      div('.col-12', [
         div('.d-fx-a-c.mb-xs', [
-          h6('.mb-0.mr-1', [component_id]),
+          h6('.mb-0.mr-4', [component_id]),
           button('.appCollectionAddButton.fa.fa-plus.plus-button.btn.btn-link', [])
         ])
       ])
     ]),
     div('.row', [
-      div('.col-xs-12', children)
+      div('.col-12', children)
     ]),
     // state.length ? div('.row', [
-    //   div('.col-xs-12', [
+    //   div('.col-12', [
 
     //   ])
     // ]) : null

@@ -62,7 +62,7 @@ function SearchAreaComponent(sources, inputs) {
 
       if (expanded) {
         return div('.row', [
-          div('.col-xs-12.d-flex.fx-j-sb.fx-a-c', [
+          div('.col-12.d-flex.fx-j-sb.fx-a-c', [
             div('.search-area-input', [info.autocomplete]),
             div('.d-flex.fx-a-c.fx-j-e', [
               staged ? button('.appDoneButton.btn.btn-link', ['Done']) : null,
@@ -72,7 +72,7 @@ function SearchAreaComponent(sources, inputs) {
         ])
       } else {
         return div('.row', [
-          div('.col-xs-12.d-flex.fx-j-sb.fx-a-c', [
+          div('.col-12.d-flex.fx-j-sb.fx-a-c', [
             `${city}, ${state_abbr}`,
             div('.appChangeButton.btn.btn-link', ['Change'])
           ])
@@ -121,12 +121,12 @@ function intent(sources, inputs) {
 function renderSearchArea(info) {
   const {components} = info
   return div(`.row`, [
-    div('.col-xs-12', [
+    div('.col-12', [
       div('.row', [
-        h6('.col-xs-12', [`Search area`])
+        h6('.col-12', [`Search area`])
       ]),
       div('.row', [
-        div('.col-xs-12', [
+        div('.col-12', [
           components.search_area
         ])
       ])
@@ -136,13 +136,13 @@ function renderSearchArea(info) {
 
 function renderModeInput(info) {
   const {components} = info
-  return div('.row.mt-1', [
-    div('.col-xs-12', [
+  return div('.row.mt-4', [
+    div('.col-12', [
       div('.row', [
-        h6('.col-xs-12', [`Venue`])
+        h6('.col-12', [`Venue`])
       ]),
       div('.row', [
-        div('.col-xs-12', [
+        div('.col-12', [
           components.input_component
         ])
       ])
@@ -157,7 +157,7 @@ function view(state$, components) {
   }).map((info: any) => {
     const {components} = info
     return div(`.donde.row`, [
-      div('.col-xs-12', [
+      div('.col-12', [
         renderSearchArea(info),
         renderModeInput(info)
       ])

@@ -94,11 +94,11 @@ function model(actions, inputs) {
 
 
 function renderSimpleRow(children) {
-  return div('.row', [div('.col-xs-12', children)])
+  return div('.row', [div('.col-12', children)])
 }
 
 function renderSimpleTextCenterRow(children) {
-  return div('.row', [div('.col-xs-12.text-xs-center', children)])
+  return div('.row', [div('.col-12.text-xs-center', children)])
 }
 
 function view(state$, components) {
@@ -110,21 +110,21 @@ function view(state$, components) {
     const {posted, sessions, staged} = components
     const {waiting} = state
     console.log('state', state)
-    return waiting ? div('.loader') : div('.container.nav-fixed-offset.user-listings.mt-1', [
-      div('.row.mb-1', [
-        div('.col-xs-12', [
+    return waiting ? div('.loader') : div('.container.nav-fixed-offset.user-listings.mt-4', [
+      div('.row.mb-4', [
+        div('.col-12', [
           h6([strong(['Posted'])]),
           posted ? posted : renderSimpleRow(['No posted listings'])
         ])
       ]),
-      div('.row.mb-1', [
-        div('.col-xs-12', [
+      div('.row.mb-4', [
+        div('.col-12', [
           h6([strong(['Staged'])]),
           staged ? staged : renderSimpleRow(['No staged listings'])
         ])
       ]),
       div('.row', [
-        div('.col-xs-12', [
+        div('.col-12', [
           h6([strong(['In progress'])]),
           sessions ? sessions : renderSimpleRow(['No listings in progress'])
         ])
@@ -170,7 +170,7 @@ export default function main(sources, inputs) {
     DOM: sessions.DOM.map(x => {
       if (x) {
         return div('.trees.row', [
-          div('.col-xs-12', x)
+          div('.col-12', x)
         ])
       } else {
         return undefined
@@ -201,7 +201,7 @@ export default function main(sources, inputs) {
     DOM: posted.DOM.map(x => {
       if (x) {
         return div('.trees.row', [
-          div('.col-xs-12', x)
+          div('.col-12', x)
         ])
       } else {
         return undefined
@@ -232,7 +232,7 @@ export default function main(sources, inputs) {
     DOM: staged.DOM.map(x => {
       if (x) {
         return div('.trees.row', [
-          div('.col-xs-12', x)
+          div('.col-12', x)
         ])
       } else {
         return undefined

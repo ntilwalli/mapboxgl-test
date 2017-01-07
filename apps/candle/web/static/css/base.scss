@@ -193,10 +193,6 @@ address {
   padding-top: $spacer-y * .5;
 }
 
-.pt-xs {
-  padding-top: $spacer-y * .5;
-}
-
 .pb-xs {
   padding-bottom: $spacer-y * .5;
 }
@@ -230,11 +226,7 @@ address {
   font-size: 1rem;
 }
 
-.d-flex {
-  display: flex
-}
-
-.fx-column {
+.flex-column {
   flex-direction: column;
 }
 .fx-a-c {

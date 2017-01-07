@@ -353,9 +353,9 @@ export default function main(sources, inputs) {
     const line_type = inputs.heading_text ? '.input-line' : '.raw-line'
 
     return div('.row', [
-      div('.col-xs-12', [
+      div('.col-12', [
         div('.row', [
-          div('.col-xs-12' + line_type, [
+          div('.col-12' + line_type, [
             inputs.heading_text ? div('.heading', [inputs.heading_text]) : null,
             div('.content.fx-wrap', [
               div('.d-fx-a-c.fx-auto-width', {class: {'mb-xs': both}}, [type]),
@@ -369,18 +369,18 @@ export default function main(sources, inputs) {
           ])
         ]),
         both ? div('.row', [
-          div('.col-xs-12', [
+          div('.col-12', [
             div('.row.mb-xs', [
-              div('.col-xs-12.raw-line.fx-auto-width.fx-wrap', [
-                em('.mr-1', ['Minutes']),
+              div('.col-12.raw-line.fx-auto-width.fx-wrap', [
+                em('.mr-4', ['Minutes']),
                 div('.d-fx-a-c', [
                   minutes,
                 ])
               ])
             ]),
             div('.row', [
-              div('.col-xs-12.raw-line.fx-auto-width.fx-wrap', [
-                em('.mr-1', ['Songs']),
+              div('.col-12.raw-line.fx-auto-width.fx-wrap', [
+                em('.mr-4', ['Songs']),
                 songs
               ])
             ])

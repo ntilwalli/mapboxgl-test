@@ -43,15 +43,15 @@ export default function main(sources, inputs) {
       const {cost, perk} = components
 
       return div(`.row`, [
-        div('.col-xs-12', [
+        div('.col-12', [
           div('.row.mb-xs', [
-            div('.col-xs-12', [
+            div('.col-12', [
               cost
             ])
           ]),
           div('.row', [
-            div('.col-xs-12.raw-line', [
-              span('.d-fx-a-c.mr-1', [inputs.heading_text || 'Perk?']),
+            div('.col-12.raw-line', [
+              span('.d-fx-a-c.mr-4', [inputs.heading_text || 'Perk?']),
               perk
             ])
           ])

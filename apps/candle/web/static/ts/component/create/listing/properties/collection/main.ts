@@ -17,8 +17,8 @@ function render(state, component_id, item_heading) {
     children = state.map((x, index) => {
       const margin_class = index !== state.length - 1 ? '.mb-xs' : ''
       return div('.row' + margin_class, [
-        div('.col-xs-12.raw-line.fx-auto-width', [
-          div('.mr-1', [x]),
+        div('.col-12.raw-line.fx-auto-width', [
+          div('.mr-4', [x]),
           span('.appCollectionSubtractButton.plus-button.fa.fa-minus.btn.btn-link', {attrs: {'data-index': index}}, [])
         ])
       ])
@@ -27,7 +27,7 @@ function render(state, component_id, item_heading) {
 
   return div('.card.card-block', [
     div('.card-title.d-fx-a-c', [
-      h6('.mb-0.mr-1', [component_id]),
+      h6('.mb-0.mr-4', [component_id]),
       button('.appCollectionAddButton.fa.fa-plus.plus-button.btn.btn-link', [])
     ]),
   ].concat(children))

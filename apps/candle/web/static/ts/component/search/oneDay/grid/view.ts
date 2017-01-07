@@ -231,44 +231,21 @@ export function renderListingResult(listing) {
     performer_sign_up, stage_time, 
     performer_limit, listed_hosts} = meta
 
-  return div('.container-fluid.no-gutter', [
-    div('.row.no-gutter', [
-      div('.col-xs-6', [
-        div('.row.no-gutter', [
-          renderName(name)
-        ]),
-        div('.row.no-gutter', [
-          renderCuando(listing)
-        ]),
-        div('.row.no-gutter', [
-          renderDonde(donde)
-        ])
+  return div('.row.w-100.no-gutters', [
+      div('.col.flex-column', [
+        renderName(name),
+        renderCuando(listing),
+        renderDonde(donde)
       ]),
-      div('.col-xs-6', [
-        div('.row.no-gutter.clearfix', [
-          renderCuandoStatus(cuando)
-        ]),
-        performer_cost ? div('.row.no-gutter.clearfix', [
-          renderCost(listing)
-        ]) : null,
-        stage_time ? div('.row.no-gutter.clearfix', [
-          renderStageTime(stage_time)
-        ]) : null,
-        performer_sign_up ? div('.row.no-gutter.clearfix', [
-          renderPerformerSignup(performer_sign_up)
-        ]) : null,
-        performer_limit ? div('.row.no-gutter.clearfix', [
-          renderPerformerLimit(performer_limit)
-        ]) : null,
-        categories.length ? div('.row.no-gutter.clearfix', [
-          renderTextList(categories)
-        ]) : null,
-        // event_types.length ? div('.row.no-gutter.clearfix', [
-        //   renderTextList(event_types)
-        // ]) : null
+      div('.col.flex-column', [
+        renderCuandoStatus(cuando),
+        performer_cost ? renderCost(listing) : null,
+        stage_time ? renderStageTime(stage_time) : null,
+        performer_sign_up ? renderPerformerSignup(performer_sign_up) : null,
+        performer_limit ? renderPerformerLimit(performer_limit) : null,
+        categories.length ? renderTextList(categories) : null,
       ])
     ])
-  ])
 }
 
 

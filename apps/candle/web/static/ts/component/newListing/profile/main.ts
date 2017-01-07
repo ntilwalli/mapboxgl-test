@@ -142,7 +142,8 @@ function renderButtons(state) {
   //enabled, disabled, checked-in
 
 
-  return button(`.appCheckin.check-in-button.col-xs-12.float-xs-right.btn.btn-success.mt-1`, {
+  return div('.d-flex.justify-content-end', [
+    button(`.appCheckin.check-in-button.d-flex.justify-content-end.btn.btn-success.mt-4`, {
       class: {
         disabled,
         enabled: !disabled,
@@ -152,8 +153,9 @@ function renderButtons(state) {
         disabled
       }
     }, [
-      in_flight? span(`.loader`, []) : checked_in ? span(`.flex-center.button-text`, [`Checked-in`]) : span(`.flex-center.button-text`, [`Check-in`])
+      in_flight? span(`.loader`, []) : checked_in ? span(`.d-flex.justify-content-center.button-text`, [`Checked-in`]) : span(`.d-flex.justify-content-center.button-text`, [`Check-in`])
     ])
+  ])
   
 }
 
@@ -194,36 +196,20 @@ export function renderRecurringListing(state) {
     getFullCostAndStageTime(performer_cost, stage_time)
 
   return div('.container-fluid.nav-fixed-offset.mt-xs', [
-    div('.row.mb-1', [
-      div('.col-xs-6', [
-        div('.row.no-gutter', [
-          renderName(name)
-        ]),
-        div('.row.no-gutter', [
-          renderCuando(listing)
-        ]),
-        div('.row.no-gutter', [
-          renderDonde(donde)
-        ]),
+    div('.row.mb-4', [
+      div('.col-6', [
+        renderName(name),
+        renderCuando(listing),
+        renderDonde(donde),
         renderContactInfo(contact_info),
       ]),
-      div('.col-xs-6', [
-        full_cost ? div('.row.no-gutter.clearfix', [
-          full_cost
-        ]) : null,
-        full_stage_time ? div('.row.no-gutter.clearfix', [
-          full_stage_time
-        ]) : null,
-        performer_sign_up ? div('.row.no-gutter.clearfix', [
-          renderPerformerSignup(performer_sign_up)
-        ]) : null,
-        performer_limit ? div('.row.no-gutter.clearfix', [
-          renderPerformerLimit(performer_limit)
-        ]) : null,
-        categories.length ? div('.row.no-gutter.clearfix', [
-          renderTextList(categories)
-        ]) : null,
-        // event_types.length ? div('.row.no-gutter.clearfix', [
+      div('.col-6', [
+        full_cost ? full_cost : null,
+        full_stage_time ? full_stage_time : null,
+        performer_sign_up ? renderPerformerSignup(performer_sign_up) : null,
+        performer_limit ? renderPerformerLimit(performer_limit) : null,
+        categories.length ? renderTextList(categories) : null,
+        // event_types.length ? div('.row.no-gutter', [
         //   renderTextList(event_types)
         // ]) : null
       ])
@@ -252,8 +238,8 @@ export function renderSingleListing(state) {
     getFullCostAndStageTime(performer_cost, stage_time)
 
   return div('.container-fluid.nav-fixed-offset.mt-xs', [
-    div('.row.mb-1', [
-      div('.col-xs-6', [
+    div('.row.mb-4', [
+      div('.col-6', [
         div('.row.no-gutter', [
           renderNameWithParentLink(listing)
         ]),
@@ -265,31 +251,17 @@ export function renderSingleListing(state) {
         ]),
         renderContactInfo(contact_info),
       ]),
-      div('.col-xs-6', [
-        div('.row.no-gutter.clearfix', [
-          renderCuandoStatus(cuando)
-        ]),
-        full_cost ? div('.row.no-gutter.clearfix', [
-          full_cost
-        ]) : null,
-        full_stage_time ? div('.row.no-gutter.clearfix', [
-          full_stage_time
-        ]) : null,
-        performer_sign_up ? div('.row.no-gutter.clearfix', [
-          renderPerformerSignup(performer_sign_up)
-        ]) : null,
-        performer_limit ? div('.row.no-gutter.clearfix', [
-          renderPerformerLimit(performer_limit)
-        ]) : null,
-        categories.length ? div('.row.no-gutter.clearfix', [
-          renderTextList(categories)
-        ]) : null,
-        // event_types.length ? div('.row.no-gutter.clearfix', [
+      div('.col-6', [
+        renderCuandoStatus(cuando),
+        full_cost ? full_cost : null,
+        full_stage_time ? full_stage_time : null,
+        performer_sign_up ? renderPerformerSignup(performer_sign_up) : null,
+        performer_limit ? renderPerformerLimit(performer_limit) : null,
+        categories.length ? renderTextList(categories) : null,
+        // event_types.length ? div('.row.no-gutter', [
         //   renderTextList(event_types)
         // ]) : null
-        div('.row.no-gutter.clearfix', [
-          renderButtons(state)
-        ]),
+        renderButtons(state),
       ])
     ]),
     merged_cost_stage_time ? merged_cost_stage_time : null,
@@ -330,8 +302,8 @@ function mapview(state$) {
           style: tile,
           center,
           zoom,
-          dragPan: false,
-          scrollZoom: false
+          dragPan: true,
+          scrollZoom: true
         },
         sources: {
           marker: {

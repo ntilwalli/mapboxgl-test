@@ -176,7 +176,7 @@ function view(state$, components) {
       return div('.cuando-single', [
         div('.form-group', [
           div('.row', [
-            div('.col-xs-6.push-xs-3', {style: {display: "flex", "justify-content": "center"}}, [
+            div('.col-6.push-xs-3', {style: {display: "flex", "justify-content": "center"}}, [
               span(`.calendar`, [
                 div(`.calendar-controller`, [
                   div(`.appDecMonth.text-button.fa.fa-angle-left.fa-2x`, []),

@@ -28,11 +28,13 @@ function InAppCheckboxComponent(sources, props$) {
   const vtree$ = shared$.map(props => {
 
     return div('.row', [
-      span('.col-xs-12.raw-line', [
+      span('.col-12.raw-line', [
         span('.content', [
-          label('.form-check-inline', [
-            input('.appInAppCheckInCheckbox.form-check-input.mr-xs', {attrs: {type: 'checkbox', name: 'in-app-checkin', checked: props === true}}, []),
-            'Enable in-app'
+          div('.form-check.form-check-inline.mb-0', [
+            label('.form-check-label', [
+              input('.appInAppCheckInCheckbox.form-check-input.mr-xs', {attrs: {type: 'checkbox', name: 'in-app-checkin', checked: props === true}}, []),
+              'Enable in-app'
+            ])
           ])
         ])
       ])
@@ -101,7 +103,7 @@ function EnabledComponent(sources, inputs, session) {
       h6('.card-title', ['Performer check-in']),
         check_in,
         div('.row.mt-xs', {class: {disabled: !should_enable_in_app}}, [
-          div('.col-xs-12', [
+          div('.col-12', [
             in_app
           ])
         ])

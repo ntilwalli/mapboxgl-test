@@ -214,7 +214,7 @@ function view(state$, props_style_class) {
       const style_class = props_style_class || ''
       const {input_hour, input_minute, input_meridiem, hour, minute, active} = state
       const out = (hour >= 0 && minute >= 0) ? moment().hour(hour).minute(minute) : undefined
-      return div('.bootstrap-time-input.dropdown', {class: {open: !!active}}, [
+      return div('.bootstrap-time-input.dropdown', {class: {show: !!active}}, [
         input('.appTimeInput.time-input.form-control.form-control-sm' + style_class, {
           hook: {
             update: (vNode, {elm}) => {
@@ -228,7 +228,7 @@ function view(state$, props_style_class) {
         }),
         div('.appTimeDropdown.time-input-dropdown.dropdown-menu', [
           //div('.row', [
-          //  div('.col-xs-12.d-flex', [
+          //  div('.col-12.d-flex', [
             div('.d-fx-a-c', [
               select(
                 `.appHourSelect.form-control.form-control-sm.mr-xs` + style_class, 
@@ -265,7 +265,7 @@ function view(state$, props_style_class) {
                   ])
                 })
               ),
-              button('.appClearButton.btn.btn-link.d-fx-a-c.ml-1', ['Clear'])
+              button('.appClearButton.btn.btn-link.d-fx-a-c.ml-4', ['Clear'])
             ])
           ])
         ])

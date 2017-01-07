@@ -38,11 +38,11 @@ function getDateDisplayString(dt) {
 function renderDateController(state) {
   const dt = state.searchDateTime
   const [val, status] = getDateDisplayString(dt)
-  return div(`.search-controller.clearfix`, [
+  return div(`.col-4.d-flex.justify-content-around.search-controller`, [
     button(`.appSubtractDay.nav-text-button.fa.fa-angle-left.btn.btn-link.float-xs-left`, []),
     val,
-    button(`.appAddDay.nav-text-button.fa.fa-angle-right.btn.btn-link.float-xs-right`),
-    button(`.appShowFilters.nav-text-button.filter-button.fa.fa-cog.btn.btn-link`)
+    button(`.appAddDay.nav-text-button.fa.fa-angle-right.btn.btn-link.d-flex.justify-content-end`),
+    //button(`.appShowFilters.nav-text-button.filter-button.fa.fa-cog.btn.btn-link`)
   ])
 }
 
@@ -50,18 +50,16 @@ function renderDateController(state) {
 function renderNavigator(state) {
   const {authorization} = state
   const authClass = authorization ? 'Logout' : 'Login'
-  return nav('.navbar.navbar-light.bg-faded.container-fluid.pos-f-t', [
+  return nav('.navbar.navbar-light.bg-faded.container-fluid.fixed-top', [
     div('.row.no-gutter', [
-      div('.col-xs-4', [
+      div('.col-4', [
         button('.appBrandButton.hopscotch-icon.btn.btn-link.nav-brand', []),
       ]),
-      div('.col-xs-4', [
-        renderDateController(state),
-      ]),
-      div('.col-xs-4', [
-        button('.appShowMenuButton.nav-text-button.fa.fa-bars.btn.btn-link.float-xs-right', []),
-        //!authorization ?  button(`.appShowLoginButton.btn.btn-link.float-xs-right`, [`Login`]) : null,
-        //authorization ? button(`.appShowUserProfile.fa.fa-user-o.btn.btn-link.float-xs-right.mr-1`, []) : null
+      renderDateController(state),
+      div('.col-4.d-flex.justify-content-end', [
+        button('.appShowMenuButton.nav-text-button.fa.fa-bars.btn.btn-link.d-flex.justify-content-end', []),
+        //!authorization ?  button(`.appShowLoginButton.btn.btn-link.d-flex.justify-content-end`, [`Login`]) : null,
+        //authorization ? button(`.appShowUserProfile.fa.fa-user-o.btn.btn-link.d-flex.justify-content-end.mr-4`, []) : null
       ]),
     ])
   ])

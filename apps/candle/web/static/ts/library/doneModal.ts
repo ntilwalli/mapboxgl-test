@@ -64,10 +64,10 @@ function renderModal(info) {
       div(`.modal-content`, [
         div(`.modal-header.container-fluid`, [
           div('.row', [
-            div('.col-xs-6', [
+            div('.col-6', [
               div(`.modal-title.modal-header-text`, [title]),
             ]),
-            div('.col-xs-6.float-xs-right', [
+            div('.col-6.d-flex.justify-content-end', [
               span(`.appModalClose.close.fa-2x`, [])
             ])
           ])

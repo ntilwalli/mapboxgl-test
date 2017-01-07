@@ -76,13 +76,13 @@ function model(actions, inputs) {
 function renderNavigator(state) {
   const {authorization} = state
   const authClass = authorization ? 'Logout' : 'Login'
-  return nav('.navbar.navbar-light.bg-faded.container-fluid.pos-f-t', [
+  return nav('.navbar.navbar-light.bg-faded.container-fluid.fixed-top', [
     div('.row.no-gutter', [
-      div('.col-xs-6', [
+      div('.col-6', [
         button('.appBrandButton.hopscotch-icon.btn.btn-link.nav-brand', []),
       ]),
-      div('.col-xs-6', [
-        button('.appShowMenuButton.nav-text-button.fa.fa-bars.btn.btn-link.float-xs-right', [])
+      div('.col-6', [
+        button('.appShowMenuButton.nav-text-button.fa.fa-bars.btn.btn-link.d-flex.justify-content-end', [])
       ]),
     ])
   ])
@@ -99,15 +99,15 @@ function view(state$, components) {
       const show_waiting = !(profile_info && my_listings && participation)
       return div(`.screen.user-profile`, [
         renderNavigator(state),
-        show_waiting ? div('.loader', []) : div('.container-fluid.nav-fixed-offset.mt-1', [
+        show_waiting ? div('.loader', []) : div('.container-fluid.nav-fixed-offset.mt-4', [
           profile_info,
-          div('.row.mt-1', [
-            div('.col-xs-12', [
+          div('.row.mt-4', [
+            div('.col-12', [
               my_listings 
             ])
           ]),
-          div('.row.mt-1', [
-            div('.col-xs-12', [
+          div('.row.mt-4', [
+            div('.col-12', [
               participation 
             ])
           ])

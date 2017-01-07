@@ -45,6 +45,10 @@ defmodule User.Auth do
     GenServer.call(server, {:delete_listing_session, params})
   end
 
+  def route(server, "/listing_session/release", params) do
+    GenServer.call(server, {:release_listing_session, params})
+  end
+
   def route(server, "/home/listings") do
     GenServer.call(server, {:home_listings})
   end
@@ -123,6 +127,23 @@ defmodule User.Auth do
     {:ok, result} = Shared.Repo.delete(session)
     {:reply, {:ok, result}, state}
   end
+
+  # def handle_call({:release_listing_session, %{session: session, release_level: release_level}}, _from, %{user: user, listing_registry: l_reg} = state) do
+  #   IO.inspect {:save_listing_session, params}
+  #   cs = Ecto.build_assoc(user, :listing_sessions, id: id)
+  #   session_cs = ListingSessionMessage.changeset(cs, params)
+  #   case session_cs.valid? do
+  #     true -> 
+  #       session = apply_changes(session_cs)
+  #       {:ok, pid} = Listing.Registry.create(l_reg, session.listing, user)
+  #       result = Listing.Worker.retrieve(pid, user)
+  #       {:reply, {:ok, result}, state}
+  #     false -> 
+  #       IO.inspect {:session_save_error, session_cs}
+  #       {:reply, {:error, "Sent session params invalid"}, state}
+  #   end       
+  # end
+
 
   def handle_call({:search, params} , _from, %{user: user, listing_registry: l_reg} = state) do
     cs = SearchQueryMessage.changeset(%SearchQueryMessage{}, params)

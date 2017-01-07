@@ -27,7 +27,7 @@ export function createVenueAutocomplete(sources, inputs) {
           `.dropdown-item${highlighted ? '.highlight' : ''}`,
           {attrs: {'data-index': index}},
           [
-            em(`.venue-name.mr-1`, [getVenueName(suggestion)]),
+            em(`.venue-name.mr-4`, [getVenueName(suggestion)]),
             getVenueAddress(suggestion)
           ]
         )

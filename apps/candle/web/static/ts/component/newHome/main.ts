@@ -55,7 +55,7 @@ function drillInflate(result) {
 function renderNavigator(info: any) {
   const {components} = info
   const {home_menu} = components
-  return nav('.navbar.navbar-light.bg-faded.container-fluid.pos-f-t.navigator', [
+  return nav('.navbar.navbar-light.bg-faded.container-fluid.fixed-top.navigator', [
     home_menu
   ])
 }

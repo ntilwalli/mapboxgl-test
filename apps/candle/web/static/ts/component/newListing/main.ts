@@ -41,7 +41,7 @@ function view(components) {
     .map((components: any) => {
       const {navigator, content} = components
       return div(`.screen.listing-profile`, [
-        nav('.navbar.navbar-light.bg-faded.container-fluid.pos-f-t.navigator', [
+        nav('.navbar.navbar-light.bg-faded.container-fluid.fixed-top.navigator', [
           navigator
         ]),
         content

@@ -152,9 +152,9 @@ export default function main(sources, inputs) {
       const both = cover && minimum_purchase
       const line_type = inputs.heading_text ? '.input-line' : '.raw-line'
       return div('.row', [
-        div('.col-xs-12', [
+        div('.col-12', [
           div('.row', [
-            div('.col-xs-12' + line_type, [
+            div('.col-12' + line_type, [
               inputs.heading_text ? div('.heading', [inputs.heading_text]) : null,
               div('.content.fx-wrap', [
                 div('.d-fx-a-c.fx-auto-width', {class: {'mb-xs': cover || minimum_purchase || cost_per_minute}}, [type]),
@@ -169,10 +169,10 @@ export default function main(sources, inputs) {
             ])
           ]),
           both ? div('.row', [
-            div('.col-xs-12', [
+            div('.col-12', [
               div('.row', [
-                div('.col-xs-12.raw-line.fx-auto-width.fx-wrap', [
-                  em('.mr-1', ['Cover']),
+                div('.col-12.raw-line.fx-auto-width.fx-wrap', [
+                  em('.mr-4', ['Cover']),
                   div('.d-fx-a-c', [
                     cover,
                     'dollars'
@@ -180,15 +180,15 @@ export default function main(sources, inputs) {
                 ])
               ]),
               div('.row', [
-                div('.col-xs-12.raw-line.fx-auto-width.fx-wrap', [
-                  em('.mr-1', ['Minimum purchase']),
+                div('.col-12.raw-line.fx-auto-width.fx-wrap', [
+                  em('.mr-4', ['Minimum purchase']),
                   minimum_purchase
                 ])
               ])
             ])
           ]) : null,
           cost_per_minute ? div('.row', [
-            span('.col-xs-12', [cost_per_minute]),
+            span('.col-12', [cost_per_minute]),
           ]) : null
         ])
       ])  

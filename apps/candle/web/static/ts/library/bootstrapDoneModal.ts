@@ -63,15 +63,15 @@ function renderModal(info) {
     div(`.modal-dialog.modal-lg`, [
       div(`.modal-content`, [
         div(`.modal-header`, [
-            //div('.col-xs-6', [
+            //div('.col-6', [
               span(`.modal-title.modal-header-text`, [title]),
             //]),
-            //div('.col-xs-6.float-xs-right', [
-              span(`.appModalClose.close.fa-2x.float-xs-right`, [])
+            //div('.col-6.d-flex.justify-content-end', [
+              span(`.appModalClose.close.fa-2x.d-flex.justify-content-end`, [])
             //])
         ]),
         div(`.modal-body.d-flex.fx-j-c.container-fluid`, [
-          //div(`.col-xs-12${styleClass}`, [
+          //div(`.col-12${styleClass}`, [
             content
           //])
         ]),

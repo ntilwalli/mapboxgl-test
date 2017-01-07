@@ -53,13 +53,13 @@ function view(state$, components) {
       const {venue_autocomplete} = components
       const {venue} = state
       return div(`.row`, [
-        div(`.col-xs-12`, [
+        div(`.col-12`, [
           venue ? div('.row', [
-             span(`.col-xs-11.form-control-static.pt-0`, [
-              strong('.mr-1', [getVenueName(venue)]),
+             span(`.col-11.form-control-static.pt-0`, [
+              strong('.mr-4', [getVenueName(venue)]),
               getVenueAddress(venue)
              ]),
-            button(`.col-xs-1.appClearVenueButton.close`, {style: {position: "relative", top: "-.375rem"}, attrs: {type: "button"}}, [])
+            button(`.col-1.appClearVenueButton.close`, {style: {position: "relative", top: "-.375rem"}, attrs: {type: "button"}}, [])
           ]) : 
             //div(`.autocomplete`, [
               venue_autocomplete,
@@ -67,7 +67,7 @@ function view(state$, components) {
           //]),
         venue ? //null
           div(`.row.map`, {style: {display: venue ? 'block' : 'none'}}, [
-            div('.col-xs-12', {style: {position: 'relative', height: '20rem'}}, [
+            div('.col-12', {style: {position: 'relative', height: '20rem'}}, [
               div(`#addSelectVenueMapAnchor`),
               div(`.location-info`, [
                 div(`.name`, [getVenueName(venue)]),

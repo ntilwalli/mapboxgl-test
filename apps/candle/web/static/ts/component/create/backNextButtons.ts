@@ -55,13 +55,13 @@ function view(state$) {
 //     //console.log(`button state`, state)
 //     const {props, valid} = state
 //     return div(`.row.controller`, [
-//       div('.col-xs-6.back-section', [
+//       div('.col-6.back-section', [
 //         props.back ? button(`.appBackButton.back-button`, [
 //           span(`.icon.fa.fa-angle-left.fa-2x`),
 //           span(['Back'])
 //         ]): null
 //       ]),
-//       div('.col-xs-6.next-section', [
+//       div('.col-6.next-section', [
 //         props.next ? button(`.appNextButton.next-button`, {class: {disabled: !valid}}, [
 //           span(['Next']),
 //           span(`.icon.fa.fa-angle-right.fa-2x`)

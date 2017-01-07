@@ -30,7 +30,7 @@ function model(actions, inputs) {
 function view(state$) {
   return state$.map(state => {
     const {authorization} = state
-    return div('.media.mb-1', [
+    return div('.media.mb-4', [
       div ('.media-left', [
         img({
           attrs: {
@@ -45,10 +45,10 @@ function view(state$) {
       ]),
       div('.media-body', [
         div('.row', [
-          div('.col-xs-12', [authorization.name])
+          div('.col-12', [authorization.name])
         ]),
         div('.row', [
-          div('.col-xs-12', ['@' + authorization.username])
+          div('.col-12', ['@' + authorization.username])
         ])
       ])
     ])

@@ -303,7 +303,7 @@ function view(state$, components) {
             end_date
           ])
         ]) : null,
-        div('.mt-1.mb-xs', [
+        div('.mt-4.mb-xs', [
           h6('.d-flex.mb-xs', ['Start time (required)']),
           start_time
         ]),

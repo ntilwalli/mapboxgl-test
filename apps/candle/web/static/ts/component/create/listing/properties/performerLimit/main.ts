@@ -64,11 +64,13 @@ function EnableWaitlistComponent(sources, props$) {
 
   const vtree$ = shared$.map(props => {
     return div('.row', [
-      span('.col-xs-12.raw-line', [
+      span('.col-12.raw-line', [
         span('.content', [
-          label('.form-check-inline', [
-            input('.appCheckbox.form-check-input.mr-xs', {attrs: {type: 'checkbox', name: 'in-app-waitlist', checked: props === true}}, []),
-            'Enable in-app waitlist'
+          div('.form-check.form-check-inline.mb-0', [
+            label('.form-check-label', [
+              input('.appCheckbox.form-check-input.mr-xs', {attrs: {type: 'checkbox', name: 'in-app-waitlist', checked: props === true}}, []),
+              'Enable in-app waitlist'
+            ])
           ])
         ])
       ])
@@ -203,16 +205,16 @@ function LimitByTypeComponent(sources, props$, in_app_enabled$, component_id) {
     enable_waitlist: enable_waitlist.DOM
   }).debounceTime(0).map((components: any) => {
     return div('.row', [
-      div('.col-xs-12', [
+      div('.col-12', [
         div('.row.mb-xs', [
-          div('.col-xs-12.raw-line', [
-            span('.mr-1', ['In-person']),
+          div('.col-12.raw-line', [
+            span('.mr-4', ['In-person']),
             components.in_person
           ])
         ]),
         div('.row.mb-xs', [
-          div('.col-xs-12.raw-line', [
-            span('.mr-1', ['Pre-registration']),
+          div('.col-12.raw-line', [
+            span('.mr-4', ['Pre-registration']),
             components.pre_registration
           ])
         ]),
@@ -272,14 +274,14 @@ function LimitComponent(sources, props$, in_app_enabled$, component_id) {
   }).debounceTime(0).map((components: any) => {
     const {input, enable_waitlist} = components
     return div('.row', [
-      div('.col-xs-12', [
+      div('.col-12', [
         div('.row.mb-xs', [
-          div('.col-xs-12', [
+          div('.col-12', [
             input
           ])
         ]),
         div('.row', [
-          div('.col-xs-12', [
+          div('.col-12', [
             enable_waitlist
           ])
         ])

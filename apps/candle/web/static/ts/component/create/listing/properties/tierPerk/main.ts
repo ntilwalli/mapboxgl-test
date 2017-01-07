@@ -270,7 +270,7 @@ export default function main(sources, inputs) {
     const {type, minutes, songs, bucket_entry, drink_ticket} = components
     const data = bucket_entry || songs || minutes || drink_ticket
     // return div('.row', [
-    //   div('.col-xs-12', [
+    //   div('.col-12', [
     return div(`.raw-line`, [
           type,
           !!data ? span('.ml-xs', [data]) : null

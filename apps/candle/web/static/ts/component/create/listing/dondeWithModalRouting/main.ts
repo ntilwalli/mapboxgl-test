@@ -62,7 +62,7 @@ function renderSearchArea(info) {
     h6([`Search area`]),
     div(`.col-form-static`, [
       span([sa]),
-      span(`.appChangeSearchAreaButton.btn.btn-link.ml-1.v-align-initial`, [`change`])
+      span(`.appChangeSearchAreaButton.btn.btn-link.ml-4.v-align-initial`, [`change`])
     ])
   ])
 }

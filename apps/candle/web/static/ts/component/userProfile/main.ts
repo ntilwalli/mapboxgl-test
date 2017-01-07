@@ -33,7 +33,7 @@ function model(actions, inputs) {
 }
 
 function renderInfo(state) {
-  return div('.media.mb-1', [
+  return div('.media.mb-4', [
       div ('.media-left', [
         img({
           attrs: {
@@ -48,10 +48,10 @@ function renderInfo(state) {
       ]),
       div('.media-body', [
         div('.row', [
-          div('.col-xs-12', [state.authorization.name])
+          div('.col-12', [state.authorization.name])
         ]),
         div('.row', [
-          div('.col-xs-12', ['@' + state.authorization.username])
+          div('.col-12', ['@' + state.authorization.username])
         ])
       ])
     ])
@@ -59,7 +59,7 @@ function renderInfo(state) {
 
 function view(state$) {
   return state$.map(state => {
-    return div('.user-profile.container.nav-fixed-offset.mt-1', [
+    return div('.user-profile.container.nav-fixed-offset.mt-4', [
       renderInfo(state)
     ])
   })

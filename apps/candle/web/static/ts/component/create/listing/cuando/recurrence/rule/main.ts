@@ -53,7 +53,7 @@ function WeeklyComponent(sources, props$, component_id = '') {
   }).map((components: any) => {
     const {weekday} = components
     return div('.row', [
-      div('.col-xs-12', [weekday])
+      div('.col-12', [weekday])
     ])
   })
 
@@ -103,7 +103,7 @@ function MonthlyComponent(sources, props$, component_id = '') {
     }).map((components: any) => {
       const {weekday, setpos} = components
       return div('.row', [
-        div('.col-xs-12.d-fx-a-c', [
+        div('.col-12.d-fx-a-c', [
           span('.mr-xs', [setpos]),
           span([weekday])
         ])
@@ -234,12 +234,12 @@ export default function main(sources, inputs) {//props$) {
   }).map((components: any) => {
     const {display_interval, type, data, interval} = components
     return div('.row', [
-      div('.col-xs-12', [
+      div('.col-12', [
         div('.row', [
-          div('.d-fx-a-c.col-xs-12', [
+          div('.d-fx-a-c.col-12', [
             div('.d-fx-a-c', [
               div('.mr-xs', [type]), 
-              div('.mr-1', [data]), 
+              div('.mr-4', [data]), 
               button('.d-fx-a-c.btn.btn-link.mr-2', {
                   class: {
                     appHasIntervalButton: !display_interval,
@@ -254,7 +254,7 @@ export default function main(sources, inputs) {//props$) {
         ]),
         div('.row', [
           div(
-            '.col-xs-12.d-fx-a-c.ml-1',
+            '.col-12.d-fx-a-c.ml-4',
             {style: {display: display_interval ? 'flex' : 'none'}}, 
             [span('.mr-xs', ['Interval']), interval]
           )

@@ -243,7 +243,7 @@ function view(state$, children$) {
 
     return div(`.properties`, [
       ...errors,
-      div(`.body`, children.map(x => div(`.large-margin-bottom`, [x])))
+      div(`.body`, children.map(x => div(`.mb-4`, [x])))
     ])
   })
 }

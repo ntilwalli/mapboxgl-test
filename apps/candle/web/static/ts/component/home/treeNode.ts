@@ -70,19 +70,19 @@ function view(state$, children$) {
       const {open, listing} = state
       const has_children = children && children.length
       const out =  div('.row', [
-        listing ? div('.col-xs-12', [
+        listing ? div('.col-12', [
           div('.row', [
-            div('.col-xs-6.hover-bg-verylightgray', [
-              has_children ? span('.appTreeSwitch.tree-switch.btn.btn-link.fa.mr-1', {class: {
+            div('.col-6.hover-bg-verylightgray', [
+              has_children ? span('.appTreeSwitch.tree-switch.btn.btn-link.fa.mr-4', {class: {
                 "fa-minus-square": !!open,
                 "fa-plus-square": !open
               }}, []) : null,
               button('.appGoToListing.btn.btn-link', {props: {listing}}, [getListingLine(listing)]),
-              span('.float-xs-right.appEditListing.btn.btn-link.fa.fa-gear', {props: {listing}}, [])
+              span('.d-flex.justify-content-end.appEditListing.btn.btn-link.fa.fa-gear', {props: {listing}}, [])
             ])
           ]),
           has_children && open ? div('.row', [
-            div('.col-xs-11.push-xs-1', 
+            div('.col-11.push-xs-1', 
               children
             )
           ]) : null
