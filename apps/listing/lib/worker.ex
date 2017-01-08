@@ -66,7 +66,7 @@ defmodule Listing.Worker do
   end
 
   def handle_call({:add_child, child_listing, user}, _from, %{listing: listing, registry_name: r_name} = state) do
-    {:ok, result} = info = Listing.Registry.create(Listing.Registry, child_listing, user) 
+    {:ok, result} = info = Listing.Registry.create(r_name, child_listing, user) 
     {:reply, {:ok, result}, state}
   end
 
@@ -204,7 +204,7 @@ defmodule Listing.Worker do
   end
 
   def retrieve_listing_with_other_data(listing_id) do
-    query = from l in Shared.Listing, where: l.id == ^listing_id, preload: [:check_ins, :children, :parent]
+    query = from l in Shared.Listing, where: l.id == ^listing_id, preload: [:check_ins, :children, :parent, :group_child_listings, :user_child_listing, :user]
     Repo.one(query)
   end
 

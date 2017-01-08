@@ -1,11 +1,11 @@
 defmodule Shared.Manager.ListingManager do
   alias Shared.Listing
-  # alias Shared.GroupChildListing
-  # alias Shared.UserChildListing
+  alias Shared.GroupChildListing
+  alias Shared.UserChildListing
   alias Shared.Repo
 
   import Ecto.Query, only: [from: 2, first: 1]
-  #alias Ecto.Multi
+  alias Ecto.Multi
 
   # def add(%{parent_id: id} = listing, user) when is_number(id) do
   #   add_listing_w_parent(listing, user)
@@ -19,49 +19,85 @@ defmodule Shared.Manager.ListingManager do
     add_listing(listing, user)
   end
 
-  defp add_listing(listing, user) do
-    new_listing = Ecto.build_assoc(user, :listings)
-    listing_changeset = Listing.changeset(new_listing, listing)
-    #IO.inspect listing_changeset
-    Repo.insert(listing_changeset)
-  end
-
-
   # defp add_listing(listing, user) do
   #   new_listing = Ecto.build_assoc(user, :listings)
   #   listing_changeset = Listing.changeset(new_listing, listing)
+  #   #IO.inspect listing_changeset
+  #   Repo.insert(listing_changeset)
+  # end
 
-  #   sequence_id = get_next_user_child_sequence_id(user.id)
-  #   multi_query = Ecto.Multi.new
-  #     |> Multi.insert(:listing, listing_changeset)
-  #     |> Multi.run(
-  #       :user_listing, 
-  #       fn changes_so_far -> 
-  #         %{listing: result} = changes_so_far
-  #         listing_id = result.id
-  #         new_user_listing = Ecto.build_assoc(user, :user_child_listings)
-  #         user_child_listing_changeset = UserChildListing.insert_changeset(new_user_listing, %{listing_id: listing_id, sequence_id: sequence_id})
-  #         Repo.insert(user_child_listing_changeset)
-  #       end 
-  #     )
 
-  #   case Repo.transaction(multi_query) do
-  #     {:ok, %{listing: listing, user_listing: _}} ->
-  #       enriched_listing = listing 
-  #         |> enrich_w_user_child_sequence_id(sequence_id)
+  defp add_listing(%{parent_id: parent_id} = listing, user) when is_number(parent_id) do
+    new_listing = Ecto.build_assoc(user, :listings)
+    listing_changeset = Listing.changeset(new_listing, listing)
+    sequence_id = get_next_group_child_sequence_id(parent_id)
+    multi_query = Ecto.Multi.new
+      |> Multi.insert(:listing, listing_changeset)
+      |> Multi.run(
+        :group_child_listing, 
+        fn changes_so_far -> 
+          %{listing: result} = changes_so_far
+          listing_id = result.id
+          group_child_listing_changeset = GroupChildListing.insert_changeset(%GroupChildListing{}, %{parent_id: parent_id, listing_id: listing_id, sequence_id: sequence_id})
+          Repo.insert(group_child_listing_changeset)
+        end 
+      )
 
-  #       {:ok, enriched_listing}
-  #     {:error, key_that_errored, %{
-  #         listing: _, 
-  #         user_listing: _
-  #       } = result
-  #     } ->
-  #       #IO.puts("Insert not successful")
-  #       #IO.inspect(result)
-  #       val = Map.fetch(result, key_that_errored)
-  #       {:error, {listing, %{errors: errors_to_map(val.errors)}}}
-  #   end
-  # end 
+    case Repo.transaction(multi_query) do
+      {:ok, %{listing: listing, group_child_listing: _}} ->
+        # enriched_listing = listing 
+        #   |> enrich_w_group_child_sequence_id(sequence_id)
+
+        # {:ok, enriched_listing }
+        {:ok, listing}
+      {:error, key_that_errored, %{
+          listing: _, 
+          group_child_listing: _
+        } = result
+      } ->
+        #IO.puts("Insert not successful")
+        #IO.inspect(result)
+        val = Map.fetch(result, key_that_errored)
+        {:error, {listing, %{errors: errors_to_map(val.errors)}}}
+    end
+  end
+
+  defp add_listing(listing, user) do
+    new_listing = Ecto.build_assoc(user, :listings)
+    listing_changeset = Listing.changeset(new_listing, listing)
+
+    sequence_id = get_next_user_child_sequence_id(user.id)
+    multi_query = Ecto.Multi.new
+      |> Multi.insert(:listing, listing_changeset)
+      |> Multi.run(
+        :user_child_listing, 
+        fn changes_so_far -> 
+          %{listing: result} = changes_so_far
+          listing_id = result.id
+          new_user_child_listing = Ecto.build_assoc(user, :user_child_listings)
+          user_child_listing_changeset = UserChildListing.insert_changeset(new_user_child_listing, %{listing_id: listing_id, sequence_id: sequence_id})
+          Repo.insert(user_child_listing_changeset)
+        end 
+      )
+
+    case Repo.transaction(multi_query) do
+      {:ok, %{listing: listing, user_child_listing: _}} ->
+        # enriched_listing = listing 
+        #   |> enrich_w_user_child_sequence_id(sequence_id)
+
+        # {:ok, enriched_listing}
+        {:ok, listing}
+      {:error, key_that_errored, %{
+          listing: _, 
+          user_child_listing: _
+        } = result
+      } ->
+        #IO.puts("Insert not successful")
+        #IO.inspect(result)
+        val = Map.fetch(result, key_that_errored)
+        {:error, {listing, %{errors: errors_to_map(val.errors)}}}
+    end
+  end 
 
 
 
@@ -136,33 +172,33 @@ defmodule Shared.Manager.ListingManager do
   #   %{listing | user_child_sequence_id: sequence_id}
   # end
 
-  # defp get_next_user_child_sequence_id (uid) do
-  #   query = from l in UserChildListing,
-  #     where: [user_id: ^uid],
-  #     order_by: [desc: l.sequence_id],
-  #     select: l.sequence_id
+  defp get_next_user_child_sequence_id (uid) do
+    query = from l in UserChildListing,
+      where: [user_id: ^uid],
+      order_by: [desc: l.sequence_id],
+      select: l.sequence_id
 
-  #   case query |> first |> Repo.one do
-  #     nil -> 1
-  #     val -> val + 1
-  #   end
-  # end
+    case query |> first |> Repo.one do
+      nil -> 1
+      val -> val + 1
+    end
+  end
 
-  # defp get_next_group_child_sequence_id (parent_id) do
-  #   query = from l in GroupChildListing,
-  #     where: [parent_id: ^parent_id],
-  #     order_by: [desc: l.sequence_id],
-  #     select: l.sequence_id
+  defp get_next_group_child_sequence_id (parent_id) do
+    query = from l in GroupChildListing,
+      where: [parent_id: ^parent_id],
+      order_by: [desc: l.sequence_id],
+      select: l.sequence_id
 
-  #   case query |> first |> Repo.one do
-  #     nil -> 1
-  #     val -> val + 1
-  #   end
-  # end
+    case query |> first |> Repo.one do
+      nil -> 1
+      val -> val + 1
+    end
+  end
 
-  # defp errors_to_map(errors) do
-  #   Enum.into(errors, %{}, fn {k, {e, _}} -> {k, e} end)
-  # end
+  defp errors_to_map(errors) do
+    Enum.into(errors, %{}, fn {k, {e, _}} -> {k, e} end)
+  end
 
   # def add(%{ "parent_id" => parent_id } = listing, user) when is_number(parent_id) do
   #   new_listing = Ecto.build_assoc(user, :listings)

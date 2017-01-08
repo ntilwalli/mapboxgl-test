@@ -54,6 +54,7 @@ defmodule User.Helpers do
       for l <- search_results do
         {:ok, pid} = Listing.Registry.lookup(listing_registry, l.listing_id)
         {:ok, result} = Listing.Worker.retrieve(pid, user)
+        IO.inspect result
         result
       end
 

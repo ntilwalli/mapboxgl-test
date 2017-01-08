@@ -9,7 +9,7 @@ defmodule Shared.Listing do
   # alias When.Once
 
   @derive {Poison.Encoder, except: [
-    :__meta__, :sort_id, :source, :user,  :parent, :children,
+    :__meta__, :sort_id, :source, :user_id, :parent, :children,
     #:group_child_listings, :user_child_listings,
     :single_listing_search, :single_listing_categories, 
     :single_listing_event_types, :check_ins, :inserted_at, :updated_at
@@ -33,8 +33,8 @@ defmodule Shared.Listing do
     belongs_to :user, Shared.User
     belongs_to :parent, Shared.Listing
 
-    # has_one :user_child_listings, Shared.UserChildListing
-    # has_many :group_child_listings, Shared.GroupChildListing
+    has_one :user_child_listing, Shared.UserChildListing
+    has_many :group_child_listings, Shared.GroupChildListing
     has_one :single_listing_search, Shared.SingleListingSearch
     has_many :single_listing_categories, Shared.SingleListingCategories
     has_many :single_listing_event_types, Shared.SingleListingEventTypes

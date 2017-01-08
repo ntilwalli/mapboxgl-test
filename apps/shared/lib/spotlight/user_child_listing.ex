@@ -1,6 +1,9 @@
 defmodule Shared.UserChildListing do
   use Shared.Lib, :model
 
+  @derive {Poison.Encoder, only: [
+    :handle, :sequence_id
+  ]}
   @primary_key false
   schema "user_child_listings" do
     field :sequence_id, :integer
