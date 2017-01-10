@@ -111,6 +111,7 @@ export default function main(sources, inputs) {
   return {
     DOM: vtree$,
     Router: O.merge(
+      actions.brand_button$.mapTo('/'),
       muxed_router.invalid_path$.mapTo({
         type: 'replace',
         action: 'REPLACE',
