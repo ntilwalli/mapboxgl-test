@@ -4,7 +4,7 @@ import isolate from '@cycle/isolate'
 import {default as TextInput, SmartTextInputValidation} from '../../../../library/bootstrapTextInput'
 import validator = require('validator')
 import validUrl = require('valid-url')
-//import {validate as twitterValidate} from 'twitter-validate'
+//import {validate as twitterValidate} from 'twitter-validate'  // for some reason module fails to be found on heroku, debug later
 import clone = require('clone')
 import {
   PerformerSignupOptions,
@@ -337,7 +337,7 @@ function genericValidator(input, f, empty_is_error) {
 
 const emailTest = isEmail
 const urlTest = validUrl.isWebUri
-const twitterTest = () => true//twitterValidate
+const twitterTest = () => true//twitterValidate 
 const naturalNumberTest = input => input.match(/^\d+$/)
 const floatTest = input => input.match(/^\d+.?\d*$/)
 const passTest = input => true
