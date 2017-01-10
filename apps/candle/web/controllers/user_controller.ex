@@ -56,7 +56,7 @@ defmodule Candle.UserController do
         _ -> 
           #IO.puts "User"
           {:ok, pid} = User.Registry.lookup_user(User.Registry, current_user)
-          User.Auth.route(pid, route, message)
+          User.Individual.route(pid, route, message)
       end
 
     case response do
@@ -78,7 +78,7 @@ defmodule Candle.UserController do
           IO.puts "User"
           IO.inspect route
           {:ok, pid} = User.Registry.lookup_user(User.Registry, current_user)
-          out = User.Auth.route(pid, route)
+          out = User.Individual.route(pid, route)
           IO.inspect {:out, out}
           out
       end

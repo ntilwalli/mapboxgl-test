@@ -1,4 +1,4 @@
-defmodule User.Auth.Supervisor do
+defmodule User.Individual.Supervisor do
   use Supervisor
 
   def start_link(name, listing_registry) do
@@ -11,7 +11,7 @@ defmodule User.Auth.Supervisor do
 
   def init({:ok, listing_registry}) do 
     children = [
-      worker(User.Auth, [listing_registry], restart: :transient)
+      worker(User.Individual, [listing_registry], restart: :transient),
     ]
 
     supervise(children, strategy: :simple_one_for_one)

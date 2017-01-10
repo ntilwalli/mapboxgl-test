@@ -54,7 +54,7 @@ defmodule Candle.AuthController do
   def logout(conn, _params, current_user, _claims) do
     if current_user do
       {:ok, pid} = User.Registry.lookup_user(User.Registry, current_user)
-      :ok = User.Auth.logout(pid)
+      :ok = User.Individual.logout(pid)
     end
 
     conn

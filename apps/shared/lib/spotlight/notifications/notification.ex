@@ -6,7 +6,7 @@ defmodule Shared.Notification do
   schema "notifications" do
     field :read_at, :utc_datetime
     belongs_to :user, Shared.User
-    belongs_to :notification_item, Shared.User, foreign_key: :item_id
+    belongs_to :item, Shared.NotificationItem
     timestamps
   end
 

@@ -1,4 +1,4 @@
-defmodule User.Auth do
+defmodule User.Individual do
   use GenServer
 
   import Ecto.Changeset, only: [apply_changes: 1]

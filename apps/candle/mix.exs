@@ -34,11 +34,11 @@ defmodule Candle.Mixfile do
        :ueberauth_twitter,
        :gettext,
        :shared,
+       :notification,
        :auth,
        :user,
        :listing,
-       :httpoison
-             
+       :httpoison   
     ]]
   end
 

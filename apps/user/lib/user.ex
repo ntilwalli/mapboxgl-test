@@ -11,8 +11,8 @@ defmodule User do
       # Starts a worker by calling: User.Worker.start_link(arg1, arg2, arg3)
       # worker(User.Worker, [arg1, arg2, arg3]),
       supervisor(User.Anon.Supervisor, [User.Anon.Supervisor, Listing.Registry]),
-      supervisor(User.Auth.Supervisor, [User.Auth.Supervisor, Listing.Registry]),
-      worker(User.Registry, [User.Registry, User.Anon.Supervisor, User.Auth.Supervisor]),
+      supervisor(User.Individual.Supervisor, [User.Individual.Supervisor, Listing.Registry]),
+      worker(User.Registry, [User.Registry, User.Anon.Supervisor, User.Individual.Supervisor]),
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html

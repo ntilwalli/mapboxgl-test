@@ -14,6 +14,10 @@ defmodule Shared.User do
     has_many :check_ins, Shared.CheckIn
     has_one :settings, Shared.Settings
     has_many :listing_sessions, Shared.ListingSession
+
+    has_many :notification_items, Shared.NotificationItem
+    has_many :notification_items_on_behalf_of, Shared.NotificationItem
+    has_many :notifications, Shared.Notification
     timestamps
   end
 

@@ -24,7 +24,7 @@ defmodule Candle.PageController do
         |> render("index.html")
       _ -> 
         {:ok, pid} = User.Registry.lookup_user(User.Registry, current_user)
-        :ok = User.Auth.route(pid, "/register_app_load") 
+        :ok = User.Individual.route(pid, "/register_app_load") 
         
         conn
         |> Helpers.reset_cookies
