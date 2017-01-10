@@ -36,6 +36,7 @@
         "customTypings/cycle-storage.d.ts",
         "customTypings/geolib.d.ts",
         "customTypings/history.d.ts",
+        "customTypings/twitter-validate.d.ts",
         "web/static/ts/main.ts"
     ],
     "exclude": [
