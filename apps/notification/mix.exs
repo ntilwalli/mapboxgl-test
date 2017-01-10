@@ -18,7 +18,7 @@ defmodule Notification.Mixfile do
   #
   # Type "mix help compile.app" for more information
   def application do
-    [applications: [:logger],
+    [applications: [:logger, :shared, :user],
      mod: {Notification, []}]
   end
 
@@ -36,6 +36,9 @@ defmodule Notification.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    []
+    [
+      {:shared, in_umbrella: true},
+      {:user, in_umbrella: true},
+    ]
   end
 end
