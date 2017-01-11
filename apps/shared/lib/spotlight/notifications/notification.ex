@@ -7,7 +7,7 @@ defmodule Shared.Notification do
     field :read_at, :utc_datetime
     belongs_to :user, Shared.User
     belongs_to :item, Shared.NotificationItem
-    timestamps
+    timestamps()
   end
 
   @allowed_fields [:id, :read_at, :user_id, :item_id]

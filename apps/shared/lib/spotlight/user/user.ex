@@ -18,7 +18,7 @@ defmodule Shared.User do
     has_many :notification_items, Shared.NotificationItem
     has_many :notification_items_on_behalf_of, Shared.NotificationItem
     has_many :notifications, Shared.Notification
-    timestamps
+    timestamps()
   end
 
   @required_fields ~w(name username email type)

@@ -13,6 +13,9 @@ defmodule User do
       supervisor(User.Anon.Supervisor, [User.Anon.Supervisor, Listing.Registry]),
       supervisor(User.Individual.Supervisor, [User.Individual.Supervisor, Listing.Registry]),
       worker(User.Registry, [User.Registry, User.Anon.Supervisor, User.Individual.Supervisor]),
+      supervisor(Registry, [:unique, :individual_registry], id: :individual_registry),
+      supervisor(Registry, [:unique, :user_notification_registry], id: :user_notification_registry),
+      supervisor(Registry, [:unique, :anonymous_registry], id: :anonymous_registry)
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html

@@ -2,7 +2,8 @@ defmodule User.Mixfile do
   use Mix.Project
 
   def project do
-    [app: :user,
+    [
+     app: :user,
      version: "0.1.0",
      build_path: "../../_build",
      config_path: "../../config/config.exs",
@@ -12,7 +13,8 @@ defmodule User.Mixfile do
      elixirc_paths: ["lib", "web"],
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     deps: deps]
+     deps: deps()
+    ]
   end
 
   # Configuration for the OTP application

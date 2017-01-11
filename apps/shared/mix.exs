@@ -2,7 +2,8 @@ defmodule Shared.Mixfile do
   use Mix.Project
 
   def project do
-    [app: :shared,
+    [
+     app: :shared,
      version: "0.1.0",
      build_path: "../../_build",
      config_path: "../../config/config.exs",
@@ -12,7 +13,8 @@ defmodule Shared.Mixfile do
      elixirc_paths: ["lib", "web"],
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     deps: deps]
+     deps: deps()
+    ]
   end
 
   def application do
@@ -24,9 +26,11 @@ defmodule Shared.Mixfile do
     [
       {:calendar, "~> 0.16.1"},
       {:calecto, "~> 0.16.1"},
-      {:postgrex, "~> 1.0.0-rc"},
-      {:ecto, "~> 2.1.0-rc", override: true},
-      {:geo, "~> 1.2", path: "../../custom_deps/geo", override: true},
+      {:postgrex, "~> 0.13.0"},
+      #{:postgrex, "~> 1.0.0-rc"},
+      {:ecto, "~> 2.1.2", override: true},
+      {:geo, "~> 1.3.1"},
+      #{:geo, "~> 1.2", path: "../../custom_deps/geo", override: true},
       {:poison, "~> 2.2"},
       {:httpoison, "~> 0.9.0"},
       {:floki, "~> 0.10.1"}

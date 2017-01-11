@@ -11,7 +11,7 @@ defmodule Shared.NotificationItem do
     field :data, :map
     belongs_to :user, Shared.User
     belongs_to :user_group, Shared.User, foreign_key: :behalf_of
-    timestamps
+    timestamps()
   end
 
   @allowed_fields [:object, :verb, :subjects, :user_id, :behalf_of, :data]

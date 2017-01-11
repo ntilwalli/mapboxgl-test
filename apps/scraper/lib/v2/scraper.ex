@@ -2,7 +2,7 @@ defmodule Scraper.BadslavaScraper.V2 do
   require Logger
   import Ecto.Query, only: [from: 2]
   import Scraper.Helpers
-  import Scraper.BadslavaScraper.V1.Helpers
+  #import Scraper.BadslavaScraper.V1.Helpers
   import Helpers.V2
   import Cuando
   import PerformerSignUp
@@ -189,7 +189,7 @@ defmodule Scraper.BadslavaScraper.V2 do
 
 
   def retrieve_latest_listings do
-    html = retrieve
+    html = retrieve()
     venue_lnglat = extract_venue_lnglat(html)
     days = extract_days(html)
     dayTables = Enum.zip(days, Floki.find(html, "font + table"))

@@ -159,7 +159,7 @@ defmodule Shared.Helpers do
   end
 
   def inspect_changeset(changeset) do
-    IO.inspect changeset
+    IO.inspect {:inspect_changeset, changeset}
   end
 
   defp flatten_struct(%{__struct__: _} = somestruct) do

@@ -9,7 +9,7 @@ defmodule Shared.Scrapings do
     field :data, :map
     field :source, :string
     belongs_to :listing, Shared.Listing, primary_key: true
-    timestamps
+    timestamps()
   end
 
   @allowed_fields [:source, :data, :listing_id]

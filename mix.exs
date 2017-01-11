@@ -2,10 +2,12 @@ defmodule Spotlight.Mixfile do
   use Mix.Project
 
   def project do
-    [apps_path: "apps",
+    [
+     apps_path: "apps",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     deps: deps]
+     deps: deps()
+    ]
   end
 
   # Dependencies can be Hex packages:

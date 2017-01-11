@@ -2,7 +2,8 @@ defmodule Candle.Mixfile do
   use Mix.Project
 
   def project do
-    [app: :candle,
+    [
+     app: :candle,
      version: "0.0.1",
      build_path: "../../_build",
      config_path: "../../config/config.exs",
@@ -13,8 +14,9 @@ defmodule Candle.Mixfile do
      compilers: [:phoenix, :gettext] ++ Mix.compilers,
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     aliases: aliases,
-     deps: deps]
+     aliases: aliases(),
+     deps: deps()
+    ]
   end
 
   # Configuration for the OTP application.

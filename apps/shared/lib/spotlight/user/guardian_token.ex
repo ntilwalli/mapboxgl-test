@@ -14,6 +14,6 @@ defmodule Shared.GuardianToken do
     field :claims, :map
     field :typ, :string
 
-    timestamps
+    timestamps()
   end
 end

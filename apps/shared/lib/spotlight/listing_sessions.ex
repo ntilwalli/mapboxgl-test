@@ -11,7 +11,7 @@ defmodule Shared.ListingSession do
 
     belongs_to :user, Shared.User
 
-    timestamps
+    timestamps()
   end
 
   @required_fields [:user_id]

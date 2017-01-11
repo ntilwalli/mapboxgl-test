@@ -1,6 +1,3 @@
-[submodule "custom_deps/geo"]
-	path = custom_deps/geo
-	url = https://github.com/ntilwalli/geo
 [submodule "apps/candle/custom_deps/rrule"]
 	path = apps/candle/custom_deps/rrule
 	url = https://github.com/ntilwalli/rrule

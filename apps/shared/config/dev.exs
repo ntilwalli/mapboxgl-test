@@ -9,6 +9,4 @@ config :shared, Shared.Repo,
   # hostname: "localhost",
   url: System.get_env("DEV_DATABASE_URL"),
   pool_size: 10,
-  extensions: [
-    {Geo.PostGIS.Extension, []}
-  ]
+  types: Shared.PostgresTypes

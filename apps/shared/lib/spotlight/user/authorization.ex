@@ -10,15 +10,15 @@ defmodule Shared.Authorization do
     field :profile, :map
 
     belongs_to :user, Shared.User
-    timestamps
+    timestamps()
   end
 
   @allowed_fields [:token, :refresh_token, :expires_at, :uid, :provider, :user_id]
   @required_fields [:token, :uid, :provider, :user_id]
 
   def changeset(model, params \\ :empty) do
-    IO.puts "Inspecting"
-    IO.inspect params
+    #IO.puts "Inspecting"
+    #IO.inspect params
     model
     |> cast(params, @allowed_fields)
     |> validate_required(@required_fields)

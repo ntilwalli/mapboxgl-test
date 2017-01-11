@@ -41,7 +41,7 @@ defmodule Shared.Listing do
     has_many :check_ins, Shared.CheckIn
     has_many :children, Shared.Listing, foreign_key: :parent_id
 
-    timestamps
+    timestamps()
   end
 
   @allowed_fields [
