@@ -5,3 +5,6 @@
 	path = custom_deps/cyclejs
 	url = https://github.com/ntilwalli/cyclejs
 
+[submodule "custom_deps/geo"]
+	path = custom_deps/geo
+	url = https://github.com/ntilwalli/geo
