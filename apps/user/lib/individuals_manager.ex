@@ -3,8 +3,8 @@ defmodule User.IndividualsManager do
 
   import Ecto.Query, only: [from: 2]
 
-  def start_link(name, notification_registry, listing_registry) do
-    {:ok, pid} = server = Supervisor.start_link(__MODULE__, {:ok, notification_registry, listing_registry}, name: name)
+  def start_link(name, notification_manager, listing_registry, notification_registry) do
+    {:ok, pid} = server = Supervisor.start_link(__MODULE__, {:ok, notification_manager, listing_registry, notification_registry}, name: name)
     # query = from s in Shared.User,
     #     where: s.type != "root",
     #     select: s
@@ -19,9 +19,9 @@ defmodule User.IndividualsManager do
     Supervisor.start_child(server, [user])
   end
 
-  def init({:ok, notification_registry, listing_registry}) do 
+  def init({:ok, notification_manager, listing_registry, notification_registry}) do 
     children = [
-      supervisor(User.Individual.Supervisor, [notification_registry, listing_registry], restart: :transient),
+      supervisor(User.Individual.Supervisor, [notification_manager, listing_registry, notification_registry], restart: :transient),
     ]
 
     supervise(children, strategy: :simple_one_for_one)

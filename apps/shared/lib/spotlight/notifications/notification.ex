@@ -17,6 +17,6 @@ defmodule Shared.Notification do
     |> cast(params, @allowed_fields)
     |> validate_required(@required_fields)
     |> assoc_constraint(:user)
-    |> assoc_constraint(:notification_item)
+    |> assoc_constraint(:item)
   end
 end 

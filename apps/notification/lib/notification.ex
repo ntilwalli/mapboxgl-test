@@ -8,13 +8,13 @@ defmodule Notification do
 
     # Define workers and child supervisors to be supervised
     children = [
-      # Starts a worker by calling: Notification.Worker.start_link(arg1, arg2, arg3)
-      worker(Notification.Registry, []),
+      supervisor(Registry, [:unique, Notification.Registry], id: Notification.Registry),
+      worker(Notification.Manager, [Notification.Manager]),
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
     # for other strategies and supported options
-    opts = [strategy: :one_for_one, name: Notification.Supervisor]
-    Supervisor.start_link(children, opts)
+
+    Supervisor.start_link(children, strategy: :one_for_one)
   end
 end

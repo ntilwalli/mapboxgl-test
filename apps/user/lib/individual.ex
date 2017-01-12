@@ -22,6 +22,7 @@ defmodule User.Individual do
       [] -> 
         #IO.inspect {:not_started, user}
         User.IndividualsManager.start_user(User.IndividualsManager, user)
+        #IO.inspect {:stuff, Registry.lookup(:individual_user_registry, user.id)}
         name
       [head | tail] -> 
         #IO.inspect {:already_started, user}

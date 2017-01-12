@@ -2,6 +2,7 @@ defmodule Listing.Registry do
   require Logger
   use GenServer
   import Ecto.Query, only: [from: 2]
+  import Ecto.Changeset, only: [apply_changes: 1]
   
 
   def start_link(name, worker_supervisor) do
@@ -29,6 +30,7 @@ defmodule Listing.Registry do
   def init({:ok, worker_supervisor}) do
     Logger.debug "Initializing listing registry..."
     state = get_initial_state(worker_supervisor)
+    test()
     {:ok, state}
   end
 
@@ -84,9 +86,16 @@ defmodule Listing.Registry do
         listing = Shared.Repo.one!(from l in Shared.Listing, where: l.id == ^listing_id)
         {pid, ref} = start_listing(listing, w_sup)
         out = %{state | pids: Map.put(pids, listing_id, pid), refs: Map.put(refs, ref, listing_id)}
-        {:no_reply, out}
+        {:noreply, out}
     end
   end
+
+  def handle_info({:test, pid, message}, state) do
+    IO.inspect {:test, pid, message}
+    Notification.Manager.notify(pid, message)
+    {:noreply, state}
+  end
+
 
   defp maybe_get_or_start(listing_id, %{pids: pids, worker_supervisor: w_sup} = state) do
     case Map.get(pids, listing_id) do
@@ -130,6 +139,17 @@ defmodule Listing.Registry do
     {:ok, pid} = Listing.Worker.Supervisor.start_worker(w_sup, listing, self_name)
     ref = Process.monitor(pid)
     {pid, ref}
+  end
+
+  defp test() do
+    cs = Shared.NotificationItem.changeset(%Shared.NotificationItem{}, %{
+      object: 12,
+      verbs: ["update_listing_name", "update_listing_start"],
+      subjects: [39],
+      user_id: 39
+    })
+
+    Process.send_after(self(), {:test, Notification.Manager, apply_changes(cs)}, 5000)
   end
 
   # def handle_call({:start, %{id: listing_id} = listing}, _, {pids, refs}) do

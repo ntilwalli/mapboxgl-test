@@ -74,10 +74,10 @@ defmodule Candle.UserController do
           aid = conn.cookies["aid"]
           User.Anon.route(aid, route)
         _ -> 
-          IO.puts "User"
-          IO.inspect {:route, route}
+          #IO.puts "User"
+          #IO.inspect {:route, route}
           out = User.Individual.route(current_user, route)
-          IO.inspect {:out, out}
+          #IO.inspect {:out, out}
           out
       end
 

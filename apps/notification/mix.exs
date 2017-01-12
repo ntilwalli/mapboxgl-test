@@ -3,7 +3,7 @@ defmodule Notification.Mixfile do
 
   def project do
     [
-      app: :notification,
+     app: :notification,
      version: "0.1.0",
      build_path: "../../_build",
      config_path: "../../config/config.exs",
@@ -41,6 +41,7 @@ defmodule Notification.Mixfile do
     [
       {:shared, in_umbrella: true},
       {:user, in_umbrella: true},
+      {:calendar, "~> 0.16.1"}
     ]
   end
 end
