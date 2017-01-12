@@ -1,6 +1,6 @@
 defmodule Notification.Registry do
-  def start_link(user_registry) do
-    GenServer.start_link(__MODULE__, {:ok, user_registry}, [])
+  def start_link() do
+    GenServer.start_link(__MODULE__, :ok, [])
   end
 
   def subscribe(server, user) do
@@ -15,8 +15,8 @@ defmodule Notification.Registry do
     GenServer.call(server, {:notify, notification_item})
   end
 
-  def init({:ok, user_registry}) do
-    {:ok, %{user_registry: user_registry, subscribers: %{}}}
+  def init(:ok) do
+    {:ok, %{subscribers: %{}}}
   end
 
   def handle_call({:subscribe, %Shared.User{} = user}, _from, %{subscribers: subscribers} = state) do

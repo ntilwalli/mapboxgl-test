@@ -51,12 +51,11 @@ defmodule Candle.UserController do
       case current_user do
         nil -> 
           #IO.puts "Anonymous"
-          {:ok, pid} = User.Registry.lookup_anonymous(User.Registry, conn.cookies["aid"])
-          User.Anon.route(pid, route, message)
+          aid = conn.cookies["aid"]
+          User.Anon.route(aid, route, message)
         _ -> 
           #IO.puts "User"
-          {:ok, pid} = User.Registry.lookup_user(User.Registry, current_user)
-          User.Individual.route(pid, route, message)
+          User.Individual.route(current_user, route, message)
       end
 
     case response do
@@ -72,13 +71,12 @@ defmodule Candle.UserController do
       case current_user do
         nil -> 
           #IO.puts "Anonymous"
-          {:ok, pid} = User.Registry.lookup_anonymous(User.Registry, conn.cookies["aid"])
-          User.Anon.route(pid, route)
+          aid = conn.cookies["aid"]
+          User.Anon.route(aid, route)
         _ -> 
           IO.puts "User"
-          IO.inspect route
-          {:ok, pid} = User.Registry.lookup_user(User.Registry, current_user)
-          out = User.Individual.route(pid, route)
+          IO.inspect {:route, route}
+          out = User.Individual.route(current_user, route)
           IO.inspect {:out, out}
           out
       end

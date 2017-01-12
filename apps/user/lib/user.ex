@@ -10,12 +10,11 @@ defmodule User do
     children = [
       # Starts a worker by calling: User.Worker.start_link(arg1, arg2, arg3)
       # worker(User.Worker, [arg1, arg2, arg3]),
-      supervisor(User.Anon.Supervisor, [User.Anon.Supervisor, Listing.Registry]),
-      supervisor(User.Individual.Supervisor, [User.Individual.Supervisor, Listing.Registry]),
-      worker(User.Registry, [User.Registry, User.Anon.Supervisor, User.Individual.Supervisor]),
-      supervisor(Registry, [:unique, :individual_registry], id: :individual_registry),
-      supervisor(Registry, [:unique, :user_notification_registry], id: :user_notification_registry),
-      supervisor(Registry, [:unique, :anonymous_registry], id: :anonymous_registry)
+      supervisor(Registry, [:unique, :individual_user_registry], id: :individual_user_registry),
+      supervisor(Registry, [:unique, :notification_process_registry], id: :notification_process_registry),
+      supervisor(Registry, [:unique, :anonymous_user_registry], id: :anonymous_user_registry),
+      supervisor(User.AnonManager, [User.AnonManager, User.IndividualsManager, Listing.Registry]),
+      supervisor(User.IndividualsManager, [User.IndividualsManager, Notification.Registry, Listing.Registry])
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html

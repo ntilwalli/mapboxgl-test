@@ -4,7 +4,7 @@ defimpl Poison.Encoder, for: Shared.CheckIn do
     
     out = "{\"user\":#{Poison.encode!(user)},\"position\":#{Geo.JSON.encode(geom) |> Poison.encode!},\"time\":#{Poison.encode!(inserted_at)}}"
     IO.puts "Encode check-in"
-    IO.inspect(out)
+    #IO.inspect out
     Poison.Encoder.BitString.encode("{}", options)
   end
 end

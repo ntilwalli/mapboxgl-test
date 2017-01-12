@@ -5,44 +5,74 @@ defmodule User.Anon do
   alias Shared.Message.Incoming.Search.Query, as: SearchQueryMessage
   alias Shared.Message.Listing.CheckIn, as: CheckInMessage
   
-  def start_link(listing_registry, anonymous_id) do
-    GenServer.start_link(__MODULE__, {:ok, listing_registry, anonymous_id}, [])
+  def start_link(individuals_manager, listing_registry, anonymous_id) do
+    name = via_tuple(anonymous_id)
+    GenServer.start_link(__MODULE__, {:ok, anonymous_id, individuals_manager, listing_registry}, name: name)
+    #Registry.lookup(:anonymous_user_registry, anonymous_id)
   end
 
-  def login(server, message) do
-    GenServer.call(server, {:login, message})
+
+  def ensure_started(anonymous_id) do
+    name = via_tuple(anonymous_id)
+    case Registry.lookup(:anonymous_user_registry, anonymous_id) do
+      [] -> 
+        User.AnonManager.start_user(User.AnonManager, anonymous_id)
+        name
+      [head | tail] -> 
+        name
+    end
   end
 
-  def oauth_login(server, message) do
-    GenServer.call(server, {:oauth_login, message})
+  defp via_tuple(anonymous_id) do
+    {:via, Registry, {:anonymous_user_registry, anonymous_id}}
   end
 
-  def oauth_signup(server, message) do
-    GenServer.call(server, {:oauth_signup, message})
+
+  def login(anonymous_id, message) do
+    name = ensure_started(anonymous_id)
+    GenServer.call(name, {:login, message})
   end
 
-  def signup(server, message) do
-    GenServer.call(server, {:signup, message})
+  def oauth_login(anonymous_id, message) do
+    name = ensure_started(anonymous_id)
+    GenServer.call(name, {:oauth_login, message})
   end
 
-  def route(server, "/register_app_load") do
+  def oauth_signup(anonymous_id, message) do
+    name = ensure_started(anonymous_id)
+    GenServer.call(name, {:oauth_signup, message})
+  end
+
+  def signup(anonymous_id, message) do
+    name = ensure_started(anonymous_id)
+    GenServer.call(name, {:signup, message})
+  end
+
+  def route(anonymous_id, "/register_app_load") do
     :ok
   end
 
-  def route(server, "/search", query) do
-    GenServer.call(server, {:search, query})
+  def route(anonymous_id, "/search", query) do
+    name = ensure_started(anonymous_id)
+    GenServer.call(name, {:search, query})
   end
 
-  def route(server, "/retrieve_listing", listing_id) do
-    GenServer.call(server, {:retrieve_listing, listing_id})
+  def route(anonymous_id, "/retrieve_listing", listing_id) do
+    name = ensure_started(anonymous_id)
+    GenServer.call(name, {:retrieve_listing, listing_id})
   end
 
-  def route(server, unknown_route, message) do 
+  def route(anonymous_id, unknown_route, message) do 
+    name = ensure_started(anonymous_id)
     {:error, "Unknown route: #{unknown_route}"}
   end
 
-  def init({:ok, listing_registry, anonymous_id}) do
-    {:ok, %{anonymous_id: anonymous_id, listing_registry: listing_registry}}
+  def init({:ok, anonymous_id, individuals_manager, listing_registry}) do
+    {:ok, %{
+      individuals_manager: individuals_manager,
+      listing_registry: listing_registry, 
+      anonymous_id: anonymous_id
+    }}
   end
 
   def handle_call({:login, info}, _from, state) do
@@ -59,7 +89,7 @@ defmodule User.Anon do
     out = Auth.Manager.signup(Auth.Manager, info)
     case out do
       {:ok, user} -> 
-        User.Registry.create_individual_process(User.Registry, user)
+        User.IndividualsManager.start_user(state.individuals_manager, user)
         {:stop, :normal, out, nil}
       _ -> 
         {:reply, out, state}
@@ -71,7 +101,7 @@ defmodule User.Anon do
     case out do
       {:ok, user} -> 
         #IO.puts "Handling oauth signup"
-        User.Registry.create_individual_process(User.Registry, user)
+        User.IndividualsManager.start_user(state.individuals_manager, user)
         {:reply, out, state}
       _ -> 
         {:reply, out, state}

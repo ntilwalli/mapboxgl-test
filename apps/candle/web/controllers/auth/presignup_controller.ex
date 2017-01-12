@@ -23,8 +23,8 @@ defmodule Candle.PresignupController do
                 render(conn, message: %{type: "error", data: "Sent pre-sign-up params invalid"})
               true ->
                 credentials = apply_changes(cs)
-                {:ok, pid} = User.Registry.lookup_anonymous(User.Registry, conn.cookies["aid"])
-                case User.Anon.oauth_signup(pid, {credentials, partial}) do
+                aid = conn.cookies["aid"]
+                case User.Anon.oauth_signup(aid, {credentials, partial}) do
                   {:error, error} -> 
                     render(conn, message: %{type: "error", data: Map.put(params, "errors", [convert_error(error)])})
                   {:ok, user} ->

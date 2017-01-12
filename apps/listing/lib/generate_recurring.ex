@@ -80,10 +80,10 @@ defmodule Listing.GenerateRecurring do
         already_existing = MapSet.new(children_date_time_8601)
         to_be_added = MapSet.difference(calculated, already_existing) |> Enum.to_list
         if Enum.count(to_be_added) > 0 do
-          IO.puts "recurrences_8601"
-          IO.inspect recurrences_8601
-          IO.puts "children_date_time_8601"
-          IO.inspect children_date_time_8601
+          #IO.puts "recurrences_8601"
+          #IO.inspect recurrences_8601
+          #IO.puts "children_date_time_8601"
+          #IO.inspect children_date_time_8601
           IO.puts "to_be_added"
           IO.inspect to_be_added
         end

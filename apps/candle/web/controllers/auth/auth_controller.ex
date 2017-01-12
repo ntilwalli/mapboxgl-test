@@ -30,8 +30,8 @@ defmodule Candle.AuthController do
           profile: auth.info
         }
 
-        {:ok, pid} = User.Registry.lookup_anonymous(User.Registry, conn.cookies["aid"])
-        case User.Anon.oauth_login(pid, partial) do
+        aid = conn.cookies["aid"]
+        case User.Anon.oauth_login(aid, partial) do
           {:ok, user} ->
             Logger.info "Successfully found oauth user"
             conn
@@ -53,8 +53,7 @@ defmodule Candle.AuthController do
 
   def logout(conn, _params, current_user, _claims) do
     if current_user do
-      {:ok, pid} = User.Registry.lookup_user(User.Registry, current_user)
-      :ok = User.Individual.logout(pid)
+      :ok = User.Individual.logout(current_user)
     end
 
     conn

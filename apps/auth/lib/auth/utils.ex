@@ -105,7 +105,8 @@ defmodule Auth.Utils do
 
   defp create_user(%User{name: name, email: email, username: username, type: type}, repo) do
     result = User.registration_changeset(%User{}, scrub(%{name: name, email: email, username: username, type: type}))
-    |> repo.insert
+      |> repo.insert
+      
     case result do
       {:ok, user} -> {:ok, user}
       {:error, reason} -> repo.rollback(reason)

@@ -16,11 +16,11 @@ function intent(sources) {
 
 function renderNavigator() {
   return nav('.navbar.navbar-light.bg-faded.container-fluid', [
-    div('.row.no-gutter', [
+    div('.row.no-gutters', [
       div('.col-6', [
         button('.appBrandButton.hopscotch-icon.nav-brand', []),
       ]),
-      div('.col-6', [
+      div('.col-6.d-flex.justify-content-end', [
         button('.appShowMenuButton.nav-text-button.fa.fa-bars.btn.btn-link.d-flex.justify-content-end', []),
       ]),
     ])

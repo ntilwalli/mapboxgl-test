@@ -1,19 +1,26 @@
 defmodule User.Individual.Supervisor do
   use Supervisor
 
-  def start_link(name, listing_registry) do
-    Supervisor.start_link(__MODULE__, {:ok, listing_registry}, name: name)
+
+
+  def start_link(notification_registry, listing_registry, user) do
+    #IO.inspect {:starting_individual_supervisor, user}
+    #IO.inspect {:n_r, notification_registry}
+    #IO.inspect {:l_r, listing_registry}
+    Supervisor.start_link(__MODULE__, {:ok, user, notification_registry, listing_registry})
+    #IO.inspect out
+    #out
   end
 
-  def start_user(server, user) do
-    Supervisor.start_child(server, [user])
-  end
 
-  def init({:ok, listing_registry}) do 
+  def init({:ok, user, notification_registry, listing_registry}) do
+    #IO.inspect {:initing_individual_supervisor, user}
+    
     children = [
-      worker(User.Individual, [listing_registry], restart: :transient),
+      worker(User.Individual, [user, listing_registry])  
+      #worker(User.Notifications, [user, notification_registry]),
     ]
 
-    supervise(children, strategy: :simple_one_for_one)
+    supervise(children, strategy: :one_for_one)
   end
 end

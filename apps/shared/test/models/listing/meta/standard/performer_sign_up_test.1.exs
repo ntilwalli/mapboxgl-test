@@ -15,7 +15,7 @@
     }
 
     cs = Standard.PerformerSignUp.changeset(%Standard.PerformerSignUp{}, bs)
-    IO.inspect cs
+    #IO.inspect cs
     assert cs.valid? == true
   end
 end

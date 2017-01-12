@@ -17,8 +17,8 @@ defmodule Candle.SignupController do
             render(conn, message: %{type: "error", data: "Sent sign-up params invalid"})
           true ->
             credentials = apply_changes(cs)
-            {:ok, pid} = User.Registry.lookup_anonymous(User.Registry, conn.cookies["aid"])
-            case User.Anon.signup(pid, credentials) do
+            aid = conn.cookies["aid"]
+            case User.Anon.signup(aid, credentials) do
               {:error, error} ->
                 render(conn, message: %{type: "error", data: Map.put(params, "errors", [convert_error(error)])})
               {:ok, user} ->

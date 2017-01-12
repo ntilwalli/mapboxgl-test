@@ -9,7 +9,7 @@ defmodule Candle.LoginController do
   plug Ueberauth
 
   def index(conn, params, current_user, _claims) do
-    IO.inspect current_user
+    #IO.inspect {:current_user, current_user}
     case current_user do
       nil ->
         cs = LoginMessage.changeset(%LoginMessage{}, params)
@@ -18,8 +18,8 @@ defmodule Candle.LoginController do
             render(conn, message: %{type: "error", data: "Sent log-in params invalid"})
           true ->
             credentials = apply_changes(cs)
-            {:ok, pid} = User.Registry.lookup_anonymous(User.Registry, conn.cookies["aid"])
-            case User.Anon.login(pid, credentials) do
+            aid = conn.cookies["aid"]
+            case User.Anon.login(aid, credentials) do
               {:error, error} ->
                 render(conn, message: %{type: "error", data: Map.put(%{username: credentials.username}, "errors", [convert_error(error)])})
               {:ok, user} ->

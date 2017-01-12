@@ -9,75 +9,109 @@ defmodule User.Individual do
   alias Shared.Message.DateTimeRange, as: DateTimeRangeMessage
   alias Shared.ListingSession, as: ListingSessionMessage
 
-  def start_link(listing_registry, user) do
-    GenServer.start_link(__MODULE__, {:ok, listing_registry, user}, [])
+  def start_link(user, listing_registry) do
+    name = via_tuple(user)
+    GenServer.start_link(__MODULE__, {:ok, user, listing_registry}, name: name)
   end
 
-  def logout(server) do
+
+  def ensure_started(user) do
+    name = via_tuple(user)
+    #IO.inspect {:ensure_started, user}
+    case Registry.lookup(:individual_user_registry, user.id) do
+      [] -> 
+        #IO.inspect {:not_started, user}
+        User.IndividualsManager.start_user(User.IndividualsManager, user)
+        name
+      [head | tail] -> 
+        #IO.inspect {:already_started, user}
+        name
+    end
+  end
+
+  defp via_tuple(user) do
+    {:via, Registry, {:individual_user_registry, user.id}}
+  end
+
+  def logout(user) do
     :ok
   end
 
-  def route(server, "/register_app_load") do
+  def route(user, "/register_app_load") do
     :ok
   end
 
-  def route(server, "/home/profile") do
-    GenServer.call(server, :home_profile)
+  def route(user, "/home/profile") do
+    name = ensure_started(user)
+    GenServer.call(name, :home_profile)
   end
 
-  def route(server, "/settings") do
-    GenServer.call(server, :settings)
+  def route(user, "/settings") do
+    name = ensure_started(user)
+    GenServer.call(name, :settings)
   end
 
-  def route(server, "/listing_session/new") do
-    GenServer.call(server, :new_listing_session)
+  def route(user, "/listing_session/new") do
+    name = ensure_started(user)
+    GenServer.call(name, :new_listing_session)
   end
 
-  def route(server, "/listing_session/retrieve", id) do
-    GenServer.call(server, {:retrieve_listing_session, id})
+  def route(user, "/listing_session/retrieve", id) do
+    name = ensure_started(user)
+    GenServer.call(name, {:retrieve_listing_session, id})
   end
 
-  def route(server, "/listing_session/save", params) do
-    GenServer.call(server, {:save_listing_session, params})
+  def route(user, "/listing_session/save", params) do
+    name = ensure_started(user)
+    GenServer.call(name, {:save_listing_session, params})
   end
 
-  def route(server, "/listing_session/delete", params) do
-    GenServer.call(server, {:delete_listing_session, params})
+  def route(user, "/listing_session/delete", params) do
+    name = ensure_started(user)
+    GenServer.call(name, {:delete_listing_session, params})
   end
 
-  def route(server, "/listing_session/release", params) do
-    GenServer.call(server, {:release_listing_session, params})
+  def route(user, "/listing_session/release", params) do
+    name = ensure_started(user)
+    GenServer.call(name, {:release_listing_session, params})
   end
 
-  def route(server, "/home/listings") do
-    GenServer.call(server, {:home_listings})
+  def route(user, "/home/listings") do
+    name = ensure_started(user)
+    GenServer.call(name, {:home_listings})
   end
 
-  def route(server, "/search", query) do
-    GenServer.call(server, {:search, query})
+  def route(user, "/search", query) do
+    name = ensure_started(user)
+    GenServer.call(name, {:search, query})
   end
 
-  def route(server, "/settings", settings) do
-    GenServer.call(server, {:settings, settings})
+  def route(user, "/settings", settings) do
+    name = ensure_started(user)
+    GenServer.call(name, {:settings, settings})
   end
 
-  def route(server, "/retrieve_listing", listing_id) do
-    GenServer.call(server, {:retrieve_listing, listing_id})
+  def route(user, "/retrieve_listing", listing_id) do
+    name = ensure_started(user)
+    GenServer.call(name, {:retrieve_listing, listing_id})
   end
 
-  def route(server, "/home/check_ins", message) do
-    GenServer.call(server, {:home_check_ins, message})
+  def route(user, "/home/check_ins", message) do
+    name = ensure_started(user)
+    GenServer.call(name, {:home_check_ins, message})
   end
 
-  def route(server, "/check_in", message) do
-    GenServer.call(server, {:check_in, message})
+  def route(user, "/check_in", message) do
+    name = ensure_started(user)
+    GenServer.call(name, {:check_in, message})
   end
 
-  def route(server, unknown_route, message) do 
+  def route(user, unknown_route, message) do 
+    #name = ensure_started(user)
     {:error, "Unknown route: #{unknown_route}"}
   end
 
-  def init({:ok, listing_registry, user}) do
+  def init({:ok, user, listing_registry}) do
     {:ok, %{
       user: user,
       listing_registry: listing_registry
