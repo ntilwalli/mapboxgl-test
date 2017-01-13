@@ -37,6 +37,7 @@
         "customTypings/geolib.d.ts",
         "customTypings/history.d.ts",
         "customTypings/twitter-validate.d.ts",
+        //"typings/index.d.ts",
         "web/static/ts/main.ts"
     ],
     "exclude": [

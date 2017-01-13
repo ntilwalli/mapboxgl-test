@@ -7,6 +7,7 @@ import {makeRouterDriver} from 'cyclic-router'
 import * as History from 'history';
 import storageDriver from '@cycle/storage'
 import {makeMapJSONDriver} from 'cycle-mapboxgl'
+import makePhoenixDriver from './phoenixDriver'
 //import isolate from '@cycle/isolate'
 import queryString = require('query-string')
 
@@ -108,6 +109,7 @@ function main(sources) {
     ),//.do(x => console.log(`main/http sink`, x)),
     Router: O.merge(out.Router, toRouter$, fromModalRouter),
     Storage: O.merge(out.Storage, settingsService.Storage, geoService.Storage, fromModalStorage),
+    Phoenix: O.never(),
     MessageBus: O.merge(
       out.MessageBus, 
       settingsService.MessageBus,
@@ -126,5 +128,6 @@ Cycle.run(wrappedMain, {
   HTTP: makeHTTPDriver(),
   Router: makeRouterDriver(History.createHistory() as any, routeFunction, {capture: true}),
   Global: makeGlobalDriver(),
-  Storage: storageDriver
+  Storage: storageDriver,
+  Phoenix: makePhoenixDriver()
 })

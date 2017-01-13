@@ -1,0 +1,5 @@
+{
+  "globalDependencies": {
+    "phoenix": "registry:dt/phoenix#0.0.0+20161005184000"
+  }
+}

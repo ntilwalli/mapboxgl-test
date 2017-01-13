@@ -24,6 +24,10 @@ defmodule Notification.Manager do
     GenServer.cast(server, {:notify, notification_item})
   end
 
+  def read(server, user, notification_ids) do
+    GenServer.cast(server, {:read, notification_ids})
+  end
+
   def init(:ok) do
     {:ok, %{}}
   end
@@ -71,6 +75,14 @@ defmodule Notification.Manager do
     distribute(notifications)
 
     {:noreply, state}
+  end
+
+  def handle_call({:read, user, notification_ids}, from, state) do
+    IO.inspect user.username, label: "Register user for notifications"
+    now = Calendar.DateTime.now_utc()
+    query = from(p in Shared.Notifications, where: p.id in ^notification_ids, update: [set: [read_at: ^now]])
+    query |> Shared.Repo.update_all([])
+    {:reply, {:ok, retrieve(user)}, state}
   end
 
   def handle_info({:distribute, user_id, message}, %{subscribers_refs: s_refs} = state) do

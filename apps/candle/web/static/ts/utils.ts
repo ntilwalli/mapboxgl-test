@@ -136,6 +136,7 @@ export function mergeSinks(...components) {
   const Global = mergeSelective(...components.map(c => c.Global).filter(x => !!x)).publish().refCount()
   const Storage = mergeSelective(...components.map(c => c.Storage).filter(x => !!x)).publish().refCount()
   //const Heartbeat = mergeSelective(...components.map(c => c.Heartbeat).filter(x => !!x)).publish().refCount()
+  const Phoenix = mergeSelective(...components.map(c => c.Phoenix).filter(x => !!x)).publish().refCount()
   const MessageBus = mergeSelective(...components.map(c => c.MessageBus).filter(x => !!x)).publish().refCount()
   return {
     MapJSON, HTTP, Router, Global, Storage, MessageBus
@@ -151,6 +152,7 @@ export function normalizeComponent(component) {
     Global: defaultNever(component, `Global`).publish().refCount(),
     Storage: defaultNever(component, `Storage`).publish().refCount(),
     HTTP: defaultNever(component, `HTTP`).publish().refCount(),
+    Phoenix: defaultNever(component, 'Phoenix').publish().refCount(),
     // Heartbeat: defaultNever(component, `Heartbeat`).publish().refCount(),
     MessageBus: defaultNever(component, `MessageBus`).publish().refCount()
   }
@@ -164,6 +166,7 @@ export function componentify(component$) {
     Global: normalizeSink(component$, `Global`).publish().refCount(),
     Storage: normalizeSink(component$, `Storage`).publish().refCount(),
     HTTP: normalizeSink(component$, `HTTP`).publish().refCount(),
+    Phoenix: normalizeSink(component$, 'Phoenix').publish().refCount(),
     //Heartbeat: normalizeSink(component$, `Heartbeat`).publish().refCount(),
     MessageBus: normalizeSink(component$, `MessageBus`).publish().refCount(),
   }
