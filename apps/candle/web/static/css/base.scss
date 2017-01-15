@@ -359,6 +359,23 @@ span.close::after {
 
 
 
+.arrow-down {
+  width: 0; 
+  height: 0; 
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid black;
+}
+
+.btn.btn-link:hover {
+  .arrow-down{
+    border-top-color: $crayola-orange;
+  }
+}
+
+
+
+
 
 @font-face {
   font-family: Corona4Typewriter;

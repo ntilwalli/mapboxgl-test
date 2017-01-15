@@ -7,9 +7,9 @@ defmodule User.Individual.Supervisor do
     #IO.inspect {:starting_individual_supervisor, user}
     #IO.inspect {:n_r, notification_registry}
     #IO.inspect {:l_r, listing_registry}
-    Supervisor.start_link(__MODULE__, {:ok, user, notification_manager, listing_registry, notification_registry})
+    out =  Supervisor.start_link(__MODULE__, {:ok, user, notification_manager, listing_registry, notification_registry})
     #IO.inspect out
-    #out
+    out
   end
 
 

@@ -11,7 +11,11 @@ defmodule User.Individual do
 
   def start_link(user, listing_registry) do
     name = via_tuple(user)
-    GenServer.start_link(__MODULE__, {:ok, user, listing_registry}, name: name)
+    out = GenServer.start_link(__MODULE__, {:ok, user, listing_registry}, name: name)
+    #IO.inspect {:individual_start_link, out}
+    #IO.inspect {:stuff_before, Registry.lookup(:individual_user_registry, user.id)}
+    #IO.inspect {:started_individual, user}
+    out
   end
 
 
@@ -38,6 +42,11 @@ defmodule User.Individual do
     :ok
   end
 
+  def retrieve_notifications(user) do
+    name = ensure_started(user)
+    GenServer.call(name, :retrieve_notifications)
+  end
+
   def route(user, "/register_app_load") do
     :ok
   end
@@ -60,6 +69,11 @@ defmodule User.Individual do
   def route(user, "/listing_session/retrieve", id) do
     name = ensure_started(user)
     GenServer.call(name, {:retrieve_listing_session, id})
+  end
+
+  def route(user, "/notifications/read", notification_ids) do
+    name = ensure_started(user)
+    GenServer.cast(name, {:read_notifications, notification_ids})
   end
 
   def route(user, "/listing_session/save", params) do
@@ -108,7 +122,6 @@ defmodule User.Individual do
   end
 
   def route(user, unknown_route, message) do 
-    #name = ensure_started(user)
     {:error, "Unknown route: #{unknown_route}"}
   end
 
@@ -206,16 +219,6 @@ defmodule User.Individual do
     end
   end
 
-  defp retrieve_listing(listing_id, l_reg, user) do
-    case Listing.Registry.lookup(l_reg, listing_id) do
-      {:ok, pid} ->
-        {:ok, result} = Listing.Worker.retrieve(pid, user)
-        {:ok, result}
-      {:error, message} ->
-        {:error, message}
-    end
-  end
-
   def handle_call({:check_in, params}, _from, %{user: user, listing_registry: l_reg} = state) do
     cs = CheckInMessage.changeset(%CheckInMessage{}, params)
     case cs.valid? do
@@ -271,6 +274,25 @@ defmodule User.Individual do
         {:reply, {:ok, result}, state}
       false ->
         {:reply, {:error, "Sent invalid settings parameters"}, state}
+    end
+  end
+
+  def handle_call(:retrieve_notifications, _from, %{user: user} = state) do
+    {:reply, User.Notifications.retrieve(user), state}
+  end
+
+  def handle_cast({:read_notifications, notification_ids}, %{user: user} = state) do
+    User.Notifications.read(user, notification_ids)
+    {:noreply, state}
+  end
+
+  defp retrieve_listing(listing_id, l_reg, user) do
+    case Listing.Registry.lookup(l_reg, listing_id) do
+      {:ok, pid} ->
+        {:ok, result} = Listing.Worker.retrieve(pid, user)
+        {:ok, result}
+      {:error, message} ->
+        {:error, message}
     end
   end
 end

@@ -9,13 +9,18 @@ defmodule User.Notifications do
 
 
   def start_link(user, notification_manager, notification_registry) do
-    #IO.inspect {:start_link_notifications, user}
     name = via_tuple(user)
     GenServer.start_link(__MODULE__, {:ok, user, notification_manager, notification_registry}, name: name)
   end
 
-  def read(server, notification_ids) when is_list(notification_ids) do
-    GenServer.cast(server, {:read, notification_ids})
+  def read(user, notification_ids) when is_list(notification_ids) do
+    name = via_tuple(user)
+    GenServer.cast(name, {:read, notification_ids})
+  end
+
+  def retrieve(user) do
+    name = via_tuple(user)
+    GenServer.call(name, :retrieve)
   end
 
   defp via_tuple(user) do
@@ -25,6 +30,9 @@ defmodule User.Notifications do
   def init({:ok, user, notification_manager, notification_registry}) do
     Notification.Manager.add_user(user)
     {:ok, notifications} = out  = Notification.Manager.retrieve(notification_manager, user)
+    IO.inspect {:init_broadcast_notifications, notifications}
+    schedule_init_broadcast()
+    #Candle.Notification.IndividualChannel.broadcast_notifications(user, notifications)
     {:ok, %{
       user: user,
       notification_manager: notification_manager, 
@@ -35,11 +43,27 @@ defmodule User.Notifications do
 
   def handle_cast({:read, notification_ids}, %{user: user, notification_manager: n_mgr, notifications: notifications} = state) do
     notifications = Notification.Manager.read(n_mgr, user, notification_ids)
-    {:ok, %{state | notifications: notifications}}
+    Candle.Notification.IndividualChannel.broadcast_notifications(user, notifications)
+    {:noreply, %{state | notifications: notifications}}
   end
+
+  def handle_call(:retrieve, _from, %{notifications: notifications} = state) do
+    {:reply, {:ok, notifications}, state}
+  end
+
 
   def handle_info({:notify, message}, %{user: user, notification_manager: notification_manager, notification_registry: notification_registry} = state) do
     IO.inspect message, label: "Received message"
     {:noreply, state}
+  end
+
+  def handle_info(:broadcast, %{user: user, notifications: notifications} = state) do
+    Candle.Notification.IndividualChannel.broadcast_notifications(user, notifications)
+    {:noreply, state}
+  end
+
+
+  defp schedule_init_broadcast() do
+    Process.send_after(self(), :broadcast, 1000) 
   end
 end

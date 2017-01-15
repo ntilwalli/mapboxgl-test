@@ -13,6 +13,7 @@ import Participation from './participation'
 import HomeMenu from './navigator'
 import UserProfile from '../userProfile/main'
 import Listings from './listings/main'
+import Messages from './messages/main'
 
 function NotImplemented(sources, inputs) {
   return {
@@ -86,7 +87,9 @@ export default function main(sources, inputs): any {
         return UserProfile(sources, inputs)
       } else if (page === 'listings') {
         return Listings(sources, inputs)
-      } else {
+      } else if (page === 'messages') {
+        return Messages(sources, inputs)
+      }  else {
         return NotImplemented(sources, inputs)
       }
     }).publishReplay(1).refCount()

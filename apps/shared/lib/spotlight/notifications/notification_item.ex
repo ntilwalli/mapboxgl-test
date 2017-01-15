@@ -1,7 +1,7 @@
 defmodule Shared.NotificationItem do
   use Shared.Lib, :model
 
-  @derive {Poison.Encoder, except: [:__meta__]}
+  @derive {Poison.Encoder, except: [:__meta__, :user, :user_group]}
   @primary_key {:id, :id, autogenerate: true}
   schema "notification_items" do
     field :sort_id, :id

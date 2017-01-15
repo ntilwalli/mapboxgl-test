@@ -47,7 +47,7 @@ defmodule User.Mixfile do
   defp deps do
     [
       {:shared, in_umbrella: true},
-      {:auth, in_umbrella: true}
+      {:auth, in_umbrella: true},
     ]
   end
 end

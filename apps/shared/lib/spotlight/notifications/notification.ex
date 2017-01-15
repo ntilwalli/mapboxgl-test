@@ -1,7 +1,7 @@
 defmodule Shared.Notification do
   use Shared.Lib, :model
 
-  @derive {Poison.Encoder, except: [:__meta__]}
+  @derive {Poison.Encoder, except: [:__meta__, :user]}
   @primary_key {:id, :id, autogenerate: true}
   schema "notifications" do
     field :read_at, :utc_datetime

@@ -30,7 +30,6 @@ defmodule Listing.Registry do
   def init({:ok, worker_supervisor}) do
     Logger.debug "Initializing listing registry..."
     state = get_initial_state(worker_supervisor)
-    test()
     {:ok, state}
   end
 

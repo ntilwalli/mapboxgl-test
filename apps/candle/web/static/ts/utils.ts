@@ -139,7 +139,7 @@ export function mergeSinks(...components) {
   const Phoenix = mergeSelective(...components.map(c => c.Phoenix).filter(x => !!x)).publish().refCount()
   const MessageBus = mergeSelective(...components.map(c => c.MessageBus).filter(x => !!x)).publish().refCount()
   return {
-    MapJSON, HTTP, Router, Global, Storage, MessageBus
+    MapJSON, HTTP, Router, Global, Storage, MessageBus, Phoenix
   }
 }
 

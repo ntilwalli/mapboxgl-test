@@ -109,7 +109,7 @@ function main(sources) {
     ),//.do(x => console.log(`main/http sink`, x)),
     Router: O.merge(out.Router, toRouter$, fromModalRouter),
     Storage: O.merge(out.Storage, settingsService.Storage, geoService.Storage, fromModalStorage),
-    Phoenix: O.never(),
+    Phoenix: O.merge(out.Phoenix),
     MessageBus: O.merge(
       out.MessageBus, 
       settingsService.MessageBus,
