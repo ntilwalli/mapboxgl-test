@@ -36,16 +36,21 @@ function drillInflate(result) {
   return result
 }
 
-function view(components) {
-  return combineObj(components)
-    .debounceTime(0)
-    .map((components: any) => {
+function view(components, active$) {
+  return combineObj({
+    components: combineObj(components),
+    active$
+  }).debounceTime(0)
+    .map((info: any) => {
+      const {components, active} = info
       const {navigator, content} = components
       return div(`.screen.listing-profile`, [
         nav('.navbar.navbar-light.bg-faded.container-fluid.fixed-top.navigator', [
           navigator
         ]),
-        content
+        div({class: {"translate-down": active}}, [
+          content
+        ])
       ])
     })
 }
@@ -165,7 +170,7 @@ export default function main(sources, inputs): any {
       const merged = mergeSinks(navigator, content)
       return {
         ...merged,
-        DOM: view(components)
+        DOM: view(components, navigator.active$)
       }
     })
   ).publishReplay(1).refCount()
@@ -189,7 +194,9 @@ export default function main(sources, inputs): any {
   return {
     ...component,
     Router: O.merge(
-      component.Router,
+      component.Router.map(x => {
+        return x
+      }),
       muxed_http.listing_result_from_http$.map(x => {
         return {
           type: 'replace',
@@ -205,7 +212,9 @@ export default function main(sources, inputs): any {
           pathname: '/'
         }
       })
-    ),
+    ).map(x => {
+      return x
+    }),
     HTTP: O.merge(
       component.Router,
       to_http$

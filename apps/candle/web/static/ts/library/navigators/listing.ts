@@ -12,6 +12,8 @@ const routes = [
   {pattern: /^\/recurrences$/, value: {type: 'success', data: 'recurrences'}},
   {pattern: /^\/messages$/, value: {type: 'success', data: 'messages'}},
   {pattern: /^\/settings$/, value: {type: 'success', data: 'settings'}},
+  {pattern: /^\/notifications$/, value: {type: 'success', data: 'notifications'}},
+  {pattern: /^\/settings$/, value: {type: 'success', data: 'settings'}},
   {pattern: /^\/$/, value: {type: 'success', data: 'profile'}},
   {pattern: /.*/, value: {type: "error"}}
 ]
@@ -21,8 +23,8 @@ function intent(sources) {
 
   const recurrences$ = DOM.select('.appRecurrencesButton').events('click').mapTo('recurrences')
   const messages$ = DOM.select('.appMessagesButton').events('click').mapTo('messages')
-  const settings$ = DOM.select('.appSettingsButton').events('click').mapTo('settings')
-  const calendar$ = DOM.select('.appCalendarButton').events('click').mapTo('calendar')
+  //const settings$ = DOM.select('.appSettingsButton').events('click').mapTo('settings')
+  //const calendar$ = DOM.select('.appCalendarButton').events('click').mapTo('calendar')
   const profile$ = DOM.select('.appProfileButton').events('click').mapTo('profile')
   const ellipsis$ = DOM.select('.appEllipsisButton').events('click').mapTo('ellipsis')
   const show_menu$ = DOM.select('.appShowMenuButton').events('click')
@@ -38,9 +40,12 @@ function intent(sources) {
 
   return {
     page$: O.merge(
-      recurrences$, messages$, settings$, calendar$, profile$
-    ).publishReplay(1).refCount(),
-    ellipsis$,
+      recurrences$, messages$, profile$
+    )
+    .map(x => {
+      return x
+    })
+    .publishReplay(1).refCount(),
     show_menu$,
     brand_button$
   }
@@ -97,11 +102,26 @@ function reducers(actions, channels_actions, inputs) {
 function model(actions, channels_actions, inputs) {
   const reducer$ = reducers(actions, channels_actions, inputs)
   return combineObj({
-      authorization$: inputs.Authorization.status$,
-      listing_result$: inputs.props$,
-      page$: inputs.page$,
-      notifications$: channels_actions.notifications$.take(1),
+      authorization$: inputs.Authorization.status$
+        .map(x => {
+          return x
+        }),
+      listing_result$: inputs.props$
+        .map(x => {
+          return x
+        }),
+      page$: inputs.page$        
+        .map(x => {
+          return x
+        }),
+      notifications$: channels_actions.notifications$.take(1)
+        .map(x => {
+          return x
+        }),
       messages$: channels_actions.messages$.take(1)
+        .map(x => {
+          return x
+        }),
     })
     .switchMap((info: any) => {
       return reducer$
@@ -154,8 +174,6 @@ function view(state$, ellipsis_item$) {
             ]),
           ])
         ]) : null,
-        authorization ? span(settings_class, [button('.hidden-md-up.btn.btn-link.appSettingsButton.menu-item', [span('.fa.fa-gear', [])])]) : null,
-        ellipsis_item,
         //span(calendar_class, [button('.hidden-md-up.btn.btn-link.appCalendarButton.menu-item', [span('.fa.fa-calendar', [])])]),
         type === 'recurring' || authorization ? span(profile_class, [button('.hidden-sm-down.btn.btn-link.appProfileButton.menu-item', [span('.fa.fa-user.mr-xs', []), span('.fs-1', ['Profile'])])]) : null,
         type === 'recurring' ? span(recurrences_class, [button('.hidden-sm-down.btn.btn-link.appRecurrencesButton.menu-item', [span('.fa.fa-microphone.mr-xs', []), span('.fs-1', ['Recurrences'])])]) : null,
@@ -166,8 +184,8 @@ function view(state$, ellipsis_item$) {
             ]), 
             span('.fs-1', ['Messages'])
           ])]) : null,
-        authorization ? span(settings_class, [button('.hidden-sm-down.btn.btn-link.appSettingsButton.menu-item', [span('.fa.fa-gear.mr-xs', []), span('.fs-1', ['Settings'])])]) : null,
         //span(calendar_class, [button('.hidden-sm-down.btn.btn-link.appCalendarButton.menu-item', [span('.fa.fa-calendar.mr-xs', []), span('.fs-1', ['Calendar'])])]),
+        ellipsis_item,
       ]) : span('.navigator', []),
       span('.appShowMenuButton', [
         div('.nav-text-button.fa.fa-bars.btn.btn-link.pt-25', {style: {position: "relative"}}, [
@@ -200,12 +218,11 @@ export default function main(sources, inputs) {
   const muxed_router = muxRouter(sources)
   const actions = intent(sources)
   const channels_actions = channelsIntent(sources, inputs)
-  const external_selected$ = createProxy()
   const state$ = model(actions, channels_actions, {...inputs, page$: muxed_router.valid_path$})// inputs.props$.publishReplay(1).refCount()
 
   const ellipsis_item$ = inputs.Authorization.status$.map(status => {
     if (status) {
-      return EllipsisItem(sources, {...inputs, props$: O.of({}), selected$: O.never()})
+      return EllipsisItem(sources, {...inputs, props$: muxed_router.valid_path$})
     } else {
       return {
         DOM: O.of(null),
@@ -228,12 +245,17 @@ export default function main(sources, inputs) {
       }
     }).publish().refCount()
 
+  const page$ = O.merge(actions.page$, ellipsis_item$.switchMap(x => x.output$))
+    .map(x => {
+      return x
+    })
+
   return {
     ...ellipsis_item,
     DOM: vtree$,
     Router: O.merge(
       actions.brand_button$.mapTo('/'),
-      actions.page$.withLatestFrom(state$, (page, state) => {
+      page$.withLatestFrom(state$, (page, state) => {
         const out = page === 'profile' ? sources.Router.createHref('') : sources.Router.createHref('/' + page)
         return {
           action: 'PUSH',
@@ -254,6 +276,7 @@ export default function main(sources, inputs) {
       }
     }),
     MessageBus: to_message_bus$,
-    output$: state$.pluck('page').distinctUntilChanged()
+    output$: state$.pluck('page').distinctUntilChanged(),
+    active$: ellipsis_item$.switchMap(x => x.active$)
   }
 }

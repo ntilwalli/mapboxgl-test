@@ -357,7 +357,9 @@ span.close::after {
   content: '×';
 }
 
-
+.bg-color-crayola {
+  background-color: $crayola-orange
+}
 
 .arrow-down {
   width: 0; 
@@ -367,15 +369,30 @@ span.close::after {
   border-top: 5px solid black;
 }
 
-.btn.btn-link:hover {
-  .arrow-down{
-    border-top-color: $crayola-orange;
-  }
+.arrow-right {
+  width: 0; 
+  height: 0; 
+  border-left: 5px solid black;
+  border-right: 5px solid transparent;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
 }
 
 
+.btn.btn-link:hover {
+  .arrow-down {
+    border-top-color: $crayola-orange;
+  }
 
+  .arrow-right {
+    border-left-color: $crayola-orange;
+  }
 
+}
+
+.translate-down {
+  transform: translateY(6rem)
+}
 
 @font-face {
   font-family: Corona4Typewriter;

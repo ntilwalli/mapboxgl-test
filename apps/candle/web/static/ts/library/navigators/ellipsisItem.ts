@@ -1,5 +1,5 @@
 import {Observable as O} from 'rxjs'
-import {div, button, span} from '@cycle/dom'
+import {div, button, span, ul, li} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 import {between, notBetween, combineObj, spread} from '../../utils'
 
@@ -69,22 +69,20 @@ function channelsIntent(sources, inputs) {
 
 function reducers(actions, channels_actions, inputs) {
   const active_r = actions.active$.map(_ => state => {
-    state.update('active', active => !active)
-  })
-
-  const selected_r = actions.selected$.map(selected => state => {
-    state.set('selected', selected).set('display_icon', selected).set('active', false)
-  })
-
-  const unselected_r = inputs.selected$.map(_ => state => {
-    state.set('selected', undefined).set('active', false)
+    return state.update('active', active => {
+      return !active
+    })
   })
 
   const notifications_r = channels_actions.notifications$.skip(1).map(notifications => state => {
     return state.set('notifications', notifications)
   })
 
-  return O.merge(active_r, selected_r, unselected_r, notifications_r)
+  return O.merge(active_r, notifications_r)
+}
+
+function validIcon(selected) {
+  return selected === 'settings' || selected === 'notifications' ? selected : undefined
 }
 
 function model(actions, channels_actions, inputs) {
@@ -94,17 +92,21 @@ function model(actions, channels_actions, inputs) {
     notifications$: channels_actions.notifications$.take(1)
   })
     .switchMap((info: any) => {
-      const {props} = info
+      const {props, notifications} = info
       return reducer$
         .startWith(Immutable.Map({
           active: false,
-          display_icon: props.selected || 'settings',
-          selected: props.selected || undefined,
-          menu_options: ['settings', 'notifications']
+          selected: props,
+          notifications
         }))
         .scan((acc, f: Function) => f(acc))
     })
-    .map((x: any) => x.toJS())
+    .map((x: any) => {
+      return x.toJS()
+    })
+    .map(x => {
+      return x
+    })
     .publishReplay(1).refCount()
 } 
 
@@ -121,8 +123,8 @@ function renderAlertCircle(top, right) {
     }}, [])
 }
 
-function renderDropdownArrow(top, right) {
-  return div('.arrow-down.btn.btn-link', {
+function renderDropdownArrow(type, top, right) {
+  return div('.arrow-' + type + '.btn.btn-link', {
     style: {
       position: "absolute", 
       "z-index": 1000, 
@@ -142,22 +144,49 @@ function getIcon(selected) {
     return '.fa.fa-bell'
   } else if (selected === 'settings') {
     return '.fa.fa-gear'
+  } else {
+    return '.fa.fa-ellipsis-h'
   }
+}
+
+function renderStuff(notifications) {
+  return ul('.list-unstyled.menu-items', [
+    li(`.btn.btn-link.justify-content-between`, {class: {appNotificationsButton: true}}, [
+      //div(`.btn.btn-link`, {class: {appNotificationsButton: true}}, [
+        span([
+          span('.fa.fa-bell.mr-4', []),
+          `Notifications`
+        ]),
+        notifications.length ? span('.badge.bg-color-crayola.badge-pill', [notifications.filter(x => x && !x.read_at).length]) : null
+      //]) 
+    ]),
+    li(`.btn.btn-link`, {class: {appSettingsButton: true}}, [
+      //div(`.btn.btn-link`, {class: {appSettingsButton: true}}, [
+        span([
+          span('.fa.fa-gear.mr-4', []),
+          `Settings`
+        ])
+      //]) 
+    ])
+  ])
 }
 
 
 function view(state$) {
   return state$.map(state => {
-    const {active, selected, menu_options, display_icon} = state
-    const item_class = active ? '.selected' : '.not-selected'
+    const {active, selected, notifications} = state
+    const item_class = validIcon(selected) ? '.selected' : '.not-selected'
     return span([
-      div('.appEllipsisButton' + item_class, [
-        button('.btn.btn-link.appProfileButton.menu-item', [
-          span('.fa.mr-xs' + getIcon(display_icon), {style: {position: "relative"}}, [
+      span(item_class, [
+        button('.appEllipsisButton' + '.btn.btn-link.menu-item', [
+          span('.fa.mr-xs' + getIcon(selected), {style: {position: "relative"}}, [
             renderAlertCircle(-5, -7),
-            renderDropdownArrow(9, -15)
+            !active ? renderDropdownArrow('right', 4, -18): renderDropdownArrow('down', 7, -15)
           ])
-        ])
+        ]),
+        active ? div('.ellipsis-menu', [
+          renderStuff(notifications)
+        ]) : null
       ])
     ])
   })
@@ -171,6 +200,7 @@ export default function main(sources, inputs) {
 
   return {
     DOM: vtree$,
-    output$: state$.pluck('selected').distinctUntilChanged()
+    output$: actions.selected$,
+    active$: state$.pluck('active').distinctUntilChanged()
   }
 }
