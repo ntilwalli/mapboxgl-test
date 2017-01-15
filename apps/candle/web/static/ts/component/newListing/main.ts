@@ -120,7 +120,8 @@ function muxRouter(sources) {
   return {
     listing_result_from_router$: listing$.map(drillInflate),
     retrieve_listing_id$,
-    no_listing_id$
+    no_listing_id$,
+    route$
   }
 }
 
@@ -197,12 +198,16 @@ export default function main(sources, inputs): any {
       component.Router.map(x => {
         return x
       }),
-      muxed_http.listing_result_from_http$.map(x => {
+      combineObj({
+        route: muxed_router.route$, 
+        result: muxed_http.listing_result_from_http$
+      }).map((info: any) => {
+        const {route, result} = info
         return {
           type: 'replace',
           action: 'REPLACE',
-          pathname: '/listing/' + x.listing.id,
-          state: x
+          pathname: route.location.pathname,
+          state: result
         }
       }),
       muxed_router.no_listing_id$.map(x => {
