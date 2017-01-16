@@ -7,11 +7,11 @@ defmodule PerformerCostStageTime do
       Regex.match?(~r/you can do up to 10 minutes - \$1 per 1 min/, note) ->
           cost = [
           %{
-            type: "cost_per_minute",
-            data: %{
-              cost_per_minute: %{
-                cost: 1,
-                max: 10
+            "type" => "cost_per_minute",
+            "data" => %{
+              "cost_per_minute" => %{
+                "cost" => 1,
+                "max" => 10
               }
             }
           }
@@ -23,29 +23,29 @@ defmodule PerformerCostStageTime do
       Regex.match?(~r/\$5 or \$1 per min for up to 10 mins\.  No drink rec at this time\. Walk-in with no email sign-up\./, note) ->
         cost = [
           %{
-            type: "cover",
-            data: %{
-              cover: 5
+            "type" => "cover",
+            "data" => %{
+              "cover" => 5
             }
           },
           %{
-            type: "cost_per_minute",
-            data: %{
-              cost_per_minute: %{
-                cost: 1,
-                max: 10
+            "type" => "cost_per_minute",
+            "data" => %{
+              "cost_per_minute" => %{
+                "cost" => 1,
+                "max" => 10
               }
             }
           }
         ]
         stage_time = [
           %{
-            type: "minutes",
-            data: %{
-              minutes: %{
-                type: "max",
-                data: %{
-                  max: 5
+            "type" => "minutes",
+            "data" => %{
+              "minutes" => %{
+                "type" => "max",
+                "data" => %{
+                  "max" => 5
                 }
               }
             }
@@ -56,31 +56,31 @@ defmodule PerformerCostStageTime do
       Regex.match?(~r/Four min, extra minute when you buy a drink\./, note) -> 
         cost = [
           %{
-            type: "free",
-            data: nil
+            "type" => "free",
+            "data" => nil
           },
           %{
-            type: "minimum_purchase",
-            data: %{
-              minimum_purchase: %{
-                type: "drink",
-                data: 1
+            "type" => "minimum_purchase",
+            "data" => %{
+              "minimum_purchase" => %{
+                "type" => "drink",
+                "data" => 1
               }
             },
-            perk: %{
-              type: "additional_minutes",
-              data: 1
+            "perk" => %{
+              "type" => "additional_minutes",
+              "data" => 1
             }
           }
         ]
         stage_time = [
           %{
-            type: "minutes",
-            data: %{
-              minutes: %{
-                type: "max",
-                data: %{
-                  max: 4
+            "type" => "minutes",
+            "data" => %{
+              "minutes" => %{
+                "type" => "max",
+                "data" => %{
+                  "max" => 4
                 }
               }
             }
@@ -92,20 +92,20 @@ defmodule PerformerCostStageTime do
       Regex.match?(~r/Free to perform, Free to watch, Sign up: 7PM Start time: 7:30PM One drink purchase to peform, 6 minute set/, note) ->
         cost = [
           %{
-            type: "free",
-            data: nil
+            "type" => "free",
+            "data" => nil
           },
           %{
-            type: "minimum_purchase",
-            data: %{
-              minimum_purchase: %{
-                type: "drink",
-                data: 1
+            "type" => "minimum_purchase",
+            "data" => %{
+              "minimum_purchase" => %{
+                "type" => "drink",
+                "data" => 1
               }
             },
-            perk: %{
-              type: "minutes",
-              data: 6
+            "perk" => %{
+              "type" => "minutes",
+              "data" => 6
             }
           }
         ]
@@ -114,25 +114,25 @@ defmodule PerformerCostStageTime do
       Regex.match?(~r/\$5 cover\. You get TWO rounds of stage time 5-6 Min and 2-3 Min as long as you get on time\./, note) ->
         stage_time = [
           %{
-            type: "minutes",
-            data: %{
-              minutes: %{
-                type: "range",
-                data: %{
-                  max: 6,
-                  min: 5
+            "type" => "minutes",
+            "data" => %{
+              "minutes" => %{
+                "type" => "range",
+                "data" => %{
+                  "max" => 6,
+                  "min" => 5
                 }
               }
             }
           },
           %{
-            type: "minutes",
-            data: %{
-              minutes: %{
-                type: "range",
-                data: %{
-                  max: 3,
-                  min: 2
+            "type" => "minutes",
+            "data" => %{
+              "minutes" => %{
+                "type" => "range",
+                "data" => %{
+                  "max" => 3,
+                  "min" => 2
                 }
               }
             }
@@ -141,9 +141,9 @@ defmodule PerformerCostStageTime do
 
         cost = [
           %{
-            type: "cover",
-            data: %{
-              cover: 5
+            "type" => "cover",
+            "data" => %{
+              "cover" => 5
             }
           }
         ]
@@ -153,23 +153,23 @@ defmodule PerformerCostStageTime do
       Regex.match?(~r/\$5\/6 minutes\/2 rounds First Come, First Serve/, note) ->
         stage_time = [
           %{
-            type: "minutes",
-            data: %{
-              minutes: %{
-                type: "max",
-                data: %{
-                  max: 3
+            "type" => "minutes",
+            "data" => %{
+              "minutes" => %{
+                "type" => "max",
+                "data" => %{
+                  "max" => 3
                 }
               }
             }
           },
           %{
-            type: "minutes",
-            data: %{
-              minutes: %{
-                type: "max",
-                data: %{
-                  max: 3
+            "type" => "minutes",
+            "data" => %{
+              "minutes" => %{
+                "type" => "max",
+                "data" => %{
+                  "max" => 3
                 }
               }
             }
@@ -178,9 +178,9 @@ defmodule PerformerCostStageTime do
 
         cost = [
           %{
-            type: "cover",
-            data: %{
-              cover: 5
+            "type" => "cover",
+            "data" => %{
+              "cover" => 5
             }
           }
         ]
@@ -188,19 +188,19 @@ defmodule PerformerCostStageTime do
         {cost, stage_time}
       Regex.match?(~r/free but if you buy a drink at the bar/i, note) ->
         tier_1 = %{
-          type: "free"
+          "type" => "free"
         }
 
         tier_2 = %{
-          type: "minimum_purchase",
-          data: %{
-            minimum_purchase: %{
-              type: "drink",
-              data: 1
+          "type" => "minimum_purchase",
+          "data" => %{
+            "minimum_purchase" => %{
+              "type" => "drink",
+              "data" => 1
             }
           },
-          perk: %{
-            type: "additional_bucket_entry"
+          "perk" => %{
+            "type" => "additional_bucket_entry"
           }
         }
 
@@ -208,40 +208,40 @@ defmodule PerformerCostStageTime do
       Regex.match?(~r/\$5\/5 min Early spots.*\$3\/4 min Early spots.*FREE RANDOMLY SELECTED SPOTS/, note) ->
         cost = [
           %{
-            type: "minimum_purchase",
-            data: %{
-              minimum_purchase: %{
-                type: "drink",
-                data: 1
+            "type" => "minimum_purchase",
+            "data" => %{
+              "minimum_purchase" => %{
+                "type" => "drink",
+                "data" => 1
               }
             }
           },
           %{
-            type: "cover_and_minimum_purchase",
-            data: %{
-              cover: 3,
-              minimum_purchase: %{
-                type: "drink",
-                data: 1
+            "type" => "cover_and_minimum_purchase",
+            "data" => %{
+              "cover" => 3,
+              "minimum_purchase" => %{
+                "type" => "drink",
+                "data" => 1
               }
             },
-            perk: %{
-              type: "minutes_and_priority_order",
-              data: 4
+            "perk" => %{
+              "type" => "minutes_and_priority_order",
+              "data" => 4
             }
           },
           %{
-            type: "cover_and_minimum_purchase",
-            data: %{
-              cover: 5,
-              minimum_purchase: %{
-                type: "drink",
-                data: 1
+            "type" => "cover_and_minimum_purchase",
+            "data" => %{
+              "cover" => 5,
+              "minimum_purchase" => %{
+                "type" => "drink",
+                "data" => 1
               }
             },
-            perk: %{
-              type: "minutes_and_priority_order",
-              data: 5
+            "perk" => %{
+              "type" => "minutes_and_priority_order",
+              "data" => 5
             }
           }
         ]
@@ -266,24 +266,24 @@ defmodule PerformerCostStageTime do
         end
         data = x["min_purchase_data"]
         [%{
-          type: type,
-          data: %{
-            minimum_purchase: %{
-              type: String.downcase(purchase_type),
-              data: val_to_float(data)
+          "type" => type,
+          "data" => %{
+            "minimum_purchase" => %{
+              "type" => String.downcase(purchase_type),
+              "data" => val_to_float(data)
             },
-            cover: val_to_float(cover)
+            "cover" => val_to_float(cover)
           }
         }]
 
       purchase_type -> 
         data = x["min_purchase_data"]
         [%{
-          type: "minimum_purchase",
-          data: %{
-            minimum_purchase: %{
-              type: String.downcase(purchase_type),
-              data: val_to_float(data)
+          "type" => "minimum_purchase",
+          "data" => %{
+            "minimum_purchase" => %{
+              "type" => String.downcase(purchase_type),
+              "data" => val_to_float(data)
             }
           }
         }]
@@ -291,26 +291,26 @@ defmodule PerformerCostStageTime do
         case x["drink_ticket"] do
           nil ->
             [%{
-              type: "cover",
-              data: %{
-                cover: val_to_float(cover)
+              "type" => "cover",
+              "data" => %{
+                "cover" => val_to_float(cover)
               }
             }]
           _ -> 
             [%{
-              type: "cover",
-              data: %{
-                cover: val_to_float(cover)
+              "type" => "cover",
+              "data" => %{
+                "cover" => val_to_float(cover)
               },
-              perk: %{
-                type: "drink_ticket",
-                data: 1
+              "perk" => %{
+                "type" => "drink_ticket",
+                "data" => 1
               }
             }]
         end
 
       free -> [%{
-        type: "free"
+        "type" => "free"
       }]
       true -> []
     end
@@ -352,13 +352,13 @@ defmodule PerformerCostStageTime do
     cond do
       min && max ->
         [%{
-          type: "minutes",
-          data: %{
-            minutes: %{
-              type: "range",
-              data: %{
-                min: val_to_float(min),
-                max: val_to_float(max)
+          "type" => "minutes",
+          "data" => %{
+            "minutes" => %{
+              "type" => "range",
+              "data" => %{
+                "min" => val_to_float(min),
+                "max" => val_to_float(max)
               }
             }
           }
@@ -366,12 +366,12 @@ defmodule PerformerCostStageTime do
 
       max -> 
         [%{
-          type: "minutes",
-          data: %{
-            minutes: %{
-              type: "max",
-              data: %{
-                max: val_to_float(max)
+          "type" => "minutes",
+          "data" => %{
+            "minutes" => %{
+              "type" => "max",
+              "data" => %{
+                "max" => val_to_float(max)
               }
             }
           }

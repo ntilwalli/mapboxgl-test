@@ -1,4 +1,4 @@
-defmodule Shared.Manager.TimezoneManager do
+defmodule Shared.TimezoneManager do
   import Ecto.Query, only: [from: 2]
   import Geo.PostGIS
 

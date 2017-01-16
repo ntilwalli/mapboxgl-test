@@ -1,4 +1,4 @@
-defmodule Shared.Model.Listing.Cuando.Once do
+defmodule Shared.Model.Once do
   use Shared.Lib, :model
 
   @derive {Poison.Encoder, exclude: [:__meta__]}

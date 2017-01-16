@@ -14,7 +14,7 @@ defmodule Listing.Worker do
 
   alias Shared.Model.Listing.Meta.Badslava, as: BadslavaMeta
   alias Shared.Model.Listing.Settings.Badslava, as: BadslavaSettings
-  alias Shared.Model.Listing.Cuando.Once, as: OnceCuando
+  alias Shared.Model.Once, as: CuandoOnce
 
 
   def start_link(listing, registry_name) do
@@ -29,9 +29,14 @@ defmodule Listing.Worker do
     GenServer.call(server, {:update, listing, user})
   end
 
-  def add_child(server, listing, user) do
-    GenServer.call(server, {:add_child, listing, user})#, listing, user})
+  def add_child_from_map(server, listing, user) do
+    GenServer.call(server, {:add_child_from_map, listing, user})#, listing, user})
   end
+
+  def add_child_from_struct(server, listing, user) do
+    GenServer.call(server, {:add_child_from_struct, listing, user})#, listing, user})
+  end
+
 
   def retrieve(server, user) do
     GenServer.call(server, {:retrieve, user})
@@ -46,7 +51,7 @@ defmodule Listing.Worker do
     case retrieve_listing_with_other_data(listing_id) do
       nil -> {:stop, "Listing not found in database"}
       listing -> 
-        Logger.info "Starting process for listing #{listing_id}"
+        IO.inspect "Starting process for listing #{listing_id}"
         #IO.inspect listing
         :ok = ensure_searchability(listing)
         {:ok, %{listing: listing, registry_name: r_name}, 60 * 1_000}
@@ -65,12 +70,20 @@ defmodule Listing.Worker do
     {:reply, {:ok, %{listing: listing, children: listing.children, status: status}}, state}
   end
 
-  def handle_call({:add_child, child_listing, user}, _from, %{listing: listing, registry_name: r_name} = state) do
+  def handle_call({:add_child_from_map, child_listing, user}, _from, %{listing: listing, registry_name: r_name} = state) do
+    {:ok, result} = info = Listing.Registry.create_from_map(r_name, child_listing, user) 
+    {:reply, {:ok, result}, state}
+  end
+
+  def handle_call({:add_child_from_struct, child_listing, user}, _from, %{listing: listing, registry_name: r_name} = state) do
     {:ok, result} = info = Listing.Registry.create(r_name, child_listing, user) 
     {:reply, {:ok, result}, state}
   end
 
   def handle_call({:update, updated_listing, user}, _, %{listing: listing, registry_name: r_name} = state) do
+    IO.inspect {:updated_listing, updated_listing}
+    IO.inspect {:listing, listing}
+
     u_listing = Ecto.build_assoc(user, :listings)
     u_listing = Map.put(u_listing, :id, listing.id)
     cs = ListingTable.changeset(u_listing, updated_listing)
@@ -126,7 +139,7 @@ defmodule Listing.Worker do
           cs_donde = Donde.Badslava.changeset(%Donde.Badslava{}, listing.donde)
           donde = apply_changes(cs_donde)
           #IO.inspect donde
-          cs_cuando = OnceCuando.changeset(%OnceCuando{}, listing.cuando)
+          cs_cuando = CuandoOnce.changeset(%CuandoOnce{}, listing.cuando)
           cuando = apply_changes(cs_cuando)
           #IO.inspect cuando
           cs_meta = BadslavaMeta.changeset(%BadslavaMeta{}, listing.meta)

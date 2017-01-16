@@ -10,8 +10,8 @@ defmodule Listing do
     children = [
       # Starts a worker by calling: Listing.Worker.start_link(arg1, arg2, arg3)
       supervisor(Listing.Worker.Supervisor, [Listing.Worker.Supervisor]),
-      worker(Listing.Registry, [Listing.Registry, Listing.Worker.Supervisor]),
-      worker(Listing.GenerateRecurring, [Listing.Registry])
+      worker(Listing.Registry, [Listing.Registry, Listing.Worker.Supervisor, Notification.Manager]),
+      worker(Listing.GenerateRecurring, [Listing.GenerateRecurring, Listing.Registry])
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html

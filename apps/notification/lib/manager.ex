@@ -2,6 +2,7 @@ defmodule Notification.Manager do
   alias Ecto.Multi
   #import Ecto.Repo, only: [preload: 2]
   import Ecto.Query, only: [from: 2]
+  import Ecto.Changeset, only: [apply_changes: 1]
   alias Shared.Repo
 
   def start_link(name) do
@@ -20,12 +21,16 @@ defmodule Notification.Manager do
     GenServer.call(server, {:retrieve, user})
   end
 
-  def notify(server, notification_item) do
-    GenServer.cast(server, {:notify, notification_item})
+  # def notify(server, notification_item) do
+  #   GenServer.cast(server, {:notify, notification_item})
+  # end
+
+  def notify(server, object, verbs, subjects, actor) do
+    GenServer.cast(server, {:notify, object, verbs, subjects, actor})
   end
 
   def read(server, user, notification_ids) do
-    GenServer.cast(server, {:read, notification_ids})
+    GenServer.cast(server, {:read, user, notification_ids})
   end
 
   def init(:ok) do
@@ -37,8 +42,55 @@ defmodule Notification.Manager do
     {:reply, {:ok, retrieve(user)}, state}
   end
 
-  def handle_cast({:notify, %Shared.NotificationItem{} = item}, state) do
-    IO.inspect {:got_notification, item}
+  # def handle_cast({:notify, %Shared.NotificationItem{} = item}, state) do
+  #   IO.inspect {:got_notification, item}
+  #   # persist notification
+  #   #out = Shared.Repo.insert(item)
+  #   # IO.inspect {:insert_attempt, out}
+  #   multi_query = Multi.new
+  #     |> Multi.insert(:notification_item, item)
+  #     |> Multi.run(
+  #       :notifications, 
+  #       fn changes_so_far -> 
+  #         #IO.inspect {:changes_so_far, changes_so_far}
+  #         %{notification_item: n_item} = changes_so_far
+  #         item_id = n_item.id
+  #         notifications = Enum.map(n_item.subjects, fn s -> 
+  #           now = Calendar.DateTime.now_utc()
+  #           %{
+  #               item_id: item_id,
+  #               user_id: s,
+  #               inserted_at: now,
+  #               updated_at: now
+  #           }
+  #         end)
+
+  #         #IO.inspect {:notifications, notifications}
+  #         {num_rows, rows} = out = Repo.insert_all(Shared.Notification, notifications, returning: true)
+  #         #IO.inspect {:out, out}
+  #         {:ok, rows}
+  #       end 
+  #     )
+
+  #   {:ok, %{
+  #     notification_item: notification_item, 
+  #     notifications: notifications
+  #   }} = Repo.transaction(multi_query)
+
+  #   distribute(notifications)
+
+  #   {:noreply, state}
+  # end
+
+  def handle_cast({:notify, object, verbs, subjects, actor}, state) do
+    cs = Shared.NotificationItem.changeset(%Shared.NotificationItem{}, %{
+      object: object,
+      verbs: verbs,
+      subjects: subjects,
+      user_id: actor.id
+    })
+
+    item = apply_changes(cs)
     # persist notification
     #out = Shared.Repo.insert(item)
     # IO.inspect {:insert_attempt, out}

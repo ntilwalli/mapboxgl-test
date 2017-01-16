@@ -5,6 +5,7 @@ defmodule Shared.Manager.ListingManager do
   alias Shared.Repo
 
   import Ecto.Query, only: [from: 2, first: 1]
+  import Ecto.Changeset, only: [apply_changes: 1]
   alias Ecto.Multi
 
   # def add(%{parent_id: id} = listing, user) when is_number(id) do
@@ -15,24 +16,20 @@ defmodule Shared.Manager.ListingManager do
   #   add_listing_w_parent(listing, user)
   # end
 
-  def add(listing, user) do
+  def add(%Listing{} = listing, user) do
     add_listing(listing, user)
   end
 
-  # defp add_listing(listing, user) do
-  #   new_listing = Ecto.build_assoc(user, :listings)
-  #   listing_changeset = Listing.changeset(new_listing, listing)
-  #   #IO.inspect listing_changeset
-  #   Repo.insert(listing_changeset)
-  # end
-
-
-  defp add_listing(%{parent_id: parent_id} = listing, user) when is_number(parent_id) do
+  def add(%{} = listing, user) do
     new_listing = Ecto.build_assoc(user, :listings)
     listing_changeset = Listing.changeset(new_listing, listing)
+    add_listing(apply_changes(listing_changeset), user)
+  end
+
+  defp add_listing(%Listing{parent_id: parent_id} = listing, user) when is_number(parent_id) do
     sequence_id = get_next_group_child_sequence_id(parent_id)
     multi_query = Ecto.Multi.new
-      |> Multi.insert(:listing, listing_changeset)
+      |> Multi.insert(:listing, listing)
       |> Multi.run(
         :group_child_listing, 
         fn changes_so_far -> 
@@ -62,13 +59,11 @@ defmodule Shared.Manager.ListingManager do
     end
   end
 
-  defp add_listing(listing, user) do
-    new_listing = Ecto.build_assoc(user, :listings)
-    listing_changeset = Listing.changeset(new_listing, listing)
+  defp add_listing(%Listing{} = listing, user) do
 
     sequence_id = get_next_user_child_sequence_id(user.id)
     multi_query = Ecto.Multi.new
-      |> Multi.insert(:listing, listing_changeset)
+      |> Multi.insert(:listing, listing)
       |> Multi.run(
         :user_child_listing, 
         fn changes_so_far -> 

@@ -5,8 +5,8 @@ defmodule Listing.Registry do
   import Ecto.Changeset, only: [apply_changes: 1]
   
 
-  def start_link(name, worker_supervisor) do
-    GenServer.start_link(__MODULE__, {:ok, worker_supervisor}, name: name)
+  def start_link(name, worker_supervisor, notification_manager) do
+    GenServer.start_link(__MODULE__, {:ok, worker_supervisor, notification_manager}, name: name)
   end
 
   def lookup(server, listing_id) do
@@ -27,9 +27,9 @@ defmodule Listing.Registry do
     GenServer.call(server, {:delete, listing_id, user})
   end
 
-  def init({:ok, worker_supervisor}) do
+  def init({:ok, worker_supervisor, notification_manager}) do
     Logger.debug "Initializing listing registry..."
-    state = get_initial_state(worker_supervisor)
+    state = get_initial_state(worker_supervisor, notification_manager)
     {:ok, state}
   end
 
@@ -47,13 +47,23 @@ defmodule Listing.Registry do
     end
   end
 
-  def handle_call({:create, listing, user}, _, %{worker_supervisor: w_super} = state) do
+  def handle_call({:create, listing, user}, _, %{worker_supervisor: w_super, notification_manager: notification_manager} = state) do
+    listing = add_timezone(listing)
     {:ok, {pid, ref, listing}} = create_listing(listing, user, w_super)
     new_state = get_new_state_w_add(listing.id, {pid, ref}, state)
+
+    object = listing.id
+    verbs = ["create_listing"]
+    subjects = [listing.user_id]
+
+    Notification.Manager.notify(notification_manager, object, verbs, subjects, user)
+    Listing.GenerateRecurring.generate(Listing.GenerateRecurring, user, listing)
+
     {:reply, {:ok, listing}, new_state}
   end
 
   def handle_call({:update, listing_id, listing, user}, _, state) do
+    listing = add_timezone(listing)
     case maybe_get_or_start(listing_id, state) do
       {:ok, pid} -> {:reply, Listing.Worker.update(pid, listing, user), state}
       {:added, pid, new_state} -> {:reply, Listing.Worker.update(pid, listing, user), new_state}
@@ -95,6 +105,17 @@ defmodule Listing.Registry do
     {:noreply, state}
   end
 
+  defp add_timezone(listing) do
+    #IO.inspect {:add_timezone, listing}
+    donde = listing["donde"]
+    lng_lat = donde["lng_lat"]
+    #IO.inspect {:donde, donde}
+    #IO.inspect {:lng_lat, lng_lat}
+    coords = {lng_lat["lng"], lng_lat["lat"]}
+    #IO.inspect {:coords, coords}
+    tz = Shared.TimezoneManager.get(coords)
+    %{listing | "donde" => Map.put(donde, "lng_lat", Map.put(lng_lat, "timezone", tz))}
+  end
 
   defp maybe_get_or_start(listing_id, %{pids: pids, worker_supervisor: w_sup} = state) do
     case Map.get(pids, listing_id) do
@@ -116,9 +137,9 @@ defmodule Listing.Registry do
     %{state | pids: new_pids, refs: new_refs}
   end
 
-  defp get_initial_state(worker_supervisor) do
+  defp get_initial_state(worker_supervisor, notification_manager) do
     listings = Shared.Repo.all(from l in Shared.Listing, where: is_nil(l.parent_id))
-    init_acc = %{pids: %{}, refs: %{}, worker_supervisor: worker_supervisor}
+    init_acc = %{pids: %{}, refs: %{}, worker_supervisor: worker_supervisor, notification_manager: notification_manager}
     out =
       listings |> Enum.reduce(init_acc, fn (listing, acc) -> 
         info = start_listing(listing, worker_supervisor)

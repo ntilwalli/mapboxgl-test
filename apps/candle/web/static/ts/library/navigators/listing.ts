@@ -102,26 +102,11 @@ function reducers(actions, channels_actions, inputs) {
 function model(actions, channels_actions, inputs) {
   const reducer$ = reducers(actions, channels_actions, inputs)
   return combineObj({
-      authorization$: inputs.Authorization.status$
-        .map(x => {
-          return x
-        }),
-      listing_result$: inputs.props$
-        .map(x => {
-          return x
-        }),
-      page$: inputs.page$        
-        .map(x => {
-          return x
-        }),
-      notifications$: channels_actions.notifications$.take(1)
-        .map(x => {
-          return x
-        }),
+      authorization$: inputs.Authorization.status$,
+      listing_result$: inputs.props$,
+      page$: inputs.page$,
+      notifications$: channels_actions.notifications$.take(1),
       messages$: channels_actions.messages$.take(1)
-        .map(x => {
-          return x
-        }),
     })
     .switchMap((info: any) => {
       return reducer$

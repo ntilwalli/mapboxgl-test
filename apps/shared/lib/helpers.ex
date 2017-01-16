@@ -2,7 +2,7 @@ defmodule Shared.Helpers do
   import Ecto
   import Ecto.Changeset
   alias Ecto.Changeset
-  alias Shared.Manager.TimezoneManager
+  alias Shared.TimezoneManager
 
   def atomize_type(changeset) do
     changes = changeset.changes
@@ -42,6 +42,41 @@ defmodule Shared.Helpers do
       _ -> changeset
     end
   end
+
+  def validate_dynamic_parent_flag(changeset, flag_key, dynamic_key, processors, opts \\ :empty) 
+    when is_atom(flag_key) and is_atom(dynamic_key) do
+    case changeset do
+      %{valid?: true, changes: changes, data: data} ->
+        flag = 
+          with nil <- Map.get(changes, flag_key),
+               nil <- Map.get(data, flag_key),
+               do: raise ArgumentError, message: "flag property does not resolve"
+
+          case Map.get(changes, dynamic_key) do
+            nil -> 
+              case Keyword.get(opts, :required) do
+                nil -> changeset
+                _ ->  %{changeset |> add_error(dynamic_key, "is required") | valid?: false}
+                end
+            dynamic_val -> 
+              case Map.get(processors, flag) do
+                nil -> 
+                  %{changeset |> add_error(dynamic_key, "Could not find match for \"#{flag}\" in cast_dynamic processors") | valid?: false}
+                module -> 
+                  dynamic_cs = apply(module, :changeset, [struct(module), dynamic_val])
+
+                  case dynamic_cs do
+                    #%{valid?: true} -> changeset |> put_change(dynamic_key, dynamic_cs)
+                    %{valid?: true} -> changeset |> put_change(dynamic_key, dynamic_cs |> apply_changes |> flatten_struct)
+                    _ ->  %{changeset |> put_change(dynamic_key, dynamic_cs) | valid?: false}
+                  end
+              end
+          end 
+      _ -> changeset
+    end
+  end
+
+
 
   def cast_dynamic_func(changeset, dynamic_key, processor_fn, opts \\ :empty) when is_atom(dynamic_key) do
     case changeset do
@@ -101,7 +136,7 @@ defmodule Shared.Helpers do
                     dynamic_cs = apply(module, :changeset, [struct(module), dynamic_val])
                     case dynamic_cs do
                       #%{valid?: true} -> changeset |> put_change(dynamic_key, dynamic_cs)
-                      %{valid?: true} -> changeset |> put_change(dynamic_key, dynamic_cs |> apply_changes |> flatten_struct)
+                      %{valid?: true} -> changeset #|> put_change(dynamic_key, dynamic_cs |> apply_changes |> flatten_struct)
                       _ ->  %{changeset |> put_change(dynamic_key, dynamic_cs) | valid?: false}
                     end
                 end

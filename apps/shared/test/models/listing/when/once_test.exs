@@ -1,7 +1,7 @@
 defmodule Test.Listing.Cuando.Once do
   use ExUnit.Case
   #import Timex
-  alias Shared.Model.Listing.Cuando.Once
+  alias Shared.Model.Once
 
 
   test "once changeset" do

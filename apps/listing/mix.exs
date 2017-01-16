@@ -25,7 +25,8 @@ defmodule AppListing.Mixfile do
         :logger,
         :shared,
         :geocalc,
-        :calendar
+        :calendar,
+        :notification
       ],
      mod: {Listing, []}]
   end
@@ -47,7 +48,8 @@ defmodule AppListing.Mixfile do
     [
       {:shared, in_umbrella: true},
       {:geocalc, "~> 0.5"},
-      {:calendar, "~> 0.16.1"}
+      {:calendar, "~> 0.16.1"},
+      {:json_diff_ex, "~> 0.5.3"}
     ]
   end
 end

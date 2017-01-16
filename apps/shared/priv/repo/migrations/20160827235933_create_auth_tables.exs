@@ -8,7 +8,7 @@ defmodule Shared.Repo.Migrations.CreateAuthTables do
       add :email, :citext
       add :type, :string
 
-      timestamps
+      timestamps()
     end
 
     create index(:users, [:username], unique: true)
@@ -22,7 +22,7 @@ defmodule Shared.Repo.Migrations.CreateAuthTables do
       add :expires_at, :bigint
       add :profile, :map
 
-      timestamps
+      timestamps()
     end
 
     create index(:authorizations, [:provider, :uid], unique: true)
@@ -40,7 +40,7 @@ defmodule Shared.Repo.Migrations.CreateAuthTables do
       add :claims, :map
       add :typ, :string
 
-      timestamps
+      timestamps()
     end
 
     create index(:guardian_tokens, [:typ])

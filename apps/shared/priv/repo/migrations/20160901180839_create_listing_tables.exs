@@ -16,7 +16,7 @@ defmodule Shared.Repo.Migrations.CreateListingTables do
       add :visibility, :string, null: false
       add :source, :string
       add :handle, :string
-      timestamps
+      timestamps()
     end
 
     create index(:listings, [:type])

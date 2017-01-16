@@ -9,7 +9,7 @@ defmodule User.Helpers do
   alias Shared.Message.DateTimeRange, as: DateTimeRangeMessage
   alias Shared.Message.Outgoing.Home.CheckIns, as: CheckInsMessage
   alias Shared.Message.Outgoing.CheckIn, as: CheckInItem
-  alias Shared.Model.Listing.Cuando.Once, as: CuandoOnce
+  alias Shared.Model.Once, as: CuandoOnce
 
   alias Shared.ListingSession
   def gather_check_ins(

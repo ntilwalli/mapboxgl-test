@@ -3,12 +3,12 @@ defmodule PerformerSignUp do
   
   defp get_previous_weekday_at_time(day, hour, minute) do
     %{
-      type: "previous_weekday_at_time",
-      data: %{
-        day: day,
-        time: %{
-          hour: hour,
-          minute: minute
+      "type" => "previous_weekday_at_time",
+      "data" => %{
+        "day" => day,
+        "time" => %{
+          "hour" => hour,
+          "minute" => minute
         }
       }
     }
@@ -137,9 +137,9 @@ defmodule PerformerSignUp do
             cond do
               !!(generic || begins || ends || count > 0) -> 
                 %{
-                  begins: begins,
-                  ends: ends,
-                  styles: styles
+                  "begins" => begins,
+                  "ends" => ends,
+                  "styles" => styles
                 }
               true -> nil
             end
@@ -241,10 +241,10 @@ defmodule PerformerSignUp do
                 #IO.inspect({"pre registration type", out})
                 {begins, ends} = get_pre_registration_begins_ends(listing)
                 %{
-                  type: type,
-                  data: data,
-                  begins: begins,
-                  ends: ends
+                  "type" => type,
+                  "data" => data,
+                  "begins" => begins,
+                  "ends" => ends
                 }
             end
         end

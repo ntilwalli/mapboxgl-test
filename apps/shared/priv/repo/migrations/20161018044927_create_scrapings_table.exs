@@ -6,7 +6,7 @@ defmodule Shared.Repo.Migrations.CreateScrapingsTable do
       add :data, :map, null: false
       add :source, :string, null: false
       add :listing_id, references(:listings, on_delete: :delete_all, type: :bigserial), primary_key: true
-      timestamps
+      timestamps()
     end
   end
 end

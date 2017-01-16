@@ -51,28 +51,28 @@ defmodule Cuando do
     rrules = case String.downcase(listing["frequency"]) do
       "weekly" -> 
         [%{
-          freq: "weekly",
-          dtstart: dtstart,
-          byweekday: [week_day |> String.downcase]
+          "freq" => "weekly",
+          "dtstart" => dtstart,
+          "byweekday" => [week_day |> String.downcase]
 
         }]
       "monthly" -> 
         get_monthly_rrule(week_day, dtstart, note_string)
       "bi-weekly" ->
         [%{
-          freq: "weekly",
-          dtstart: dtstart,
-          byweekday: [week_day |> String.downcase],
-          interval: 2
+          "freq" => "weekly",
+          "dtstart" => dtstart,
+          "byweekday" => [week_day |> String.downcase],
+          "interval" => 2
         }]
     end
 
     #exdates = extract_exdates(listing)
 
-    out = %{rrules: rrules, rdate: [], exdate: []}
+    out = %{"rrules" => rrules, "rdate" => [], "exdate" => []}
     out = case duration do
       nil -> out
-      val -> Map.put(out, :duration, val)
+      val -> Map.put(out, "duration", val)
     end
 
     out
@@ -155,10 +155,10 @@ defmodule Cuando do
         #IO.inspect day
         week_num = round(Float.ceil(day/7))
         [%{
-          freq: "monthly",
-          dtstart: dtstart, #|> Calendar.DateTime.to_naive,
-          bysetpos: [if week_num == 5 do -1 else week_num end],
-          byweekday: [week_day |> String.downcase],
+          "freq" => "monthly",
+          "dtstart" => dtstart, #|> Calendar.DateTime.to_naive,
+          "bysetpos" => [if week_num == 5 do -1 else week_num end],
+          "byweekday" => [week_day |> String.downcase],
         }]
       %{"regularity" => regularity, "day" => week_day} -> 
         n_regularity = String.downcase(regularity)
@@ -181,10 +181,10 @@ defmodule Cuando do
         end
 
         Enum.map(bysetpos, fn pos -> %{
-          freq: "monthly",
-          dtstart: dtstart, #|> Calendar.DateTime.to_naive,
-          bysetpos: [pos],
-          byweekday: [week_day |> String.downcase]
+          "freq" => "monthly",
+          "dtstart" => dtstart, #|> Calendar.DateTime.to_naive,
+          "bysetpos" => [pos],
+          "byweekday" => [week_day |> String.downcase]
         } end)
     end
   end  

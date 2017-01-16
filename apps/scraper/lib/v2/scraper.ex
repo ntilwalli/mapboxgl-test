@@ -134,52 +134,52 @@ defmodule Scraper.BadslavaScraper.V2 do
     {cost, stage_time} = get_performer_cost_stage_time(l)
 
     meta = %{
-      type: "standard",
-      name: l["name"],
-      performer_sign_up: get_performer_sign_up(l),
-      performer_check_in: get_performer_check_in(l),
-      performer_cost: cost,
-      stage_time: stage_time,
-      performer_limit: get_performer_limit(l),
-      note: l["note"],
-      categories: get_categories(l),
-      event_types: ["open_mic"],
-      listed_hosts: get_listed_hosts(l),
-      contact_info: get_contact_info(l)
+      "type" => "standard",
+      "name" => l["name"],
+      "performer_sign_up" => get_performer_sign_up(l),
+      "performer_check_in" => get_performer_check_in(l),
+      "performer_cost" => cost,
+      "stage_time" => stage_time,
+      "performer_limit" => get_performer_limit(l),
+      "note" => l["note"],
+      "categories" => get_categories(l),
+      "event_types" => ["open_mic"],
+      "listed_hosts" => get_listed_hosts(l),
+      "contact_info" => get_contact_info(l)
     }
 
     out = %{
-      type: "recurring",
-      visibility: "public",
-      release: "posted",
-      donde: %{
-        type: "badslava",
-        name: l["venue_name"],
-        street: l["street"],
-        city: l["city"],
-        state_abbr: l["state_abbr"],
-        lng_lat: %{
-          lng: l["lng"],
-          lat: l["lat"]
+      "type" => "recurring",
+      "visibility" => "public",
+      "release" => "posted",
+      "donde" => %{
+        "type" => "badslava",
+        "name" => l["venue_name"],
+        "street" => l["street"],
+        "city" => l["city"],
+        "state_abbr" => l["state_abbr"],
+        "lng_lat" => %{
+          "lng" => l["lng"],
+          "lat" => l["lat"]
         }
       },
-      cuando: get_cuando(l),
-      meta: meta,
-      settings: %{
-        check_in: %{
-          begins: %{
-            type: "minutes_before_event_start",
-            data: %{
-              minutes: 30
+      "cuando" => get_cuando(l),
+      "meta" => meta,
+      "settings" => %{
+        "check_in" => %{
+          "begins" => %{
+            "type" => "minutes_before_event_start",
+            "data" => %{
+              "minutes" => 30
             }
           },
-          ends: %{
-            type: "event_end"
+          "ends" => %{
+            "type" => "event_end"
           },
-          radius: 30
+          "radius" => 30
         }
       },
-      source: "badslava"
+      "source" => "badslava"
     }
 
     #IO.inspect out

@@ -11,7 +11,7 @@ defmodule Shared.Repo.Migrations.CreateNotificationTables do
       add :verbs, :map, null: false
       add :subjects, :map, null: false
       add :data, :map
-      timestamps
+      timestamps()
     end
 
     create table(:notifications, primary_key: false) do
@@ -19,7 +19,7 @@ defmodule Shared.Repo.Migrations.CreateNotificationTables do
       add :item_id, references(:notification_items, on_delete: :delete_all, type: :bigserial), null: false
       add :user_id, :bigserial, primary_key: true
       add :read_at, :utc_datetime
-      timestamps
+      timestamps()
     end
 
     create index(:notifications, [:user_id])

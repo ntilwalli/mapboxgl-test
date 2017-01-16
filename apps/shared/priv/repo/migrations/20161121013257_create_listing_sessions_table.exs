@@ -7,7 +7,7 @@ defmodule Shared.Repo.Migrations.CreateListingSessionsTable do
       add :properties, :map
       add :current_step, :string
       add :user_id, references(:users, on_delete: :delete_all, type: :bigserial), null: false
-      timestamps
+      timestamps()
     end
   end
 end

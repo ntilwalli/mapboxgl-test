@@ -61,6 +61,26 @@ defmodule User.Individual do
     GenServer.call(name, :settings)
   end
 
+  def route(user, "/listing/new", listing) do
+    name = ensure_started(user)
+    GenServer.call(name, {:listing_new, listing})
+  end
+
+  def route(user, "/listing/change_release_level", params) do
+    name = ensure_started(user)
+    GenServer.call(name, {:listing_change_release_level, params})
+  end
+
+  def route(user, "/listing/update", listing) do
+    name = ensure_started(user)
+    GenServer.call(name, {:listing_update, listing})
+  end
+
+  def route(user, "/listing/delete", listing_id) do
+    name = ensure_started(user)
+    GenServer.call(name, {:delete_listing, listing_id})
+  end
+
   def route(user, "/listing_session/new") do
     name = ensure_started(user)
     GenServer.call(name, :new_listing_session)
@@ -280,6 +300,24 @@ defmodule User.Individual do
   def handle_call(:retrieve_notifications, _from, %{user: user} = state) do
     {:reply, User.Notifications.retrieve(user), state}
   end
+
+  def handle_call({:listing_new, listing}, _from, %{user: user} = state) do
+    {:reply, :ok, state}
+  end
+
+  def handle_call({:listing_update, listing}, _from, %{user: user} = state) do
+    {:reply, :ok, state}
+  end
+
+  def handle_call({:listing_delete, listing_id}, _from, %{user: user} = state) do
+    {:reply, :ok, state}
+  end
+
+  def handle_call({:listing_change_release_level, %{id: id, release_level: level}}, _from, %{user: user} = state) do
+    {:reply, :ok, state}
+  end
+
+
 
   def handle_cast({:read_notifications, notification_ids}, %{user: user} = state) do
     User.Notifications.read(user, notification_ids)

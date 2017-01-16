@@ -8,6 +8,7 @@ import {combineObj, mergeSinks, createProxy, traceStartStop, processHTTP, compon
 //import AdminNav from './adminNav'
 import AdminNav from '../../library/navigators/listing'
 import ListingProfile from './profile/main'
+import Notifications from './notifications/main'
 import TimeoutLoader from '../../library/timeoutLoader'
 import WTF from '../../library/wtf'
 import ListingNotFound from '../../library/listingNotFound'
@@ -156,6 +157,9 @@ export default function main(sources, inputs): any {
           if (!page || page === 'profile') {
             const out = ListingProfile(sources, {...inputs, props$: O.of(result)})
             return out
+          } else if (!page || page === 'notifications') {
+            const out = Notifications(sources, inputs)
+            return out
           } else {
             return NotImplemented(sources, inputs)
           }
@@ -221,7 +225,7 @@ export default function main(sources, inputs): any {
       return x
     }),
     HTTP: O.merge(
-      component.Router,
+      component.HTTP,
       to_http$
     )
   }
