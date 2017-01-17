@@ -180,7 +180,7 @@ function view(state$) {
       span(item_class, [
         button('.appEllipsisButton' + '.btn.btn-link.menu-item', [
           span('.fa.mr-xs' + getIcon(selected), {style: {position: "relative"}}, [
-            renderAlertCircle(-5, -7),
+            notifications.length ? renderAlertCircle(-5, -7) : null,
             !active ? renderDropdownArrow('right', 4, -18): renderDropdownArrow('down', 7, -15)
           ])
         ]),
