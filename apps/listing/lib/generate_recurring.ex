@@ -45,14 +45,17 @@ defmodule Listing.GenerateRecurring do
   defp automated_generate(registry_name) do
     IO.inspect "Refreshing recurrences..."
     user = Shared.Repo.get!(Shared.User, 0)
-    results = Repo.all(from l in ListingTable, where: l.type == "recurring")
+    results = Repo.all(
+      from l in ListingTable, 
+      where: l.type == "recurring" and l.release == "posted"
+    )
 
     Enum.map(results, fn listing -> generate_recurrences(user, listing, registry_name) end)
   end
 
   defp generate_recurrences(user, listing, registry_name) do
     #IO.inspect {:generate_recurrences, listing}
-    if listing.type === "recurring" do
+    if listing.type === "recurring" && listing.release === "posted" do
       listing
       |> to_triplet()
       |> to_utc()

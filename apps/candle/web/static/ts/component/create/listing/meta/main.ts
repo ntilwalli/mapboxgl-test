@@ -74,34 +74,38 @@ function isValid(session) {
 
 function reducers(actions, inputs) {
   const type_r = actions.type$.map(val => state => {
-    return state.update(`session`, session => {
-      const {listing, properties} = session
+    return state.update(`session`, (session: any) => {
+      const new_session = session.toJS()
+      const {listing, properties} = new_session
       listing.type = val
       properties.recurrence = undefined
       listing.cuando = undefined
-      return session
+      return Immutable.fromJS(new_session)
     })
   })
 
   const name_r = actions.name$.map(val => state => {
     return state.update('session', session => {
-      const {listing} = session
+      const new_session = session.toJS()
+      const {listing} = new_session
       listing.meta.name = val
-      return session
+      return Immutable.fromJS(new_session)
     })
   })
 
   const description_r = actions.description$.map(val => state => {
     return state.update('session', session => {
-      const {listing} = session
+      const new_session = session.toJS()
+      const {listing} = new_session
       listing.meta.description = val
-      return session
+      return Immutable.fromJS(new_session)
     })
   })
 
   const event_types_r = actions.event_type$.map(msg => state => {
-    return state.update('session', session => {
-      const {listing} = session
+    return state.update('session', (session: any) => {
+      const new_session = session.toJS()
+      const {listing} = new_session
       listing.meta.event_types = processCheckboxArray(msg, listing.meta.event_types)
       
       // HACK since I don't want to figure out how to use ES6 Sets
@@ -137,16 +141,17 @@ function reducers(actions, inputs) {
         }
       }
 
-      return session
+      return Immutable.fromJS(new_session)
     })
   })
 
   const category_r = actions.category$.map(msg => state => {
-    return state.update('session', session => {
+    return state.update('session', (session: any) => {
       //console.log(`category`, val)
-      const {listing} = session
+      const new_session = session.toJS()
+      const {listing} = new_session
       listing.meta.categories = processCheckboxArray(msg, listing.meta.categories)
-      return session
+      return Immutable.fromJS(new_session)
     })
   })
 
@@ -166,7 +171,7 @@ function model(actions, inputs) {
       }
 
       return reducer$
-        .startWith(Immutable.Map(init))
+        .startWith(Immutable.fromJS(init))
         .scan((acc, f: Function) => f(acc))
     })
     .map((x: any) => x.toJS())

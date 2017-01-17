@@ -1,6 +1,5 @@
 defmodule Shared.Model.Decoders do
   import Ecto.Changeset, only: [apply_changes: 1]
-  alias Donde.Badslava
   alias Shared.Model.Once, as: CuandoOnce
   def decode_donde(val) do
     #IO.inspect {:decode_donde, val}
@@ -8,7 +7,7 @@ defmodule Shared.Model.Decoders do
       "badslava" -> 
         donde_cs = Donde.Badslava.changeset(%Donde.Badslava{}, val)
         apply_changes(donde_cs)
-      "standard" -> 
+      "venue" -> 
         #IO.puts "standard decode"
         #IO.inspect val
         donde_cs = Donde.Venue.changeset(%Donde.Venue{}, val)

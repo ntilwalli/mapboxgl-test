@@ -393,26 +393,26 @@ export function getFreqSummary(rrules) {
 }
 
 
-function getRRuleSummary(rrules) {
-  const rrule = rrules[0]
-  const {freq, byweekday, bysetpos, dtstart, until} = rrule
-  const from_to = (dtstart || until) ? getFromTo(dtstart, until) : ''
-  const freq_summary = getFreqSummary(rrule)
-  switch (freq) {
-    case 'weekly':
-      return freq_summary + from_to
-    case 'monthly':
-      return freq_summary + from_to
-    default:
-      return ''
-  }
-}
+// function getRRuleSummary(rrules) {
+//   //const rrule = rrules[0]
+//   const {freq, byweekday, bysetpos, dtstart, until} = rrule
+//   const from_to = (dtstart || until) ? getFromTo(dtstart, until) : ''
+//   const freq_summary = getFreqSummary(rrules)
+//   switch (freq) {
+//     case 'weekly':
+//       return freq_summary + from_to
+//     case 'monthly':
+//       return freq_summary + from_to
+//     default:
+//       return ''
+//   }
+// }
 
 function getRecurringSummary(info) {
   const {rrules, rdates, exdates} = info
   let out = ''
   if (rrules.length) {
-    out += 'Recurrence rule: ' + getRRuleSummary(rrules)
+    out += 'Recurrence rule: ' + getFreqSummary(rrules)
   }
 
   if (rdates.length) {
@@ -720,7 +720,7 @@ export function renderRecurring(cuando) {
       return div([
         div([
           span('.mr-xs', ['Recurs:']),
-          span([getFreqSummary(rrules[0])])
+          span([getFreqSummary(rrules)])
         ]),
         upcoming
       ])

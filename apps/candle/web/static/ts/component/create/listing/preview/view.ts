@@ -25,7 +25,7 @@ function renderButtons() {
       div('.row', [
         div(`.col-12.d-fx-a-c`, [
           div('.mr-4', [`Posting makes your listing live, enabling you to distribute links/send out invitations and makes events discoverable on search. Would you like to post this event?`]),
-          div(`.appStageButton.btn.btn-outline-success.d-fx-a-c.fx-j-c`, {style: {height: "2rem", 'min-width': "5rem"}}, [`Post`])
+          div(`.appPostButton.btn.btn-outline-success.d-fx-a-c.fx-j-c`, {style: {height: "2rem", 'min-width': "5rem"}}, [`Post`])
         ])
       ])
     ])
