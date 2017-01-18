@@ -4,20 +4,22 @@ import {div, nav, span, button} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 import {combineObj, mergeSinks, createProxy, traceStartStop, processHTTP, componentify} from '../../utils'
 
-//import BasicNav from './basicNav'
-//import AdminNav from './adminNav'
-import AdminNav from '../../library/navigators/listing'
-import ListingProfile from './profile/main'
-import Settings from './settings/main'
-import Notifications from './notifications/main'
-import TimeoutLoader from '../../library/timeoutLoader'
+import ProfileInfo from './profileInfo'
+//import MyListings from './myListings'
+import Participation from './participation'
+import HomeMenu from './navigator'
+import UserProfile from '../userProfile/main'
+import Listings from './listings/main'
+//import Notifications from './notifications/main'
+import Navigator from '../../library/navigators/user'
 import WTF from '../../library/wtf'
-import ListingNotFound from '../../library/listingNotFound'
+import UserNotFound from '../../library/listingNotFound'
 
 import {inflateListing} from '../helpers/listing/utils'
 
 const routes = [
-  {pattern: /^\/(\d+)/, value: {type: "success"}},
+  {pattern: /^\/(home)$/, value: {type: "success"}},
+  {pattern: /^\/([a-zA-Z]+)/, value: {type: "success"}},
   {pattern: /^\/notFound$/, value: {type: "error"}},
   {pattern: /.*/, value: {type: "error"}}
 ]

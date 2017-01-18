@@ -4,12 +4,15 @@ import {div, button, img, span, i, a, h6, em, strong, pre, ul, li} from '@cycle/
 import isolate from '@cycle/isolate'
 import {combineObj, createProxy, mergeSinks, componentify, processHTTP} from '../../../utils'
 import {inflateListing, inflateSession} from '../../helpers/listing/utils'
-
+import {notRead, isThisListing, isListingObject, inflate as inflateNotification} from '../../../notificationUtils'
 
 function intent(sources) {
   const {DOM, Phoenix} = sources
   console.log('Phoenix', Phoenix)
   const notifications$ = Phoenix.Channels.select('user:39').on('notifications')
+    .map(x => {
+      return x.notifications.map(x => inflateNotification(x))
+    })
   return {
     notifications$
   }
@@ -17,7 +20,13 @@ function intent(sources) {
 
 function reducers(actions, inputs) {
   const notifications_r = actions.notifications$.map(value => state => {
-    return state.set('notifications', value.notifications).set('waiting', false)
+    const listing_result = state.get('listing_result')
+    const out = value.filter(x => isThisListing(x, listing_result))
+    const out2 = out.filter(x => {
+      const out = isListingObject(x)
+      return out
+    })
+    return state.set('notifications', out2).set('waiting', false)
   })
 
   return O.merge(notifications_r)
@@ -26,9 +35,13 @@ function reducers(actions, inputs) {
 function model(actions, inputs) {
   const reducer$ = reducers(actions, inputs)
   
-  return inputs.Authorization.status$
-    .map(authorization => {
+  return combineObj({
+    props$: inputs.props$
+  })
+    .map((info: any) => {
+      const {props} = info
       return {
+        listing_result: props,
         notifications: undefined,
         waiting: true
       }
@@ -39,7 +52,7 @@ function model(actions, inputs) {
         .startWith(init)
         .scan((acc, f: Function) => f(acc))
     })
-    .map(x => x.toJS())
+    .map((x: any) => x.toJS())
     //.do(x => console.log(`home/profile state`, x))
     .publishReplay(1).refCount()
 }

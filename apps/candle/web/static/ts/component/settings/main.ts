@@ -273,7 +273,6 @@ function main(sources, inputs) {
       O.merge(
         save_local$, 
         actions.success$,
-        navigator.MessageBus
       )
         //.withLatestFrom(state$, (_, state) => {
         .map(settings => {
@@ -282,8 +281,7 @@ function main(sources, inputs) {
             to: `/services/settings`,
             message: settings
           }
-        }),
-      actions.show_menu$.mapTo({to: `main`, message: {type: `showLeftMenu`, data: {redirect_url: '/settings'}}}),
+        })
     )
     //.do(x => console.log(`toMessageBus:`, x))
     .publish().refCount()
@@ -324,7 +322,7 @@ function main(sources, inputs) {
       actions.brand_button$.mapTo('/'),
       navigator.Router
     ),
-    MessageBus: toMessageBus$
+    MessageBus: O.merge(toMessageBus$, navigator.MessageBus)
   }
 
   return out

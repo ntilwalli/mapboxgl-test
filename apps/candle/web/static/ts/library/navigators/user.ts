@@ -19,7 +19,7 @@ const routes = [
 function intent(sources) {
   const {DOM, Phoenix, Global} = sources
 
-  const recurrences$ = DOM.select('.appRecurrencesButton').events('click').mapTo('recurrences')
+  const listings$ = DOM.select('.appListingsButton').events('click').mapTo('listings')
   const messages$ = DOM.select('.appMessagesButton').events('click').mapTo('messages')
   const settings$ = DOM.select('.appSettingsButton').events('click').mapTo('settings')
   //const calendar$ = DOM.select('.appCalendarButton').events('click').mapTo('calendar')
@@ -36,7 +36,7 @@ function intent(sources) {
 
   return {
     page$: O.merge(
-      recurrences$, messages$, profile$, settings$, notifications$
+      listings$, messages$, profile$, settings$, notifications$
     )
     .map(x => {
       return x
@@ -109,7 +109,7 @@ function model(actions, channels_actions, inputs) {
   const reducer$ = reducers(actions, channels_actions, inputs)
   return combineObj({
       authorization$: inputs.Authorization.status$,
-      listing_result$: inputs.props$,
+      user_result$: inputs.props$,
       page$: inputs.page$,
       notifications$: channels_actions.notifications$.take(1),
       messages$: channels_actions.messages$.take(1)
@@ -118,7 +118,7 @@ function model(actions, channels_actions, inputs) {
       return reducer$
         .startWith(Immutable.Map({
           show_ellipsis_menu: false,
-          listing_result: info.listing_result,
+          user_result: info.user_result,
           authorization: info.authorization,
           page: info.page, 
           notifications: info.notifications, 
@@ -168,10 +168,8 @@ function getEllipsisIcon(page) {
   }
 }
 
-function renderStuff(listing_result, notifications) {
-  const listing_notifications = notifications
-          .filter(n => isThisListing(n, listing_result))
-          .filter(isListingObject)
+function renderStuff(notifications) {
+  const user_notifications = notifications
           .filter(notRead)
 
   return ul('.list-unstyled.menu-items', [
@@ -181,7 +179,7 @@ function renderStuff(listing_result, notifications) {
           span('.fa.fa-bell.mr-4', []),
           `Notifications`
         ]),
-        listing_notifications.length ? span('.badge.bg-color-crayola.badge-pill', [listing_notifications.length]) : null
+        user_notifications.length ? span('.badge.bg-color-crayola.badge-pill', [user_notifications.length]) : null
       //]) 
     ]),
     li('.appSettingsButton.btn.btn-link', [
@@ -199,9 +197,9 @@ function ellipsisSelected(page) {
   return ['calendar', 'settings', 'messages'].some(x => x === page)
 }
 
-function isMyListing(listing_result, authorization) {
+function isAuthorizedUser(user_result, authorization) {
   if (authorization) {
-    return listing_result.listing.user_id === authorization.id || ['ntilwalli', 'tiger', 'nikhil'].some(x => x === authorization.username)
+    return user_result === authorization.id || ['ntilwalli', 'tiger', 'nikhil'].some(x => x === authorization.username)
   } else {
     return false
   }
@@ -210,18 +208,15 @@ function isMyListing(listing_result, authorization) {
 function view(state$) {
   return combineObj({state$}).map((info: any) => {
     const {state} = info
-    const {authorization, page, listing_result, notifications, messages, show_ellipsis_menu} = state
-    const type = listing_result && listing_result.listing && listing_result.listing.type
-    const recurrences_class = page === 'recurrences' ? '.selected' : '.not-selected'
+    const {authorization, page, user_result, notifications, messages, show_ellipsis_menu} = state
+    const listings_class = page === 'listings' ? '.selected' : '.not-selected'
     const messages_class = page === 'messages' ? '.selected' : '.not-selected'
     const settings_class = page === 'settings' ? '.selected' : '.not-selected'
     const calendar_class = page === 'calendar' ? '.selected' : '.not-selected'
     const profile_class = page === 'profile' ? '.selected' : '.not-selected'
     const ellipsis_class = page ===  ellipsisSelected(page) ? '.selected' : '.not-selected'
 
-    const listing_notifications = notifications
-          .filter(n => isThisListing(n, listing_result))
-          .filter(isListingObject)
+    const user_notifications = notifications
           .filter(notRead)
 
 
@@ -229,28 +224,28 @@ function view(state$) {
       div('.navbar.navbar-light.bg-faded.container-fluid.fixed-top.navigator', [
         div('.user-navigator.d-flex.fx-j-sb', [
           button('.appBrandButton.h-2.hopscotch-icon.btn.btn-link.nav-brand', []),
-          type === 'recurring' || isMyListing(listing_result, authorization) ? span('.sub-navigator', [
-            type === 'recurring' || isMyListing(listing_result, authorization) ? span('.hidden-md-up' + profile_class, [button('.btn.btn-link.appProfileButton.menu-item', [span('.fa.fa-info', [])])]) : null,
-            type === 'recurring' ? span('.hidden-md-up' + recurrences_class, [button('.btn.btn-link.appRecurrencesButton.menu-item', [span('.fa.fa-microphone', [])])]) : null,
-            isMyListing(listing_result, authorization) ? span('.hidden-md-up' + messages_class, [
+          isAuthorizedUser(user_result, authorization) ? span('.sub-navigator', [
+            isAuthorizedUser(user_result, authorization) ? span('.hidden-md-up' + profile_class, [button('.btn.btn-link.appProfileButton.menu-item', [span('.fa.fa-info', [])])]) : null,
+            span('.hidden-md-up' + listings_class, [button('.btn.btn-link.appListingsButton.menu-item', [span('.fa.fa-microphone', [])])]),
+            isAuthorizedUser(user_result, authorization) ? span('.hidden-md-up' + messages_class, [
               button('.appMessagesButton.btn.btn-link.menu-item', [
                 div('.fa.fa-envelope', {style: {position: "relative"}}, [
                   messages.length ? renderAlertCircle(-4, -6) : null
                 ]),
               ])
             ]) : null,
-            isMyListing(listing_result, authorization) ? span('.hidden-md-up' + ellipsis_class, [
+            isAuthorizedUser(user_result, authorization) ? span('.hidden-md-up' + ellipsis_class, [
               button('.appEllipsisButton.btn.btn-link.menu-item', [
                 span('.fa.mr-xs' + getEllipsisIcon(page), {style: {position: "relative"}}, [
-                  listing_notifications.length ? renderAlertCircle(-5, -7) : null,
+                  user_notifications.length ? renderAlertCircle(-5, -7) : null,
                   !show_ellipsis_menu ? renderDropdownArrow('right', 4, -18): renderDropdownArrow('down', 7, -15)
                 ])
               ])
             ]) : null,
             //span(calendar_class, [button('.hidden-md-up.btn.btn-link.appCalendarButton.menu-item', [span('.fa.fa-calendar', [])])]),
-            type === 'recurring' || isMyListing(listing_result, authorization) ? span('.hidden-sm-down' + profile_class, [button('.btn.btn-link.appProfileButton.menu-item', [span('.fa.fa-info.mr-xs', []), span('.fs-1', ['Profile'])])]) : null,
-            type === 'recurring' ? span('.hidden-sm-down' + recurrences_class, [button('.hidden-sm-down.btn.btn-link.appRecurrencesButton.menu-item', [span('.fa.fa-microphone.mr-xs', []), span('.fs-1', ['Recurrences'])])]) : null,
-            isMyListing(listing_result, authorization) ? span('.hidden-sm-down' + messages_class, [
+            isAuthorizedUser(user_result, authorization) ? span('.hidden-sm-down' + profile_class, [button('.btn.btn-link.appProfileButton.menu-item', [span('.fa.fa-info.mr-xs', []), span('.fs-1', ['Profile'])])]) : null,
+            span('.hidden-sm-down' + listings_class, [button('.hidden-sm-down.btn.btn-link.appRecurrencesButton.menu-item', [span('.fa.fa-microphone.mr-xs', []), span('.fs-1', ['Recurrences'])])]),
+            isAuthorizedUser(user_result, authorization) ? span('.hidden-sm-down' + messages_class, [
               button('.btn.btn-link.appMessagesButton.menu-item', [
                 span('.fa.fa-envelope.mr-xs', {style: {position: "relative"}}, [
                   messages.length ? renderAlertCircle(-4, -6) : null
@@ -258,15 +253,15 @@ function view(state$) {
                 span('.fs-1', ['Messages'])
               ])
             ]) : null,
-            isMyListing(listing_result, authorization) ? span('.hidden-sm-down' + messages_class, [
+            isAuthorizedUser(user_result, authorization) ? span('.hidden-sm-down' + messages_class, [
               button('.btn.btn-link.appNotificationsButton.menu-item', [
                 span('.fa.fa-bell.mr-xs', {style: {position: "relative"}}, [
-                  listing_notifications.length ? renderAlertCircle(-4, -6) : null
+                  user_notifications.length ? renderAlertCircle(-4, -6) : null
                 ]), 
                 span('.fs-1', ['Notifications'])
               ])
             ]) : null,
-            isMyListing(listing_result, authorization) ? span('.hidden-sm-down' + messages_class, [
+            isAuthorizedUser(user_result, authorization) ? span('.hidden-sm-down' + messages_class, [
               button('.btn.btn-link.appSettingsButton.menu-item', [
                 span('.fa.fa-gear.mr-xs', {style: {position: "relative"}}, []), 
                 span('.fs-1', ['Settings'])
@@ -281,7 +276,7 @@ function view(state$) {
           ])
         ])
       ]),
-      show_ellipsis_menu ? div('.ellipsis-menu', [renderStuff(listing_result, notifications)]) : null 
+      show_ellipsis_menu ? div('.ellipsis-menu', [renderStuff(notifications)]) : null 
     ])
   })
 }
@@ -329,7 +324,7 @@ export default function main(sources, inputs) {
       return {
         to: `main`, message: {
           type: `showLeftMenu`, 
-          data: {redirect_url: state.listing_result && state.listing_result.listing && state.listing_result.listing.id ? '/listing/' + state.listing_result.listing.id : '/' }
+          data: {redirect_url: '/home'}
         }
       }
     }).publish().refCount()
@@ -349,7 +344,7 @@ export default function main(sources, inputs) {
           action: 'PUSH',
           type: 'push', 
           pathname: out,
-          state: state.listing_result
+          state: state.user_result
         }
       })
     ),

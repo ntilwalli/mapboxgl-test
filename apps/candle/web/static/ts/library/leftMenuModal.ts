@@ -1,7 +1,7 @@
 import {Observable as O} from 'rxjs'
 import {div, header, span, button, nav, a, ul, li} from '@cycle/dom'
 import {combineObj, normalizeComponent, targetIsOwner, createProxy, spread} from '../utils'
-import Navigator from './navigators/simple'
+import Navigator from './navigators/leftMenuModal'
 function intent(sources) { 
   const {DOM} = sources
   const close$ = DOM.select('.appModalBackdrop').events('click')

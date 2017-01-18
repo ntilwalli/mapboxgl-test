@@ -14,6 +14,7 @@ import HomeMenu from './navigator'
 import UserProfile from '../userProfile/main'
 import Listings from './listings/main'
 import Notifications from './notifications/main'
+import Navigator from '../../library/navigators/user'
 
 function NotImplemented(sources, inputs) {
   return {
@@ -80,7 +81,7 @@ function view(components) {
 export default function main(sources, inputs): any {
 
   const home_menu = HomeMenu(sources, inputs)
-
+  //const home_menu = Navigator(sources, inputs)
   const content$ = home_menu.output$
     .map(page => {
       if (page === 'profile') {
