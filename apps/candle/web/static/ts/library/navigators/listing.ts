@@ -1,5 +1,5 @@
 import {Observable as O} from 'rxjs'
-import {div, button, span} from '@cycle/dom'
+import {div, button, span, ul, li} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 import {between, notBetween, combineObj, spread, componentify, createProxy} from '../../utils'
 
@@ -136,6 +136,29 @@ function renderAlertCircle(top, right) {
     }}, [])
 }
 
+function renderStuff(notifications) {
+  return ul('.list-unstyled.menu-items', [
+    li(`.btn.btn-link.justify-content-between`, {class: {appNotificationsButton: true}}, [
+      //div(`.btn.btn-link`, {class: {appNotificationsButton: true}}, [
+        span([
+          span('.fa.fa-bell.mr-4', []),
+          `Notifications`
+        ]),
+        notifications.length ? span('.badge.bg-color-crayola.badge-pill', [notifications.filter(x => x && !x.read_at).length]) : null
+      //]) 
+    ]),
+    li(`.btn.btn-link`, {class: {appSettingsButton: true}}, [
+      //div(`.btn.btn-link`, {class: {appSettingsButton: true}}, [
+        span([
+          span('.fa.fa-gear.mr-4', []),
+          `Settings`
+        ])
+      //]) 
+    ])
+  ])
+}
+
+
 function view(state$, ellipsis_item$) {
   return combineObj({state$, ellipsis_item$}).map((info: any) => {
     const {state, ellipsis_item} = info
@@ -147,35 +170,37 @@ function view(state$, ellipsis_item$) {
     const calendar_class = page === 'calendar' ? '.selected' : '.not-selected'
     const profile_class = page === 'profile' ? '.selected' : '.not-selected'
     const ellipses_class = page === 'ellipses' ? '.selected' : '.not-selected'
-    return div('.user-navigator.d-flex.fx-j-sb', [
-      button('.appBrandButton.h-2.hopscotch-icon.btn.btn-link.nav-brand', []),
-      type === 'recurring' || authorization ? span('.sub-navigator', [
-        type === 'recurring' || authorization ? span(profile_class, [button('.hidden-md-up.btn.btn-link.appProfileButton.menu-item', [span('.fa.fa-user', [])])]) : null,
-        type === 'recurring' ? span(recurrences_class, [button('.hidden-md-up.btn.btn-link.appRecurrencesButton.menu-item', [span('.fa.fa-microphone', [])])]) : null,
-        authorization ? span(messages_class, [
-          button('.appMessagesButton.hidden-md-up.btn.btn-link.menu-item', [
-            div('.fa.fa-envelope', {style: {position: "relative"}}, [
-              messages.length ? renderAlertCircle(-4, -6) : null
-            ]),
-          ])
-        ]) : null,
-        //span(calendar_class, [button('.hidden-md-up.btn.btn-link.appCalendarButton.menu-item', [span('.fa.fa-calendar', [])])]),
-        type === 'recurring' || authorization ? span(profile_class, [button('.hidden-sm-down.btn.btn-link.appProfileButton.menu-item', [span('.fa.fa-user.mr-xs', []), span('.fs-1', ['Profile'])])]) : null,
-        type === 'recurring' ? span(recurrences_class, [button('.hidden-sm-down.btn.btn-link.appRecurrencesButton.menu-item', [span('.fa.fa-microphone.mr-xs', []), span('.fs-1', ['Recurrences'])])]) : null,
-        authorization ? span(messages_class, [
-          button('.hidden-sm-down.btn.btn-link.appMessagesButton.menu-item', [
-            span('.fa.fa-envelope.mr-xs', {style: {position: "relative"}}, [
-              messages.length ? renderAlertCircle(-4, -6) : null
-            ]), 
-            span('.fs-1', ['Messages'])
-          ])]) : null,
-        //span(calendar_class, [button('.hidden-sm-down.btn.btn-link.appCalendarButton.menu-item', [span('.fa.fa-calendar.mr-xs', []), span('.fs-1', ['Calendar'])])]),
-        ellipsis_item,
-      ]) : span('.navigator', []),
-      span('.appShowMenuButton', [
-        div('.nav-text-button.fa.fa-bars.btn.btn-link.pt-25', {style: {position: "relative"}}, [
-          notifications.length + messages.length ? renderAlertCircle(2, -6) : null
-        ]),
+    return div('.navbar.navbar-light.bg-faded.container-fluid.fixed-top.navigator', [
+      div('.user-navigator.d-flex.fx-j-sb', [
+        button('.appBrandButton.h-2.hopscotch-icon.btn.btn-link.nav-brand', []),
+        type === 'recurring' || authorization ? span('.sub-navigator', [
+          type === 'recurring' || authorization ? span(profile_class, [button('.hidden-md-up.btn.btn-link.appProfileButton.menu-item', [span('.fa.fa-info', [])])]) : null,
+          type === 'recurring' ? span(recurrences_class, [button('.hidden-md-up.btn.btn-link.appRecurrencesButton.menu-item', [span('.fa.fa-microphone', [])])]) : null,
+          authorization ? span(messages_class, [
+            button('.appMessagesButton.hidden-md-up.btn.btn-link.menu-item', [
+              div('.fa.fa-envelope', {style: {position: "relative"}}, [
+                messages.length ? renderAlertCircle(-4, -6) : null
+              ]),
+            ])
+          ]) : null,
+          //span(calendar_class, [button('.hidden-md-up.btn.btn-link.appCalendarButton.menu-item', [span('.fa.fa-calendar', [])])]),
+          type === 'recurring' || authorization ? span(profile_class, [button('.hidden-sm-down.btn.btn-link.appProfileButton.menu-item', [span('.fa.fa-user.mr-xs', []), span('.fs-1', ['Profile'])])]) : null,
+          type === 'recurring' ? span(recurrences_class, [button('.hidden-sm-down.btn.btn-link.appRecurrencesButton.menu-item', [span('.fa.fa-microphone.mr-xs', []), span('.fs-1', ['Recurrences'])])]) : null,
+          authorization ? span(messages_class, [
+            button('.hidden-sm-down.btn.btn-link.appMessagesButton.menu-item', [
+              span('.fa.fa-envelope.mr-xs', {style: {position: "relative"}}, [
+                messages.length ? renderAlertCircle(-4, -6) : null
+              ]), 
+              span('.fs-1', ['Messages'])
+            ])]) : null,
+          //span(calendar_class, [button('.hidden-sm-down.btn.btn-link.appCalendarButton.menu-item', [span('.fa.fa-calendar.mr-xs', []), span('.fs-1', ['Calendar'])])]),
+          ellipsis_item,
+        ]) : span('.navigator', []),
+        span('.appShowMenuButton', [
+          div('.nav-text-button.fa.fa-bars.btn.btn-link.pt-25', {style: {position: "relative"}}, [
+            notifications.length + messages.length ? renderAlertCircle(2, -6) : null
+          ]),
+        ])
       ])
     ])
   })
@@ -217,7 +242,6 @@ export default function main(sources, inputs) {
   }).publishReplay(1).refCount()
 
   const ellipsis_item = componentify(ellipsis_item$)
-
   const vtree$ = view(state$, ellipsis_item.DOM)
 
   const to_message_bus$ = actions.show_menu$

@@ -14,7 +14,7 @@ defmodule Candle.Notification.IndividualChannel do
   for the requested topic
   """
   def broadcast_notifications(user, notifications) do
-    IO.inspect {:broadcast_notifications_args, user, notifications}
+    #IO.inspect {:broadcast_notifications_args, user, notifications}
     Candle.Endpoint.broadcast("user:#{user.id}", "notifications", %{notifications: notifications})
   end
 
@@ -26,10 +26,9 @@ defmodule Candle.Notification.IndividualChannel do
     if authorized?(user_id_string, socket) do
       Process.flag(:trap_exit, true)
       {:ok, notifications} = User.Individual.retrieve_notifications(user)
-      IO.inspect {:joining, user_id_string, notifications}
-      #:timer.send_interval(5000, :ping)
-      #send(self(), {:after_join, message})
       {:ok, %{notifications: notifications}, socket}
+
+      #{:ok, %{notifications: []}, socket}
     else
       {:error, %{reason: "unauthorized"}}
     end

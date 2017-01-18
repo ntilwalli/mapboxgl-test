@@ -8,6 +8,7 @@ import {combineObj, mergeSinks, createProxy, traceStartStop, processHTTP, compon
 //import AdminNav from './adminNav'
 import AdminNav from '../../library/navigators/listing'
 import ListingProfile from './profile/main'
+import Settings from './settings/main'
 import Notifications from './notifications/main'
 import TimeoutLoader from '../../library/timeoutLoader'
 import WTF from '../../library/wtf'
@@ -46,9 +47,7 @@ function view(components, active$) {
       const {components, active} = info
       const {navigator, content} = components
       return div(`.screen.listing-profile`, [
-        nav('.navbar.navbar-light.bg-faded.container-fluid.fixed-top.navigator', [
-          navigator
-        ]),
+        navigator,
         div({class: {"translate-down": active}}, [
           content
         ])
@@ -147,18 +146,23 @@ export default function main(sources, inputs): any {
   const component$ = O.merge(
     muxed_router.retrieve_listing_id$.map(_ => TimeoutLoader(sources, inputs)),
     muxed_router.listing_result_from_router$.map(result => {
-      const navigator = isolate(AdminNav)({...sources, Router: sources.Router.path(result.listing.id.toString())}, {
+      const router_with_listing_id = sources.Router.path(result.listing.id.toString())
+      const navigator = isolate(AdminNav)({...sources, Router: router_with_listing_id}, {
         ...inputs, 
         props$: O.of(result)
       })
 
+
       const content$ = navigator.output$
         .map(page => {
           if (!page || page === 'profile') {
-            const out = ListingProfile(sources, {...inputs, props$: O.of(result)})
+            const out = ListingProfile({...sources, Router: router_with_listing_id.path(page)}, {...inputs, props$: O.of(result)})
             return out
           } else if (!page || page === 'notifications') {
-            const out = Notifications(sources, inputs)
+            const out = Notifications({...sources, Router: router_with_listing_id.path(page)}, inputs)
+            return out
+          } else if (!page || page === 'settings') {
+            const out = Settings({...sources, Router: router_with_listing_id.path(page)}, inputs)
             return out
           } else {
             return NotImplemented(sources, inputs)

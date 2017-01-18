@@ -134,12 +134,17 @@ defmodule Listing.GenerateRecurring do
     #single_cuando = apply_changes(cs) 
 
     #IO.inspect {:single_cuando, data}
+    release_level =
+      cond do
+        template.user_id === 0 -> "posted"
+        true -> "staged"
+      end
 
     out = %{
       "parent_id" => template.id,
       "type" => "single",
       "visibility" => template.visibility,
-      "release" => template.release,
+      "release" => release_level,
       "donde" => template.donde,
       "cuando" => data,#single_cuando,
       "meta" => template.meta,

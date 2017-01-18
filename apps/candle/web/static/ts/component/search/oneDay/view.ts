@@ -48,8 +48,6 @@ function renderDateController(state) {
 
 
 function renderNavigator(state) {
-  const {authorization} = state
-  const authClass = authorization ? 'Logout' : 'Login'
   return nav('.navbar.navbar-light.bg-faded.container-fluid.fixed-top', [
     div('.row.no-gutter', [
       div('.col-4', [

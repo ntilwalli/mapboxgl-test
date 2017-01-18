@@ -8,6 +8,9 @@ import ArcGISSuggest from '../../thirdParty/ArcGISSuggest'
 import ArcGISGetMagicKey from '../../thirdParty/ArcGISGetMagicKey'
 import AutocompleteInput from '../../library/bootstrapAutocompleteInput'
 import {createRegionAutocomplete} from '../../library/bootstrapRegionAutocomplete'
+import Navigator from '../../library/navigators/simple'
+
+
 import clone = require('clone')
 
 function intent(sources) {
@@ -205,9 +208,10 @@ function view(state$, components) {
       components$: combineObj(components)
     })
     .map((info: any) => {
-      const {state} = info
+      const {state, components} = info
+      const {navigator} = components
       return div(`.screen`, [
-        renderNavigator(state),
+        navigator,
         renderContent(info)
       ])
     })
@@ -256,8 +260,11 @@ function main(sources, inputs) {
     })
     .publish().refCount()
 
+  const navigator = Navigator(sources, inputs)
+
   const components = {
-    defaultAutocomplete$: defaultAutocomplete.DOM
+    defaultAutocomplete$: defaultAutocomplete.DOM,
+    navigator: navigator.DOM
   }
 
   const vtree$ = view(state$, components)
@@ -265,7 +272,8 @@ function main(sources, inputs) {
   const toMessageBus$ = O.merge(
       O.merge(
         save_local$, 
-        actions.success$
+        actions.success$,
+        navigator.MessageBus
       )
         //.withLatestFrom(state$, (_, state) => {
         .map(settings => {
@@ -304,6 +312,7 @@ function main(sources, inputs) {
   save_waiting$.attach(O.merge(toHTTP$))
 
   const out = {
+    ...navigator,
     DOM: vtree$,
     HTTP: O.merge(
       toHTTP$,
@@ -312,7 +321,8 @@ function main(sources, inputs) {
     //.do(x => console.log(`settings http`))
     .publish().refCount(),
     Router: O.merge(
-      actions.brand_button$.mapTo('/')
+      actions.brand_button$.mapTo('/'),
+      navigator.Router
     ),
     MessageBus: toMessageBus$
   }

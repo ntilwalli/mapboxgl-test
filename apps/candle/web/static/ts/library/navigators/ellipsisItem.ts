@@ -201,6 +201,6 @@ export default function main(sources, inputs) {
   return {
     DOM: vtree$,
     output$: actions.selected$,
-    active$: state$.pluck('active').distinctUntilChanged()
+    active$: state$.pluck('active').distinctUntilChanged().publishReplay(1).refCount()
   }
 }
