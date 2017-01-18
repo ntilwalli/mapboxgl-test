@@ -50,26 +50,10 @@ export default function intent(sources) {
       return stored
     })
 
-  const addDay$ = DOM.select(`.appAddDay`).events(`click`)
-    .mapTo(1)
-  const subtractDay$ = DOM.select(`.appSubtractDay`).events(`click`)
-    .mapTo(-1)
-
-  const change_date$ = O.merge(addDay$, subtractDay$)
-
-  const show_filters$ = DOM.select(`.appShowFilters`).events(`click`)
-
-  const show_menu$ = DOM.select(`.appShowMenuButton`).events(`click`)
-
-  const brand_button$ = DOM.select(`.appBrandButton`).events(`click`)
 
   return {
     results$: success$,
-    cached$,
-    change_date$,
-    show_filters$,
-    show_menu$,
-    brand_button$
+    cached$
   }
 }
 

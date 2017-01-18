@@ -17,7 +17,7 @@ function reducers(actions, inputs) {
 
   const resultsR = actions.results$.map(results => state => {
     //console.log(`Search results updated...`)
-    return state.set(`results`, results).set(`retrieving`, false)
+    return state.set(`results`, Immutable.fromJS(results)).set(`retrieving`, false)
   })
 
   const userPositionR = inputs.settings$
@@ -28,19 +28,19 @@ function reducers(actions, inputs) {
     })
     .map(({settings, geolocation}) => state => {
       if (geolocation.type === "position") {
-        return state.set(`searchPosition`, {type: "user", data: geoToLngLat(geolocation)})
+        return state.set(`searchPosition`, Immutable.fromJS({type: "user", data: geoToLngLat(geolocation)}))
       } else {
-        return state.set(`searchPosition`, {type: "user_location_not_available_using_default", data: settings.default_region.position})
+        return state.set(`searchPosition`, Immutable.fromJS({type: "user_location_not_available_using_default", data: settings.default_region.position}))
       }
     })
 
   const defaultPositionR = inputs.settings$
     .filter(onlyDefaultRegion)
     .map(settings => state => {
-      return state.set(`searchPosition`, {type: "default", data: settings.default_region.position})
+      return state.set(`searchPosition`, Immutable.fromJS({type: "default", data: settings.default_region.position}))
     })
 
-  const showFiltersR = actions.show_filters$.map(_ => state => {
+  const showFiltersR = inputs.show_filters$.map(_ => state => {
     //console.log(`show filters...`)
     return state.set(`showFilters`, true)
   })
@@ -107,7 +107,7 @@ export default function model(actions, inputs) {
       }
 
       return reducer$
-        .startWith(Immutable.Map({
+        .startWith(Immutable.fromJS({
           results: useCached(searchDateTime, cached) ? cached.results : undefined,
           searchDateTime,
           searchPosition: getInitialSearchPosition(settings),

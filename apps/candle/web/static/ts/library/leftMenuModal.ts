@@ -1,14 +1,11 @@
 import {Observable as O} from 'rxjs'
 import {div, header, span, button, nav, a, ul, li} from '@cycle/dom'
 import {combineObj, normalizeComponent, targetIsOwner, createProxy, spread} from '../utils'
-
+import Navigator from './navigators/simple'
 function intent(sources) { 
   const {DOM} = sources
-  const close$ = O.merge(
-      DOM.select('.appModalBackdrop').events('click')
-        .filter(targetIsOwner),
-      DOM.select('.appShowMenuButton').events('click')
-  )
+  const close$ = DOM.select('.appModalBackdrop').events('click')
+    .filter(targetIsOwner)
 
   const logout$ = DOM.select(`.appShowLogoutButton`).events(`click`)
   const login$ = DOM.select(`.appShowLoginButton`).events(`click`)
@@ -25,7 +22,6 @@ function intent(sources) {
     show_settings$,
     show_create_workflow$,
     show_profile$,
-    brand_button$
   } 
 }
 
@@ -50,13 +46,15 @@ function renderNavigator(state) {
 }
 
 
-function view(auth$) {
-  return auth$
-    .map(auth => {
+function view(auth$, navigator$) {
+  return combineObj({auth$, navigator$})
+    .map((info: any) => {
+      const {auth, navigator} = info
       return div(`.modal-component`, [
         div(`.appModalBackdrop.modal-backdrop`, [
           div(`.main-menu-modal`, [
-            renderNavigator({authorization: auth}),
+            navigator,
+            //renderNavigator({authorization: auth}),
             ul('.list-unstyled.menu-items', [
               auth ? li([
                 button(`.btn.btn-link`, {class: {appShowProfileButton: true}}, [`Profile`]) 
@@ -83,9 +81,11 @@ function view(auth$) {
 export default function main(sources, inputs) {
   const actions = intent(sources)
   const state$ = model(actions, inputs)
+  const navigator = Navigator(sources, inputs)
   return {
-    DOM: view(inputs.Authorization.status$),
+    DOM: view(inputs.Authorization.status$, navigator.DOM),
     Router: O.merge(
+        navigator.Router,
         actions.show_settings$.mapTo({
           pathname: `/settings`, 
           type: 'push',
@@ -100,11 +100,11 @@ export default function main(sources, inputs) {
           pathname: `/home`,
           type: 'push',
           actions: 'PUSH'
-        }),
-        actions.brand_button$.mapTo('/')
+        })
       ),
     MessageBus: O.merge(
-      actions.close$.mapTo({to: `main`, message: `hideModal`}),
+      actions.close$.mapTo({to: 'main', message: 'hideModal'}),
+      navigator.MessageBus,
       actions.logout$.mapTo({to: `/authorization/logout`}),
       actions.login$.withLatestFrom(state$, (_, state) => {
         return ({to: `main`, message: {type: 'showLogin', data: state}})

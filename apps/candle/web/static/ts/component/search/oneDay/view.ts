@@ -86,10 +86,11 @@ function view(state$, components) {
   .map((info: any) => {
     const {state, components} = info
     const {showFilters} = state
-    const {grid, filters} = components
+    const {grid, filters, navigator} = components
 
     return div(`.screen.search-results.one-day`, {class: {"no-scroll": showFilters}}, [
-      renderNavigator(state),
+      //renderNavigator(state),
+      navigator,
       showLoader(state) ? renderLoader() : renderContent(info),
       showFilters ? filters : null
     ])

@@ -1,6 +1,6 @@
 import {Observable as O} from 'rxjs'
 import {div} from '@cycle/dom'
-import {combineObj, normalizeSink, spread, createProxy} from '../../../utils'
+import {combineObj, normalizeSink, spread, createProxy, componentify, mergeSinks} from '../../../utils'
 
 import deepEqual = require('deep-equal')
 import moment = require('moment')
@@ -11,6 +11,7 @@ import view from './view'
 import Grid from './grid/main'
 import DoneModal from '../../../library/doneModal'
 import Filters from './filters'
+import Navigator from '../../../library/navigators/search'
 
 const log = console.log.bind(console)
 const shouldRefreshSearch = (x, y) => {
@@ -25,14 +26,22 @@ function main(sources, inputs) {
   const retrieve$ = createProxy()
   const hide_filters$ = createProxy()
   const update_filters$ = createProxy()
+  const show_filters$ = createProxy()
+
+  const router_state$ = sources.Router.history$
+    .map(x => {
+      //if (x.state && x.state.searchDateTime) x.state.searchDateTime = moment(x.state.searchDateTime)
+      return x.state
+    }).publishReplay(1).refCount()
 
   const state$ = model(
     actions, {
       ...inputs, 
-      props$: sources.Router.history$.map(x => x.state), 
+      props$: router_state$, 
       retrieve$, 
       hide_filters$, 
-      update_filters$
+      update_filters$,
+      show_filters$
     })
   const grid = Grid(sources, {
     props$: state$.map(x => {
@@ -60,12 +69,25 @@ function main(sources, inputs) {
       }
     })
     .publishReplay(1).refCount()
+  
+  const filters_modal = componentify(filtersModal$)
 
 
   hide_filters$.attach(filtersModal$.switchMap(x => x.close$))
   update_filters$.attach(filtersModal$.switchMap(x => x.done$))
 
+  const navigator = Navigator(sources, {
+    ...inputs,
+    props$: state$.pluck('searchDateTime').distinctUntilChanged()
+      //.do(x => console.log(`to grid props$`, x))
+      //.distinctUntilChanged(null, x => x),
+  })
+
+  show_filters$.attach(navigator.output$.filter((x :any) => x.type === 'showFilters'))
+
+
   const components = {
+    navigator: navigator.DOM,
     grid$: grid.DOM,
     filters$: filtersModal$.switchMap(x => x.DOM)
   }
@@ -101,22 +123,27 @@ function main(sources, inputs) {
 
   retrieve$.attach(toHTTP$)
 
+  const merged = mergeSinks(navigator, grid, filters_modal)
+
   return {
+    ...merged,
     DOM: vtree$,
     Router: O.merge(
-      actions.change_date$.withLatestFrom(state$, (amt, state: any) => {
-        //console.log(`Shifting date by: `, amt)
-        return {
-          pathname: `/`,
-          type: 'replace',
-          action: `REPLACE`,
-          state: {
-            searchDateTime: state.searchDateTime.clone().add(amt, 'days').toDate().toISOString()
+      merged.Router,
+      navigator.output$
+        .filter((x: any) => x.type === 'changeDay')
+        .map((x: any) => x.data)
+        .withLatestFrom(state$, (amt, state: any) => {
+          //console.log(`Shifting date by: `, amt)
+          return {
+            pathname: `/`,
+            type: 'replace',
+            action: `REPLACE`,
+            state: {
+              searchDateTime: state.searchDateTime.clone().add(amt, 'days').toDate().toISOString()
+            }
           }
-        }
-      }),
-      grid.Router,
-      actions.brand_button$.mapTo('/')
+        })
     ),
     HTTP: retrieve$,
     Storage: state$
@@ -131,11 +158,6 @@ function main(sources, inputs) {
         key: "calendar/oneDay",
         value: JSON.stringify(val)
       })),
-      //.do(x => console.log(`to storage`, JSON.parse(x.value))),
-    MessageBus: O.merge(
-      actions.show_menu$.mapTo({to: `main`, message: {type: `showLeftMenu`, data: {redirect_url: '/'}}}), 
-    )//.do(x => console.log(`to MessageBus:`, x))
-
       //.filter(x => false)
       //.do(x => console.log(`to storage:`, x))
   }
