@@ -29,11 +29,11 @@ defmodule User.Individual do
     case Registry.lookup(:individual_user_registry, user.username) do
       [] -> 
         IO.inspect {:not_started, user}
-        out = User.IndividualsManager.start_user(User.IndividualsManager, user)
+        {:ok, pid} = out = User.IndividualsManager.start_user(User.IndividualsManager, user)
         IO.inspect {:out, out}
-        out
-      [head | tail] -> 
-        #IO.inspect {:already_started, user}
+        pid
+      [head] -> 
+        IO.inspect {:already_started, user}
         {pid, _} = head
         pid
     end
