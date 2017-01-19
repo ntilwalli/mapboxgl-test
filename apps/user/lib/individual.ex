@@ -10,32 +10,33 @@ defmodule User.Individual do
   alias Shared.ListingSession, as: ListingSessionMessage
 
   def start_link(user, listing_registry) do
-    name = via_tuple(user)
-    out = GenServer.start_link(__MODULE__, {:ok, user, listing_registry}, name: name)
-    #IO.inspect {:individual_start_link, out}
-    #IO.inspect {:stuff_before, Registry.lookup(:individual_user_registry, user.id)}
-    #IO.inspect {:started_individual, user}
-    out
+    GenServer.start_link(__MODULE__, {:ok, user, listing_registry})
+  end
+
+  def init({:ok, user, listing_registry}) do
+    Registry.register(:individual_user_registry, user.id, user)
+    Registry.register(:individual_user_registry, user.username, user)
+
+    {:ok, %{
+      user: user,
+      listing_registry: listing_registry
+    }}
   end
 
 
   def ensure_started(user) do
-    name = via_tuple(user)
     #IO.inspect {:ensure_started, user}
-    case Registry.lookup(:individual_user_registry, user.id) do
+    case Registry.lookup(:individual_user_registry, user.username) do
       [] -> 
-        #IO.inspect {:not_started, user}
-        User.IndividualsManager.start_user(User.IndividualsManager, user)
-        #IO.inspect {:stuff, Registry.lookup(:individual_user_registry, user.id)}
-        name
+        IO.inspect {:not_started, user}
+        out = User.IndividualsManager.start_user(User.IndividualsManager, user)
+        IO.inspect {:out, out}
+        out
       [head | tail] -> 
         #IO.inspect {:already_started, user}
-        name
+        {pid, _} = head
+        pid
     end
-  end
-
-  defp via_tuple(user) do
-    {:via, Registry, {:individual_user_registry, user.id}}
   end
 
   def logout(user) do
@@ -43,112 +44,129 @@ defmodule User.Individual do
   end
 
   def retrieve_notifications(user) do
-    name = ensure_started(user)
-    GenServer.call(name, :retrieve_notifications)
+    pid = ensure_started(user)
+    GenServer.call(pid, :retrieve_notifications)
   end
 
   def route(user, "/register_app_load") do
     :ok
   end
 
+  def route(pid, "/home/profile") when is_pid(pid) do
+    GenServer.call(pid, :home_profile)
+  end
+
   def route(user, "/home/profile") do
-    name = ensure_started(user)
-    GenServer.call(name, :home_profile)
+    pid = ensure_started(user)
+    GenServer.call(pid, :home_profile)
   end
 
   def route(user, "/settings") do
-    name = ensure_started(user)
-    GenServer.call(name, :settings)
+    pid = ensure_started(user)
+    GenServer.call(pid, :settings)
+  end
+
+  def route(user, "/profile/retrieve", username) do
+    pid = ensure_started(user)
+    GenServer.call(pid, {:profile_retrieve, username})
   end
 
   def route(user, "/listing/new", listing) do
-    name = ensure_started(user)
-    GenServer.call(name, {:listing_new, listing})
+    pid = ensure_started(user)
+    GenServer.call(pid, {:listing_new, listing})
   end
 
+
   def route(user, "/listing/update", listing) do
-    name = ensure_started(user)
-    GenServer.call(name, {:listing_update, listing})
+    pid = ensure_started(user)
+    GenServer.call(pid, {:listing_update, listing})
   end
 
   def route(user, "/listing/delete", listing_id) do
-    name = ensure_started(user)
-    GenServer.call(name, {:delete_listing, listing_id})
+    pid = ensure_started(user)
+    GenServer.call(pid, {:delete_listing, listing_id})
   end
 
   def route(user, "/listing_session/new") do
-    name = ensure_started(user)
-    GenServer.call(name, :new_listing_session)
+    pid = ensure_started(user)
+    GenServer.call(pid, :new_listing_session)
   end
 
   def route(user, "/listing_session/retrieve", id) do
-    name = ensure_started(user)
-    GenServer.call(name, {:retrieve_listing_session, id})
+    pid = ensure_started(user)
+    GenServer.call(pid, {:retrieve_listing_session, id})
   end
 
   def route(user, "/notifications/read", notification_ids) do
-    name = ensure_started(user)
-    GenServer.cast(name, {:read_notifications, notification_ids})
+    pid = ensure_started(user)
+    GenServer.cast(pid, {:read_notifications, notification_ids})
   end
 
   def route(user, "/listing_session/save", params) do
-    name = ensure_started(user)
-    GenServer.call(name, {:save_listing_session, params})
+    pid = ensure_started(user)
+    GenServer.call(pid, {:save_listing_session, params})
   end
 
   def route(user, "/listing_session/delete", params) do
-    name = ensure_started(user)
-    GenServer.call(name, {:delete_listing_session, params})
+    pid = ensure_started(user)
+    GenServer.call(pid, {:delete_listing_session, params})
   end
 
   def route(user, "/listing_session/release", params) do
-    name = ensure_started(user)
-    GenServer.call(name, {:release_listing_session, params})
+    pid = ensure_started(user)
+    GenServer.call(pid, {:release_listing_session, params})
   end
 
   def route(user, "/home/listings") do
-    name = ensure_started(user)
-    GenServer.call(name, {:home_listings})
+    pid = ensure_started(user)
+    GenServer.call(pid, {:home_listings})
   end
 
   def route(user, "/search", query) do
-    name = ensure_started(user)
-    GenServer.call(name, {:search, query})
+    pid = ensure_started(user)
+    GenServer.call(pid, {:search, query})
   end
 
   def route(user, "/settings", settings) do
-    name = ensure_started(user)
-    GenServer.call(name, {:settings, settings})
+    pid = ensure_started(user)
+    GenServer.call(pid, {:settings, settings})
   end
 
   def route(user, "/retrieve_listing", listing_id) do
-    name = ensure_started(user)
-    GenServer.call(name, {:retrieve_listing, listing_id})
+    pid = ensure_started(user)
+    GenServer.call(pid, {:retrieve_listing, listing_id})
   end
 
   def route(user, "/home/check_ins", message) do
-    name = ensure_started(user)
-    GenServer.call(name, {:home_check_ins, message})
+    pid = ensure_started(user)
+    GenServer.call(pid, {:home_check_ins, message})
   end
 
   def route(user, "/check_in", message) do
-    name = ensure_started(user)
-    GenServer.call(name, {:check_in, message})
+    pid = ensure_started(user)
+    GenServer.call(pid, {:check_in, message})
   end
 
   def route(user, unknown_route, message) do 
     {:error, "Unknown route: #{unknown_route}"}
   end
 
-  def init({:ok, user, listing_registry}) do
-    {:ok, %{
-      user: user,
-      listing_registry: listing_registry
-    }}
+  def handle_call(:home_profile, _from, %{user: user} = state) do
+    {:reply, {:ok, user}, state}
   end
 
-  def handle_call(:home_profile, _from, %{user: user} = state) do
-    {:reply, {:ok, user}  , state}
+  def handle_call({:profile_retrieve, username}, _from, %{user: user} = state) do
+    if (username === user.username) do
+      {:reply, {:ok, user}, state}
+    else
+      case Registry.lookup(:individual_user_registry, username) do
+        [{pid, _}] ->
+          out = User.Individual.route(pid, "/home/profile")
+          {:reply, out, state}
+        [] ->
+          {:reply, {:error, "User not found"}, state}
+      end
+    end
   end
 
   def handle_call(:new_listing_session, _from, %{user: user} = state) do
@@ -163,6 +181,16 @@ defmodule User.Individual do
     # IO.inspect result
     {:reply, {:ok, result}, state}
   end
+
+  # def handle_call({:user_retrieve, username}, _from, %{user: user} = state) do
+  #   if (username === user.username) do
+  #     {:reply, {:ok, username}, state}
+  #   else
+  #     {:reply, {:ok, Share.
+  #   end
+  #   result = Shared.Repo.get(Shared.ListingSession, id)
+  #   {:reply, {:ok, result}, state}
+  # end
 
   def handle_call({:retrieve_listing_session, id}, _from, %{user: user} = state) do
     result = Shared.Repo.get(Shared.ListingSession, id)
@@ -297,6 +325,7 @@ defmodule User.Individual do
   end
 
   def handle_call({:listing_new, listing}, _from, %{user: user, listing_registry: l_reg} = state) do
+    out = Listing.Registry.create(l_reg, listing, user)
     out = Listing.Registry.create(l_reg, listing, user)
     {:reply, out, state}
   end

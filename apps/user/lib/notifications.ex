@@ -9,25 +9,26 @@ defmodule User.Notifications do
 
 
   def start_link(user, notification_manager, notification_registry) do
-    name = via_tuple(user)
-    GenServer.start_link(__MODULE__, {:ok, user, notification_manager, notification_registry}, name: name)
+    GenServer.start_link(__MODULE__, {:ok, user, notification_manager, notification_registry})
   end
 
   def read(user, notification_ids) when is_list(notification_ids) do
-    name = via_tuple(user)
-    GenServer.cast(name, {:read, notification_ids})
+    GenServer.cast(get_pid(user), {:read, notification_ids})
   end
 
   def retrieve(user) do
-    name = via_tuple(user)
-    GenServer.call(name, :retrieve)
+    GenServer.call(get_pid(user), :retrieve)
   end
 
-  defp via_tuple(user) do
-    {:via, Registry, {:notification_process_registry, user.id}}
+  defp get_pid(user) do
+    [{pid, _}] = Registry.lookup(:notification_process_registry, user.id)
+    pid
   end
 
   def init({:ok, user, notification_manager, notification_registry}) do
+    Registry.register(:notification_process_registry, user.id, user)
+    Registry.register(:notification_process_registry, user.username, user)
+
     Notification.Manager.add_user(user)
     {:ok, notifications} = out  = Notification.Manager.retrieve(notification_manager, user)
     IO.inspect {:init_broadcast_notifications, notifications}
