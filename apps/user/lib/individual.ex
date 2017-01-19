@@ -28,13 +28,12 @@ defmodule User.Individual do
     #IO.inspect {:ensure_started, user}
     case Registry.lookup(:individual_user_registry, user.username) do
       [] -> 
-        IO.inspect {:not_started, user}
-        {:ok, pid} = out = User.IndividualsManager.start_user(User.IndividualsManager, user)
-        IO.inspect {:out, out}
+        #IO.inspect {:not_started, user}
+        User.IndividualsManager.start_user(User.IndividualsManager, user)
+        [{pid, _}] = Registry.lookup(:individual_user_registry, user.username)
         pid
-      [head] -> 
-        IO.inspect {:already_started, user}
-        {pid, _} = head
+      [{pid, _}] -> 
+        #IO.inspect {:already_started, user}
         pid
     end
   end

@@ -31,7 +31,7 @@ defmodule User.Notifications do
 
     Notification.Manager.add_user(user)
     {:ok, notifications} = out  = Notification.Manager.retrieve(notification_manager, user)
-    IO.inspect {:init_broadcast_notifications, notifications}
+    #IO.inspect {:init_broadcast_notifications, notifications}
     schedule_init_broadcast()
     #Candle.Notification.IndividualChannel.broadcast_notifications(user, notifications)
     {:ok, %{

@@ -5,6 +5,7 @@ import SearchApp from './component/search/oneDay/main'
 //import ListingApp from './component/listing/main'
 import ListingApp from './component/newListing/main'
 import HomeApp from './component/newHome/main'
+import UserApp from './component/user/main'
 import {main as CreateApp} from './component/create/main'
 import {main as SettingsApp} from './component/settings/main'
 
@@ -12,8 +13,9 @@ const routes = [
   //{pattern: /^\/user/, value: UserApp},
   {pattern: /^\/settings/, value: {component: SettingsApp, auth: false}},
   {pattern: /^\/create/, value: {component: CreateApp, auth: true}},
-  {pattern: /^\/home/, value: {component: HomeApp, auth: false}},
+  {pattern: /^\/home/, value: {component: UserApp, auth: false}},
   {pattern: /^\/listing/, value: {component: ListingApp, auth: false}},
+  {pattern: /^[a-zA-Z][a-zA-Z0-9]*/, value: {component: UserApp}},
   {pattern: /.*/, value: {component: SearchApp, auth: false}}
 ]
 
