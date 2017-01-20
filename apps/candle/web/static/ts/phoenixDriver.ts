@@ -133,28 +133,38 @@ export default function makePhoenixDriver() {
     const cookie: any = Cookie.get()
     const token = cookie && cookie.authorization ? cookie.authorization : null
 
-    const socket = new Socket("/socket", {
-      params: {guardian_token: token},
-      logger: ((kind, msg, data) => { console.log(`${kind}: ${msg}`, data) })
-    })
+    if (token) {
+      const socket = new Socket("/socket", {
+        params: {guardian_token: token},
+        logger: ((kind, msg, data) => { console.log(`${kind}: ${msg}`, data) })
+      })
 
-    socket.connect()
+      socket.connect()
 
-    socket.onOpen(ev => {
-      console.log('Phoenix channels socket opened')
-      // obs.next(undefined)
-    })
-    socket.onError(ev => {
-      console.log('Phoenix channels socket error', ev)
-      // obs.error('Phoenix channels socket error')
-    })
-    socket.onClose(ev => {
-      console.log('Phoenix channels socket closed', ev)
-      //obs.complete('Phoenix channels socket closed')
-    })
+      socket.onOpen(ev => {
+        console.log('Phoenix channels socket opened')
+        // obs.next(undefined)
+      })
+      socket.onError(ev => {
+        console.log('Phoenix channels socket error', ev)
+        // obs.error('Phoenix channels socket error')
+      })
+      socket.onClose(ev => {
+        console.log('Phoenix channels socket closed', ev)
+        //obs.complete('Phoenix channels socket closed')
+      })
 
-    return {
-      Channels: createChannelsObject(socket, shared$)
+      return {
+        Channels: createChannelsObject(socket, shared$)
+      }
+    } else {
+      return {
+        Channels: {
+          select: (channel_name) => ({
+            on: (topic) => O.never()
+          })
+        }
+      }
     }
   }
 }
