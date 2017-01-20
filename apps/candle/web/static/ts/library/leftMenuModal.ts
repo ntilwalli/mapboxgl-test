@@ -87,7 +87,7 @@ export default function main(sources, inputs) {
     Router: O.merge(
         navigator.Router,
         actions.show_settings$.mapTo({
-          pathname: `/settings`, 
+          pathname: '/settings', 
           type: 'push',
           action: 'PUSH'
         }),
@@ -96,10 +96,12 @@ export default function main(sources, inputs) {
           type: 'push',
           actions: 'PUSH'
         }),
-        actions.show_profile$.mapTo({
-          pathname: `/home`,
-          type: 'push',
-          actions: 'PUSH'
+        actions.show_profile$.withLatestFrom(inputs.Authorization.status$, (_, authorization) => {
+          return {
+            pathname: '/' + authorization.username,
+            type: 'push',
+            actions: 'PUSH'
+          }
         })
       ),
     MessageBus: O.merge(

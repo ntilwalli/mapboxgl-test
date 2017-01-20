@@ -264,15 +264,14 @@ export default function main(sources, inputs) {
   //   .do(x => console.log(`retrieve listing toHTTP`, x))
   //   .publishReplay(1).refCount()
 
-  const to_http$ = O.of(undefined)
-    .map(x => {
+  const to_http$ = O.of(undefined).withLatestFrom(inputs.Authorization.status$, (_, user: any) => {
       return {
           url: `/api/user`,
           method: `post`,
           send: {
-            route: "/home/listings"
+            route: '/home/listings'
           },
-          category: `getTreeListing`
+          category: 'getTreeListing'
       }
     })
     .delay(0)

@@ -117,11 +117,11 @@ export default function main(sources, inputs) {
         action: 'REPLACE',
         pathname: '/home'
       }),
-      actions.page$.map(page => {
+      actions.page$.withLatestFrom(inputs.Authorization.status$, (page, user: any) => {
         const out = {
           type: 'replace',
           action: 'REPLACE',
-          pathname: page === 'profile' ? '/home' : '/home/' + page
+          pathname: page === 'profile' ? '/' + user.username : '/' + user.username + '/' + page
         }
 
         return out  
@@ -131,7 +131,7 @@ export default function main(sources, inputs) {
       actions.show_menu$.withLatestFrom(state$, (_, state) => ({
         to: `main`, message: {
           type: `showLeftMenu`, data: {
-            redirect_url: state.page ? '/home' + state.page : '/home'
+            redirect_url: state.page ? '/' + state.authorization.username + '/' + state.page : '/' + state.authorization.username
           }
         }
       }))

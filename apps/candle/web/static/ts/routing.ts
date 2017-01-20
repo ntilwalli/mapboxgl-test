@@ -4,8 +4,7 @@ import {combineObj, componentify} from './utils'
 import SearchApp from './component/search/oneDay/main'
 //import ListingApp from './component/listing/main'
 import ListingApp from './component/newListing/main'
-import HomeApp from './component/newHome/main'
-import UserApp from './component/user/main'
+import UserApp from './component/user/newMain'
 import {main as CreateApp} from './component/create/main'
 import {main as SettingsApp} from './component/settings/main'
 
@@ -13,9 +12,8 @@ const routes = [
   //{pattern: /^\/user/, value: UserApp},
   {pattern: /^\/settings/, value: {component: SettingsApp, auth: false}},
   {pattern: /^\/create/, value: {component: CreateApp, auth: true}},
-  {pattern: /^\/home/, value: {component: UserApp, auth: false}},
   {pattern: /^\/listing/, value: {component: ListingApp, auth: false}},
-  {pattern: /^[a-zA-Z][a-zA-Z0-9]*/, value: {component: UserApp}},
+  {pattern: /^\/[a-zA-Z][a-zA-Z0-9]*/, value: {component: UserApp, auth: false, key: 'user'}},
   {pattern: /.*/, value: {component: SearchApp, auth: false}}
 ]
 
@@ -33,12 +31,12 @@ export default function routing(sources, inputs) {
   }).do(scrollTop)
     .map((info: any) => {
       const {route, authorization} = info
-      const {component, auth} = route.value.info
+      const {component, auth, key} = route.value.info
       //const component = component.info
       if (!auth || auth && authorization) {
         return component({
           ...sources,
-          Router: Router.path(route.path)
+          Router: key === 'user' ? Router : Router.path(route.path)
         }, inputs)
       } else {
         return {

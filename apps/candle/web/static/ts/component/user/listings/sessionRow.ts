@@ -146,9 +146,9 @@ export default function main(sources, inputs) {
           }
         }
       }),
-      actions.delete_success$.map(x => {
+      actions.delete_success$.withLatestFrom(inputs.Authorization.status$, (_, user) => {
         return  {
-          pathname: '/home/listings',
+          pathname: '/' + user.username + '/listings',
           type: 'replace'
         }
       })

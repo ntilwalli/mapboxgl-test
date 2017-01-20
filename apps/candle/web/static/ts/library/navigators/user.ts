@@ -7,7 +7,7 @@ import Immutable = require('immutable')
 
 const routes = [
   {pattern: /^\/profile$/, value: {type: 'success', data: 'profile'}},
-  {pattern: /^\/recurrences$/, value: {type: 'success', data: 'recurrences'}},
+  {pattern: /^\/listings$/, value: {type: 'success', data: 'listings'}},
   {pattern: /^\/messages$/, value: {type: 'success', data: 'messages'}},
   {pattern: /^\/settings$/, value: {type: 'success', data: 'settings'}},
   {pattern: /^\/notifications$/, value: {type: 'success', data: 'notifications'}},

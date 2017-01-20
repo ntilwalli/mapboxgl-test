@@ -587,11 +587,11 @@ function main(sources, inputs) {
      Router: O.merge(
        component$.switchMap(x => x.content.Router),
        actions.brand_button$.mapTo('/'), 
-       actions.success_save_exit$
+       actions.success_save_exit$.withLatestFrom(inputs.Authorization.status$, (_, user) => user)
          .delay(4)
-         .map(val => {
+         .map(user => {
            return {
-             pathname: `/home/listings`,
+             pathname: '/' + user.username + '/listings',
              action: 'REPLACE',
              type: 'replace'
            }

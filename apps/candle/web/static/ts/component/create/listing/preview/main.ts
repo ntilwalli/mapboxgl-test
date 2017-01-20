@@ -121,9 +121,9 @@ export function main(sources, inputs) {
       actions.post_success$,
       actions.stage_success$
     )
-    .map(listing => {
+    .withLatestFrom(inputs.Authorization.status$, (_, user: any) => {
       return {
-        pathname: `/home/listings`,
+        pathname: '/' + user.username + '/listings',
         action: 'REPLACE',
         type: 'replace'
       }

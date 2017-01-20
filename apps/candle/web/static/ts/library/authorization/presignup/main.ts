@@ -74,7 +74,7 @@ export default function main(sources, inputs) {
 
   const emailInput = TextInput(sources, {
     validator: emailValidator,
-    validateOnBlur: true,
+    //validateOnBlur: true,
     props$: emailInputProps, 
     errors$,
     initialText$: O.of(undefined)

@@ -8,18 +8,19 @@ import ProfileInfo from './profileInfo'
 //import MyListings from './myListings'
 import Participation from './participation'
 import HomeMenu from './navigator'
-import UserProfile from '../userProfile/main'
+import UserProfile from './profile/main'
 import Listings from './listings/main'
-//import Notifications from './notifications/main'
+import Notifications from './notifications/main'
 import Navigator from '../../library/navigators/user'
 import WTF from '../../library/wtf'
 import UserNotFound from '../../library/listingNotFound'
+import TimeoutLoader from '../../library/timeoutLoader'
 
 import {inflateListing} from '../helpers/listing/utils'
 
 const routes = [
   {pattern: /^\/(home)$/, value: {type: "success"}},
-  {pattern: /^\/([a-zA-Z]+)/, value: {type: "success"}},
+  {pattern: /^\/([a-zA-Z][a-zA-Z0-9]*)/, value: {type: "success"}},
   {pattern: /^\/notFound$/, value: {type: "error"}},
   {pattern: /.*/, value: {type: "error"}}
 ]
@@ -94,7 +95,7 @@ function model(actions, inputs) {
 // if yes, check if push state has listing, if yes, store and load listing screen
 // if no, retrieve from cloud and show waiting screen, once retrieved, success ? route
 // with proper listing id and push state, error ? route to listing not found screen
-function muxRouter(sources) {
+function muxRouter(sources, inputs) {
   const {Router} = sources
   const route$ = Router.define(routes)
     .publishReplay(1).refCount()
@@ -103,7 +104,7 @@ function muxRouter(sources) {
     //   console.log('success route', route)
     // })
     .publishReplay(1).refCount()
-  const listing$ = success$
+  const user$ = success$
     .filter(route => !!route.location.state)
     .map(route => route.location.state)
     // .do(x => {
@@ -111,29 +112,44 @@ function muxRouter(sources) {
     // })
     .publishReplay(1).refCount()
   const li_wo_push_state$ = success$.filter(route => !route.location.state)
-  const retrieve_listing_id$ = li_wo_push_state$
-    .map(route => parseInt(route.value.match[1]))
+  const page_name$ = li_wo_push_state$
+    .map(route => route.value.match[1])
     .publishReplay(1).refCount()
-  const no_listing_id$ = route$.filter(route => {
+
+  const pair_with_authorization$ = page_name$.withLatestFrom(inputs.Authorization.status$, (page_name, authorization) =>{
+    return {page_name, authorization}
+  }).publishReplay(1).refCount()
+
+  const retrieve_user$ = pair_with_authorization$.filter(({page_name, authorization}) => {
+    page_name !== authorization.username
+  })
+
+  const self$ = pair_with_authorization$.filter(({page_name, authorization}) => {
+    return page_name === authorization.username
+  }).map((x: any) => {
+    return x.authorization
+  })
+
+  const no_username$ = route$.filter(route => {
       return route.value.info.type === 'error'
     })
     .publishReplay(1).refCount()
 
   return {
-    listing_result_from_router$: listing$.map(drillInflate),
-    retrieve_listing_id$,
-    no_listing_id$,
+    user_result$: O.merge(user$, self$),
+    retrieve_user$,
+    no_username$,
     route$
   }
 }
 
 function muxHTTP(sources) {
   const {HTTP} = sources
-  const {success$, error$, good$, bad$, ugly$} = processHTTP(sources, `getListingById`)
+  const {success$, error$, good$, bad$, ugly$} = processHTTP(sources, `getUserByUsername`)
 
   return {
-    listing_result_from_http$: success$.map(drillInflate),
-    listing_result_error_from_http$: error$
+    user_result_from_http$: success$,
+    user_result_error_from_http$: error$
   }
 }
 
@@ -142,29 +158,29 @@ function muxHTTP(sources) {
 export default function main(sources, inputs): any {
 
   const {Router} = sources
-  const muxed_router = muxRouter(sources)
+  const muxed_router = muxRouter(sources, inputs)
   const muxed_http = muxHTTP(sources)
 
   const component$ = O.merge(
-    muxed_router.retrieve_listing_id$.map(_ => TimeoutLoader(sources, inputs)),
-    muxed_router.listing_result_from_router$.map(result => {
-      const router_with_listing_id = sources.Router.path(result.listing.id.toString())
-      const navigator = isolate(AdminNav)({...sources, Router: router_with_listing_id}, {
+    muxed_router.retrieve_user$.map(_ => TimeoutLoader(sources, inputs)),
+    muxed_router.user_result$.map((user: any) => {
+      const router_with_listing_id = sources.Router.path(user.username)
+      const navigator = isolate(Navigator)({...sources, Router: router_with_listing_id}, {
         ...inputs, 
-        props$: O.of(result)
+        props$: O.of(user)
       })
 
 
       const content$ = navigator.output$
         .map(page => {
           if (!page || page === 'profile') {
-            const out = ListingProfile({...sources, Router: router_with_listing_id.path(page)}, {...inputs, props$: O.of(result)})
+            const out = UserProfile({...sources, Router: router_with_listing_id.path(page)}, {...inputs, props$: O.of(user)})
+            return out
+          } else if (!page || page === 'listings') {
+            const out = Listings({...sources, Router: router_with_listing_id.path(page)}, {...inputs, props$: O.of(user)})
             return out
           } else if (!page || page === 'notifications') {
-            const out = Notifications({...sources, Router: router_with_listing_id.path(page)}, {...inputs, props$: O.of(result)})
-            return out
-          } else if (!page || page === 'settings') {
-            const out = Settings({...sources, Router: router_with_listing_id.path(page)}, {...inputs, props$: O.of(result)})
+            const out = Notifications({...sources, Router: router_with_listing_id.path(page)}, {...inputs, props$: O.of(user)})
             return out
           } else {
             return NotImplemented(sources, inputs)
@@ -188,16 +204,16 @@ export default function main(sources, inputs): any {
 
   const component = componentify(component$)
 
-  const to_http$ = muxed_router.retrieve_listing_id$
-    .map(listing_id => {
+  const to_http$ = muxed_router.retrieve_user$
+    .map(username => {
       return {
           url: `/api/user`,
           method: `post`,
           send: {
-            route: "/retrieve_listing",
-            data: listing_id
+            route: "/profile/retrieve",
+            data: username
           },
-          category: `getListingById`
+          category: `getUserByUsername`
       }
     })
     //.do(x => console.log(`retrieve listing toHTTP`, x))
@@ -210,7 +226,7 @@ export default function main(sources, inputs): any {
       }),
       combineObj({
         route: muxed_router.route$, 
-        result: muxed_http.listing_result_from_http$
+        result: muxed_http.user_result_from_http$
       }).map((info: any) => {
         const {route, result} = info
         return {
@@ -220,7 +236,7 @@ export default function main(sources, inputs): any {
           state: result
         }
       }),
-      muxed_router.no_listing_id$.map(x => {
+      muxed_router.no_username$.map(x => {
         return {
           type: 'replace',
           action: 'REPLACE',
