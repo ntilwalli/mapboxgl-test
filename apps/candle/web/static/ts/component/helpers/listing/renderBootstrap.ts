@@ -710,12 +710,12 @@ export function renderRecurring(cuando) {
     ]) : null
 
   const {rrules, rdates, exdates} = cuando 
-  if (rdates.length || exdates.length) {
+  if ((rdates && rdates.length) || (exdates && exdates.length)) {
     return div([
       span('.mr-xs', ['Recurring']),
       upcoming
     ])
-  } else if (rrules.length) {
+  } else if (rrules && rrules.length) {
     //if(rrules.length === 1) {
       return div([
         div([
