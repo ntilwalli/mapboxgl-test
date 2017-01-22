@@ -109,7 +109,7 @@ function reducers(actions, inputs) {
       listing.meta.event_types = processCheckboxArray(msg, listing.meta.event_types)
       
       // HACK since I don't want to figure out how to use ES6 Sets
-      // This ensures when checboxes are unchecked the 
+      // This ensures when checkboxes are unchecked the 
       // associated meta properties that may have been set for
       // the associated event type no longer exist in the meta Object
       if (!msg.checked) {

@@ -7,7 +7,7 @@ import {main as Landing} from './landing'
 const routes = [
   //{pattern: /^\/user/, value: UserApp},
   {pattern: /^\/listing/, value: ListingApp},
-  {pattern: /.*/, value: Landing}
+  {pattern: /.*/, value: ListingApp}
 ]
 
 function main(sources, inputs) {

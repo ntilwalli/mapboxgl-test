@@ -92,7 +92,7 @@ export default function main(sources, inputs) {
           action: 'PUSH'
         }),
         actions.show_create_workflow$.mapTo({
-          pathname: `/create`,
+          pathname: `/create/listing`,
           type: 'push',
           actions: 'PUSH'
         }),

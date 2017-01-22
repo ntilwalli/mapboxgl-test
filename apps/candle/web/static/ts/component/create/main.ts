@@ -1,88 +1,50 @@
 import {Observable as O} from 'rxjs'
-import {div, span, button} from '@cycle/dom'
-import Immutable = require('immutable')
-import {combineObj, mergeSinks} from '../../utils'
-import {
-  renderMenuButton, 
-  renderCircleSpinner, 
-  renderLoginButton, 
-  renderSearchCalendarButton
-} from '../helpers/navigator'
+import {combineObj, mergeSinks, componentify} from '../../utils'
 
-import {main as routing} from './routing'
+import {main as ListingApp} from './newListing/main'
+// import {main as Landing} from './landing'
+// import {main as routing} from './routing'
 
-// function intent(sources) {
-//   return {}
-// }
+const routes = [
+  //{pattern: /^\/user/, value: UserApp},
+  {pattern: /^\/listing/, value: {type: 'success', component: ListingApp}},
+  {pattern: /.*/, value: {type: 'error'}}
+]
 
-// function reducers(actions, inputs) {
-//   return O.merge(O.never())
-// }
-
-// function model(actions, inputs) {
-//   const init = {}
-//   const reducer$ = reducers(actions, inputs)
-//   return combineObj({
-//       authorization$: inputs.Authorization.status$
-//     })
-//     .switchMap((info: any) => {
-//       const {authorization} = info
-//       const init = {authorization}
-//       return reducer$
-//         .startWith(Immutable.Map(init))
-//         .scan((acc, f: Function) => f(acc))
-//     })
-//     .map((x: any) => x.toJS())
-//     .publishReplay(1).refCount()
-// }
-
-// function renderCancelButton() {
-//   return button(`.appCancelButton.text-button.cancel-button`, [`Cancel`])
-// }
-
-// function renderSaveExitButton() {
-//   return button(`.appSaveExitButton.text-button.save-exit-button`, [`Save/Exit`])
-// }
-
-// function renderNavigator(state: any) {
-//   //const {authorization} = state
-//   return div(`.navigator`, [
-//     div(`.section`, [
-//       renderMenuButton()
-//     ]),
-//     div(`.section`, [
-//       span([`Create workflow`])
-//     ]),
-//     div(`.section`, [
-//       div(`.buttons`, [
-//         state.waiting ? renderCircleSpinner() : null,
-//         renderCancelButton(),
-//         renderSaveExitButton()
-//       ])
-//     ])
-//   ])
-// }
-
-
-// function view(state$, components) {
-//   return state$.map(state => {
-//     return div(`.create-component`, [
-//       renderNavigator(state),
-//       `create component`
-//     ])
-//   })
-// }
-
-// This component manages auto-saving
 function main(sources, inputs) {
-  // const actions = intent(sources)
-  // const state$ = model(actions, inputs)
-  // const components = {}
-  // const vtree$ = view(state$, components)
 
-  const component = routing(sources, inputs)
+  const {Router} = sources
+  const routing$ = Router.define(routes)
+    .map(route => {
+      //console.log(`route`, route)
+      const data = route.value
+      const {type, component} = data.info
+      if (type === 'success' && route.location.state) {
+        return component({
+          ...sources,
+          Router: Router.path(route.path)
+        }, inputs)
+      } 
+      else {
+        return {
+          Router: O.of({
+            pathname: `/create/listing`,
+            type: `replace`,
+            state: {
+              type: `new`
+            }
+          }).delay(1)
+        }
+      }
+    })
+    .map(x => {
+      return x
+    })
+    .publishReplay(1).refCount()
 
-  return component
+  const out = componentify(routing$)
+  //out.HTTP.subscribe(x => console.log(`HTTP routing:`, x))
+  return out
 }
 
 export {

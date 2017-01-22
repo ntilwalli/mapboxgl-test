@@ -101,13 +101,19 @@ function main(sources) {
     MapJSON: O.merge(out.MapJSON),
     Global: O.merge(out.Global, authorizationService.Global, fromModalGlobal),
     HTTP: O.merge(
-      out.HTTP, 
-      settingsService.HTTP, 
-      geoService.HTTP, 
-      authorizationService.HTTP, 
-      fromModalHTTP
-    ),//.do(x => console.log(`main/http sink`, x)),
-    Router: O.merge(out.Router, toRouter$, fromModalRouter),
+        out.HTTP, 
+        settingsService.HTTP, 
+        geoService.HTTP, 
+        authorizationService.HTTP, 
+        fromModalHTTP
+      )
+      .do(x => {
+        console.log(`main/http sink`, x)
+      }),
+    Router: O.merge(out.Router, toRouter$, fromModalRouter)
+      .do(x => {
+        console.log(`main/router sink`, x)
+      }),
     Storage: O.merge(out.Storage, settingsService.Storage, geoService.Storage, fromModalStorage),
     Phoenix: O.merge(out.Phoenix),
     MessageBus: O.merge(

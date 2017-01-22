@@ -10,6 +10,14 @@ import {
   CostOptions, PurchaseTypeOptions, UndefinedOption
 } from '../../../listingTypes'
 
+import {getDefault as getContactInfoDefault} from '../../create/newListing/advanced/contactInfo/main'
+import {getDefault as getFullTierCostDefault} from '../../create/newListing/advanced/fullTierCost/main'
+import {getDefault as getCostDefault} from '../../create/newListing/advanced/cost/main'
+import {getDefault as getPerformerCheckinDefault} from '../../create/newListing/advanced/togglePerformerCheckIn/main'
+import {getDefault as getPerformerSignupDefault} from '../../create/newListing/advanced/performerSignUp/main'
+import {getDefault as getPerformerLimitDefault} from '../../create/newListing/advanced/performerLimit/main'
+import {getDefault as getStageTimeRoundDefault} from '../../create/newListing/advanced/stageTimeRound/main'
+
 export {
   EventTypes, MetaPropertyTypes, EventTypeToProperties,
   DayOfWeek, RecurrenceFrequency, ListingTypes, CategoryTypes,
@@ -17,6 +25,132 @@ export {
   StageTimeOptions, TierPerkOptions, MinutesTypeOptions, RelativeTimeOptions,
   CostOptions, PurchaseTypeOptions, UndefinedOption
 } 
+
+
+export const getListedHostsDefault = () => []
+export const getListedPerformersDefault = () => []
+export const getNotesDefault = () => undefined
+export const getPerformerCostDefault = () => [getFullTierCostDefault()]
+export const getStageTimeDefault = () => [getStageTimeRoundDefault()]
+export const getCategoriesDefault = () => [CategoryTypes.COMEDY]
+export const getEventTypesDefault = () => [EventTypes.OPEN_MIC]
+export const getNameDefault = () => undefined
+export const getDescriptionDefault = () => undefined
+
+export const metaPropertyToDefaultFunction = {}
+metaPropertyToDefaultFunction[MetaPropertyTypes.PERFORMER_SIGN_UP] = getPerformerSignupDefault
+metaPropertyToDefaultFunction[MetaPropertyTypes.PERFORMER_CHECK_IN] = getPerformerCheckinDefault
+metaPropertyToDefaultFunction[MetaPropertyTypes.PERFORMER_COST] = () => getPerformerCostDefault
+metaPropertyToDefaultFunction[MetaPropertyTypes.STAGE_TIME] = () => getStageTimeDefault
+metaPropertyToDefaultFunction[MetaPropertyTypes.PERFORMER_LIMIT] = getPerformerLimitDefault
+metaPropertyToDefaultFunction[MetaPropertyTypes.NOTES] = getNotesDefault
+metaPropertyToDefaultFunction[MetaPropertyTypes.LISTED_HOSTS] = getListedHostsDefault
+metaPropertyToDefaultFunction[MetaPropertyTypes.CONTACT_INFO] = getContactInfoDefault
+metaPropertyToDefaultFunction[MetaPropertyTypes.LISTED_PERFORMERS] = getListedPerformersDefault
+metaPropertyToDefaultFunction[MetaPropertyTypes.AUDIENCE_COST] = getCostDefault
+metaPropertyToDefaultFunction['name'] = getNameDefault
+metaPropertyToDefaultFunction['description'] = getDescriptionDefault
+metaPropertyToDefaultFunction['categories'] = getCategoriesDefault
+metaPropertyToDefaultFunction['event_types'] = getEventTypesDefault
+
+
+
+function addOpenMicDefaults(out) {
+  out[MetaPropertyTypes.PERFORMER_SIGN_UP] = getPerformerSignupDefault()
+  out[MetaPropertyTypes.PERFORMER_CHECK_IN] = getPerformerCheckinDefault()
+  out[MetaPropertyTypes.PERFORMER_COST] = getPerformerCostDefault()
+  out[MetaPropertyTypes.STAGE_TIME] = getStageTimeDefault()
+  out[MetaPropertyTypes.PERFORMER_LIMIT] = getPerformerLimitDefault()
+  out[MetaPropertyTypes.NOTES] = getNotesDefault()
+  out[MetaPropertyTypes.LISTED_HOSTS] = getListedHostsDefault()
+  out[MetaPropertyTypes.CONTACT_INFO] = getContactInfoDefault()
+
+  return out
+}
+
+function addShowDefaults(out) {
+  out[MetaPropertyTypes.NOTES] = getNotesDefault()
+  out[MetaPropertyTypes.LISTED_HOSTS] = getListedHostsDefault()
+  out[MetaPropertyTypes.LISTED_PERFORMERS] = getListedPerformersDefault()
+  out[MetaPropertyTypes.CONTACT_INFO] = getContactInfoDefault()
+  out[MetaPropertyTypes.AUDIENCE_COST] = getCostDefault()
+
+  return out
+}
+
+function getDefaultListingMeta() {
+  const out = {}
+  out['event_types'] = getEventTypesDefault()
+  out['name'] = getNameDefault()
+  out['categories'] = getCategoriesDefault()
+  out['description'] = getDescriptionDefault()
+  addOpenMicDefaults(out)
+  return out
+}
+
+function getDefaultListingType() { return 'single' }
+function getDefaultListingDonde() { return undefined }
+function getDefaultListingCuando() { return undefined}
+
+function getDefaultListingSettings() {
+  return {
+    check_in: {
+      begins: {
+        type: "minutes_before_event_start",
+        data: {
+          minutes: 30
+        }
+      },
+      ends: {
+        type: "event_end"
+      },
+      radius: 30
+    }
+  }
+}
+
+function getDefaultListing() {
+  return {
+    type: getDefaultListingType(),
+    donde: getDefaultListingDonde(),
+    cuando: getDefaultListingCuando(),
+    settings: getDefaultListingSettings(),
+    meta: getDefaultListingMeta()
+  }
+}
+
+function getDefaultSearchArea() {
+
+}
+
+function getDefaultSessionProperties() {
+  return {
+    donde: {
+      search_area: undefined
+    },
+    cuando: {
+      recurrence: undefined,
+      starts: {
+        hour: 20,
+        minute: 0
+      },
+      ends: {
+        hour: 22,
+        minute: 0
+      }
+    }
+  }
+}
+
+export function getDefaultSession(retrieved_session) {
+  return {
+    ...retrieved_session,
+    current_step: 'basics',
+    listing: getDefaultListing(),
+    properties: getDefaultSessionProperties()
+  }
+}
+
 
 function inflateRecurrence(recurrence) {
   const {start_date, end_date, rdates, exdates} = recurrence
@@ -31,11 +165,11 @@ function inflateRecurrence(recurrence) {
 
   
   if (rdates && rdates.length) {
-    recurrence.rdate = recurrence.rdate.map(x => moment(x))
+    recurrence.rdate = recurrence.rdates.map(x => moment(x))
   }
 
   if (exdates && exdates.length) {
-    recurrence.exdate = recurrence.exdate.map(x => moment(x))
+    recurrence.exdates = recurrence.exdates.map(x => moment(x))
   }
 }
 
@@ -79,7 +213,7 @@ function inflateCuando(container) {
   }
 
   if (exdates && exdates.length) {
-    container.exdate = container.exdate.map(x => moment(x))
+    container.exdate = container.exdates.map(x => moment(x))
   }
 }
 
@@ -99,11 +233,11 @@ function deflateCuando(container) {
   }
 
   if (rdates && rdates.length) {
-    container.rdates = container.rdate.map(x => x.toDate().toISOString())
+    container.rdates = container.rdates.map(x => x.toDate().toISOString())
   }
 
   if (exdates && exdates.length) {
-    container.exdates = container.exdate.map(x => x.toDate().toISOString())
+    container.exdates = container.exdates.map(x => x.toDate().toISOString())
   }
 }
 
@@ -210,12 +344,28 @@ export function getSessionStream(sources) {
     .map(inflateSession)
 }
 
+export function has(arr, type) {
+  return arr.some(val => val === type)
+}
+
 export function fromCheckbox(ev) {
   const checked = ev.target.checked
   return {
     value: ev.target.value,
     checked
   }
+}
+
+export function processCheckboxArray(msg, arr) {
+  const {type, data} = msg
+  const index = arr.indexOf(msg.value)
+  if (index >= 0) {
+    arr.splice(index, 1)
+  } else {
+    arr.push(msg.value)
+  }
+
+  return arr
 }
 
 function dayToRRuleDay(day) {
