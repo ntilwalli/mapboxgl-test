@@ -1,7 +1,7 @@
 import {Observable as O} from 'rxjs'
 import {div, input, select, option, h5, li, span, button} from '@cycle/dom'
 import Immutable = require('immutable')
-import {combineObj, createProxy} from '../../../../../utils'
+import {combineObj, createProxy, getPreferredRegion$} from '../../../../../utils'
 import {toLngLatArray, geoToLngLat} from '../../../../../mapUtils'
 
 import FactualGeotagService from '../../../../../thirdParty/FactualGeotagService'
@@ -17,9 +17,8 @@ function intent(sources, inputs) {
     .observable
 
   const map_center$ = drag_end$.map(x => {
-      return x.target.getCenter()
-    })
-    .publish().refCount()
+    return x.target.getCenter()
+  }).publish().refCount()
 
   const region_service = FactualGeotagService({
     props$: O.of({category: 'geotag from searchArea'}), 
@@ -72,7 +71,7 @@ function model(actions, inputs) {
     })
     .switchMap((info: any) => {
       return reducers(actions, inputs)
-        .startWith(<any> Immutable.Map(clone(info.props)))
+        .startWith(<any> Immutable.fromJS(info.props))
         .scan((state, reducer: Function) => reducer(state))
     })
     .map((x: any) => x.toJS())

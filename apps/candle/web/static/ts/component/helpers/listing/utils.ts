@@ -126,6 +126,7 @@ function getDefaultSearchArea() {
 function getDefaultSessionProperties() {
   return {
     donde: {
+      modal: undefined,
       search_area: undefined
     },
     cuando: {

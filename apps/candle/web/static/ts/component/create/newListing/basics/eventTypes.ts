@@ -78,7 +78,7 @@ export default function main(sources, inputs) {
     .map(event_types => {
       const disable_open_mic = has(event_types, EventTypes.OPEN_MIC) && event_types.length === 1
       const disable_show = has(event_types, EventTypes.SHOW) && event_types.length === 1
-      return div(`.form-group`, [
+      return div([
         div('.form-check.form-check-inline', [
           label('.form-check-label', [
             input(`.appEventTypeInput.form-check-input`, {attrs: {disabled: disable_open_mic, type: 'checkbox', name: 'eventTypes', value: EventTypes.OPEN_MIC, checked: has(event_types, EventTypes.OPEN_MIC)}}, []),

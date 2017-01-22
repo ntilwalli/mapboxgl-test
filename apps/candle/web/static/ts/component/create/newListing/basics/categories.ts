@@ -36,7 +36,7 @@ export default function main(sources, inputs) {
 
   const vtree$ = categories$
     .map(categories => {
-      return div(`.form-group`, [
+      return div([
         div('.form-check.form-check-inline', [
           label('.form-check-label', [
             input(`.appCategoriesInput.form-check-input`, {attrs: {type: 'checkbox', name: 'categories', value: CategoryTypes.COMEDY, checked: has(categories, CategoryTypes.COMEDY)}}, []),
