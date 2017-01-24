@@ -8,7 +8,7 @@ export default function main(sources, inputs) {
     {
       placeholder: `Name`,
       name: `name-input`,
-      styleClass: `.name-input.form-control-sm`,
+      styleClass: `.name-input.form-control`,
       emptyIsError: true
     })
   return {

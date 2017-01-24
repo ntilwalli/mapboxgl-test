@@ -3,9 +3,9 @@ import {div} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 import Immutable = require('immutable')
 import moment = require('moment')
-import {combineObj} from '../../../../../../utils'
-import {recurrenceToRRuleSet} from '../../../../../helpers/listing/utils'
-import MonthCalendar from '../../../../../../library/monthCalendar'
+import {combineObj, traceStartStop} from '../../../../../../../utils'
+import {recurrenceToRRuleSet} from '../../../../../../helpers/listing/utils'
+import MonthCalendar from '../../../../../../../library/monthCalendar'
 
 function intent(sources) {
   const {DOM} = sources
@@ -14,9 +14,7 @@ function intent(sources) {
     change_month$: O.merge(
       DOM.select(`.appIncMonth`).events(`click`).mapTo(1),
       DOM.select(`.appDecMonth`).events(`click`).mapTo(-1)
-    ).map(x => {
-      return x
-    })
+    )
   }
 }
 
@@ -64,7 +62,8 @@ function model(actions, inputs) {
     return reducer$.startWith(Immutable.Map(init)).scan((acc, f: Function) => f(acc))
   })
   .map((x: any) => x.toJS())
-  //.do(x => console.log(`calendar state`, x))
+  .letBind(traceStartStop('calendar'))
+  .do(x => console.log(`calendar state`, x))
   .publishReplay(1).refCount()
 }
 

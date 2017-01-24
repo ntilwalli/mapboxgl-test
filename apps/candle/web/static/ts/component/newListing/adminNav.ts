@@ -21,9 +21,9 @@ function intent(sources) {
   const calendar$ = DOM.select('.appCalendarButton').events('click').mapTo('calendar')
   const profile$ = DOM.select('.appProfileButton').events('click').mapTo('profile')
   const show_menu$ = DOM.select('.appShowMenuButton').events('click')
-    .do(x =>{
-      console.log('show_menu')
-    })
+    // .do(x =>{
+    //   console.log('show_menu')
+    // })
     .publish().refCount()
 
   const brand_button$ = DOM.select(`.appBrandButton`).events(`click`)

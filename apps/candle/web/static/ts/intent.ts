@@ -13,7 +13,7 @@ function intent(sources) {
     }).publishReplay(1).refCount()
 
   const show_menu$ = MessageBus.address(`main`).filter(x => {
-    console.log('testing left menu modal')
+    //console.log('testing left menu modal')
     return x.type === `showLeftMenu`
   })
     .map(x => ({type: `leftMenu`, data: x.data}))

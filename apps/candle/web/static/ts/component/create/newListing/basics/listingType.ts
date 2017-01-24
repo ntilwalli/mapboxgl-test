@@ -7,11 +7,6 @@ import {ListingTypes} from '../../../../listingTypes'
 
 function applyChange(session, val) {
   session.listing.type = val
-  if (val === ListingTypes.SINGLE) {
-    session.properties.cuando.recurrence = undefined
-  } else {
-    session.properties.cuando.date = undefined
-  }
 }
 
 export default function main(sources, inputs) {
@@ -28,13 +23,13 @@ export default function main(sources, inputs) {
       return div([
         div('.form-check.form-check-inline.mb-0', [
           label('.form-check-label', [
-            input(`.appListingTypeInput.form-check-input`, {attrs: {type: 'radio', name: 'listingTypes', value: ListingTypes.SINGLE, selected: type === ListingTypes.SINGLE}}, []),
+            input(`.appListingTypeInput.form-check-input`, {attrs: {type: 'radio', name: 'listingTypes', value: ListingTypes.SINGLE, checked: type === ListingTypes.SINGLE}}, []),
             span('.ml-xs', ['single'])
           ]),
         ]),
         div('.form-check.form-check-inline.mb-0', [
           label('.form-check-label', [
-            input(`.appListingTypeInput.form-check-input`, {attrs: {type: 'radio', name: 'listingTypes', value: ListingTypes.RECURRING, selected: type === ListingTypes.RECURRING}}, []),
+            input(`.appListingTypeInput.form-check-input`, {attrs: {type: 'radio', name: 'listingTypes', value: ListingTypes.RECURRING, checked: type === ListingTypes.RECURRING}}, []),
             span('.ml-xs', ['recurring'])
           ])
         ])
@@ -51,6 +46,6 @@ export default function main(sources, inputs) {
           valid: true,
           errors: []
         }
-      })
+      }).publishReplay(1).refCount()
   }
 }

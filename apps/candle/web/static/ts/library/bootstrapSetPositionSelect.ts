@@ -9,7 +9,7 @@ export default function main(sources, props$) {
       //return div('.row', [
       //  div('.col-12', [
           return select(
-            `.appSetPositionInput.form-control.form-control-sm`, 
+            `.appSetPositionInput.form-control.form-control`, 
             {style: {width: "5rem"}},
             Object.keys(SetPositionTypes).map(key => {
               const val = SetPositionTypes[key]

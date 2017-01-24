@@ -152,7 +152,7 @@ function model(actions, inputs) {
         style_class = info.style_class
         time = info.time
       } else {
-        style_class = '.form-control-sm'
+        style_class = '.form-control'
         time = info
       }
 
@@ -180,7 +180,7 @@ function view(state$) {
       const {input_hour, input_minute, input_meridiem, hour, minute, active, style_class} = state
       const out = (hour >= 0 && minute >= 0) ? moment().hour(hour).minute(minute) : undefined
       return div('.bootstrap-time-input.dropdown', {class: {show: !!active}}, [
-        input('.appTimeInput.time-input.form-control.form-control-sm' + style_class, {
+        input('.appTimeInput.time-input.form-control.form-control' + style_class, {
           hook: {
             update: (vNode, {elm}) => {
               elm.value = out ? out.format('h:mm a') : ''
@@ -195,7 +195,7 @@ function view(state$) {
           div('.row', [
             div('.col-12.d-flex', [
               select(
-                `.appHourSelect.form-control.form-control-sm`, 
+                `.appHourSelect.form-control.form-control`, 
                 {style: {widtH: "5rem"}},
                 [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(opt => {
                   return option({attrs: {value: opt, selected: input_hour === opt}}, [
@@ -204,7 +204,7 @@ function view(state$) {
                 })
               ),
               select(
-                `.appMinuteSelect.form-control.form-control-sm`, 
+                `.appMinuteSelect.form-control.form-control`, 
                 {style: {widtH: "5rem"}},
                 [
                   0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 
@@ -220,7 +220,7 @@ function view(state$) {
                 })
               ),
               select(
-                `.appMeridiemSelect.form-control.form-control-sm`, 
+                `.appMeridiemSelect.form-control.form-control`, 
                 {style: {widtH: "5rem"}},
                 ['AM', 'PM'].map(opt => {
                   return option({attrs: {value: opt, selected: input_meridiem === opt}}, [

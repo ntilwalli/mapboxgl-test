@@ -6,7 +6,7 @@ export default function main(sources, {component, title, id}) {
     ...component,
     DOM: component.DOM.map(c => {
       return div('.appClickSection', [
-        h6([title]),
+        title && title.length ? h6([title]) : null,
         c
       ])
     }),

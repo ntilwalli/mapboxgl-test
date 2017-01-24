@@ -90,7 +90,12 @@ function getDefaultListingMeta() {
 
 function getDefaultListingType() { return 'single' }
 function getDefaultListingDonde() { return undefined }
-function getDefaultListingCuando() { return undefined}
+function getDefaultListingCuando() { 
+  return {
+    begins: undefined,
+    ends: undefined
+  }
+}
 
 function getDefaultListingSettings() {
   return {
@@ -120,26 +125,47 @@ function getDefaultListing() {
 }
 
 function getDefaultSearchArea() {
+  return undefined
+}
 
+export function getDefaultDate() {
+  return moment().startOf('day')
+}
+
+
+export function getEmptyRecurrence() {
+  return {
+    start_date: getDefaultDate(), 
+    end_date: undefined, 
+    rules: [],
+    rdates: [], 
+    exdates: []
+  }
+}
+
+function getDefaultTimes() {
+  return {
+    start_time: {
+      hour: 20,
+      minute: 0
+    },
+    end_time: {
+      hour: 22,
+      minute: 0
+    }
+  }
 }
 
 function getDefaultSessionProperties() {
   return {
     donde: {
       modal: undefined,
-      search_area: undefined
+      search_area: getDefaultSearchArea()
     },
     cuando: {
-      recurrence: undefined,
-      start_time: {
-        hour: 20,
-        minute: 0
-      },
-      end_time: {
-        hour: 22,
-        minute: 0
-      },
-      date: moment().startOf('day')
+      recurrence: getEmptyRecurrence(),
+      date: getDefaultDate(),
+      ...getDefaultTimes()
     }
   }
 }
@@ -211,11 +237,11 @@ function inflateCuando(container) {
   }
   
   if (rdates && rdates.length) {
-    container.rdate = container.rdate.map(x => moment(x))
+    container.rdates = container.rdates.map(x => moment(x))
   }
 
   if (exdates && exdates.length) {
-    container.exdate = container.exdates.map(x => moment(x))
+    container.exdates = container.exdates.map(x => moment(x))
   }
 }
 
@@ -285,12 +311,21 @@ export function inflateSession(session) {
   const {properties, listing, inserted_at, updated_at} = session
   if (properties && listing) {
     const {type} = listing
+
+    if (session.properties.cuando.date) {
+      session.properties.cuando.date = moment(session.properties.cuando.date)
+    }
+
+    if (session.properties.cuando.recurrence) {
+      inflateRecurrence(session.properties.cuando.recurrence) 
+    }
+
     if (type === ListingTypes.RECURRING) {
       if (session.listing.cuando) { 
         inflateCuando(session.listing.cuando) 
       }
-      if (session.properties.recurrence) {
-        inflateRecurrence(session.properties.recurrence) 
+      if (session.properties.cuando.recurrence) {
+        inflateRecurrence(session.properties.cuando.recurrence) 
       }
     } else {
       if (session.listing.cuando) {
@@ -317,14 +352,19 @@ export function deflateSession(session) {
   if (properties && listing) {
     const {type} = listing
 
+    if (properties.cuando.date) {
+      properties.cuando.date = properties.cuando.date.toDate().toISOString()
+    }
+
+    if (properties.cuando.recurrence) { deflateRecurrence(properties.cuando.recurrence) }
+
     if (type === ListingTypes.RECURRING) {
       if (listing.cuando) { deflateCuando(session.listing.cuando) }
-      if (properties.recurrence) { deflateRecurrence(session.properties.recurrence) }
     } else {
       if (listing.cuando) {
         const {begins, ends} = listing.cuando
-        if (begins) { session.listing.cuando.begins = begins.toDate().toISOString() }
-        if (ends) { session.listing.cuando.ends = ends.toDate().toISOString() }
+        if (begins) { listing.cuando.begins = begins.toDate().toISOString() }
+        if (ends) { listing.cuando.ends = ends.toDate().toISOString() }
       }
     }
   }

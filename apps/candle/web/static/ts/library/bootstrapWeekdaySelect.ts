@@ -8,8 +8,8 @@ export default function main(sources, props$) {
       //return div('.row', [
       //  div('.col-12', [
           return select(
-            `.appWeekdayInput.form-control.form-control-sm`, 
-            {style: {width: "5rem"}},
+            `.appWeekdayInput.form-control.form-control`, 
+            {style: {width: "7rem"}},
             Object.keys(DayOfWeek).map(key => {
               const val = DayOfWeek[key]
               return option({attrs: {value: DayOfWeek[key], selected: props === val}}, [

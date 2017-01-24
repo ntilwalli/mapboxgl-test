@@ -87,7 +87,7 @@ export function StyledComboBox(sources, options, props$, style_class = '') {
     })
   const state$ = O.merge(shared$, click$).publishReplay(1).refCount()
   const vtree$ = shared$.map(state => {
-    return select(`.appComboBoxSelect.form-control.form-control-sm` + style_class, options.map(opt => {
+    return select(`.appComboBoxSelect.form-control.form-control` + style_class, options.map(opt => {
         return option({attrs: {value: opt, selected: state === opt}}, [
           getTextFromOption(opt)
         ])
@@ -112,7 +112,7 @@ export function ComboBox(sources, options, props$, mapper?) {
     })
   const state$ = O.merge(shared$, click$).publishReplay(1).refCount()
   const vtree$ = shared$.map(state => {
-    return select(`.appComboBoxSelect.form-control.form-control-sm`, options.map(opt => {
+    return select(`.appComboBoxSelect.form-control.form-control`, options.map(opt => {
         return option({attrs: {value: opt, selected: state === opt}}, [
           mapper ? mapper(opt) : getTextFromOption(opt)
         ])
@@ -258,7 +258,7 @@ function makeEmailValidator(message, empty_is_error = true): (string) => SmartTe
 const email_input_props = {
   placeholder: `E-mail address`,
   name: `registration-email`,
-  styleClass: `.email-input.form-control-sm`,
+  styleClass: `.email-input.form-control`,
   emptyIsError: true
 }
 
@@ -300,7 +300,7 @@ function makeURLValidator(empty_is_error = true): (string) => SmartTextInputVali
 const url_input_props = {
   placeholder: `URL`,
   name: `website-input`,
-  styleClass: `.website-input.form-control-sm`,
+  styleClass: `.website-input.form-control`,
   emptyIsError: true
 }
 
@@ -342,7 +342,7 @@ function makeTwitterValidator(empty_is_error = true): (string) => SmartTextInput
 const twitter_input_props = {
   placeholder: `Twitter handle`,
   name: `twitter-input`,
-  styleClass: `.twitter-input.form-control-sm`,
+  styleClass: `.twitter-input.form-control`,
   emptyIsError: true
 }
 
@@ -384,7 +384,7 @@ function createNaturalNumberValidator(empty_is_error = true): (string) => SmartT
 const numberInputProps = O.of({
   placeholder: ``,
   name: `number-input`,
-  styleClass: `.small-number-input.form-control-sm`,
+  styleClass: `.small-number-input.form-control`,
   emptyIsError: true
 })
 
@@ -425,7 +425,7 @@ function createFloatValidator(empty_is_error = true): (string) => SmartTextInput
 const floatInputProps = O.of({
   placeholder: ``,
   name: `float-input`,
-  styleClass: `.number-input.form-control-sm`,
+  styleClass: `.number-input.form-control`,
   emptyIsError: true
 })
 
@@ -468,7 +468,7 @@ function createTextValidator(empty_is_error = true): (string) => SmartTextInputV
 const nameInputProps = O.of({
   placeholder: `Type name`,
   name: `name-input`,
-  styleClass: `.name-input.form-control-sm`,
+  styleClass: `.name-input.form-control`,
   emptyIsError: false
 })
 

@@ -10,7 +10,7 @@ export default function main(sources, inputs) {
     {
       placeholder: `Name`,
       name: `name-input`,
-      styleClass: `.name-input.form-control-sm`,
+      styleClass: `.name-input.form-control`,
       emptyIsError: true
     })
 
@@ -21,7 +21,7 @@ export default function main(sources, inputs) {
     {
       placeholder: `Title (optional)`,
       name: `title-input`,
-      styleClass: `.name-input.form-control-sm`,
+      styleClass: `.name-input.form-control`,
       emptyIsError: false
     })  
 

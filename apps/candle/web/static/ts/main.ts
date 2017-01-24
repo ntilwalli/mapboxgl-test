@@ -106,10 +106,10 @@ function main(sources) {
         geoService.HTTP, 
         authorizationService.HTTP, 
         fromModalHTTP
-      )
-      .do(x => {
-        console.log(`main/http sink`, x)
-      }),
+      ),
+      // .do(x => {
+      //   console.log(`main/http sink`, x)
+      // }),
     Router: O.merge(out.Router, toRouter$, fromModalRouter)
       .do(x => {
         console.log(`main/router sink`, x)

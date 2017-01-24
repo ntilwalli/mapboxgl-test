@@ -25,7 +25,7 @@ export default function main(sources, inputs) {
   const email_props = {
     placeholder: `E-mail`,
     name: `email-input`,
-    styleClass: `.form-control-sm.text-input`,
+    styleClass: `.form-control.text-input`,
     emptyIsError: false
   }
 
@@ -34,7 +34,7 @@ export default function main(sources, inputs) {
   const twitter_props = {
     placeholder: `Twitter handle`,
     name: `twitter-input`,
-    styleClass: `.form-control-sm.text-input`,
+    styleClass: `.form-control.text-input`,
     emptyIsError: false
   }
 
@@ -43,7 +43,7 @@ export default function main(sources, inputs) {
   const facebook_props = {
     placeholder: `Facebook page`,
     name: `facebook-input`,
-    styleClass: `.form-control-sm.url-input`,
+    styleClass: `.form-control.url-input`,
     emptyIsError: false
   }
 
@@ -52,7 +52,7 @@ export default function main(sources, inputs) {
   const instagram_props = {
     placeholder: `Instagram handle`,
     name: `facebook-input`,
-    styleClass: `.form-control-sm.text-input`,
+    styleClass: `.form-control.text-input`,
     emptyIsError: false
   }
 
@@ -61,7 +61,7 @@ export default function main(sources, inputs) {
   const website_props = {
     placeholder: `Website`,
     name: `website-input`,
-    styleClass: `.form-control-sm.url-input`,
+    styleClass: `.form-control.url-input`,
     emptyIsError: false
   }
 

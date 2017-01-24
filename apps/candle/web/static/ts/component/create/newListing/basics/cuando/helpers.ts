@@ -1,5 +1,6 @@
 import {inflateSession, fromRule, toRule, normalizeRule} from '../../../../helpers/listing/utils'
 import {getDatetimeFromObj} from '../../../../../helpers/time'
+import {ListingTypes} from '../../../../../listingTypes'
 import moment = require('moment')
 
 function getDuration(start_time, end_time) {
@@ -14,28 +15,40 @@ function getDuration(start_time, end_time) {
   return end.diff(start, 'minutes');
 }
 
-
 export function applySingleCuando(session) {
   const {properties, listing} = session
   const {start_time, end_time, date} = properties.cuando
+  
+  session.listing.type = ListingTypes.SINGLE
 
   if (date && start_time) { 
-    session.listing.cuando.begins = getDatetimeFromObj(date, start_time)
+    if (!session.listing.cuando) {
+      session.listing.cuando = {begins: undefined, ends: undefined}
+    }
+    const start_date_time = getDatetimeFromObj(date, start_time)
+    session.listing.cuando.begins = start_date_time
 
-    if (end_time && end_time.isSameOrBefore(start_time)) {
-      session.listing.cuando.ends = end_time.clone().add(1, 'day')
+    if (end_time) {
+      const end_date_time = getDatetimeFromObj(date, end_time)
+      
+      if (end_date_time.isSameOrBefore(start_date_time)) {
+        session.listing.cuando.ends = end_date_time.add(1, 'day')
+      }
+      
+      session.listing.cuando.ends = end_date_time
     } 
   } else {
     session.listing.cuando = {begins: undefined, ends: undefined}
   }
 }
 
-
 export function applyRecurringCuando(session) {
   const {properties, listing} = session
   const {cuando} = properties
   const {recurrence, start_time, end_time} = cuando
   const {start_date, end_date, rules, rdates, exdates} = recurrence
+
+  session.listing.type = ListingTypes.RECURRING
 
   if (rules.length && start_time) {
     listing.cuando.rrules = rules.map(fromRule).map(rule => {

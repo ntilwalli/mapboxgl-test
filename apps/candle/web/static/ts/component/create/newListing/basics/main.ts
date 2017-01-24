@@ -20,6 +20,9 @@ import Venue from './donde/venue'
 import SearchArea from './donde/searchArea'
 import ListingType from './listingType'
 import StartTime from './cuando/times/startTime'
+import EndTime from './cuando/times/endTime'
+import SingleDate from './cuando/date'
+import Recurrence from './cuando/recurrence/main'
 
 import {renderSKFadingCircle6} from '../../../../library/spinners'
 
@@ -27,10 +30,10 @@ function intent(sources) {
   const {DOM, Global, Router} = sources
   const session$ = Router.history$
     .map(x => {
-      return x.state.data
+      return inflateSession(x.state.data)
     })
     .map(x => {
-      return inflateSession(x)
+      return x
     })
     .publishReplay(1).refCount()
   
@@ -150,7 +153,11 @@ function renderNavigator(state) {
 function renderMainPanel(info: any) {
   const {state, components} = info
   const {show_errors, errors} = state
-  const {name, description, event_types, categories, search_area, donde, listing_type, start_time} = components
+  const {
+    name, description, event_types, categories, 
+    search_area, donde, listing_type, start_time,
+    end_time, date
+  } = components
   return div(`.main-panel.container-fluid.mt-4`, {
     // hook: {
     //   create: (emptyVNode, {elm}) => {
@@ -188,6 +195,12 @@ function renderMainPanel(info: any) {
     ]),
     div('.mt-4', [
       start_time
+    ]),
+    div('.mt-4', [
+      end_time
+    ]),
+    div('.mt-4', [
+      date
     ])
   ])
 }
@@ -228,6 +241,12 @@ function getInstruction(info) {
     return 'Select the city/region to use for the venue autocomplete'
   } else if (focus === 'donde') {
     return 'Select the venue'
+  } else if (focus === 'start_time') {
+    return 'Set the start time of the event'
+  } else if (focus === 'end_time') {
+    return 'Set the end time of the event (optional)'
+  } else if (focus === 'date') {
+    return 'Set the date of the event'
   } else {
     return 'Click on a section to see tips. Click \'Save/Exit\' to save save session (w/o posting) and resume later.'
   }
@@ -331,7 +350,23 @@ export function main(sources, inputs) {
   const start_time = isolate(StartTime)(sources, {...inputs, session$: actions.session$})
   const start_time_section: any = isolate(FocusWrapper)(sources, {component: start_time, title: 'Start time', id: 'start_time'})
 
+  const end_time = isolate(EndTime)(sources, {...inputs, session$: actions.session$})
+  const end_time_section: any = isolate(FocusWrapper)(sources, {component: end_time, title: 'End time', id: 'end_time'})
 
+  const date_section$ = listing_type_section.output$.pluck('data')
+    .map(type => {
+      if (type === ListingTypes.SINGLE) {
+        const single_date = isolate(SingleDate)(sources, {...inputs, session$: actions.session$})
+        const single_date_section: any = isolate(FocusWrapper)(sources, {component: single_date, title: 'Date', id: 'date'})
+        return single_date_section
+      } else {
+        const recurrence = isolate(Recurrence)(sources, {...inputs, session$: actions.session$})
+        const recurrence_section: any = isolate(FocusWrapper)(sources, {component: recurrence, title: 'Recurrence dates', id: 'recurrence'})
+        return recurrence_section
+      }
+    }).publishReplay(1).refCount()
+
+  const date_section = componentify(date_section$)
 
   const instruction_focus$ = O.merge(
     name_section.focus$, 
@@ -341,7 +376,9 @@ export function main(sources, inputs) {
     search_area_section.focus$,
     donde_section.focus$,
     listing_type_section.focus$,
-    start_time_section.focus$
+    start_time_section.focus$,
+    end_time_section.focus$,
+    date_section$.switchMap(x => x.focus$)
   )
 
   const properties$ = O.combineLatest(
@@ -352,7 +389,9 @@ export function main(sources, inputs) {
     search_area_section.output$,
     donde_section.output$,
     listing_type_section.output$,
-    start_time_section.output$
+    start_time_section.output$,
+    end_time_section.output$,
+    date_section$.switchMap(x => x.output$)
   )
   
   const components = {
@@ -363,7 +402,9 @@ export function main(sources, inputs) {
     search_area: search_area_section.DOM,
     donde: donde_section.DOM,
     listing_type: listing_type_section.DOM,
-    start_time: start_time_section.DOM
+    start_time: start_time_section.DOM,
+    end_time: end_time_section.DOM,
+    date: date_section.DOM
   }
 
   const merged = mergeSinks(
@@ -374,7 +415,9 @@ export function main(sources, inputs) {
     search_area_section,
     donde_section,
     listing_type_section,
-    start_time_section
+    start_time_section,
+    end_time_section,
+    date_section
   )
 
   const state$ = model(actions, {...inputs, properties$, instruction_focus$})
