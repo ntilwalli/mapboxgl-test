@@ -31,8 +31,8 @@ function renderSearchArea(search_area) {
   const {city, state_abbr} = city_state
   const sa = `${city}, ${state_abbr}`
 
-  return div(`.form-group`, [
-    h6([`Search area`]),
+  return div([
+    // h6([`Search area`]),
     div(`.col-form-static`, [
       span([sa]),
       span(`.appChangeSearchAreaButton.btn.btn-link.ml-4.v-align-initial`, [`change`])

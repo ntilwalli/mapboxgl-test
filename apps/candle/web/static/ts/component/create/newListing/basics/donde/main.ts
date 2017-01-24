@@ -6,10 +6,6 @@ import {combineObj, mergeSinks, componentify} from '../../../../../utils'
 import Venue from './venue'
 import SearchArea from './searchArea'
 
-function applyChange(session, val) {
-  session.listing.meta.name = val
-}
-
 export default function main(sources, inputs) {
 
   const search_area = SearchArea(sources, inputs)

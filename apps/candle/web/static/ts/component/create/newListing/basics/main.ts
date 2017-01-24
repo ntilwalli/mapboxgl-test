@@ -16,12 +16,12 @@ import Name from './name'
 import Description from './description'
 import Categories from './categories'
 import EventTypes from './eventTypes'
-import Donde from './donde/main'
+import Venue from './donde/venue'
+import SearchArea from './donde/searchArea'
+import ListingType from './listingType'
+import StartTime from './cuando/times/startTime'
 
 import {renderSKFadingCircle6} from '../../../../library/spinners'
-
-
-
 
 function intent(sources) {
   const {DOM, Global, Router} = sources
@@ -29,20 +29,6 @@ function intent(sources) {
     .map(x => {
       return x.state.data
     })
-    // .map(session => {
-    //   //console.log(`meta session pre`, session)
-    //   session.listing.type = session.listing.type || undefined
-    //   session.listing.meta = session.listing.meta || {
-    //     type: 'standard',
-    //     title: undefined,
-    //     description: undefined,
-    //     short_description: undefined,
-    //     event_types: [],
-    //     categories: []
-    //   }
-
-    //   return session
-    // })
     .map(x => {
       return inflateSession(x)
     })
@@ -164,7 +150,7 @@ function renderNavigator(state) {
 function renderMainPanel(info: any) {
   const {state, components} = info
   const {show_errors, errors} = state
-  const {name, description, event_types, categories, donde} = components
+  const {name, description, event_types, categories, search_area, donde, listing_type, start_time} = components
   return div(`.main-panel.container-fluid.mt-4`, {
     // hook: {
     //   create: (emptyVNode, {elm}) => {
@@ -180,6 +166,9 @@ function renderMainPanel(info: any) {
       }))
     ]) : null,
     div([
+      listing_type
+    ]),
+    div('.mt-4', [
       name
     ]),
     div('.mt-4', [
@@ -192,7 +181,13 @@ function renderMainPanel(info: any) {
       categories
     ]),
     div('.mt-4', [
+      search_area
+    ]),
+    div('.mt-4', [
       donde
+    ]),
+    div('.mt-4', [
+      start_time
     ])
   ])
 }
@@ -229,6 +224,8 @@ function getInstruction(info) {
     return 'Categories determine what filters apply to the listing during search'
   } else if (focus === 'event_types') {
     return 'Choosing the right event type(s) allows you to configure additional properties like the performer sign-up start time (open-mic) or audience cost (show) if relevant.'
+  } else if (focus === 'search_area') {
+    return 'Select the city/region to use for the venue autocomplete'
   } else if (focus === 'donde') {
     return 'Select the venue'
   } else {
@@ -322,15 +319,29 @@ export function main(sources, inputs) {
   const categories = isolate(Categories)(sources, {...inputs, session$: actions.session$})
   const categories_section: any = isolate(FocusWrapper)(sources, {component: categories, title: 'Categories', id: 'categories'})
   
-  const donde = isolate(Donde)(sources, {...inputs, session$: actions.session$})
-  const donde_section: any = isolate(FocusCardWrapper)(sources, {component: donde, title: 'Where', id: 'donde'})
+  const search_area = isolate(SearchArea)(sources, {...inputs, session$: actions.session$})
+  const search_area_section: any = isolate(FocusWrapper)(sources, {component: search_area, title: 'Search area', id: 'search_area'})
+
+  const donde = isolate(Venue)(sources, {...inputs, session$: actions.session$})
+  const donde_section: any = isolate(FocusWrapper)(sources, {component: donde, title: 'Venue', id: 'donde'})
+
+  const listing_type = isolate(ListingType)(sources, {...inputs, session$: actions.session$})
+  const listing_type_section: any = isolate(FocusWrapper)(sources, {component: listing_type, title: 'Type', id: 'listing_type'})
+
+  const start_time = isolate(StartTime)(sources, {...inputs, session$: actions.session$})
+  const start_time_section: any = isolate(FocusWrapper)(sources, {component: start_time, title: 'Start time', id: 'start_time'})
+
+
 
   const instruction_focus$ = O.merge(
     name_section.focus$, 
     description_section.focus$, 
     event_types_section.focus$, 
     categories_section.focus$,
-    donde_section.focus$
+    search_area_section.focus$,
+    donde_section.focus$,
+    listing_type_section.focus$,
+    start_time_section.focus$
   )
 
   const properties$ = O.combineLatest(
@@ -338,7 +349,10 @@ export function main(sources, inputs) {
     description_section.output$,
     event_types_section.output$,
     categories_section.output$,
-    donde_section.output$
+    search_area_section.output$,
+    donde_section.output$,
+    listing_type_section.output$,
+    start_time_section.output$
   )
   
   const components = {
@@ -346,10 +360,23 @@ export function main(sources, inputs) {
     description: description_section.DOM,
     event_types: event_types_section.DOM,
     categories: categories_section.DOM,
-    donde: donde_section.DOM
+    search_area: search_area_section.DOM,
+    donde: donde_section.DOM,
+    listing_type: listing_type_section.DOM,
+    start_time: start_time_section.DOM
   }
 
-  const merged = mergeSinks(name_section, description_section, event_types, categories)
+  const merged = mergeSinks(
+    name_section, 
+    description_section, 
+    event_types_section, 
+    categories_section, 
+    search_area_section,
+    donde_section,
+    listing_type_section,
+    start_time_section
+  )
+
   const state$ = model(actions, {...inputs, properties$, instruction_focus$})
   const vtree$ = view(state$, components)
 

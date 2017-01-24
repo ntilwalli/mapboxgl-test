@@ -52,7 +52,7 @@ function view(state$, components) {
       const {state, components} = info
       const {venue_autocomplete} = components
       const {venue} = state
-      return div(`.row`, [
+      return div(`.row.venue`, [
         div(`.col-12`, [
           venue ? div('.row', [
              span(`.col-11.form-control-static.pt-0`, [
@@ -68,7 +68,7 @@ function view(state$, components) {
         venue ? //null
           div(`.row.map`, {style: {display: venue ? 'block' : 'none'}}, [
             div('.col-12', {style: {position: 'relative', height: '20rem'}}, [
-              div(`#addSelectVenueMapAnchor`),
+              div(`#basicsSelectVenueMapAnchor`),
               div(`.location-info`, [
                 div(`.name`, [getVenueName(venue)]),
                 div(`.address`, [getVenueAddress(venue)])
@@ -88,7 +88,7 @@ function mapview(state$) {
 
     if (venue) {
       const {type, source, data, lng_lat} = venue
-      const anchorId = `addSelectVenueMapAnchor`
+      const anchorId = `basicsSelectVenueMapAnchor`
 
       const descriptor = {
         controls: {},
@@ -138,10 +138,14 @@ function mapview(state$) {
   }).filter(x => !!x)
 }
 
+function applyChange(session, val) {
+  session.listing.donde = val
+}
+
 export default function main(sources, inputs) {
 
   // console.log(`venue inputs...`, inputs)
-  const search_area$ = inputs.search_area$
+  const search_area$ = inputs.session$.map(x => x.properties.donde.search_area)
   const props$ = inputs.props$ || O.of(undefined)
 
   const center$ = O.merge(
@@ -149,7 +153,7 @@ export default function main(sources, inputs) {
   ).map((v: any) => ({center: v.center, zoom: 8}))
   //.do(x => console.log(`search area:`, x))
 
-  const venue_autocomplete = createVenueAutocomplete(sources, {...inputs, props$})
+  const venue_autocomplete = createVenueAutocomplete(sources, {...inputs, props$, search_area$})
 
   const actions = {
     clear$: sources.DOM.select(`.appClearVenueButton`).events(`click`)
@@ -166,7 +170,14 @@ export default function main(sources, inputs) {
     MapJSON: mapview(state$).publish().refCount(),
     //Global: venue_autocomplete.Global,
     HTTP: venue_autocomplete.HTTP.publish().refCount(),
-    output$: state$.map(state => state.venue).publishReplay(1).refCount()
+    output$: state$.map(state => {
+      return {
+        data: state.venue,
+        errors: [],
+        valid: true,
+        apply: applyChange
+      }
+    }).publishReplay(1).refCount()
   }
 
   //out.MapJSON.subscribe(x => console.log(`MapJSON`, x))

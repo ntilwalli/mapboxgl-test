@@ -1,0 +1,21 @@
+.venue {
+  .map {
+    position: relative;
+    height: 300px;
+
+    .location-info {
+      position: absolute;
+      z-index: 1;
+      background-color: white;
+      border: 1px solid black;
+      padding: .2rem;
+      top: .5rem;
+      right: 1.5rem;
+    }
+
+    #basicsSelectVenueMapAnchor {
+      height: 20rem;
+      width: 100%;
+    }
+  }
+}

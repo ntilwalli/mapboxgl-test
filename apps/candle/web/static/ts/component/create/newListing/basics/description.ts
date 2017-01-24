@@ -8,7 +8,7 @@ import TextAreaInput from '../../../../library/bootstrapTextAreaInputGated'
 const name_input_props = {
   placeholder: `Type description here`,
   name: `listing-name`,
-  style_class: `.name-input.form-control-sm`,
+  style_class: `.name-input.form-control`,
   empty_is_error: true,
 }
 

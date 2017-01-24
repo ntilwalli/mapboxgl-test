@@ -93,11 +93,14 @@ defmodule Listing.Worker do
   end
 
   def handle_call({:delete, user}, _, %{listing: listing, registry_name: r_name}) do
+    IO.inspect {:delete_listing, listing}
     listing_id = listing.id
     query = from l in Shared.Listing,
       where: l.parent_id == ^listing_id
 
     results = Repo.all(query) 
+
+
     Enum.map(results, fn l -> 
 
       pid = Listing.Registry.lookup(r_name, l.id)

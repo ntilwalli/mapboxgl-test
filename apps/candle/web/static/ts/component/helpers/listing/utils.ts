@@ -131,14 +131,15 @@ function getDefaultSessionProperties() {
     },
     cuando: {
       recurrence: undefined,
-      starts: {
+      start_time: {
         hour: 20,
         minute: 0
       },
-      ends: {
+      end_time: {
         hour: 22,
         minute: 0
-      }
+      },
+      date: moment().startOf('day')
     }
   }
 }

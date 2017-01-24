@@ -8,7 +8,7 @@ import TextInput from '../../../../library/bootstrapTextInputGated'
 const name_input_props = {
   placeholder: `Type listing name here`,
   name: `listing-name`,
-  style_class: `.name-input.form-control-sm`,
+  style_class: `.name-input.form-control`,
   empty_is_error: true,
 }
 
