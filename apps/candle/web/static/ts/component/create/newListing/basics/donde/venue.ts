@@ -146,7 +146,7 @@ export default function main(sources, inputs) {
 
   // console.log(`venue inputs...`, inputs)
   //const search_area$ = inputs.sear$.map(x => x.properties.donde.search_area)
-  const props$ = inputs.props$ || O.of(undefined)
+  const props$ = (inputs.session$ ? inputs.session$.map(session => session.listing.donde) : O.of(undefined)).publishReplay(1).refCount()
 
 
   const venue_autocomplete = createVenueAutocomplete(sources, {...inputs, props$, search_area$: inputs.search_area$, highlight_error$$: inputs.highlight_error$$})

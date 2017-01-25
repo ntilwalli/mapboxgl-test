@@ -90,7 +90,7 @@ function EnabledComponent(sources, inputs, session) {
     .map(x => should_enable_in_app(x.performer_sign_up))
     .publishReplay(1).refCount()
 
-  const in_app_component = InAppCheckboxComponent(sources, O.of(performer_check_in ? performer_check_in.enable_in_app : undefined))            
+  const in_app_component = isolate(InAppCheckboxComponent)(sources, O.of(performer_check_in ? performer_check_in.enable_in_app : undefined))            
   
   const vtree$ = combineObj({
       should_enable_in_app: should_enable_in_app$,

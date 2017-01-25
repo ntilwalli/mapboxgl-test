@@ -1,5 +1,5 @@
 import {Observable as O} from 'rxjs'
-import {div, h6} from '@cycle/dom'
+import {div, h6, button, span} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 import Immutable = require('immutable')
 import PerformerSignup from './performerSignUp/main'
@@ -20,7 +20,7 @@ import {
   EventTypeToProperties, 
   CostOptions
 } from '../../../../listingTypes'
-import {getSessionStream} from '../../../helpers/listing/utils'
+import {getSessionStream, deflateSession} from '../../../helpers/listing/utils'
 import {NotesInput} from './helpers'
 import {combineObj, createProxy, traceStartStop, componentify, mergeSinks, targetIsOwner, processHTTP} from '../../../../utils'
 import clone = require('clone')
@@ -29,20 +29,6 @@ import deepEqual = require('deep-equal')
 import FocusWrapper from '../focusWrapperWithInstruction'
 
 const default_instruction = 'Click on a section to see tips'
-
-
-function arrayUnique(array) {
-    var a = array.concat();
-    for(var i=0; i<a.length; ++i) {
-        for(var j=i+1; j<a.length; ++j) {
-            if(a[i] === a[j])
-                a.splice(j--, 1);
-        }
-    }
-
-    return a;
-}
-
 function intent(sources) {
   const {DOM, Global, Router} = sources
   const session$ = getSessionStream(sources)
@@ -57,9 +43,8 @@ function intent(sources) {
   const main_panel_click$ = DOM.select('.appMainPanel').events('click').filter(targetIsOwner)
     .mapTo(default_instruction)
   const go_to_preview$ = DOM.select('.appGoToPreviewButton').events('click').publish().refCount()
-  const go_to_advanced$ = DOM.select('.appGoToAdvancedButton').events('click').publish().refCount()
+  const go_to_basics$ = DOM.select('.appGoToBasicsButton').events('click').publish().refCount()
   const save_exit$ = DOM.select('.appSaveExitButton').events('click').publish().refCount()
-
 
   const saved_exit = processHTTP(sources, `saveExitSession`)
   const success_save_exit$ = saved_exit.success$
@@ -71,7 +56,8 @@ function intent(sources) {
     close_instruction$,
     main_panel_click$,
     go_to_preview$,
-    go_to_advanced$,
+    go_to_basics$,
+    show_errors$: O.merge(go_to_preview$, go_to_basics$).mapTo(true).startWith(false).publishReplay(1).refCount(),
     save_exit$,
     success_save_exit$,
     error_save_exit$
@@ -114,7 +100,7 @@ function toComponent(type, meta, session$, sources, inputs, authorization) {
         const instruction = "Configure the performer cost. Enable multiple cost-tiers by clicking the plus button."
         return wrapWithFocus(
           sources, 
-          CostCollection(sources, {
+          isolate(CostCollection)(sources, {
             ...inputs, 
             component_id: 'Performer cost', 
             item_heading: 'Tier',
@@ -231,20 +217,56 @@ function toComponent(type, meta, session$, sources, inputs, authorization) {
   return wrapOutput(component, type, meta, session$, sources, inputs)
 }
 
+
+
 function reducers(actions, inputs) {
-  const properties_r = inputs.properties$.map(message => state => {
-    //console.log(`properties message`, message)
-    let  properties = state.get(`properties`).toJS()
-    properties[message.type] = message.data
+
+  const open_instruction_r = actions.open_instruction$.map(_ => state => {
+    return state.set('show_instruction', true)
+  })
+
+  const close_instruction_r = actions.close_instruction$.map(_ => state => {
+    return state.set('show_instruction', false)
+  })
+
+  const properties_r = inputs.properties$.map(properties => state => {
     const session = state.get(`session`).toJS()
-    session.listing.meta[message.type] = message.data.data
+    properties.forEach(p => session.listing.meta[p.type] = p.data.data)
+    const errors = properties.reduce((acc, val) => acc.concat(val.data.errors), [])
 
     return state.set('properties', Immutable.fromJS(properties))
       .set(`session`, Immutable.fromJS(session))
       .set('component_types', Immutable.fromJS(calculateComponentTypes(session)))
+      .set('errors', Immutable.fromJS(errors))
+      .set('valid', errors.length === 0)
   })
 
-  return O.merge(properties_r)
+  const instruction_r = O.merge(inputs.instruction_focus$, actions.main_panel_click$)
+    .map(x => state => {
+      return state.set('focus_instruction', x)
+    })
+
+  // const main_panel_click_r = actions.main_panel_click$.map(_ => state => {
+  //   return state.set('focus', undefined)
+  // })
+
+  const show_errors_r = actions.show_errors$.map(val => state => {
+    return state.set('show_errors', val)
+  })
+
+  return O.merge(properties_r, instruction_r, open_instruction_r, close_instruction_r, show_errors_r)
+}
+
+function arrayUnique(array) {
+    var a = array.concat();
+    for(var i=0; i<a.length; ++i) {
+        for(var j=i+1; j<a.length; ++j) {
+            if(a[i] === a[j])
+                a.splice(j--, 1);
+        }
+    }
+
+    return a;
 }
 
 function calculateComponentTypes(session) {
@@ -253,32 +275,29 @@ function calculateComponentTypes(session) {
   const {event_types, performer_cost} = meta
   const foo_components = event_types.reduce((acc, val) => acc.concat(EventTypeToProperties[val]), [])
   let out = arrayUnique(foo_components)
-
-
-  // if (out.indexOf('stage_time') > -1 &&
-  //     performer_cost && 
-  //     performer_cost.length > 1) {
-  //   const index = out.findIndex(x => x === 'stage_time')
-  //   out.splice(index, 1)
-  //   listing.meta.stage_time = undefined
-  // }
-
   return out
 }
 
 function model(actions, inputs) {
   const reducer$ = reducers(actions, inputs)
   return combineObj({
-    session$: actions.session$.take(1),
-    authorization$: inputs.Authorization.status$
-  })
+      session$: actions.session$,
+      authorization$: inputs.Authorization.status$
+    })
     .switchMap((info: any) => {
+      //console.log('meta init', info)
+      
+      const session = info.session
       const init = {
         focus_instruction: default_instruction,
         show_instruction: false,
         authorization: info.authorization,
-        session: info.session,
-        component_types: calculateComponentTypes(info.session),
+        waiting: false,
+        errors: [],
+        show_errors: false,
+        session,
+        valid: false,
+        component_types: calculateComponentTypes(session),
         properties: {}
       }
 
@@ -286,50 +305,113 @@ function model(actions, inputs) {
         .startWith(Immutable.fromJS(init))
         .scan((acc, f: Function) => f(acc))
     })
-    .map((x: any) => {
-      return x.toJS()
-    })
-    .debounceTime(0)  // ensure all valid flags have been collected before calculating validity
-    .map((state: any) => {
-      return {
-        ...state,
-        valid: Object.keys(state.properties).every(prop => state.properties[prop].valid)
-      }
-    })
-    //.do(x => console.log('properties state', x))
-    //.letBind(traceStartStop('state$ trace'))
+    .map((x: any) => x.toJS())
+    //.do(x => console.log(`meta state`, x))
     .publishReplay(1).refCount()
 }
 
-function view(state$, children$) {
+function renderMainPanel(info: any) {
+  const {state, components} = info
+  const {show_errors, errors} = state
+  return div(`.main-panel.container-fluid.mt-4`, [
+      show_errors && errors.length ? div(`.form-group`, [
+        div(`.alerts-area`, errors.map(e => {
+            return div(`.alert.alert-danger`, [
+              e
+            ])
+        }))
+      ]) : null,
+    ]
+    .concat(components.map((x, index) => index ? div('.mt-4', [x]) : x))
+    .concat([
+      div('.appGoToBasicsButton.mt-4.btn.btn-link.cursor-pointer.d-flex', {style: {"flex-flow": "row nowrap", flex: "0 0 fixed"}}, [
+        span('.fa.fa-angle-double-left.mr-2.d-flex.align-items-center', []),
+        span('.d-flex.align-items-center', ['Back to basic settings'])
+      ]),
+      button('.appSaveExitButton.mt-4.btn.btn-outline-warning.d-flex.cursor-pointer.mt-4', [
+        span('.d-flex.align-items-center', ['Save/Finish later']),
+        span('.fa.fa-angle-double-right.ml-2.d-flex.align-items-center', [])
+      ]),
+      button('.appGoToPreviewButton.mt-4.btn.btn-outline-success.d-flex.cursor-pointer.mt-4', [
+        span('.d-flex.align-items-center', ['Preview and post']),
+        span('.fa.fa-angle-double-right.ml-2.d-flex.align-items-center', [])
+      ])
+    ])
+  )
+}
+
+function renderInstructionPanel(info: any) {
+  return div(`.instruction-panel`, [
+    renderInstructionSubpanel(info)
+  ])
+}
+
+function renderSmallInstructionPanel(info) {
+  const {state, components} = info
+  const {focus_instruction, show_instruction} = state
+  return div('.small-instruction-panel', {
+      class: {
+        appOpenInstruction: !show_instruction,
+        rounded: show_instruction,
+        'rounded-circle': !show_instruction
+        //hide: !show_instruction
+      }
+    }, [
+      div([span(`.appCloseInstruction.close`, {style: {display: !!show_instruction ? 'inline' : 'none'}}, []),
+      span(`.icon.fa.fa-lightbulb-o`)]),
+      div({style: {display: !!show_instruction ? 'block' : 'none'}}, [focus_instruction || default_instruction])
+    ])
+}
+
+function renderInstructionSubpanel(info) {
+  const {state, components} = info
+  const {instruction} = components
+  return div(`.instruction-panel`, [
+    div(`.instruction-section`, [
+      div([
+        span(`.icon.fa.fa-lightbulb-o`),
+        state.focus_instruction || default_instruction
+      ])
+    ])
+  ])
+}
+
+function view(state$, components$) {
   return combineObj({
     state$,
-    children$
+    components$
   }).map((info: any) => {
-    const {state, children} = info
-    const {properties} = state
-    const errors = 
-      Object.keys(properties)
-        .reduce((acc, val) => acc.concat(properties[val].errors), [])
-        .map(x => div(`.form-group`, [
-            div(`.alerts-area`, [
-              div(`.alert.alert-danger`, [
-                x
-            ])
-          ])
-        ]))
+    const {state, components} = info
+    const {show_instruction} = state
+    const {name} = components
 
-    return div(`.properties.nav-fixed-offset`, [
-      ...errors,
-      div(`.body`, children.map(x => div(`.mb-4`, [x])))
+    return div(`.screen.create-component`, [
+      div('.properties.content-section.nav-fixed-offset.appMainPanel',  {
+        // hook: {
+        //   create: (emptyVNode, {elm}) => {
+        //     window.scrollTo(0, 0)
+        //   },
+        //   update: (old, {elm}) => {
+        //     window.scrollTo(0, 0)
+        //   }
+        // }
+      } ,[
+        renderMainPanel(info),
+        renderSmallInstructionPanel(info),
+        renderInstructionPanel(info)
+      ])
     ])
   })
 }
 
+const toName = (session) => session.listing.meta.name
+
 export function main(sources, inputs) {
   const actions = intent(sources)
   const properties$ = createProxy()
-  const state$ = model(actions, {...inputs, properties$})
+  const instruction_focus$ = createProxy()
+  const state$ = model(actions, {...inputs, properties$, instruction_focus$})
+
   const session$ = state$.pluck('session').publishReplay(1).refCount()
   const components$ = state$
     .distinctUntilChanged((x: any, y: any) => x.component_types.length === y.component_types.length)
@@ -341,7 +423,7 @@ export function main(sources, inputs) {
       })
 
       const DOM = O.combineLatest(...components.map(c => c.DOM))
-      const output$ = O.merge(...components.map(c => c.output$))
+      const output$ = O.combineLatest(...components.map(c => c.output$))
       const focus$ = O.merge(...components.filter(c => c.focus$).map(c => c.focus$))
 
       const merged = mergeSinks(...components)
@@ -354,15 +436,87 @@ export function main(sources, inputs) {
       }
     })
     .publishReplay(1).refCount()
-  
-  const components = componentify(components$)
+
   properties$.attach(components$.switchMap(x => x.output$))
-  const properties_dom$ = components.DOM
+  instruction_focus$.attach(components$.switchMap(x => x.focus$))
+
+  const component = componentify(components$)
+  const vtree$ = view(state$, component.DOM)
+
+  const to_save_exit$ = actions.save_exit$.withLatestFrom(state$, (_, state) => {
+    return {
+      url: `/api/user`,
+      method: `post`,
+      category: `saveExitSession`,
+      send: {
+        route: `/listing_session/save`,
+        data: state.session
+      }
+    }
+  }).publish().refCount()
 
   return {
-    ...components,
-    DOM: view(state$, properties_dom$),
-    output$: state$,
-    focus$: components$.switchMap(x => x.focus$)
+    ...component,
+    DOM: vtree$,
+    HTTP: O.merge(
+      component.HTTP,
+      to_save_exit$
+    ),
+    Router: O.merge(
+      component.Router,
+      actions.success_save_exit$.withLatestFrom(inputs.Authorization.status$, (_, user) => user)
+        .map(user => {
+          return {
+            pathname: '/' + user.username + '/listings',
+            action: 'REPLACE',
+            type: 'replace'
+          }
+        }),
+      actions.go_to_preview$.withLatestFrom(state$, (_, state) => {
+          return state
+        })
+        .filter(state => state.valid)
+        .map(state => {
+          return {
+            pathname: '/create/listing',
+            type: 'push',
+            state: {
+              type: 'session',
+              data: {
+                ...deflateSession(state.session),
+                current_step: 'preview'
+              }
+            }
+          }
+        }),
+      state$.map((x: any) => x.session.properties.donde.modal).distinctUntilChanged()
+        .withLatestFrom(state$, (_, state: any) => {
+          return {
+            pathname: '/create/listing',
+            type: 'push',
+            state: {
+              type: 'session', 
+              data: state.session
+            }
+          }
+        }).skip(1),
+      actions.go_to_basics$.withLatestFrom(state$, (_, state) => {
+          return state
+        })
+        .filter(state => state.valid)
+        .map(state => {
+          return {
+            pathname: '/create/listing',
+            type: 'push',
+            state: {
+              type: 'session',
+              data: {
+                ...deflateSession(state.session),
+                current_step: 'basics'
+              }
+            }
+          }
+        })
+    )
   }
 }

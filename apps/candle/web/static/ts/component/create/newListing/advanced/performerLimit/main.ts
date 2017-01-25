@@ -188,7 +188,7 @@ function LimitByTypeComponent(sources, props$, in_app_enabled$, component_id) {
     in_app_enabled$
   }).debounceTime(0).map((info: any) => {
     if (info.in_app_enabled && info.state && shouldEnable(info.state)) {
-      return EnableWaitlistComponent(sources, O.of(info.state.enable_waitlist)) 
+      return isolate(EnableWaitlistComponent)(sources, O.of(info.state.enable_waitlist)) 
     } else {
       return BlankUndefined()
     }
@@ -254,7 +254,7 @@ function LimitComponent(sources, props$, in_app_enabled$, component_id) {
 
   const enable_waitlist$ = in_app_enabled$.map(val => {
     if (val) {
-      return EnableWaitlistComponent(
+      return isolate(EnableWaitlistComponent)(
         sources, 
         O.of(shared$.map(x => x.enable_waitlist)
       ))

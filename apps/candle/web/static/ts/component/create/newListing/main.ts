@@ -29,7 +29,7 @@ import {
 } from '../../../library/spinners'
 
 import {main as Basics} from './basics/main'
-import {main as Advanced} from './advanced/main'
+import {main as Advanced} from './advanced/newMain'
 import {main as Preview} from './preview/main'
 import {main as NextButton} from '../nextButton'
 import {main as BackNextButtons} from '../backNextButtons'
@@ -129,7 +129,8 @@ function view(state$, components) {
     const {state, components} = info
     const {waiting} = state
     const {navigator, content} = components
-    return div(`.screen.create-component`, [
+    return div(`.screen.create-component`, {
+    }, [
       waiting ? div([
         navigator
       ]) : div([

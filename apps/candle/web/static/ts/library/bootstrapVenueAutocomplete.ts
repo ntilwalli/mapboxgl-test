@@ -41,8 +41,7 @@ export function createVenueAutocomplete(sources, inputs) {
     displayFunction: suggestion => getVenueName(suggestion),
     placeholder: `Type venue name here...`,
     styleClass: `.autocomplete-input`,
-    name: 'region',
-    emptyIsError: false
+    name: 'region'
   })
 
   const suggestionComponent = FoursquareSuggestVenues(sources, {

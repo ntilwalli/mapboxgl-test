@@ -50,10 +50,14 @@ function PreRegistrationRadios(sources, props$) {
     })
     .publishReplay(1).refCount()
 
-  const click$ = sources.DOM.select('.appRegistrationTypeInput').events('click')
+  const click$ = sources.DOM.select('.appPreRegistrationTypeInput').events('click')
      .map(ev => {
        return ev.target.value
-     })
+     }).publish().refCount()
+
+  click$.subscribe(x => {
+    console.log('click$', x)
+  })
 
   const vtree$ = shared$.map(registration_type =>  {
 
@@ -62,19 +66,19 @@ function PreRegistrationRadios(sources, props$) {
         span('.content.fx-wrap', [
           div('.form-check.form-check-inline.mb-0', [
             label('.form-check-label', [
-              input('.appRegistrationTypeInput.form-check-input.mr-xs', {attrs: {type: 'radio', name: 'registration-type', value: 'app', checked: registration_type === 'app'}}, []),
+              input('.appPreRegistrationTypeInput.form-check-input.mr-xs', {attrs: {type: 'radio', name: 'registration-type', value: 'app', checked: registration_type === 'app'}}, []),
               'Enable in Hopscotch'
             ])
           ]),
           div('.form-check.form-check-inline.mb-0', [
             label('.form-check-label', [
-              input('.appRegistrationTypeInput.form-check-input.mr-xs', {attrs: {type: 'radio', name: 'registration-type', value: 'email', checked: registration_type === 'email'}}, []),
+              input('.appPreRegistrationTypeInput.form-check-input.mr-xs', {attrs: {type: 'radio', name: 'registration-type', value: 'email', checked: registration_type === 'email'}}, []),
               'Via e-mail'
             ])
           ]),
           div('.form-check.form-check-inline.mb-0', [
             label('.form-check-label', [
-              input('.appRegistrationTypeInput.form-check-input.mr-xs', {attrs: {type: 'radio', name: 'registration-type', value: 'website', checked: registration_type === 'website'}}, []),
+              input('.appPreRegistrationTypeInput.form-check-input.mr-xs', {attrs: {type: 'radio', name: 'registration-type', value: 'website', checked: registration_type === 'website'}}, []),
               'On external website'
             ])
           ])
@@ -83,7 +87,7 @@ function PreRegistrationRadios(sources, props$) {
     ])
   })
 
-  const output$ = O.merge(shared$, click$)
+  const output$ = O.merge(shared$, click$).letBind(traceStartStop('preregistration radio'))
 
   return {
     DOM: vtree$,
@@ -184,7 +188,7 @@ function InPersonComponent(sources, props$, component_id) {
     RelativeTimeOptions.EVENT_END
   ]
   const ends_component = RelativeTimeComponent(sources, shared$.pluck('ends'), ends_options, component_id + ' ends', 'Ends')
-  const styles_component = InPersonStyleComponent(sources, shared$.pluck('styles'))
+  const styles_component = isolate(InPersonStyleComponent)(sources, shared$.pluck('styles'))
 
   const vtree$ = combineObj({
     begins: begins_component_normalized.DOM,
@@ -251,9 +255,10 @@ function PreRegistrationComponent(sources, props$, component_id) {
   })
   .publishReplay(1).refCount()
 
-  const radios_component = PreRegistrationRadios(sources, shared$.pluck('type'))
+  const radios_component = isolate(PreRegistrationRadios)(sources, shared$.pluck('type'))
 
   const radios_output$ = radios_component.output$.publishReplay(1).refCount()
+
   const input_props$ = O.merge(
     shared$,
     radios_output$.map(type => ({type, data: undefined}))

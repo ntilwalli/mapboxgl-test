@@ -1,5 +1,5 @@
 import {Observable as O} from 'rxjs'
-import {div, span, button, h6} from '@cycle/dom'
+import {div, span, button, h6, em} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 import Immutable = require('immutable')
 import {combineObj, createProxy} from '../../../../../utils'
@@ -12,7 +12,7 @@ import clone = require('clone')
 function render(state, component_id, item_heading) {
   let children
   if (state.length === 0) {
-    children = [`Click plus to add ${item_heading}`]
+    children = [em([`Click plus to add ${item_heading}`])]
   } else {
     children = state.map((x, index) => {
       const margin_class = index !== state.length - 1 ? '.mb-xs' : ''

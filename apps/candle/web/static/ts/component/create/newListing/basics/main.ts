@@ -7,7 +7,7 @@ import {
   ListingTypes, CategoryTypes, 
   EventTypeToProperties
 } from '../../../../listingTypes'
-import {inflateSession, fromCheckbox, getDefaultSession} from '../../../helpers/listing/utils'
+import {inflateSession, deflateSession, fromCheckbox, getDefaultSession} from '../../../helpers/listing/utils'
 import clone = require('clone')
 
 import FocusWrapper from '../focusWrapperWithInstruction'
@@ -26,7 +26,7 @@ import Recurrence from './cuando/recurrence/main'
 
 import {renderSKFadingCircle6} from '../../../../library/spinners'
 
-const default_instruction = 'Click on a section to see tips. Click \'Save/Exit\' to save save session (w/o posting) and resume later.'
+const default_instruction = 'Click on a section to see tips'
 function intent(sources) {
   const {DOM, Global, Router} = sources
   const session$ = Router.history$
@@ -186,13 +186,7 @@ function renderMainPanel(info: any) {
     search_area, donde, listing_type, start_time,
     end_time, date
   } = components
-  return div(`.main-panel.container-fluid.mt-4`, {
-    // hook: {
-    //   create: (emptyVNode, {elm}) => {
-    //     elm.scrollTop = 0
-    //   }
-    // }
-  }, [
+  return div(`.main-panel.container-fluid.mt-4`, [
     show_errors && errors.length ? div(`.form-group`, [
       div(`.alerts-area`, errors.map(e => {
           return div(`.alert.alert-danger`, [
@@ -251,34 +245,6 @@ function renderInstructionPanel(info: any) {
   ])
 }
 
-function getInstruction(info) {
-  const {state, components} = info
-  const {focus} = state
-
-  if (focus === 'name') {
-    return 'Choose a name for the listing'
-  } else if (focus === 'description') {
-    return 'Describe the listing'
-  } else if (focus === 'categories') {
-    return 'Categories determine what filters apply to the listing during search'
-  } else if (focus === 'event_types') {
-    return 'Choosing the right event type(s) allows you to configure additional properties like the performer sign-up start time (open-mic) or audience cost (show) if relevant.'
-  } else if (focus === 'search_area') {
-    return 'Select the city/region to use for the venue autocomplete'
-  } else if (focus === 'donde') {
-    return 'Select the venue'
-  } else if (focus === 'start_time') {
-    return 'Set the start time of the event'
-  } else if (focus === 'end_time') {
-    return 'Set the end time of the event (optional)'
-  } else if (focus === 'date') {
-    return 'Set the date of the event'
-  } else {
-    return 'Click on a section to see tips. Click \'Save/Exit\' to save save session (w/o posting) and resume later.'
-  }
-}
-
-
 function renderSmallInstructionPanel(info) {
   const {state, components} = info
   const {focus_instruction, show_instruction} = state
@@ -319,7 +285,16 @@ function view(state$, components) {
     const {name} = components
 
     return div(`.screen.create-component`, [
-      div('.content-section.nav-fixed-offset.appMainPanel', [
+      div('.basics.content-section.nav-fixed-offset.appMainPanel', {
+        // hook: {
+        //   create: (emptyVNode, {elm}) => {
+        //     window.scrollTo(0, 0)
+        //   },
+        //   update: (old, {elm}) => {
+        //     window.scrollTo(0, 0)
+        //   }
+        // }
+      }, [
         renderMainPanel(info),
         renderSmallInstructionPanel(info),
         renderInstructionPanel(info)
@@ -356,7 +331,7 @@ export function main(sources, inputs) {
 
   const donde_instruction = 'Select the venue'
   const donde_invalid$ = show_errors$.startWith(false)
-  const donde = isolate(Venue)(sources, {...inputs, search_area$: search_area_section.output$.pluck('data'), highlight_error$: donde_invalid$})
+  const donde = isolate(Venue)(sources, {...inputs, session$: actions.session$, search_area$: search_area_section.output$.pluck('data'), highlight_error$: donde_invalid$})
   const donde_section: any = isolate(FocusWrapper)(sources, {component: donde, title: 'Venue', instruction: donde_instruction})
 
   const listing_type_instruction = 'Does this listing represent a single (one-off) event or an event which recurs?'
@@ -492,7 +467,7 @@ export function main(sources, inputs) {
             state: {
               type: 'session',
               data: {
-                ...state,
+                ...deflateSession(state.session),
                 current_step: 'preview'
               }
             }
@@ -520,7 +495,7 @@ export function main(sources, inputs) {
             state: {
               type: 'session',
               data: {
-                ...state.session,
+                ...deflateSession(state.session),
                 current_step: 'advanced'
               }
             }
