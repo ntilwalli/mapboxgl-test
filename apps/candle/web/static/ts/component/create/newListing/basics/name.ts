@@ -10,6 +10,7 @@ const name_input_props = {
   name: `listing-name`,
   style_class: `.name-input.form-control`,
   empty_is_error: true,
+  autofocus: true
 }
 
 function applyChange(session, val) {

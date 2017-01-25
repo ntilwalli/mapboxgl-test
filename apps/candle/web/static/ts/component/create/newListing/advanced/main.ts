@@ -241,7 +241,7 @@ function view(state$, children$) {
           ])
         ]))
 
-    return div(`.properties`, [
+    return div(`.properties.nav-fixed-offset`, [
       ...errors,
       div(`.body`, children.map(x => div(`.mb-4`, [x])))
     ])

@@ -11,22 +11,22 @@ function toHTTP({props, partial, search_area}) {
   const parameters = []
   const {lat, lng} = search_area.region.position
   const radius = search_area.radius
-  parameters.push([`query`, encodeURIComponent(partial)].join(`=`))
-  parameters.push([`ll`, `${lat},${lng}`].join(`=`))
-  parameters.push([`limit`, props.maxSuggestions || 5].join(`=`))
-  parameters.push([`client_id`, foursquareClientId].join(`=`))
-  parameters.push([`client_secret`, foursquareClientSecret].join(`=`))
-  parameters.push([`v`, moment().format('YYYYMMDD')].join(`=`))
-  parameters.push([`radius`, radius].join(`=`))
+  parameters.push(['query', encodeURIComponent(partial)].join('='))
+  parameters.push(['ll', '' + lat + ',' + lng].join('='))
+  parameters.push(['limit', props.maxSuggestions || 5].join('='))
+  parameters.push(['client_id', foursquareClientId].join('='))
+  parameters.push(['client_secret', foursquareClientSecret].join('='))
+  parameters.push(['v', moment().format('YYYYMMDD')].join('='))
+  parameters.push(['radius', radius].join('='))
 
-	const url = `https://api.foursquare.com/v2/venues/suggestcompletion?${parameters.join(`&`)}`
+	const url = 'https://api.foursquare.com/v2/venues/suggestcompletion?' + parameters.join(`&`)
   //console.log(url)
 
   return  {
     url: url,
     //method: `get`,
-    type: `text/plain`,
-    category: `suggestVenues`
+    type: 'text/plain',
+    category: 'suggestVenues'
   }
 
 }
@@ -37,28 +37,28 @@ function FoursquareSuggestVenues (sources, inputs) {
   const props$ = inputs.props$ || O.of({})
 
 
-  const fromHttp$ = HTTP.select(`suggestVenues`)
+  const fromHttp$ = HTTP.select('suggestVenues')
     .switchMap(res => {
       return res.map(res => {
         if (res.statusCode === 200) {
 
           //console.log(`received HTTP response`)
           return {
-            type: `success`,
+            type: 'success',
             data: res.body.response
           }
         } else {
           //console.log(`received HTTP error`)
           return {
-            type: `error`,
-            data: `Unsuccessful response from server`
+            type: 'error',
+            data: 'Unsuccessful response from server'
           }
         }
       })
       .catch((e, orig$) => {
         //console.log(`received HTTP major error`)
         return O.of({
-          type: `error`,
+          type: 'error',
           data: e
         })
       })
@@ -66,8 +66,8 @@ function FoursquareSuggestVenues (sources, inputs) {
     .publish().refCount()
     //.publishReplay(1).refCount()
 
-  const validResponse$ = fromHttp$.filter(res => res.type === `success`).map(res => res.data)
-  const invalidResponse$ = fromHttp$.filter(res => res.type === `error`).map(res => res.data)
+  const validResponse$ = fromHttp$.filter(res => res.type === 'success').map(res => res.data)
+  const invalidResponse$ = fromHttp$.filter(res => res.type === 'error').map(res => res.data)
 
   const minivenues$ = validResponse$
     .map(res => res.minivenues)

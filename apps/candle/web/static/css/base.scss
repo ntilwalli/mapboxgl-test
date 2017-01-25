@@ -341,6 +341,18 @@ address {
   background-color: #EEEEEE;
 }
 
+.bg-crayola-orange {
+  background-color: $crayola-orange;
+}
+
+.bg-crayola-orange-transparent {
+  background-color: $crayola-orange-transparent;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
 button.close:focus {
   outline: none;
 }

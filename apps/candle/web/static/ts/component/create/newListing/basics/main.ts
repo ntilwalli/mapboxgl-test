@@ -2,7 +2,7 @@ import {Observable as O} from 'rxjs'
 import {div, span, input, textarea, label, h6, nav, button} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 import Immutable = require('immutable')
-import {combineObj, createProxy, mergeSinks, componentify, targetIsOwner} from '../../../../utils'
+import {combineObj, createProxy, mergeSinks, componentify, targetIsOwner, processHTTP} from '../../../../utils'
 import {
   ListingTypes, CategoryTypes, 
   EventTypeToProperties
@@ -45,12 +45,24 @@ function intent(sources) {
 
   const main_panel_click$ = DOM.select('.appMainPanel').events('click').filter(targetIsOwner)
   const go_to_preview$ = DOM.select('.appGoToPreviewButton').events('click').publish().refCount()
+  const go_to_advanced$ = DOM.select('.appGoToAdvancedButton').events('click').publish().refCount()
+  const save_exit$ = DOM.select('.appSaveExitButton').events('click').publish().refCount()
+
+
+  const saved_exit = processHTTP(sources, `saveExitSession`)
+  const success_save_exit$ = saved_exit.success$
+  const error_save_exit$ = saved_exit.error$
+
   return {
     session$,
     open_instruction$,
     close_instruction$,
     main_panel_click$,
-    go_to_preview$
+    go_to_preview$,
+    go_to_advanced$,
+    save_exit$,
+    success_save_exit$,
+    error_save_exit$
   }
 }
 
@@ -79,6 +91,20 @@ function reducers(actions, inputs) {
       })
     })
 
+    if (!session.listing.donde) {
+      errors.push('Venue must be selected')
+    } 
+    
+    if (session.listing.type === ListingTypes.SINGLE) {
+      if (!session.listing.cuando.begins) {
+        errors.push('Start date and time must be set')
+      }
+    } else {
+      if (!session.listing.cuando.rrules.length && !session.listing.cuando.rdates.length) {
+        errors.push('Recurrence rule or dates must be selected')
+      }
+    }
+
     return state.set('session', Immutable.fromJS(session)).set('errors', errors).set('valid', errors.length === 0)
   })
 
@@ -91,7 +117,7 @@ function reducers(actions, inputs) {
     return state.set('focus', undefined)
   })
 
-  const show_errors_r = actions.go_to_preview$.map(_ => state => {
+  const show_errors_r = O.merge(actions.go_to_preview$, actions.go_to_advanced$).map(_ => state => {
     return state.set('show_errors', true)
   })
 
@@ -142,10 +168,10 @@ function renderNavigator(state) {
         span('.ml-4.hidden-sm-down.step-description', ['Basics']),
         span('.ml-4.hidden-md-up.step-description', ['Basics'])
       ]),
-      div('.col-6.d-fx-a-c.fx-j-e', [
-        waiting ? span('.mr-4', [renderSKFadingCircle6()]) : null,
-        button(`.appSaveExitButton.text-button.nav-text-button.btn.btn-link`, [`Save/Exit`])
-      ]),
+      // div('.col-6.d-fx-a-c.fx-j-e', [
+      //   waiting ? span('.mr-4', [renderSKFadingCircle6()]) : null,
+      //   button(`.appSaveExitButton.text-button.nav-text-button.btn.btn-link`, [`Save/Exit`])
+      // ]),
     ])
   ])
 }
@@ -201,21 +227,19 @@ function renderMainPanel(info: any) {
     ]),
     div('.mt-4', [
       date
-    ])
-  ])
-}
-
-function renderButtonPanel(info: any) {
-  const {state} = info
-  const {valid} = state
-  return div(`.button-panel`, [
-    button(`.appGoToPreviewButton`, {class: {disabled: false}}, [
-      div(`.next`, [
-        span(`.text`, [`Preview`]),
-        span(`.fa.fa-angle-right.fa-2x`)
-      ])
     ]),
-    renderSmallInstructionPanel(info)
+    div('.appGoToAdvancedButton.mt-4.btn.btn-link.cursor-pointer.d-flex', {style: {"flex-flow": "row nowrap", flex: "0 0 fixed"}}, [
+      span('.d-flex.align-items-center', ['Go to advanced settings']),
+      span('.fa.fa-angle-double-right.ml-2.d-flex.align-items-center', [])
+    ]),
+    button('.appSaveExitButton.mt-4.btn.btn-outline-warning.d-flex.cursor-pointer.mt-4', [
+      span('.d-flex.align-items-center', ['Save/Finish later']),
+      span('.fa.fa-angle-double-right.ml-2.d-flex.align-items-center', [])
+    ]),
+    button('.appGoToPreviewButton.mt-4.btn.btn-outline-success.d-flex.cursor-pointer.mt-4', [
+      span('.d-flex.align-items-center', ['Preview and post']),
+      span('.fa.fa-angle-double-right.ml-2.d-flex.align-items-center', [])
+    ])
   ])
 }
 
@@ -293,32 +317,14 @@ function view(state$, components) {
     const {name} = components
 
     return div(`.screen.create-component`, [
-      renderNavigator(state),
       div('.content-section.nav-fixed-offset.appMainPanel', [
         renderMainPanel(info),
-        renderButtonPanel(info),
+        renderSmallInstructionPanel(info),
         renderInstructionPanel(info)
       ])
     ])
   })
 }
-
-
-
-
-
-
-// function view(state$, components) {
-//   return combineObj({
-//       state$, components: combineObj(components)
-//     })
-//     .map((info: any) => {
-//       const {components} = info
-//       const {name} = components
-
-//       return name
-//     })
-// }
 
 const toName = (session) => session.listing.meta.name
 
@@ -341,7 +347,8 @@ export function main(sources, inputs) {
   const search_area = isolate(SearchArea)(sources, {...inputs, session$: actions.session$})
   const search_area_section: any = isolate(FocusWrapper)(sources, {component: search_area, title: 'Search area', id: 'search_area'})
 
-  const donde = isolate(Venue)(sources, {...inputs, session$: actions.session$})
+  const donde_invalid$ = show_errors$.startWith(false)
+  const donde = isolate(Venue)(sources, {...inputs, search_area$: search_area_section.output$.pluck('data'), highlight_error$: donde_invalid$})
   const donde_section: any = isolate(FocusWrapper)(sources, {component: donde, title: 'Venue', id: 'donde'})
 
   const listing_type = isolate(ListingType)(sources, {...inputs, session$: actions.session$})
@@ -427,11 +434,35 @@ export function main(sources, inputs) {
     return x
   }))
 
+  const to_save_exit$ = actions.save_exit$.withLatestFrom(state$, (_, state) => {
+    return {
+      url: `/api/user`,
+      method: `post`,
+      category: `saveExitSession`,
+      send: {
+        route: `/listing_session/save`,
+        data: state.session
+      }
+    }
+  }).publish().refCount()
+
   return {
     ...merged,
     DOM: vtree$,
+    HTTP: O.merge(
+      merged.HTTP,
+      to_save_exit$
+    ),
     Router: O.merge(
-      //merged.Router,
+      merged.Router,
+      actions.success_save_exit$.withLatestFrom(inputs.Authorization.status$, (_, user) => user)
+        .map(user => {
+          return {
+            pathname: '/' + user.username + '/listings',
+            action: 'REPLACE',
+            type: 'replace'
+          }
+        }),
       actions.go_to_preview$.withLatestFrom(state$, (_, state) => {
           return state
         })
@@ -459,7 +490,24 @@ export function main(sources, inputs) {
               data: state.session
             }
           }
-        }).skip(1)
+        }).skip(1),
+      actions.go_to_advanced$.withLatestFrom(state$, (_, state) => {
+          return state
+        })
+        .filter(state => state.valid)
+        .map(state => {
+          return {
+            pathname: '/create/listing',
+            type: 'push',
+            state: {
+              type: 'session',
+              data: {
+                ...state.session,
+                current_step: 'advanced'
+              }
+            }
+          }
+        })
     )
   }
 }

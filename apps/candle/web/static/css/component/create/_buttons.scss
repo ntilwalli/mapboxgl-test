@@ -54,7 +54,7 @@
     height: 100%;
     display: flex;
     align-items: center;
-    background-color: white;
+    background-color: $crayola-orange;
 
     .text {
       display: flex;
@@ -63,31 +63,43 @@
       margin: 0 1rem;
     }
 
-    .icon {
+    &:hover {
+      background-color: $white;
+      color: white;
+    }
 
+    &.disabled {
+      background-color: $crayola-orange-transparent;
+      color: white;
+    }
+
+    &.disabled:hover {
+      background-color: $crayola-orange-transparent;
+      color: white;
     }
   }
+
+
 
   button {
     border: none;
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: white;
 
-    &:hover {
-      border-color: $crayola-orange;
-      color: $crayola-orange;
-    }
+    // &:hover {
+    //   border-color: $crayola-orange;
+    //   color: $crayola-orange;
+    // }
 
-    &.disabled {
-      border-color: lightgray;
-    }
+    // &.disabled {
+    //   border-color: lightgray;
+    // }
 
-    &.disabled:hover {
-      color: lightgray;
-      border-color: lightgray;
-    }
+    // &.disabled:hover {
+    //   color: lightgray;
+    //   border-color: lightgray;
+    // }
 
     &:focus {
       outline: none;

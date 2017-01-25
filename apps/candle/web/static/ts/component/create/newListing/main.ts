@@ -21,6 +21,9 @@ import {
   renderSearchCalendarButton
 } from '../../helpers/navigator'
 
+import Navigator from '../../../library/navigators/simpleFixed'
+
+
 import {
   renderSKFadingCircle6
 } from '../../../library/spinners'
@@ -129,7 +132,10 @@ function view(state$, components) {
     return div(`.screen.create-component`, [
       waiting ? div([
         navigator
-      ]) : content
+      ]) : div([
+        navigator,
+        content
+      ])
     ])
   })
 }
@@ -174,9 +180,13 @@ function main(sources, inputs) {
     //.do(x => console.log(`component$...`, x))
     .publishReplay(1).refCount()
 
+
+  const navigator = Navigator(sources, inputs)
+
   const content = componentify(content$)
   const components = {
-    content: content.DOM
+    content: content.DOM,
+    navigator: navigator.DOM
   }
 
   const waiting$ = createProxy()
@@ -201,15 +211,17 @@ function main(sources, inputs) {
 
   //waiting$.attach(to_http$)
 
+  const merged = mergeSinks(content, navigator)
+
   const out = {
-    ...content,
+    ...merged,
     DOM: vtree$,
     HTTP: O.merge(
+      merged.HTTP,
       to_http$,
-      content.HTTP
     ).publish().refCount(),
     Router: O.merge(
-      content.Router,
+      merged.Router,
       O.merge(
         O.merge(
           actions.success_retrieve$
@@ -232,7 +244,8 @@ function main(sources, inputs) {
               }
             }
           }),
-        push_state$.filter(is_invalid)
+        push_state$
+          .filter(is_invalid)
           .map(x => {
             return {
               pathname: `/create`,
@@ -246,6 +259,7 @@ function main(sources, inputs) {
       console.log(`to router`, x)
     }),
     MessageBus: O.merge(
+      merged.MessageBus,
       O.merge(actions.error_retrieve$, actions.error_create$)
         .map(error => {
           return {

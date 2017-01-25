@@ -145,15 +145,11 @@ function applyChange(session, val) {
 export default function main(sources, inputs) {
 
   // console.log(`venue inputs...`, inputs)
-  const search_area$ = inputs.session$.map(x => x.properties.donde.search_area)
+  //const search_area$ = inputs.sear$.map(x => x.properties.donde.search_area)
   const props$ = inputs.props$ || O.of(undefined)
 
-  const center$ = O.merge(
-    search_area$.map(x => x.position)
-  ).map((v: any) => ({center: v.center, zoom: 8}))
-  //.do(x => console.log(`search area:`, x))
 
-  const venue_autocomplete = createVenueAutocomplete(sources, {...inputs, props$, search_area$})
+  const venue_autocomplete = createVenueAutocomplete(sources, {...inputs, props$, search_area$: inputs.search_area$, highlight_error$$: inputs.highlight_error$$})
 
   const actions = {
     clear$: sources.DOM.select(`.appClearVenueButton`).events(`click`)

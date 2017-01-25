@@ -13,12 +13,13 @@
   }
 
   .small-instruction-panel {
-    position: absolute;
+    position: fixed;
     padding: .5rem .95rem;
     background-color: white;
     border: 1px solid lightgray;
     right: 1rem;
-    bottom: 4rem;
+    //bottom: 4rem;
+    bottom: 1rem;
     max-width: 15rem;
   }
 

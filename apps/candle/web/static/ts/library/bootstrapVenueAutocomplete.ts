@@ -3,7 +3,7 @@ import {li, span, strong, em} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 import {combineObj, createProxy, mergeSinks} from '../utils'
 import FoursquareSuggestVenues from '../thirdParty/FoursquareSuggestVenues'
-import AutocompleteInput from '../library/bootstrapAutocompleteInput'
+import AutocompleteInput from '../library/bootstrapAutocompleteInputGated'
 import {isValid, getVenueName, getVenueAddress} from '../helpers/donde'
 
 
@@ -17,7 +17,7 @@ function toFoursquareVenueResults(results) {
 }
 
 export function createVenueAutocomplete(sources, inputs) {
-  const {search_area$, props$} = inputs
+  const {search_area$, props$, highlight_error$} = inputs
 
   const itemConfigs = {
     venue: {
@@ -36,18 +36,22 @@ export function createVenueAutocomplete(sources, inputs) {
   }
 
   const results$ = createProxy()
-  const autocompleteInput = AutocompleteInput(sources, results$, O.of(''), {
+  const autocompleteInput = AutocompleteInput(sources, results$, O.of(''), highlight_error$, {
     itemConfigs,
     displayFunction: suggestion => getVenueName(suggestion),
     placeholder: `Type venue name here...`,
     styleClass: `.autocomplete-input`,
-    name: 'region'
+    name: 'region',
+    emptyIsError: false
   })
 
   const suggestionComponent = FoursquareSuggestVenues(sources, {
     //...inputs,
     props$: props$, 
-    search_area$: search_area$.distinctUntilChanged(),
+    search_area$: search_area$.distinctUntilChanged()
+      .map(x => {
+        return x
+      }),
     input$: autocompleteInput.input$
   })
 

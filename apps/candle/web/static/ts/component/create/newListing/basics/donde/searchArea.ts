@@ -111,10 +111,9 @@ export default function main(sources, inputs) {
 
   const content = {
     ...componentify(content$),
-    output$: content$.switchMap((x: any) => x.output$)
-      .map(x => {
-        return x
-      })
+    output$: content$
+      .switchMap((x: any) => x.output$)
+      .publishReplay(1).refCount()
   }
 
   return content
