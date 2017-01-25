@@ -409,8 +409,9 @@ export default function main(sources, inputs) {
     limit_type: limit_type_component.DOM,
     input: input_component.DOM
   }).debounceTime(0).map((components: any) => {
-    return div('.card.card-block', [
-      h6('.card-title', ['Performer limit']),
+    // return div('.card.card-block', [
+    //   h6('.card-title', ['Performer limit']),
+    return div([
       div({class: {'mb-xs': !!components.input}}, [components.limit_type]),
       components.input ? components.input : null
     ])

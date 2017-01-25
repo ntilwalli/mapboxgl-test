@@ -26,6 +26,9 @@ import {combineObj, createProxy, traceStartStop, componentify, mergeSinks} from 
 import clone = require('clone')
 import deepEqual = require('deep-equal')
 
+import FocusWrapper from '../focusWrapperWithInstruction'
+
+
 function arrayUnique(array) {
     var a = array.concat();
     for(var i=0; i<a.length; ++i) {
@@ -50,96 +53,140 @@ function wrapOutput(component, component_type, meta, session$, sources, inputs) 
   }
 }
 
+function wrapWithFocus(sources, component, title, instruction) {
+  return isolate(FocusWrapper)(sources, {component, title, instruction})
+}
+
 function toComponent(type, meta, session$, sources, inputs, authorization) {
-  let component
+  let component, instruction
 
   switch (type) {
     case MetaPropertyTypes.PERFORMER_SIGN_UP:
-      component = PerformerSignup
-      break
-    case MetaPropertyTypes.PERFORMER_CHECK_IN:
-      component = PerformerCheckIn
-      break
-    case MetaPropertyTypes.PERFORMER_COST:
-      component = (sources, inputs) => CostCollection(sources, {
-        ...inputs, 
-        component_id: 'Performer cost', 
-        item_heading: 'Tier',
-      })
-      break
-    case MetaPropertyTypes.STAGE_TIME:
-      component = (sources, inputs) => isolate(CollapseCollection)(sources, {
-        ...inputs, 
-        item: StageTimeRound, 
-        component_id: 'Stage time', 
-        item_heading: 'Round', 
-        itemDefault: getStageTimeDefault
-      })
-      break
-    case MetaPropertyTypes.PERFORMER_LIMIT:
-      component = PerformerLimit
-      break
-    case MetaPropertyTypes.LISTED_HOSTS:
-      component = (sources, inputs) => isolate(Collection)(sources, {
-        ...inputs, 
-        item: PersonName, 
-        item_heading: 'host',
-        component_id: 'Hosts', 
-        itemDefault: () => ({
-          data: '',
-          valid: true,
-          errors: []
-        }),
-        initDefault: () => ({
-          data: authorization.name,
-          valid: true,
-          errors: []
-        })
-      })
-      break
-    case MetaPropertyTypes.NOTES:
-      component = NotesInput
-      break;
-    case MetaPropertyTypes.LISTED_PERFORMERS:
-      component = (sources, inputs) => isolate(Collection)(sources, {
-        ...inputs, 
-        initEmpty: true,
-        item_heading: 'performer',
-        item: PersonNameTitle, 
-        component_id: 'Performers', 
-        itemDefault: () => ({
-          data: {
-            name: '',
-            title: ''
-          },
-          valid: true,
-          errors: []
-        })
-      })
-      break
-    case MetaPropertyTypes.AUDIENCE_COST:
-      const options = [
-        CostOptions.FREE,
-        CostOptions.COVER,
-        CostOptions.MINIMUM_PURCHASE,
-        CostOptions.COVER_AND_MINIMUM_PURCHASE
-      ]
-      
       component = (sources, inputs) => {
-        const out = isolate(Cost)(sources, {...inputs, options})
-        return {
-          ...out, 
-          DOM: out.DOM.map(x => {
-            return div('.card.card-block', [
-              h6('.card-title', ['Audience cost']),
-              x
-            ])
-          })
-        }
+        const instruction = "Configure how/when performers can sign-up for the open-mic"
+        return wrapWithFocus(sources, PerformerSignup(sources, inputs), 'Performer sign-up', instruction)
       }
       break
+    case MetaPropertyTypes.PERFORMER_CHECK_IN:
+      component = (sources, inputs) => {
+        const instruction = "Configure how/when pre-registered performers can check-in to the open-mic."
+        return wrapWithFocus(sources, PerformerCheckIn(sources, inputs), 'Performer check-in', instruction)
+      }
+      break
+    case MetaPropertyTypes.PERFORMER_COST:
+      component = (sources, inputs) => {
+        const instruction = "Configure the performer cost. Enable multiple cost-tiers by clicking the plus button."
+        return wrapWithFocus(
+          sources, 
+          CostCollection(sources, {
+            ...inputs, 
+            component_id: 'Performer cost', 
+            item_heading: 'Tier',
+          }),
+          undefined,
+          instruction
+        )
+      }
+      break
+    case MetaPropertyTypes.STAGE_TIME:
+      component = (sources, inputs) => {
+        const instruction = 'Set the amount of stage time performers get. Enable mulitiple rounds by clicking the plus sign.'
+        return wrapWithFocus(sources, isolate(CollapseCollection)(sources, {
+            ...inputs, 
+            item: StageTimeRound, 
+            component_id: 'Stage time', 
+            item_heading: 'Round', 
+            itemDefault: getStageTimeDefault
+          }),
+          undefined,
+          instruction
+        )
+      }
+      break
+    case MetaPropertyTypes.PERFORMER_LIMIT:
+      component = (sources, inputs) => {
+        const instruction = "Set the number of performer slots available on the mic"
+        return wrapWithFocus(sources, PerformerLimit(sources, inputs), 'Performer limit', instruction)
+      }
+      break
+    case MetaPropertyTypes.LISTED_HOSTS:
+      component = (sources, inputs) => {
+        const instruction = "List the hosts for this show"
+        return wrapWithFocus(
+          sources,
+          isolate(Collection)(sources, {
+            ...inputs, 
+            item: PersonName, 
+            item_heading: 'host',
+            component_id: 'Hosts', 
+            itemDefault: () => ({
+              data: '',
+              valid: true,
+              errors: []
+            }),
+            initDefault: () => ({
+              data: authorization.name,
+              valid: true,
+              errors: []
+            })
+          }), 
+          undefined, 
+          instruction
+        )
+      }
+      break
+    case MetaPropertyTypes.NOTES:
+      component = (sources, inputs) => {
+        const instruction = "Notes for this listing"
+        return wrapWithFocus(sources, NotesInput(sources, inputs), 'Note', instruction)
+      }
+      break;
+    case MetaPropertyTypes.LISTED_PERFORMERS:
+      component = (sources, inputs) => {
+        const instruction = "List the performers for this show"
+        return wrapWithFocus(
+          sources,
+          isolate(Collection)(sources, {
+            ...inputs, 
+            initEmpty: true,
+            item_heading: 'performer',
+            item: PersonNameTitle, 
+            component_id: 'Performers', 
+            itemDefault: () => ({
+              data: {
+                name: '',
+                title: ''
+              },
+              valid: true,
+              errors: []
+            })
+          }),
+          'Listed performers',
+          instruction
+        )
+      }
+      break
+    case MetaPropertyTypes.AUDIENCE_COST:
+      component = (sources, inputs) => {
+        const options = [
+          CostOptions.FREE,
+          CostOptions.COVER,
+          CostOptions.MINIMUM_PURCHASE,
+          CostOptions.COVER_AND_MINIMUM_PURCHASE
+        ]
+        
+        const component = isolate(Cost)(sources, {...inputs, options})
+        const instruction = "Cost to attend show"
+        const out = wrapWithFocus(sources, component, 'Audience cost', instruction)
+        return out
+      }
+
+      break
     case MetaPropertyTypes.CONTACT_INFO:
-      component = ContactInfo
+      component = (sources, inputs) => {
+        const instruction = "Contact information for this listing"
+        return wrapWithFocus(sources, ContactInfo(sources, inputs), 'Contact info', instruction)
+      }
       break
     default:
       throw new Error(`Invalid property component type: ${type}`)
@@ -264,13 +311,15 @@ export function main(sources, inputs) {
 
       const DOM = O.combineLatest(...components.map(c => c.DOM))
       const output$ = O.merge(...components.map(c => c.output$))
+      const focus$ = O.merge(...components.filter(c => c.focus$).map(c => c.focus$))
 
       const merged = mergeSinks(...components)
 
       return {
         ...merged,
         DOM, 
-        output$
+        output$,
+        focus$
       }
     })
     .publishReplay(1).refCount()
@@ -283,6 +332,6 @@ export function main(sources, inputs) {
     ...components,
     DOM: view(state$, properties_dom$),
     output$: state$,
-    focus$: O.never()
+    focus$: components$.switchMap(x => x.focus$)
   }
 }

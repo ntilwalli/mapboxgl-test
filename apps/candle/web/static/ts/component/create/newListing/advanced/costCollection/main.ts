@@ -8,6 +8,7 @@ import {CostOptions, TierPerkOptions, UndefinedOption} from '../../../../../list
 import {default as Cost, getDefault as getCostDefault} from '../cost/main'
 //import {default as TierCost, getDefault as getTierCostDefault} from '../tierCost/main'
 import {default as FullTierCost, getDefault as getFullTierCostDefault} from '../fullTierCost/main'
+//import FocusWrapper from '../../focusWrapperWithInstruction'
 
 function render(state, component_id, item_heading) {
   let children
@@ -32,8 +33,10 @@ function render(state, component_id, item_heading) {
     })
   }
 
-  return div('.card.card-block', [
-    div('.card-title.d-fx-a-c', [
+  // return div('.card.card-block', [
+  //   div('.card-title.d-fx-a-c', [
+  return div([
+    div('.d-flex.mb-2', [
       h6('.mb-0.mr-4', [component_id]),
       button('.appCostCollectionAddButton.fa.fa-plus.plus-button.btn.btn-link', [])
     ]),
@@ -184,7 +187,7 @@ export default function main(sources, inputs) {
 
   const vtree$ = components_dom$.map(x => render(x, inputs.component_id, inputs.item_heading))
 
-  return {
+  const component =  {
     DOM: vtree$,
     output$: state$.map(state => {
       return {
@@ -194,4 +197,6 @@ export default function main(sources, inputs) {
       }
     })
   }
+
+  return component
 }

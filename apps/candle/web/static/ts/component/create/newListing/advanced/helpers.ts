@@ -44,8 +44,9 @@ export function NotesInput(sources, {props$}, styleClass?) {
     })
   const state$ = O.merge(shared$, text$).publishReplay(1).refCount()
   const vtree$ = shared$.map(state => {
-    return div('.card.card-block', [
-      h6('.card-title', ['Note']),
+    // return div('.card.card-block', [
+    //   h6('.card-title', ['Note']),
+    return div([
       textarea(`.appTextareaInput.form-control`, [state])
     ])
   })

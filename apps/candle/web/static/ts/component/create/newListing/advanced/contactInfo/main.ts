@@ -75,8 +75,9 @@ export default function main(sources, inputs) {
     instagram: instagram_component.DOM,
     website: website_component.DOM
   }).debounceTime(0).map((components: any) => {
-    return div('.card.card-block', [
-      h6('.card-title', ['Contact info']),
+    // return div('.card.card-block', [
+    //   h6('.card-title', ['Contact info']),
+    return div([
       div('.row.mb-xs', [
         div('.col-12.raw-line', [
           em('.mr-4', ['E-mail']),

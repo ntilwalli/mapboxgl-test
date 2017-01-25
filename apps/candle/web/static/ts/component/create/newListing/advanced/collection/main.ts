@@ -25,8 +25,8 @@ function render(state, component_id, item_heading) {
     })
   }
 
-  return div('.card.card-block', [
-    div('.card-title.d-fx-a-c', [
+  return div([
+    div('.d-flex.mb-2', [
       h6('.mb-0.mr-4', [component_id]),
       button('.appCollectionAddButton.fa.fa-plus.plus-button.btn.btn-link', [])
     ]),

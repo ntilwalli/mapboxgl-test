@@ -99,8 +99,9 @@ function EnabledComponent(sources, inputs, session) {
     }).debounceTime(0).map((components: any) => {
       const {should_enable_in_app, check_in, in_app} = components
 
-    return div('.card.card-block', [
-      h6('.card-title', ['Performer check-in']),
+    // return div('.card.card-block', [
+    //   h6('.card-title', ['Performer check-in']),
+      return div([
         check_in,
         div('.row.mt-xs', {class: {disabled: !should_enable_in_app}}, [
           div('.col-12', [
@@ -173,5 +174,6 @@ export default function main(sources, inputs) {
     }).publishReplay(1).refCount()
 
 
-  return toComponent(component$)
+  const component = toComponent(component$)
+  return component
 }

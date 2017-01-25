@@ -18,7 +18,7 @@ import Collection from './collection/main'
 import {default as Rule, getDefault as getRuleDefault} from './rule/main'
 import {DayOfWeek, RecurrenceFrequency} from '../../../../../../listingTypes'
 
-import FocusWrapper from '../../../focusWrapper'
+import FocusWrapper from '../../../focusWrapperWithInstruction'
 import {applyRecurringCuando} from '../helpers'
 
 function getDuration(start_time, end_time) {
@@ -192,7 +192,8 @@ export default function main(sources, inputs) {
       })
   })
 
-  const start_date_section: any = isolate(FocusWrapper)(sources, {component: start_date, title: 'Start date', id: 'recurrence_start_date'})
+  const begins_instruction = "When does this recurring listing begin?"
+  const start_date_section: any = isolate(FocusWrapper)(sources, {component: start_date, title: 'Begins', instruction: begins_instruction})
 
   const end_date = isolate(DateInput)(sources, {
     ...inputs, 
@@ -201,7 +202,8 @@ export default function main(sources, inputs) {
     })
   })
 
-  const end_date_section: any = isolate(FocusWrapper)(sources, {component: end_date, title: 'End date', id: 'recurrence_end_date'})
+  const ends_instruction = "When does this recurring listing end? (Optional)"
+  const end_date_section: any = isolate(FocusWrapper)(sources, {component: end_date, title: 'Ends', instruction: ends_instruction})
 
   const rules: any = isolate(Collection)(sources, {
     ...inputs, 
@@ -214,7 +216,8 @@ export default function main(sources, inputs) {
     itemDefault: getRuleDefault
   })
 
-  const rules_section: any = isolate(FocusWrapper)(sources, {component: rules, id: 'rules'})
+  const rules_instruction = "Each rule defines a recurrence, e.g. weekly Mondays, or 3rd Tuesday of each month"
+  const rules_section: any = isolate(FocusWrapper)(sources, {component: rules, instruction: rules_instruction})
 
   const state$ = model(actions, {
     ...inputs, 
@@ -229,7 +232,8 @@ export default function main(sources, inputs) {
     props$: state$
   })
 
-  const calendar_section: any = isolate(FocusWrapper)(sources, {component: calendar, title: 'Recurrence calendar', id: 'calendar'})
+  const calendar_instruction = "Interactive calendar displaying the selected dates for this recurring listing"
+  const calendar_section: any = isolate(FocusWrapper)(sources, {component: calendar, title: 'Recurrence calendar', instruction: calendar_instruction})
 
   selected$.attach(calendar_section.output$)
 

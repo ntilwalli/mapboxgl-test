@@ -67,7 +67,7 @@ function view(state$, components) {
           //]),
         venue ? //null
           div(`.row.map`, {style: {display: venue ? 'block' : 'none'}}, [
-            div('.col-12', {style: {position: 'relative', height: '20rem'}}, [
+            div('.col-12', {style: {position: 'relative'}}, [
               div(`#basicsSelectVenueMapAnchor`),
               div(`.location-info`, [
                 div(`.name`, [getVenueName(venue)]),

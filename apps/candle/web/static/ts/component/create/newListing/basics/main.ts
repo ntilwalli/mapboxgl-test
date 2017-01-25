@@ -10,7 +10,7 @@ import {
 import {inflateSession, fromCheckbox, getDefaultSession} from '../../../helpers/listing/utils'
 import clone = require('clone')
 
-import FocusWrapper from '../focusWrapper'
+import FocusWrapper from '../focusWrapperWithInstruction'
 import FocusCardWrapper from '../focusCardWrapper'
 import Name from './name'
 import Description from './description'
@@ -26,6 +26,7 @@ import Recurrence from './cuando/recurrence/main'
 
 import {renderSKFadingCircle6} from '../../../../library/spinners'
 
+const default_instruction = 'Click on a section to see tips. Click \'Save/Exit\' to save save session (w/o posting) and resume later.'
 function intent(sources) {
   const {DOM, Global, Router} = sources
   const session$ = Router.history$
@@ -44,6 +45,7 @@ function intent(sources) {
   )
 
   const main_panel_click$ = DOM.select('.appMainPanel').events('click').filter(targetIsOwner)
+    .mapTo(default_instruction)
   const go_to_preview$ = DOM.select('.appGoToPreviewButton').events('click').publish().refCount()
   const go_to_advanced$ = DOM.select('.appGoToAdvancedButton').events('click').publish().refCount()
   const save_exit$ = DOM.select('.appSaveExitButton').events('click').publish().refCount()
@@ -92,36 +94,36 @@ function reducers(actions, inputs) {
     })
 
     if (!session.listing.donde) {
-      errors.push('Venue must be selected')
+      errors.push('Venue: Must be selected')
     } 
     
     if (session.listing.type === ListingTypes.SINGLE) {
       if (!session.listing.cuando.begins) {
-        errors.push('Start date and time must be set')
+        errors.push('Start date/time: Must be set')
       }
     } else {
       if (!session.listing.cuando.rrules.length && !session.listing.cuando.rdates.length) {
-        errors.push('Recurrence rule or dates must be selected')
+        errors.push('Recurrence: Rule or dates must be selected')
       }
     }
 
     return state.set('session', Immutable.fromJS(session)).set('errors', errors).set('valid', errors.length === 0)
   })
 
-  const instruction_focus_r = inputs.instruction_focus$
+  const instruction_r = O.merge(inputs.instruction_focus$, actions.main_panel_click$)
     .map(x => state => {
-      return state.set('focus', x)
+      return state.set('focus_instruction', x)
     })
 
-  const main_panel_click_r = actions.main_panel_click$.map(_ => state => {
-    return state.set('focus', undefined)
-  })
+  // const main_panel_click_r = actions.main_panel_click$.map(_ => state => {
+  //   return state.set('focus', undefined)
+  // })
 
   const show_errors_r = O.merge(actions.go_to_preview$, actions.go_to_advanced$).map(_ => state => {
     return state.set('show_errors', true)
   })
 
-  return O.merge(properties_r, instruction_focus_r, open_instruction_r, close_instruction_r, main_panel_click_r, show_errors_r)
+  return O.merge(properties_r, instruction_r, open_instruction_r, close_instruction_r, show_errors_r)
 }
 
 function model(actions, inputs) {
@@ -135,7 +137,7 @@ function model(actions, inputs) {
       
       const session = info.session
       const init = {
-        focus: undefined,
+        focus_instruction: default_instruction,
         show_instruction: false,
         authorization: info.authorization,
         waiting: false,
@@ -279,7 +281,7 @@ function getInstruction(info) {
 
 function renderSmallInstructionPanel(info) {
   const {state, components} = info
-  const {show_instruction} = state
+  const {focus_instruction, show_instruction} = state
   return div('.small-instruction-panel', {
       class: {
         appOpenInstruction: !show_instruction,
@@ -290,7 +292,7 @@ function renderSmallInstructionPanel(info) {
     }, [
       div([span(`.appCloseInstruction.close`, {style: {display: !!show_instruction ? 'inline' : 'none'}}, []),
       span(`.icon.fa.fa-lightbulb-o`)]),
-      div({style: {display: !!show_instruction ? 'block' : 'none'}}, [getInstruction(info)])
+      div({style: {display: !!show_instruction ? 'block' : 'none'}}, [focus_instruction || default_instruction])
     ])
 }
 
@@ -301,7 +303,7 @@ function renderInstructionSubpanel(info) {
     div(`.instruction-section`, [
       div([
         span(`.icon.fa.fa-lightbulb-o`),
-        getInstruction(info)
+        state.focus_instruction || default_instruction
       ])
     ])
   ])
@@ -332,43 +334,59 @@ export function main(sources, inputs) {
   const actions = intent(sources)
   const show_errors$ = createProxy()
 
+  const name_instruction = 'Choose a name for the listing'
   const name = isolate(Name)(sources, {...inputs, session$: actions.session$, highlight_error$: show_errors$})
-  const name_section: any = isolate(FocusWrapper)(sources, {component: name, title: 'Name', id: 'name'})
+  const name_section: any = isolate(FocusWrapper)(sources, {component: name, title: 'Name', instruction: name_instruction})
   
+  const description_instruction = 'Describe the listing'
   const description = isolate(Description)(sources, {...inputs, session$: actions.session$, highlight_error$: show_errors$})
-  const description_section: any = isolate(FocusWrapper)(sources, {component: description, title: 'Description', id: 'description'})
+  const description_section: any = isolate(FocusWrapper)(sources, {component: description, title: 'Description', instruction: description_instruction})
   
+  const event_types_instruction = 'Choosing the right event type(s) allows you to configure additional properties like the performer sign-up start time (open-mic) or audience cost (show) if relevant.'
   const event_types = isolate(EventTypes)(sources, {...inputs, session$: actions.session$})
-  const event_types_section: any = isolate(FocusWrapper)(sources, {component: event_types, title: 'Event types', id: 'event_types'})
+  const event_types_section: any = isolate(FocusWrapper)(sources, {component: event_types, title: 'Event types', instruction: event_types_instruction})
   
+  const categories_instruction = 'Categories determine what filters apply to the listing during search'
   const categories = isolate(Categories)(sources, {...inputs, session$: actions.session$})
-  const categories_section: any = isolate(FocusWrapper)(sources, {component: categories, title: 'Categories', id: 'categories'})
+  const categories_section: any = isolate(FocusWrapper)(sources, {component: categories, title: 'Categories', instruction: categories_instruction})
   
+  const search_area_instruction = 'Select the city/region to use for the venue autocomplete'
   const search_area = isolate(SearchArea)(sources, {...inputs, session$: actions.session$})
-  const search_area_section: any = isolate(FocusWrapper)(sources, {component: search_area, title: 'Search area', id: 'search_area'})
+  const search_area_section: any = isolate(FocusWrapper)(sources, {component: search_area, title: 'Search area', instruction: search_area_instruction})
 
+  const donde_instruction = 'Select the venue'
   const donde_invalid$ = show_errors$.startWith(false)
   const donde = isolate(Venue)(sources, {...inputs, search_area$: search_area_section.output$.pluck('data'), highlight_error$: donde_invalid$})
-  const donde_section: any = isolate(FocusWrapper)(sources, {component: donde, title: 'Venue', id: 'donde'})
+  const donde_section: any = isolate(FocusWrapper)(sources, {component: donde, title: 'Venue', instruction: donde_instruction})
 
+  const listing_type_instruction = 'Does this listing represent a single (one-off) event or an event which recurs?'
   const listing_type = isolate(ListingType)(sources, {...inputs, session$: actions.session$})
-  const listing_type_section: any = isolate(FocusWrapper)(sources, {component: listing_type, title: 'Type', id: 'listing_type'})
+  const listing_type_section: any = isolate(FocusWrapper)(sources, {component: listing_type, title: 'Type', instruction: listing_type_instruction})
 
+  const start_time_instruction = 'Set the start time of the event'
   const start_time = isolate(StartTime)(sources, {...inputs, session$: actions.session$})
-  const start_time_section: any = isolate(FocusWrapper)(sources, {component: start_time, title: 'Start time', id: 'start_time'})
+  const start_time_section: any = isolate(FocusWrapper)(sources, {component: start_time, title: 'Start time', instruction: start_time_instruction})
 
+  const end_time_instruction = 'Set the end time of the event (optional)'
   const end_time = isolate(EndTime)(sources, {...inputs, session$: actions.session$})
-  const end_time_section: any = isolate(FocusWrapper)(sources, {component: end_time, title: 'End time', id: 'end_time'})
+  const end_time_section: any = isolate(FocusWrapper)(sources, {component: end_time, title: 'End time', instruction: end_time_instruction})
 
   const date_section$ = listing_type_section.output$.pluck('data')
     .map(type => {
       if (type === ListingTypes.SINGLE) {
+        const date_instruction = 'Choose the event date'
         const single_date = isolate(SingleDate)(sources, {...inputs, session$: actions.session$})
-        const single_date_section: any = isolate(FocusWrapper)(sources, {component: single_date, title: 'Date', id: 'date'})
+        const single_date_section: any = isolate(FocusWrapper)(sources, {component: single_date, title: 'Date', instruction: date_instruction})
         return single_date_section
       } else {
+        const recurrence_instruction = 'Choose a rule for regular (weekly, monthly) events and/or select and exclude dates by clicking the calendar'
         const recurrence = isolate(Recurrence)(sources, {...inputs, session$: actions.session$})
-        const recurrence_section: any = isolate(FocusWrapper)(sources, {component: recurrence, title: 'Recurrence dates', id: 'recurrence'})
+        const recurrence_section: any = isolate(FocusWrapper)(sources, {
+          component: recurrence, 
+          title: 'Recurrence dates', 
+          instruction: recurrence_instruction, 
+          skip_children: true
+        })
         return recurrence_section
       }
     }).publishReplay(1).refCount()

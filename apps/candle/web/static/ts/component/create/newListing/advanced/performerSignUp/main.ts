@@ -16,6 +16,7 @@ import {
   PerformerSignupOptions, 
   RelativeTimeOptions
 } from '../../../../../listingTypes'
+
 import clone = require('clone')
 
 const rt_opts = RelativeTimeOptions
@@ -62,19 +63,19 @@ function PreRegistrationRadios(sources, props$) {
           div('.form-check.form-check-inline.mb-0', [
             label('.form-check-label', [
               input('.appRegistrationTypeInput.form-check-input.mr-xs', {attrs: {type: 'radio', name: 'registration-type', value: 'app', checked: registration_type === 'app'}}, []),
-              'Enable in-app'
+              'Enable in Hopscotch'
             ])
           ]),
           div('.form-check.form-check-inline.mb-0', [
             label('.form-check-label', [
               input('.appRegistrationTypeInput.form-check-input.mr-xs', {attrs: {type: 'radio', name: 'registration-type', value: 'email', checked: registration_type === 'email'}}, []),
-              'E-mail'
+              'Via e-mail'
             ])
           ]),
           div('.form-check.form-check-inline.mb-0', [
             label('.form-check-label', [
               input('.appRegistrationTypeInput.form-check-input.mr-xs', {attrs: {type: 'radio', name: 'registration-type', value: 'website', checked: registration_type === 'website'}}, []),
-              'Website'
+              'On external website'
             ])
           ])
         ])
@@ -470,8 +471,9 @@ export default function main(sources, inputs): SinksType {
   }).debounceTime(0).map((components: any) => {
     const {signup_type, in_person, pre_registration} = components
     const both = in_person && pre_registration
-    return div('.card.card-block', [
-      h6('.card-title', ['Performer sign-up']),
+    //return div('.card.card-block', [
+    //  h6('.card-title', ['Performer sign-up']),
+    return div([
       div('.mb-xs', [
         signup_type
       ]),
@@ -527,11 +529,13 @@ export default function main(sources, inputs): SinksType {
   })
   .publishReplay(1).refCount()
 
-
   const merged = mergeSinks(in_person_component, pre_registration_component)
-  return {
+  const component = {
     ...merged,
     DOM: vtree$,
     output$
   }
+
+  return component
+
 }
