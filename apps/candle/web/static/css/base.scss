@@ -109,6 +109,24 @@ address {
   }
 }
 
+.btn {
+  &.btn-link-underline {
+    background-color: transparent;
+    margin: 0;
+    padding: 0;
+    color: $crayola-orange
+  }
+
+  &.btn-link-underline:hover {
+    text-decoration: underline;
+  }
+
+  &.btn-link-underline:focus, &.btn-link:active {
+    outline: none;
+  }
+}
+
+
 .container, .container-fluid {
   &.no-gutter {
     margin-right: 0;
@@ -401,6 +419,7 @@ span.close::after {
   }
 
 }
+
 
 .translate-down-listing {
   transform: translateY(6rem)

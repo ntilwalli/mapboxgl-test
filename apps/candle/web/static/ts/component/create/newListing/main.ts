@@ -30,7 +30,7 @@ import {
 
 import {main as Basics} from './basics/main'
 import {main as Advanced} from './advanced/newMain'
-import {main as Preview} from './preview/main'
+import {main as Preview} from './preview/newMain'
 import {main as NextButton} from '../nextButton'
 import {main as BackNextButtons} from '../backNextButtons'
 import clone = require('clone')

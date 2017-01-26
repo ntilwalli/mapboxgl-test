@@ -62,23 +62,6 @@ function model(actions, inputs) {
     .publishReplay(1).refCount()
 }
 
-function getDefaultSettings() {
-  return {
-    check_in: {
-      begins: {
-        type: "minutes_before_event_start",
-        data: {
-          minutes: 30
-        }
-      },
-      ends: {
-        type: "event_end"
-      },
-      radius: 30
-    }
-  }
-}
-
 export function main(sources, inputs) {
   const actions = intent(sources)
   const state$ = model(actions, inputs)
@@ -89,7 +72,6 @@ export function main(sources, inputs) {
     .withLatestFrom(state$, (_, state) => {
       state.session.listing.release = 'posted'
       state.session.listing.visibility = 'public'
-      state.session.listing.settings = getDefaultSettings()
       return {
         url: `/api/user`,
         method: `post`,
@@ -105,7 +87,6 @@ export function main(sources, inputs) {
     .withLatestFrom(state$, (_, state) => {
       state.session.listing.release = 'staged'
       state.session.listing.visibility = 'public'
-      state.session.listing.settings = getDefaultSettings()
       return {
         url: `/api/user`,
         method: `post`,

@@ -32,6 +32,20 @@ function renderButtons() {
   ])
 }
 
+function renderBackButtons() {
+  return div([
+    button('.appGoToBasicsButton.btn.btn-link-underline.cursor-pointer.d-flex', {style: {"flex-flow": "row nowrap", flex: "0 0 fixed"}}, [
+      span('.fa.fa-angle-double-left.mr-2.d-flex.align-items-center', []),
+      span('.d-flex.align-items-center', ['Back to basic settings'])
+    ]),
+    button('.appGoToAdvancedButton.mt-1.btn.btn-link-underline.cursor-pointer.d-flex', {style: {"flex-flow": "row nowrap", flex: "0 0 fixed"}}, [
+      span('.fa.fa-angle-double-left.mr-2.d-flex.align-items-center', []),
+      span('.d-flex.align-items-center', ['Back to advanced settings'])
+    ]),
+  ])
+}
+
+
 function renderMarkerInfo(donde) {
   return div(`.marker-info`, [
     renderDonde(donde)
@@ -134,70 +148,34 @@ export function renderSingleListingPreview(state) {
   ])
 }
 
-
-// export function renderListingCard(listing) {
-//   const {type, donde, meta} = listing
-//   const {name, event_types, categories, notes, performer_cost, description, contact_info, performer_sign_up, stage_time, performer_limit, listed_hosts} = meta
-
-//   return div(`.listing-card`, [
-//     div('.column.meta', [
-//       div(`.row.justify-between`, [
-//         div(`.column`, [
-//           renderName(name),
-//           renderCuando(listing),
-//           renderDonde(donde),
-//           renderContactInfo(contact_info),
-//           //renderListedHosts(listed_hosts)
-//         ]),
-//         div(`.column`, [
-//           renderCost(listing),
-//           renderStageTime(stage_time),
-//           performer_sign_up ? renderPerformerSignup(performer_sign_up) : null,
-//           performer_limit ? renderPerformerLimit(performer_limit) : null,
-//           renderEventTypesAndCategories(event_types, categories)
-//           // checked_in ? div(`.result-check-in`, [`Checked-in`]) : null
-//         ])
-//       ]),
-//       renderDescription(description),
-//       renderNotes(notes)
-//     ]),
-//     div(`.map`, [
-//       div(`#location-map`, []),
-//       renderLocationInfo(donde)
-//     ])
-//   ])
-// }
-
-
-
-export default function view(state$, components) {
-  return combineObj({
-      state$
-    })
-    .map((info: any) => {
-      const {state} = info
-      const {session} = state
-      const {listing} = session
-      const {type} = listing
-      return div(`.preview`, [
-        //div(`.heading`, ['Preview listing']),
-        div(`.row.mb-4`, [
-          div('.col-12', [
-            type === "single" ? renderSingleListingPreview(session) : renderRecurringListingPreview(session)         
-          ]),
-        ]),
-        div('.row.mb-4', [
-          div('.col-12', [
-            h6('.mb-xs', ['Interaction properties']),
-            renderSummary(listing)    
-          ]),
-        ]),
-        div('.row', [
-          div('.col-12', [
-            h6('.mb-xs', ['Stage or post']),
-            renderButtons()  
-          ])
-        ])
+export default function view(info) {
+  const {state} = info
+  const {session} = state
+  const {listing} = session
+  const {type} = listing
+  return div(`.preview.appMainPanel`, [
+    //div(`.heading`, ['Preview listing']),
+    div(`.row.mb-4`, [
+      div('.col-12', [
+        type === "single" ? renderSingleListingPreview(session) : renderRecurringListingPreview(session)         
+      ]),
+    ]),
+    div('.row.mb-4', [
+      div('.col-12', [
+        h6('.mb-xs', ['Interaction properties']),
+        renderSummary(listing)    
+      ]),
+    ]),
+    div('.row.mb-4', [
+      div('.col-12', [
+        renderBackButtons()    
+      ]),
+    ]),
+    div('.row', [
+      div('.col-12', [
+        h6('.mb-xs', ['Stage or post']),
+        renderButtons()  
       ])
-    })
+    ])
+  ])
 }
