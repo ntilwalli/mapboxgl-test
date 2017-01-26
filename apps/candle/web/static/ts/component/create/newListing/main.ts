@@ -21,7 +21,7 @@ import {
   renderSearchCalendarButton
 } from '../../helpers/navigator'
 
-import Navigator from '../../../library/navigators/simpleFixed'
+import Navigator from '../../../library/navigators/createStep'
 
 
 import {
@@ -161,7 +161,7 @@ function main(sources, inputs) {
     }).publish().refCount()
 
   const to_render$ = push_state$.filter(should_render)
-    .pluck(`data`)
+    .pluck(`data`).publishReplay(1).refCount()
 
   const content$ = to_render$
     .map(push_state => {
@@ -182,7 +182,7 @@ function main(sources, inputs) {
     .publishReplay(1).refCount()
 
 
-  const navigator = Navigator(sources, inputs)
+  const navigator = Navigator(sources, {...inputs, current_step$: to_render$.pluck('current_step')})
 
   const content = componentify(content$)
   const components = {

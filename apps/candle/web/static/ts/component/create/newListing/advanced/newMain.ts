@@ -322,12 +322,18 @@ function renderMainPanel(info: any) {
         }))
       ]) : null,
     ]
-    .concat(components.map((x, index) => index ? div('.mt-4', [x]) : x))
     .concat([
-      div('.appGoToBasicsButton.mt-4.btn.btn-link.cursor-pointer.d-flex', {style: {"flex-flow": "row nowrap", flex: "0 0 fixed"}}, [
+      div('.appGoToBasicsButton.btn.btn-link.cursor-pointer.d-flex.mb-4', {style: {"flex-flow": "row nowrap", flex: "0 0 fixed"}}, [
         span('.fa.fa-angle-double-left.mr-2.d-flex.align-items-center', []),
         span('.d-flex.align-items-center', ['Back to basic settings'])
-      ]),
+      ])
+    ])
+    .concat(components.map((x, index) => index ? div('.mt-4', [x]) : x))
+    .concat([
+      // div('.appGoToBasicsButton.mt-4.btn.btn-link.cursor-pointer.d-flex', {style: {"flex-flow": "row nowrap", flex: "0 0 fixed"}}, [
+      //   span('.fa.fa-angle-double-left.mr-2.d-flex.align-items-center', []),
+      //   span('.d-flex.align-items-center', ['Back to basic settings'])
+      // ]),
       button('.appSaveExitButton.mt-4.btn.btn-outline-warning.d-flex.cursor-pointer.mt-4', [
         span('.d-flex.align-items-center', ['Save/Finish later']),
         span('.fa.fa-angle-double-right.ml-2.d-flex.align-items-center', [])

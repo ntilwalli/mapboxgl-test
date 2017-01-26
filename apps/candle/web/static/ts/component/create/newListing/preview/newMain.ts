@@ -98,10 +98,7 @@ function model(actions, inputs) {
         show_instruction: false,
         authorization: info.authorization,
         waiting: false,
-        errors: [],
-        show_errors: false,
-        session,
-        valid: false
+        session
       }
 
       return reducer$
@@ -243,7 +240,6 @@ export function main(sources, inputs) {
       actions.go_to_basics$.withLatestFrom(state$, (_, state) => {
           return state
         })
-        .filter(state => state.valid)
         .map(state => {
           return {
             pathname: '/create/listing',
@@ -252,7 +248,7 @@ export function main(sources, inputs) {
               type: 'session',
               data: {
                 ...deflateSession(state.session),
-                current_step: 'preview'
+                current_step: 'basics'
               }
             }
           }
@@ -261,7 +257,6 @@ export function main(sources, inputs) {
         .withLatestFrom(state$, (_, state) => {
             return state
           })
-        .filter(state => state.valid)
         .map(state => {
           return {
             pathname: '/create/listing',
