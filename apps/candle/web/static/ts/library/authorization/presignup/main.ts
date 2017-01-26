@@ -3,8 +3,9 @@ import isolate from '@cycle/isolate'
 import view from './view'
 import intent from './intent'
 import model from './model'
-import {combineObj, spread} from '../../../utils'
-import TextInput, {SmartTextInputValidation} from '../../bootstrapTextInput'
+import {combineObj, createProxy} from '../../../utils'
+import TextInput, {SmartTextInputValidation} from '../../bootstrapTextInputGated'
+import {EmailInputComponent} from '../../components'
 // import isEmail from 'validator/lib/isEmail'
 // import isAlphanumeric from 'validator/lib/isAlphanumeric'
 // import isAlpha from 'validator/lib/isAlpha'
@@ -19,12 +20,13 @@ function emailValidator(val): SmartTextInputValidation {
   }
 }
 
-const emailInputProps = O.of({
+const email_input_props = {
   placeholder: `E-mail address`,
   name: `email`,
-  styleClass: `.auth-input`,
-  emptyIsError: true
-})
+  style_class: `.auth-input`,
+  empty_is_error: true,
+  autofocus: false
+}
 
 function usernameValidator(val): SmartTextInputValidation {
   if (val && isAlpha(val.substring(0, 1)) && isAlphanumeric(val)) {
@@ -33,18 +35,20 @@ function usernameValidator(val): SmartTextInputValidation {
     return {value: undefined, errors: [`Username must start with a letter and be alphanumeric`]}
   }
 }
-const usernameInputProps = O.of({
+const username_input_props = O.of({
+  autofocus: false,
   placeholder: `Username`,
   name: `username`,
-  styleClass: `.auth-input`,
-  emptyIsError: true
+  style_class: `.auth-input`,
+  empty_is_error: true
 })
 
-const nameInputProps = O.of({
+const name_input_props = O.of({
+  autofocus: true,
   placeholder: `Display name`,
   name: `name`,
-  styleClass: `.auth-input`,
-  emptyIsError: true
+  style_class: `.auth-input`,
+  empty_is_error: true
 })
 
 
@@ -58,27 +62,25 @@ export default function main(sources, inputs) {
     .map(x => x.data)
     .publishReplay(1).refCount()
 
-  const nameInput = TextInput(sources, {
-    props$: nameInputProps, 
+  const highlight_error$ = createProxy()
+
+  const nameInput = isolate(TextInput)(sources, {
+    props$: name_input_props, 
     errors$,
-    initialText$: sources.Global.cookie$
-      .map(x => x.suggested_name)
+    initial_text$: sources.Global.cookie$
+      .map(x => x.suggested_name),
+    highlight_error$
   })
 
-  const usernameInput = TextInput(sources, {
+  const usernameInput = isolate(TextInput)(sources, {
     validator: usernameValidator,
-    props$: usernameInputProps, 
+    props$: username_input_props, 
     errors$,
-    initialText$: O.of(undefined)
+    initial_text$: O.of(undefined),
+    highlight_error$
   })
 
-  const emailInput = TextInput(sources, {
-    validator: emailValidator,
-    //validateOnBlur: true,
-    props$: emailInputProps, 
-    errors$,
-    initialText$: O.of(undefined)
-  })
+  const emailInput = EmailInputComponent(sources, O.of(undefined), highlight_error$, email_input_props)
 
   const actions = intent(sources)
   const state$ = model(actions, {
@@ -89,6 +91,8 @@ export default function main(sources, inputs) {
     errors$,
     cookie$: sources.Global.cookie$
   })
+
+  highlight_error$.attach(state$.pluck('show_errors').distinctUntilChanged())
 
   const vtree$ = view(combineObj({
     state$,

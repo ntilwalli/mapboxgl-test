@@ -52,19 +52,27 @@ defmodule Auth.Utils do
 
   def login(%Credential{username: username, password: password}, repo) do
     case get_existing_authorization(:identity, username, repo) do
-      {:ok, auth} ->
-        case password do
-          password when is_binary(password) ->
-            if Comeonin.Bcrypt.checkpw(password, auth.token) do
-              {:ok, auth.user}
-            else
-              {:error, :password_does_not_match}
-            end
-          _ -> {:error, :password_required}
+      {:ok, auth} -> check_password(auth, password)
+      :error -> 
+        case get_existing_authorization_from_email(username, repo) do
+          :error -> {:error, :invalid_username_password}
+          {:ok, auth} -> check_password(auth, password)
         end
-      :error -> {:error, :invalid_username_password}
     end
   end
+
+  defp check_password(auth, password) do
+      case password do
+        password when is_binary(password) ->
+          if Comeonin.Bcrypt.checkpw(password, auth.token) do
+            {:ok, auth.user}
+          else
+            {:error, :password_does_not_match}
+          end
+        _ -> {:error, :password_required}
+      end
+  end
+
 
   def oauth_login(%Authorization{provider: provider, uid: uid} = temp, repo) do
     case get_existing_authorization(provider, uid, repo) do
@@ -101,7 +109,24 @@ defmodule Auth.Utils do
       nil -> :error
       auth -> {:ok, auth}
     end
-  end 
+  end
+
+  def get_existing_authorization_from_email(uid, repo) do
+    query = from u in User, where: u.email == ^uid
+    case repo.one(query)  do
+      nil -> :error
+      user -> get_authorization_from_user(user, repo)
+    end
+  end
+
+  def get_authorization_from_user(user, repo) do
+    query = from u in Authorization, where: u.user_id == ^user.id, preload: [:user]
+    case repo.one(query)  do
+      nil -> :error
+      auth -> {:ok, auth}
+    end
+  end
+
 
   defp create_user(%User{name: name, email: email, username: username, type: type}, repo) do
     result = User.registration_changeset(%User{}, scrub(%{name: name, email: email, username: username, type: type}))

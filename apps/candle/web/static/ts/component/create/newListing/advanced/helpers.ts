@@ -26,11 +26,7 @@ import BootstrapWeekdaySelect from '../../../../library/bootstrapWeekdaySelect'
 
 const {isEmail} = validator
 
-
 const rt_opts = RelativeTimeOptions
-
-
-
 
 export function NotesInput(sources, {props$}, styleClass?) {
   const shared$ = props$

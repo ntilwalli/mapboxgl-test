@@ -19,7 +19,7 @@ const routes = [
 
 const scrollTop = _ => {
   //console.log('scrolling top')
-  setTimeout(() => window.scrollTo(0, 0), 100)
+  setTimeout(() => window.scrollTo(0, 0), 50)
 }
 
 

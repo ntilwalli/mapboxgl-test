@@ -7,6 +7,9 @@ export default function intent(sources) {
   const twitter$ = DOM.select(`.appTwitterLink`).events(`click`)
 
   const submit$ = DOM.select(`.appLoginButton`).events(`click`)
+    .publish().refCount()
+
+  const forgotten$ = DOM.select(`.appForgottenButton`).events(`click`)
     // .publishReplay(1).refCount()
 
   const signup$ = DOM.select(`.appSwitchToSignupButton`).events(`click`)
@@ -15,6 +18,7 @@ export default function intent(sources) {
     github$,
     facebook$,
     twitter$,
-    signup$
+    signup$,
+    forgotten$
   }
 }

@@ -82,13 +82,37 @@ function intent(sources) {
 
   const from_http$ = O.merge(success_retrieve$, success_create$)
 
+  const to_retrieve$ = push_state$
+    //.do(x => console.log(`push_state...`, x))
+    .filter(should_retrieve)
+    .pluck(`data`)
+    .map(val => {
+      return {
+        url: `/api/user`,
+        method: `post`,
+        category: `retrieveSavedSession`,
+        send: {
+          route: `/listing_session/retrieve`,
+          data: val
+        }
+      }
+    }).publish().refCount()
+
+  const to_render$ = push_state$.filter(should_render)
+    .pluck(`data`).publishReplay(1).refCount()
+
+  const to_new$ = push_state$.filter(should_create_new)
+
   return{
     from_http$,
     success_retrieve$,
     error_retrieve$,
     success_create$,
     error_create$,
-    push_state$
+    push_state$,
+    to_retrieve$,
+    to_render$,
+    to_new$
   }
 }
 
@@ -121,12 +145,6 @@ function model(actions, inputs) {
     .publishReplay(1).refCount()
 }
 
-function getRandomInt(min, max) {
-  min = Math.ceil(min);
-  max = Math.floor(max);
-  return Math.floor(Math.random() * (max - min)) + min;
-}
-
 function view(state$, components) {
   return combineObj({
     state$,
@@ -139,14 +157,7 @@ function view(state$, components) {
     }, [
       waiting ? div([
         navigator
-      ]) : div(
-        {
-          // hook: {
-          //   create: () => window.scrollTo(0, 0),
-          //   update: () => window.scrollTo(0, 0)
-          // }
-        },
-      [
+      ]) : div({key: ((Math.random() * 100) % 100).toString() }, [
         navigator,
         content
       ])
@@ -156,27 +167,9 @@ function view(state$, components) {
 
 function main(sources, inputs) {
   const actions = intent(sources)
-  const {push_state$} = actions
-  const to_retrieve$ = push_state$
-    //.do(x => console.log(`push_state...`, x))
-    .filter(should_retrieve)
-    .pluck(`data`)
-    .map(val => {
-      return {
-        url: `/api/user`,
-        method: `post`,
-        category: `retrieveSavedSession`,
-        send: {
-          route: `/listing_session/retrieve`,
-          data: val
-        }
-      }
-    }).publish().refCount()
 
-  const to_render$ = push_state$.filter(should_render)
-    .pluck(`data`).publishReplay(1).refCount()
 
-  const content$ = to_render$
+  const content$ = actions.to_render$
     .map(push_state => {
       //console.log(`push_state`, push_state)
       const {current_step} = push_state 
@@ -195,7 +188,7 @@ function main(sources, inputs) {
     .publishReplay(1).refCount()
 
 
-  const navigator = Navigator(sources, {...inputs, current_step$: to_render$.pluck('current_step')})
+  const navigator = Navigator(sources, {...inputs, current_step$: actions.to_render$.pluck('current_step')})
 
   const content = componentify(content$)
   const components = {
@@ -208,7 +201,7 @@ function main(sources, inputs) {
   const state$ = model(actions, {...inputs, to_http$: waiting$})
   const vtree$ = view(state$, components)
 
-  const to_new$ = push_state$.filter(should_create_new)
+  const to_new$ = actions.to_new$
     .map(val => {
       return {
         url: `/api/user`,
@@ -221,7 +214,7 @@ function main(sources, inputs) {
     }).publish().refCount()
 
 
-  const to_http$ = O.merge(to_new$, to_retrieve$).delay(1)
+  const to_http$ = O.merge(to_new$, actions.to_retrieve$).delay(1)
 
   //waiting$.attach(to_http$)
 
@@ -258,7 +251,7 @@ function main(sources, inputs) {
               }
             }
           }),
-        push_state$
+        actions.push_state$
           .filter(is_invalid)
           .map(x => {
             return {

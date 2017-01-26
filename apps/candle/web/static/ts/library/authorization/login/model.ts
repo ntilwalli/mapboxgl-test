@@ -18,24 +18,29 @@ function setValid(state) {
 
 function reducers(actions, inputs) {
   const {username$, password$, error$} = inputs
-  const usernameR = username$
+  const username_r = username$
     .map(x => state => {
       return setValid(state.set(`username`, x))
     })
 
-  const passwordR = password$
+  const password_r = password$
     .map(x => state => {
       return setValid(state.set(`password`, x))
     })
 
-  const errorR = error$.map(error => state => {
+  const error_r = error$.map(error => state => {
     return state.set(`errors`, (error && error.errors) ? error.errors.filter(x => x.type === `general`).map(x => x.error) : [])
   })
 
+  const show_errors_r = actions.submit$.map(_ => state => {
+    return state.set('show_errors', true)
+  })
+
   return O.merge(
-    usernameR,
-    passwordR,
-    errorR
+    username_r,
+    password_r,
+    error_r,
+    show_errors_r
   )
 }
 
@@ -52,7 +57,8 @@ export default function model(actions, inputs) {
       return {
         ...inputs,
         valid,
-        errors: []
+        errors: [], 
+        show_errors: false
       }
     })
     .switchMap(initialState => {

@@ -1,4 +1,4 @@
-import {nav, hr, div, a, input, form, strong, span, button} from '@cycle/dom'
+import {nav, hr, div, a, input, form, strong, span, button, small} from '@cycle/dom'
 import {
   combineObj
 } from '../../../utils'
@@ -50,12 +50,17 @@ function renderNoAccountArea() {
 
 function renderBody({state, components}) {
   return div(`.login-modal`, [
-    renderAlerts(state),
+    state.show_errors ? renderAlerts(state) : null,
     div(`.form-group.username-section`, [
       components.username
     ]),
-    div(`.form-group.password-section`, 
+    div(`.mb-2.password-section`, 
       [components.password
+    ]),
+    button('.appForgottenButton.btn.btn-link-underline.mb-4', [
+      small([
+        'Forgot password?'
+      ])
     ]),
     //renderRememberMeForgottenPassword(state),
     renderLoginButton(state),

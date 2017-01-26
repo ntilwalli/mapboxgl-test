@@ -192,7 +192,7 @@ function main(sources, inputs) {
 
   return {
     DOM: vtree$,
-    output$: output$.map(x => {
+    output$: output$.delay(1).map(x => {
       return x
     })
   }

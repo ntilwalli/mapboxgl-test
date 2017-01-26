@@ -20,31 +20,40 @@ function reducers(actions, inputs) {
   // const userTypeR = actions.userType$
   //   .map(userType => state => state.set(`type`, userType))
 
-  const nameR = name$.skip(1)
+  const name_r = name$
+    .skip(1)
     .map(x => state => {
       return setValid(state.set(`name`, x))
     })
 
-  const usernameR = username$.skip(1)
+  const username_r = username$
+    .skip(1)
     .map(x => state => {
       return setValid(state.set(`username`, x))
     })
 
-  const emailR = email$.skip(1)
+  const email_r = email$
+    .skip(1)
     .map(x => state => {
       return setValid(state.set(`email`, x))
     })
 
-  const errorsR = errors$.map(val => state => {
-    return state.set(`errors`, (val && val.errors) ? val.errors.filter(x => x.type === `general`).map(x => x.error) : [])
+  const errors_r = errors$
+    .map(val => state => {
+      return state.set(`errors`, (val && val.errors) ? val.errors.filter(x => x.type === `general`).map(x => x.error) : [])
+    })
+
+  const show_errors_r = actions.submit$.map(_ => state => {
+    return state.set('show_errors', true)
   })
 
   return O.merge(
     //userTypeR,
-    nameR,
-    usernameR,
-    emailR,
-    errorsR
+    name_r,
+    username_r,
+    email_r,
+    errors_r,
+    show_errors_r
   )
 }
 
@@ -64,7 +73,8 @@ export default function model(actions, inputs) {
       return {
         ...info,
         valid: isValid(info),
-        errors: []
+        errors: [],
+        show_errors: false
       }
     })
     .switchMap(state => reducer$.startWith(Immutable.Map(state)).scan((acc, f: Function) => f(acc)))

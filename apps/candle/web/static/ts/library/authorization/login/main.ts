@@ -6,31 +6,31 @@ import view from './view'
 import intent from './intent'
 import model from './model'
 
-import {combineObj, spread} from '../../../utils'
+import {combineObj, createProxy, spread} from '../../../utils'
 //import TextInput from '../../textInput'
 //import TextInput, {SmartTextInputValidation} from '../../smartTextInput'
-import TextInput, {SmartTextInputValidation} from '../../bootstrapTextInput'
+import TextInput, {SmartTextInputValidation} from '../../bootstrapTextInputGated'
 
 const validator = x => ({value: x, errors: []})
 
-const usernameInputProps = O.of({
+const username_input_props = O.of({
   placeholder: `Username`,
   name: `username`,
   autofocus: true,
   //required: true,
-  styleClass: `.auth-input`,
+  style_class: `.auth-input`,
   // key: `login`
-  emptyIsError: true
+  empty_is_error: true
 })
 
-const passwordInputProps = O.of({
+const password_input_props = O.of({
   type: `password`,
   placeholder: `Password`,
   name: `password`,
   //required: true,
-  styleClass: `.auth-input`,
+  style_class: `.auth-input`,
   // key: `login`
-  emptyIsError: true
+  empty_is_error: true
 })
 
 const BACKEND_URL = `/api_auth/login`
@@ -43,29 +43,35 @@ export default function main(sources, inputs) {
     .map(x => x.data)
     .publishReplay(1).refCount()
 
-  const usernameInput = TextInput(sources, {
+  const highlight_error$ = createProxy()
+
+  const username_input = isolate(TextInput)(sources, {
     validator,
-    props$: usernameInputProps, 
-    initialText$: O.of(undefined)
+    props$: username_input_props, 
+    initial_text$: O.of(undefined), 
+    highlight_error$
   })
 
-  const passwordInput = TextInput(sources, {
+  const password_input = isolate(TextInput)(sources, {
     validator,
-    props$: passwordInputProps, 
-    initialText$: O.of(undefined)
+    props$: password_input_props, 
+    initial_text$: O.of(undefined),
+    highlight_error$
   })
 
   const actions = intent(sources)
-  const state$ = model(actions, spread(
-    inputs, {
-    username$: usernameInput.output$,
-    password$: passwordInput.output$,
+  const state$ = model(actions, {
+    ...inputs, 
+    username$: username_input.output$,
+    password$: password_input.output$,
     error$
-  }))
+  })
+
+  highlight_error$.attach(state$.pluck('show_errors').distinctUntilChanged())
 
   const vtree$ = view(state$, {
-    username$: usernameInput.DOM,
-    password$: passwordInput.DOM
+    username$: username_input.DOM,
+    password$: password_input.DOM
   })
 
   return {
@@ -91,6 +97,9 @@ export default function main(sources, inputs) {
       ).map(x => ({to: `/authorization/login`, message: x})),
       actions.signup$.withLatestFrom(state$, (_, state) => {
           return {to: `main`, message: {type: `showSignup`, data: state.props}}
+        }),
+      actions.forgotten$.withLatestFrom(state$, (_, state) => {
+          return {to: `main`, message: {type: `showForgotten`, data: state.props}}
         })
     )
     //.do(x => console.log(`login message`, x))

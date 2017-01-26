@@ -34,11 +34,11 @@ function renderButtons() {
 
 function renderBackButtons() {
   return div([
-    button('.appGoToBasicsButton.btn.btn-link-underline.cursor-pointer.d-flex', {style: {"flex-flow": "row nowrap", flex: "0 0 fixed"}}, [
+    button('.appGoToBasicsButton.btn.btn-link.cursor-pointer.d-flex', {style: {"flex-flow": "row nowrap", flex: "0 0 fixed"}}, [
       span('.fa.fa-angle-double-left.mr-2.d-flex.align-items-center', []),
       span('.d-flex.align-items-center', ['Back to basic settings'])
     ]),
-    button('.appGoToAdvancedButton.mt-1.btn.btn-link-underline.cursor-pointer.d-flex', {style: {"flex-flow": "row nowrap", flex: "0 0 fixed"}}, [
+    button('.appGoToAdvancedButton.mt-1.btn.btn-link.cursor-pointer.d-flex', {style: {"flex-flow": "row nowrap", flex: "0 0 fixed"}}, [
       span('.fa.fa-angle-double-left.mr-2.d-flex.align-items-center', []),
       span('.d-flex.align-items-center', ['Back to advanced settings'])
     ]),
@@ -155,6 +155,11 @@ export default function view(info) {
   const {type} = listing
   return div(`.preview.appMainPanel`, [
     //div(`.heading`, ['Preview listing']),
+    div('.row.mb-4', [
+      div('.col-12', [
+        renderBackButtons()    
+      ]),
+    ]),
     div(`.row.mb-4`, [
       div('.col-12', [
         type === "single" ? renderSingleListingPreview(session) : renderRecurringListingPreview(session)         
@@ -164,11 +169,6 @@ export default function view(info) {
       div('.col-12', [
         h6('.mb-xs', ['Interaction properties']),
         renderSummary(listing)    
-      ]),
-    ]),
-    div('.row.mb-4', [
-      div('.col-12', [
-        renderBackButtons()    
       ]),
     ]),
     div('.row', [

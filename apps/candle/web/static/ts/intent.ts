@@ -9,7 +9,7 @@ function intent(sources) {
     .map(x => queryString.parse(x.search))
     .publishReplay(1).refCount()
   const modal$ = url_params$.map(x => x.modal).map(x => {
-      return (x === `login` || x === `signup` || x === `presignup`) ? {type: x, data: undefined} : null
+      return (x === `login` || x === `signup` || x === `presignup` || x === 'forgotten') ? {type: x, data: undefined} : null
     }).publishReplay(1).refCount()
 
   const show_menu$ = MessageBus.address(`main`).filter(x => {
@@ -21,8 +21,11 @@ function intent(sources) {
     .map(x => ({type: `login`, data: x.data}))
   const show_signup$ = MessageBus.address(`main`).filter(x => x.type === `showSignup`)
     .map(x => ({type: `signup`, data: x.data}))
+
+  const show_forgotten$ = MessageBus.address(`main`).filter(x => x.type === `showForgotten`)
+    .map(x => ({type: `forgotten`, data: x.data}))
   
-  const show_modal$ = O.merge(modal$, show_menu$, show_login$, show_signup$)
+  const show_modal$ = O.merge(modal$, show_menu$, show_login$, show_signup$, show_forgotten$)
 
   const hide_modal$ = MessageBus.address(`main`).filter(x => x === `hideModal`)
 
