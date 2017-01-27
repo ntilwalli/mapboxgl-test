@@ -7,7 +7,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Hopscotch - Go out, do something, make it count</title>
+    <title>Stumplog - Go out, do something, make it count</title>
     <link rel="stylesheet" type="text/css" href="<%= static_path(@conn, "/node_modules/mapbox-gl/dist/mapbox-gl.css") %>">
     <link rel="stylesheet" type="text/css" href="<%= static_path(@conn, "/node_modules/font-awesome/css/font-awesome.min.css") %>">
     <link rel="stylesheet" type="text/css" href="<%= static_path(@conn, "/css/base.css") %>">

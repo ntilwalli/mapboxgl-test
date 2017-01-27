@@ -67,7 +67,7 @@ function PreRegistrationRadios(sources, props$) {
           div('.form-check.form-check-inline.mb-0', [
             label('.form-check-label', [
               input('.appPreRegistrationTypeInput.form-check-input.mr-xs', {attrs: {type: 'radio', name: 'registration-type', value: 'app', checked: registration_type === 'app'}}, []),
-              'Enable in Hopscotch'
+              'Enable in Stumplog'
             ])
           ]),
           div('.form-check.form-check-inline.mb-0', [

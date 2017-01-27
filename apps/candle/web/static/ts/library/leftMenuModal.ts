@@ -11,6 +11,7 @@ function intent(sources) {
   const login$ = DOM.select(`.appShowLoginButton`).events(`click`)
   const signup$ = DOM.select(`.appShowSignupButton`).events(`click`)
   const show_settings$ = DOM.select(`.appShowSettingsButton`).events(`click`)
+  const show_privacy$ = DOM.select(`.appShowPrivacyButton`).events(`click`)
   const show_create_workflow$ = DOM.select(`.appShowCreateWorkflowButton`).events(`click`)
   const show_profile$ = DOM.select(`.appShowProfileButton`).events(`click`)
   const brand_button$ = DOM.select('.appBrandButton').events('click')
@@ -22,6 +23,7 @@ function intent(sources) {
     show_settings$,
     show_create_workflow$,
     show_profile$,
+    show_privacy$
   } 
 }
 
@@ -70,7 +72,10 @@ function view(auth$, navigator$) {
               ]),
               !auth ? li([
                 button(`.btn.btn-link`, {class: {appShowSignupButton: true}}, ['Sign-up'])
-              ]) : null
+              ]) : null,
+              li([
+                button(`.btn.btn-link`, {class: {appShowPrivacyButton: true}}, [`Privacy`])
+              ]),
             ])
           ])
         ])
@@ -88,6 +93,11 @@ export default function main(sources, inputs) {
         navigator.Router,
         actions.show_settings$.mapTo({
           pathname: '/settings', 
+          type: 'push',
+          action: 'PUSH'
+        }),
+        actions.show_privacy$.mapTo({
+          pathname: '/privacy', 
           type: 'push',
           action: 'PUSH'
         }),
