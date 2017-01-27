@@ -5,6 +5,8 @@ defmodule Candle.UserController do
   alias Candle.Auth.Helpers
   alias Shared.Message.LngLat, as: LngLatMessage
   alias Shared.Model.LngLat, as: LngLatModel
+
+  alias Incoming.Authorization.ForgottenPassword
   
   def geotag(conn, %{"lat" => lat, "lng" => lng} = params, _current_user, _claims) do
     cs = LngLatMessage.changeset(%LngLatMessage{}, params)
@@ -43,6 +45,19 @@ defmodule Candle.UserController do
           type: "error", 
           data: "Could not retrieve timezone, sent lng/lat (#{Float.to_string(lng)}/#{Float.to_string(lat)}) is invalid."
         })
+    end
+  end
+
+  def forgotten_password(conn, params, _current_user, _claims) do
+    cs = ForgottenPassword.changeset(%ForgottenPassword{}, params)
+    msg = apply_changes(cs)
+    response = Auth.Manager.forgotten_password(Auth.Manager, msg)
+
+    case response do
+      :ok ->
+        render(conn, "route.json", message: %{type: "success", data: nil})
+      {:error, message} -> 
+        render(conn, "route.json", message: %{type: "error", data: message})
     end
   end
 

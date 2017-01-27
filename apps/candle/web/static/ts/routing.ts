@@ -22,7 +22,6 @@ const scrollTop = _ => {
   setTimeout(() => window.scrollTo(0, 0), 50)
 }
 
-
 export default function routing(sources, inputs) {
   const {Router} = sources
   const routing$ = combineObj({

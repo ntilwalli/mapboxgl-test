@@ -100,14 +100,13 @@ defmodule Listing.Worker do
 
     results = Repo.all(query) 
 
-
     Enum.map(results, fn l -> 
-
       pid = Listing.Registry.lookup(r_name, l.id)
       Listing.Worker.delete(pid, user)
     end)
 
     Shared.Manager.ListingManager.delete_one(listing)
+    IO.inspect {:attempting_delete, listing}
     {:stop, :normal, :ok, nil}
   end
 

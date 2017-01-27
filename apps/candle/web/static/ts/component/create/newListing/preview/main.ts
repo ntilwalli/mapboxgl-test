@@ -72,6 +72,7 @@ export function main(sources, inputs) {
     .withLatestFrom(state$, (_, state) => {
       state.session.listing.release = 'posted'
       state.session.listing.visibility = 'public'
+      
       return {
         url: `/api/user`,
         method: `post`,

@@ -9,7 +9,7 @@ defmodule Auth do
     # Define workers and child supervisors to be supervised
     children = [
       # Starts a worker by calling: Auth.Worker.start_link(arg1, arg2, arg3)
-      worker(Auth.Manager, [[name: Auth.Manager]]),
+      worker(Auth.Manager, [Auth.Manager, Candle.EmailManager]),
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html

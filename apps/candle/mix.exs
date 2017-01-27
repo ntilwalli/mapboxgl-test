@@ -40,7 +40,9 @@ defmodule Candle.Mixfile do
        :auth,
        :user,
        :listing,
-       :httpoison   
+       :httpoison,
+       :bamboo,
+       :bamboo_smtp
     ]]
   end
 
@@ -69,6 +71,9 @@ defmodule Candle.Mixfile do
      {:auth, in_umbrella: true},
      {:user, in_umbrella: true},
      {:httpoison, "~> 0.9.0"},
+     {:bamboo, "~> 0.8"},
+     {:bamboo_smtp, "~> 1.3"},
+     {:bamboo_sparkpost, "~> 0.5.0"}
    ]
   end
 

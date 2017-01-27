@@ -16,8 +16,16 @@ function reducers(actions, inputs) {
     return state.set('show_errors', true)
   })
 
+  const to_http_r = inputs.to_http$.map(_ => state => state.set('waiting', true))
+  const success_r = inputs.success$.map(data => state => {
+    return state.set('waiting', false).set('status', {type: 'success', data})
+  })
+  const error_r = inputs.error$.map(data => state => {
+    return state.set('waiting', false).set('status', {type: 'error', data})
+  })
+
   return O.merge(
-    email_r, show_errors_r
+    email_r, show_errors_r, to_http_r, success_r, error_r
   )
 }
 
@@ -30,7 +38,9 @@ export default function model(actions, inputs) {
         email: undefined,
         valid: false,
         errors: [],
-        show_errors: false
+        show_errors: false,
+        waiting: false,
+        status: undefined
       }
     })
     .switchMap(initialState => {

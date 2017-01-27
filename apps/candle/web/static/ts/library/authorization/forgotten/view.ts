@@ -9,6 +9,8 @@ import {
   renderAlerts,
 } from '../helpers'
 
+import {renderSKFadingCircle6} from '../../spinners'
+
 
 function renderSubmitButton(state) {
   return div('.form-group', [
@@ -22,19 +24,32 @@ function renderSubmitButton(state) {
         value: `submit`, 
         disabled: !state.valid
       }
-    }, ['Submit'])
+    }, [state.waiting ? div('.d-flex.justify-content-center', [renderSKFadingCircle6()]) : 'Submit'])
   ])
+}
+
+function renderSuccess(state) {
+  console.log('Success forgotten password state', state)
+  return div(['Success'])
+}
+
+function renderError(state) {
+  console.log('Error forgotten password state', state)
+  return div(['Fail'])
 }
 
 function renderBody({state, components}) {
   return div(`.forgotten-modal`, [
-    state.show_errors ? renderAlerts(state) : null,
-    div('.mb-2', ['We can send you a message with password reset information']),
-    div(`.form-group.email-section`, [
-      components.email
-    ]),
+    //state.show_errors ? renderAlerts(state) : null,
+    state.status && state.status.type === 'error' ? renderError(state) : null,
+    !state.status || state.status.type === 'error' ? div('.forgotten-password-input-area', [
+      div('.mb-2', ['We can send you a message with password reset information']),
+      div(`.form-group.email-section`, [
+        components.email
+      ])
+    ]) : renderSuccess(state),
     //renderRememberMeForgottenPassword(state),
-    renderSubmitButton(state)
+    !state.status || state.status.type === 'error' ? renderSubmitButton(state) : null
 
   ])
 }

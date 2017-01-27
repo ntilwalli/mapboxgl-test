@@ -1,4 +1,4 @@
-defmodule Shared.Message.Incoming.Authorization.Signup do
+defmodule Incoming.Authorization.Signup do
   use Shared.Lib, :model
 
   @derive {Poison.Encoder, except: [:__meta__]}

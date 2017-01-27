@@ -68,3 +68,15 @@ config :phoenix, :generators,
   binary_id: false
 
 config :candle, ecto_repos: [Shared.Repo]
+
+# In your config/config.exs file
+config :candle, Candle.Mailer,
+  adapter: Bamboo.SparkPostAdapter,
+  server: "smtp.sparkpostmail.com",
+  port: 587,
+  username: System.get_env("SPARKPOST_USERNAME"),
+  password: System.get_env("SPARKPOST_PASSWORD"),
+  tls: :if_available, # can be `:always` or `:never`
+  ssl: true,
+  retries: 1
+

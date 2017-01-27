@@ -11,7 +11,7 @@ import {makeMapJSONDriver} from 'cycle-mapboxgl'
 import {div, button, makeDOMDriver} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 
-import {normalizeSink, normalizeComponent, blankComponentUndefinedDOM, defaultNever, combineObj, createProxy, spread} from './utils'
+import {normalizeSink, normalizeComponent, blankComponentUndefinedDOM, defaultNever, combineObj, createProxy, componentify} from './utils'
 
 import startServices from './startServices'
 import getModal from './getModal'
@@ -41,12 +41,12 @@ function main(sources) {
       }).publishReplay(1).refCount()
     })
 
-  const routedComponent = route(sources, spread(services.outputs, {RootRouter: sources.Router}))
+  const routedComponent = route(sources, {...services.outputs, RootRouter: sources.Router})
   const actions = intent(sources)
-  const state$ = model(actions, spread(
-    services.outputs, { 
+  const state$ = model(actions, {
+    ...services.outputs,
     hideModal$
-  }))
+  })
 
   const modal$ = state$.map(state => {
     return state.modal

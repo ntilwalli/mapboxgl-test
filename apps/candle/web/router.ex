@@ -47,6 +47,7 @@ defmodule Candle.Router do
     post "/signup", SignupController, :index
     post "/presignup", PresignupController, :index
     post "/logout", AuthController, :logout
+    post "/forgotten_password", UserController, :forgotten_password
   end
 
   scope "/api", Candle do

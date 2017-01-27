@@ -3,7 +3,7 @@ defmodule Candle.SignupController do
   import Ecto.Changeset, only: [apply_changes: 1]
   import Candle.Auth.Helpers, only: [convert_error: 1, save_redirect: 2, manage_redirect: 1]
   alias Candle.Auth.Helpers
-  alias Shared.Message.Incoming.Authorization.Signup, as: SignupMessage
+  alias Incoming.Authorization.Signup, as: SignupMessage
 
   #plug :save_redirect
   plug Ueberauth

@@ -3,7 +3,7 @@ defmodule Candle.LoginController do
   require Logger
   import Ecto.Changeset, only: [apply_changes: 1]
   import  Candle.Auth.Helpers, only: [convert_error: 1, save_redirect: 2, manage_redirect: 1]
-  alias Shared.Message.Incoming.Authorization.Login, as: LoginMessage
+  alias Incoming.Authorization.Login, as: LoginMessage
 
   #plug :save_redirect
   plug Ueberauth

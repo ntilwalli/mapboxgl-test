@@ -4,7 +4,7 @@ defmodule Candle.PresignupController do
   import Candle.Auth.Helpers, only: [convert_error: 1, manage_redirect: 1]
 
   import Ecto.Changeset, only: [apply_changes: 1]
-  alias Shared.Message.Incoming.Authorization.Presignup, as: PresignupMessage
+  alias Incoming.Authorization.Presignup, as: PresignupMessage
 
   plug Ueberauth
 

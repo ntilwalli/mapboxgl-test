@@ -9,13 +9,16 @@ defmodule Auth.Manager do
   alias Auth.Registration
   alias Auth.Credential
 
-  alias Shared.Message.Incoming.Authorization.Login, as: LoginMessage
-  alias Shared.Message.Incoming.Authorization.Signup, as: SignupMessage
-  alias Shared.Message.Incoming.Authorization.Presignup, as: PresignupMessage
+  alias Incoming.Authorization.Login, as: LoginMessage
+  alias Incoming.Authorization.Signup, as: SignupMessage
+  alias Incoming.Authorization.Presignup, as: PresignupMessage
+  alias Incoming.Authorization.ForgottenPassword, as: ForgottenPasswordMessage
+
+  import Ecto.Query, only: [from: 2]
 
   # Client functions
-  def start_link(opts \\ []) do
-    GenServer.start_link(__MODULE__, :ok, opts)
+  def start_link(name, email_manager) do
+    GenServer.start_link(__MODULE__, {:ok, email_manager}, name: name)
   end
 
   def login(server, info) do
@@ -38,9 +41,13 @@ defmodule Auth.Manager do
     GenServer.call(server, {:logout, user_id})
   end
 
+  def forgotten_password(server, email_address) do
+    GenServer.call(server, {:forgotten_password, email_address})
+  end
+
   # Server functions
-  def init(:ok) do
-    {:ok, nil}
+  def init({:ok, email_manager}) do
+    {:ok, %{email_manager: email_manager}}
   end
 
   def handle_call({:login, %LoginMessage{
@@ -104,6 +111,21 @@ defmodule Auth.Manager do
 
   def handle_call({:logout, user_id}, _from, state) do
     {:reply, nil, state}
+  end
+
+  def handle_call({
+    :forgotten_password,
+    %ForgottenPasswordMessage{
+      email: email_address
+    }}, _from, %{email_manager: e_mgr} = state) do
+    query = from l in Shared.User, where: l.email == ^email_address
+    IO.inspect {:forgotten_password_query, query}
+    case Shared.Repo.one(query) do
+      nil -> {:reply, {:error, :email_address_not_found}, state}
+      user -> 
+        Candle.EmailManager.forgotten_password(e_mgr, user)
+        {:reply, :ok, state}
+    end
   end
 
 end

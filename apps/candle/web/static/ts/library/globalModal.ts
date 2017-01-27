@@ -51,6 +51,6 @@ export default function main(sources, inputs) {
 
   return spread(content, {
     DOM: view(inputs.props$, content.DOM),
-    MessageBus: O.merge(content.MessageBus, actions.close$.mapTo({to: `main`, message: `hideModal`})),
+    MessageBus: O.merge(content.MessageBus || O.never(), actions.close$.mapTo({to: `main`, message: `hideModal`})),
   })
 }

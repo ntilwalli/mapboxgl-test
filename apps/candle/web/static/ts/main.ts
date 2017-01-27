@@ -13,7 +13,7 @@ import queryString = require('query-string')
 
 
 
-import {normalizeComponent, createProxy, traceStartStop} from './utils'
+import {normalizeComponent, createProxy, traceStartStop, componentify} from './utils'
 
 import routeFunction from './routeFunction'
 import SettingsService from  './service/settings'
@@ -58,12 +58,13 @@ function main(sources) {
   const actions = intent(sources)
   const state$ = model(actions, {})
   const modal$ = state$.map((state: any) => getModal(state.modal, sources, inputs))
-    .map(normalizeComponent)
     .publishReplay(1).refCount()
+
+  const modal = componentify(modal$)
 
   const components = {
     content$: out.DOM,
-    modal$: modal$.switchMap(m => m.DOM)
+    modal$: modal.DOM
   }
   const vtree$ = view(state$, components)
 
@@ -87,40 +88,34 @@ function main(sources) {
         })
     })
 
-  const fromModalHTTP = modal$.switchMap(x => x.HTTP)
-  const fromModalGlobal = modal$.switchMap(x => x.Global)
-  const fromModalRouter = modal$.switchMap(x => x.Router)
-  const fromModalStorage = modal$.switchMap(x => x.Storage)
-  const fromModalMessageBus = modal$.switchMap(x => x.MessageBus)
-
   //out.MessageBus.subscribe(x => console.log(`toMessageBus root:`, x))
 
   return {
     ...out,
     DOM: vtree$,
     MapJSON: O.merge(out.MapJSON),
-    Global: O.merge(out.Global, authorizationService.Global, fromModalGlobal),
+    Global: O.merge(out.Global, authorizationService.Global, modal.Global),
     HTTP: O.merge(
         out.HTTP, 
         settingsService.HTTP, 
         geoService.HTTP, 
         authorizationService.HTTP, 
-        fromModalHTTP
+        modal.HTTP
       ),
       // .do(x => {
       //   console.log(`main/http sink`, x)
       // }),
-    Router: O.merge(out.Router, toRouter$, fromModalRouter)
+    Router: O.merge(out.Router, toRouter$, modal.Router)
       .do(x => {
         console.log(`main/router sink`, x)
       }),
-    Storage: O.merge(out.Storage, settingsService.Storage, geoService.Storage, fromModalStorage),
+    Storage: O.merge(out.Storage, settingsService.Storage, geoService.Storage, modal.Storage),
     Phoenix: O.merge(out.Phoenix),
     MessageBus: O.merge(
       out.MessageBus, 
       settingsService.MessageBus,
       authorizationService.MessageBus, 
-      fromModalMessageBus
+      modal.MessageBus
     )
     //.letBind(traceStartStop(`main MessageBus trace`)), 
   }
