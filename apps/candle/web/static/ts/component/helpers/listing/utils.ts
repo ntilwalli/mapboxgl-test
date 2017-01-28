@@ -170,7 +170,7 @@ function getDefaultSessionProperties() {
   }
 }
 
-export function getDefaultSession(retrieved_session) {
+export function getDefaultSession(retrieved_session = {}) {
   return {
     ...retrieved_session,
     current_step: 'basics',

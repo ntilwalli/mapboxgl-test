@@ -160,27 +160,9 @@ function has(arr, type) {
   return arr.some(val => val === type)
 }
 
-function renderNavigator(state) {
-  const {authorization, waiting} = state
-  const authClass = authorization ? 'Logout' : 'Login'
-  return nav('.navbar.navbar-light.bg-faded.container-fluid.fixed-top', [
-    div('.row.no-gutter', [
-      div('.col-6', [
-        button('.appBrandButton.hopscotch-icon.nav-brand', []),
-        span('.ml-4.hidden-sm-down.step-description', ['Basics']),
-        span('.ml-4.hidden-md-up.step-description', ['Basics'])
-      ]),
-      // div('.col-6.d-fx-a-c.fx-j-e', [
-      //   waiting ? span('.mr-4', [renderSKFadingCircle6()]) : null,
-      //   button(`.appSaveExitButton.text-button.nav-text-button.btn.btn-link`, [`Save/Exit`])
-      // ]),
-    ])
-  ])
-}
-
 function renderMainPanel(info: any) {
   const {state, components} = info
-  const {show_errors, errors} = state
+  const {show_errors, errors, authorization} = state
   const {
     name, description, event_types, categories, 
     search_area, donde, listing_type, start_time,
@@ -228,10 +210,10 @@ function renderMainPanel(info: any) {
       span('.d-flex.align-items-center', ['Go to advanced settings']),
       span('.fa.fa-angle-double-right.ml-2.d-flex.align-items-center', [])
     ]),
-    button('.appSaveExitButton.mt-4.btn.btn-outline-warning.d-flex.cursor-pointer.mt-4', [
+    authorization ? button('.appSaveExitButton.mt-4.btn.btn-outline-warning.d-flex.cursor-pointer.mt-4', [
       span('.d-flex.align-items-center', ['Save/Finish later']),
       span('.fa.fa-angle-double-right.ml-2.d-flex.align-items-center', [])
-    ]),
+    ]) : null,
     button('.appGoToPreviewButton.mt-4.btn.btn-outline-success.d-flex.cursor-pointer.mt-4', [
       span('.d-flex.align-items-center', ['Preview and post']),
       span('.fa.fa-angle-double-right.ml-2.d-flex.align-items-center', [])
@@ -439,13 +421,19 @@ export function main(sources, inputs) {
     }
   }).publish().refCount()
 
+  const to_http$ = O.merge(
+    merged.HTTP,
+    to_save_exit$
+  ).publish().refCount()
+
+  // to_http$.subscribe(x => {
+  //   console.log('to_http', x)
+  // })
+
   return {
     ...merged,
     DOM: vtree$,
-    HTTP: O.merge(
-      merged.HTTP,
-      to_save_exit$
-    ),
+    HTTP: to_http$,
     Router: O.merge(
       merged.Router,
       actions.success_save_exit$.withLatestFrom(inputs.Authorization.status$, (_, user) => user)

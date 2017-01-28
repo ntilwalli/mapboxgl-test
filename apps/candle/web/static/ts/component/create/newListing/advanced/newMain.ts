@@ -146,11 +146,11 @@ function toComponent(type, meta, session$, sources, inputs, authorization) {
               valid: true,
               errors: []
             }),
-            initDefault: () => ({
+            initDefault: authorization ? () => ({
               data: authorization.name,
               valid: true,
               errors: []
-            })
+            }) : undefined
           }), 
           undefined, 
           instruction
@@ -312,7 +312,7 @@ function model(actions, inputs) {
 
 function renderMainPanel(info: any) {
   const {state, components} = info
-  const {show_errors, errors} = state
+  const {show_errors, errors, authorization} = state
   return div(`.main-panel.container-fluid.mt-4`, [
       show_errors && errors.length ? div(`.form-group`, [
         div(`.alerts-area`, errors.map(e => {
@@ -334,10 +334,10 @@ function renderMainPanel(info: any) {
       //   span('.fa.fa-angle-double-left.mr-2.d-flex.align-items-center', []),
       //   span('.d-flex.align-items-center', ['Back to basic settings'])
       // ]),
-      button('.appSaveExitButton.mt-4.btn.btn-outline-warning.d-flex.cursor-pointer.mt-4', [
+      authorization ? button('.appSaveExitButton.mt-4.btn.btn-outline-warning.d-flex.cursor-pointer.mt-4', [
         span('.d-flex.align-items-center', ['Save/Finish later']),
         span('.fa.fa-angle-double-right.ml-2.d-flex.align-items-center', [])
-      ]),
+      ]) : null,
       button('.appGoToPreviewButton.mt-4.btn.btn-outline-success.d-flex.cursor-pointer.mt-4', [
         span('.d-flex.align-items-center', ['Preview and post']),
         span('.fa.fa-angle-double-right.ml-2.d-flex.align-items-center', [])

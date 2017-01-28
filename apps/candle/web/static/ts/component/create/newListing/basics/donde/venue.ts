@@ -152,7 +152,7 @@ export default function main(sources, inputs) {
   const venue_autocomplete = createVenueAutocomplete(sources, {...inputs, props$, search_area$: inputs.search_area$, highlight_error$$: inputs.highlight_error$$})
 
   const actions = {
-    clear$: sources.DOM.select(`.appClearVenueButton`).events(`click`)
+    clear$: sources.DOM.select('.appClearVenueButton').events(`click`)
   }
 
   const state$ = model(actions, {
@@ -160,12 +160,18 @@ export default function main(sources, inputs) {
     selected$: venue_autocomplete.output$
   })
 
+  const to_http$ = venue_autocomplete.HTTP.publish().refCount()
+
+
+  // to_http$.subscribe(x => {
+  //   console.log('to_http...', x)
+  // })
 
   const out = {
     DOM: view(state$, {venue_autocomplete$: venue_autocomplete.DOM}),
-    MapJSON: mapview(state$).publish().refCount(),
+    MapJSON: mapview(state$),
     //Global: venue_autocomplete.Global,
-    HTTP: venue_autocomplete.HTTP.publish().refCount(),
+    HTTP: to_http$,
     output$: state$.map(state => {
       return {
         data: state.venue,

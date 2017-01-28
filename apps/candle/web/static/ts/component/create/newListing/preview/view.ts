@@ -10,13 +10,19 @@ import {
   renderContactInfo
 }  from '../../../helpers/listing/renderBootstrap'
 
-function renderButtons() {
+function renderPostStageButtons(state) {
+  const {authorization} = state
+  const disabled = !authorization
   return div('.row', [
     div('.col-12', [
       div('.row.mb-4', [
         div(`.col-12.d-fx-a-c`, [
           div('.mr-4', ['Staging a listing allows you to invite/confirm performers before going live.  Would you like to stage this listing?']),
-          div(`.appStageButton.btn.btn-outline-warning.d-fx-a-c.fx-j-c`, {style: {height: "2rem", 'min-width': "5rem"}}, [`Stage`])
+          button(`.appStageButton.btn.btn-outline-warning.d-fx-a-c.fx-j-c.p-0`, {class: {disabled}, attrs: {disabled}, style: {height: "2rem", 'min-width': "5rem"}}, [
+            div('.d-flex.justify-content-center.align-items-center.h-100.w-100', [
+              `Stage`
+            ])
+          ])
         ])
       ]),
       div('.row.mb-4', [
@@ -25,11 +31,19 @@ function renderButtons() {
       div('.row', [
         div(`.col-12.d-fx-a-c`, [
           div('.mr-4', [`Posting makes your listing live, enabling you to distribute links/send out invitations and makes events discoverable on search. Would you like to post this event?`]),
-          div(`.appPostButton.btn.btn-outline-success.d-fx-a-c.fx-j-c`, {style: {height: "2rem", 'min-width': "5rem"}}, [`Post`])
+          button(`.appPostButton.btn.btn-outline-success.d-fx-a-c.fx-j-c.p-0`, {class: {disabled}, attrs: {disabled}, style: {height: "2rem", 'min-width': "5rem"}}, [
+            div('.d-flex.justify-content-center.align-items-center.h-100.w-100', [
+              `Post`
+            ])
+          ])
         ])
       ])
     ])
   ])
+}
+
+function renderButtons(state) {
+  return renderPostStageButtons(state)
 }
 
 function renderBackButtons() {
@@ -82,10 +96,7 @@ export function renderRecurringListingPreview(state) {
         full_stage_time ? full_stage_time : null,
         performer_sign_up ? renderPerformerSignup(performer_sign_up) : null,
         performer_limit ? renderPerformerLimit(performer_limit) : null,
-        categories.length ? renderTextList(categories) : null,
-        // event_types.length ? div('.row.no-gutter', [
-        //   renderTextList(event_types)
-        // ]) : null
+        categories.length ? renderTextList(categories) : null
       ])
     ]),
     merged_cost_stage_time ? div('.row', [div('.col-12', [merged_cost_stage_time])]) : null,
@@ -94,10 +105,10 @@ export function renderRecurringListingPreview(state) {
         renderNote(new_note)
       ])
     ]),
-    div(`.row.no-gutters.map-area`, [
+    div('.row.no-gutters.map-area', [
       div('.col-12.h-100', [
         renderMarkerInfo(donde),
-        div(`#location-map`)
+        div('#location-map')
       ])
     ]),
   ])
@@ -141,9 +152,9 @@ export function renderSingleListingPreview(state) {
         renderNote(new_note)
       ])
     ]),
-    div(`.row.no-gutter.map-area`, [
+    div('.row.no-gutter.map-area', [
       renderMarkerInfo(donde),
-      div(`#location-map`)
+      div('#location-map')
     ])
   ])
 }
@@ -153,16 +164,17 @@ export default function view(info) {
   const {session} = state
   const {listing} = session
   const {type} = listing
-  return div(`.preview.appMainPanel`, [
+  const disabled = !state.authorization
+  return div('.preview.appMainPanel', [
     //div(`.heading`, ['Preview listing']),
     div('.row.mb-4', [
       div('.col-12', [
         renderBackButtons()    
       ]),
     ]),
-    div(`.row.mb-4`, [
+    div('.row.mb-4', [
       div('.col-12', [
-        type === "single" ? renderSingleListingPreview(session) : renderRecurringListingPreview(session)         
+        type === 'single' ? renderSingleListingPreview(session) : renderRecurringListingPreview(session)         
       ]),
     ]),
     div('.row.mb-4', [
@@ -172,9 +184,9 @@ export default function view(info) {
       ]),
     ]),
     div('.row', [
-      div('.col-12', [
+      div('.col-12', {class: {disabled}}, [
         h6('.mb-xs', ['Stage or post']),
-        renderButtons()  
+        renderButtons(state)  
       ])
     ])
   ])

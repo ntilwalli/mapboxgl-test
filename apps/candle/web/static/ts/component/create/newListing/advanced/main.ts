@@ -160,11 +160,11 @@ function toComponent(type, meta, session$, sources, inputs, authorization) {
               valid: true,
               errors: []
             }),
-            initDefault: () => ({
+            initDefault: authorization ? () => ({
               data: authorization.name,
               valid: true,
               errors: []
-            })
+            }) : undefined
           }), 
           undefined, 
           instruction

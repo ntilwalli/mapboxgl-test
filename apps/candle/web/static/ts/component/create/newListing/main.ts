@@ -37,20 +37,24 @@ import clone = require('clone')
 
 import {getDefaultSession} from '../../helpers/listing/utils'
 
-function should_retrieve(val) {
-  return typeof val === 'object' && val.type === 'retrieve'
+function should_retrieve({authorization, push_state}) {
+  return authorization && typeof push_state === 'object' && push_state.type === 'retrieve'
 }
 
-function should_create_new(val) {
-  return typeof val === 'object' && val.type === 'new'
+function should_create_new({authorization, push_state}) {
+  return authorization && !push_state
 }
 
-function should_render(val: any) {
-  return typeof val === 'object' && val.type === 'session'
+function should_render({authorization, push_state}) {
+  return typeof push_state === 'object' && push_state.type === 'session'
+}
+
+function should_retrieve_from_storage({authorization, push_state}) {
+  return !authorization && !push_state
 }
 
 function is_invalid(val) {
-  return !(should_render(val) || should_retrieve(val) || should_create_new(val))
+  return !val
 }
 
 function intent(sources) {
@@ -157,9 +161,14 @@ function view(state$, components) {
 function main(sources, inputs) {
   const actions = intent(sources)
   const {push_state$} = actions
-  const to_retrieve$ = push_state$
-    //.do(x => console.log(`push_state...`, x))
+  const auth_push_state$ = combineObj({
+    authorization$: inputs.Authorization.status$,
+    push_state$
+  }).publishReplay(1).refCount()
+
+  const to_retrieve$ = auth_push_state$
     .filter(should_retrieve)
+    .map((info: any) => info.push_state)
     .pluck(`data`)
     .map(val => {
       return {
@@ -171,13 +180,53 @@ function main(sources, inputs) {
           data: val
         }
       }
-    }).publish().refCount()
+    }).publishReplay(1).refCount()
 
-  const to_render$ = push_state$.filter(should_render)
-    .pluck(`data`).publishReplay(1).refCount()
+  const to_new$ = auth_push_state$
+    .filter(should_create_new)
+    .map((info: any) => info.push_state)
+    .map(val => {
+      return {
+        url: `/api/user`,
+        method: `post`,
+        category: `createNewSession`,
+        send: {
+          route: `/listing_session/new`
+        }
+      }
+    }).publishReplay(1).refCount()
+
+  const to_http_session$ = O.merge(to_new$, to_retrieve$)
+    .delay(1)
+    .publish().refCount()
+
+  const to_render$ = auth_push_state$
+    .filter((x: any) => should_render(x))
+    .map((info: any) => info.push_state)
+    .pluck(`data`)
+    .publishReplay(1).refCount()
+
+  const from_storage$ = auth_push_state$
+    .filter((x: any) => should_retrieve_from_storage(x))
+    .switchMap(_ => sources.Storage.local.getItem('create_listing_session').take(1))
+    .publishReplay(1).refCount()
+
+  const stored_session$ = from_storage$
+    .filter(Boolean)
+    .publishReplay(1).refCount()
+
+  const no_stored_session$ = from_storage$
+    .filter(x => !x)
+
+  const no_auth_default_session$ = no_stored_session$
+    .map(x => {
+      return getDefaultSession()
+    })
+
+
 
   const content$ = to_render$
-    .map(push_state => {
+    .map((push_state: any) => {
       //console.log(`push_state`, push_state)
       const {current_step} = push_state 
       switch (current_step) { 
@@ -194,7 +243,6 @@ function main(sources, inputs) {
     //.do(x => console.log(`component$...`, x))
     .publishReplay(1).refCount()
 
-
   const navigator = Navigator(sources, {...inputs, current_step$: to_render$.pluck('current_step')})
 
   const content = componentify(content$)
@@ -208,32 +256,22 @@ function main(sources, inputs) {
   const state$ = model(actions, {...inputs, to_http$: waiting$})
   const vtree$ = view(state$, components)
 
-  const to_new$ = push_state$.filter(should_create_new)
-    .map(val => {
-      return {
-        url: `/api/user`,
-        method: `post`,
-        category: `createNewSession`,
-        send: {
-          route: `/listing_session/new`
-        }
-      }
-    }).publish().refCount()
-
-
-  const to_http$ = O.merge(to_new$, to_retrieve$).delay(1)
-
   //waiting$.attach(to_http$)
 
   const merged = mergeSinks(content, navigator)
+  const to_http$ = O.merge(
+    merged.HTTP,
+    to_http_session$,
+  ).publish().refCount()
+
+  // to_http$.subscribe(x => {
+  //   console.log('to_http', x)
+  // })
 
   const out = {
     ...merged,
     DOM: vtree$,
-    HTTP: O.merge(
-      merged.HTTP,
-      to_http$,
-    ).publish().refCount(),
+    HTTP: to_http$,
     Router: O.merge(
       merged.Router,
       O.merge(
@@ -245,7 +283,15 @@ function main(sources, inputs) {
           actions.success_create$
             .map(val => {
               return getDefaultSession(val)
-            })
+            }),
+          stored_session$
+            .map(x => {
+              return x
+            }),
+          no_auth_default_session$
+            .map(x => {
+              return x
+            }),
         )
         .map(session => {
             return {

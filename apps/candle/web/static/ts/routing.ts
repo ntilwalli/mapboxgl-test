@@ -12,7 +12,7 @@ import {main as PrivacyApp} from './component/privacy/main'
 const routes = [
   //{pattern: /^\/user/, value: UserApp},
   {pattern: /^\/settings/, value: {component: SettingsApp, auth: false}},
-  {pattern: /^\/create/, value: {component: CreateApp, auth: true}},
+  {pattern: /^\/create/, value: {component: CreateApp, auth: false}},
   {pattern: /^\/listing/, value: {component: ListingApp, auth: false}},
   {pattern: /^\/privacy/, value: {component: PrivacyApp, auth: false}},
   {pattern: /^\/[a-zA-Z][a-zA-Z0-9]*/, value: {component: UserApp, auth: false, key: 'user'}},

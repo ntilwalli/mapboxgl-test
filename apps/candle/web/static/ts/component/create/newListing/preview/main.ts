@@ -40,17 +40,12 @@ function reducers(actions, inputs) {
 function model(actions, inputs) {
   const reducer$ = reducers(actions, inputs)
   return combineObj({
-      session$: actions.session$.take(1)
+      session$: actions.session$.take(1),
+      authorization: inputs.Authorization.status$
     })
     .switchMap((info: any) => {
-      //console.log('meta init', info)
-      const session = info.session
-      const init = {
-        session 
-      }
-
       return reducer$
-        .startWith(Immutable.Map(init))
+        .startWith(Immutable.Map(info))
         .scan((acc, f: Function) => f(acc))
     })
     .map((x: any) => x.toJS())
@@ -72,7 +67,7 @@ export function main(sources, inputs) {
     .withLatestFrom(state$, (_, state) => {
       state.session.listing.release = 'posted'
       state.session.listing.visibility = 'public'
-      
+
       return {
         url: `/api/user`,
         method: `post`,

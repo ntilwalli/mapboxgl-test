@@ -61,9 +61,10 @@ function view(auth$, navigator$) {
               auth ? li([
                 button(`.btn.btn-link`, {class: {appShowProfileButton: true}}, [`Profile`]) 
               ]) : null,
-              auth ? li([
+              //auth ? 
+              li([
                 button(`.btn.btn-link`, {class: {appShowCreateWorkflowButton: true}}, [`Add New Listing`]) 
-              ]) : null,
+              ]),// : null,
               li([
                 button(`.btn.btn-link`, {class: {appShowSettingsButton: true}}, [`Settings`])
               ]),
