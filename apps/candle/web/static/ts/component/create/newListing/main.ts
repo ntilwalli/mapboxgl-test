@@ -11,7 +11,8 @@ import {
   mergeSinks, 
   createProxy,
   normalizeComponent,
-  componentify
+  componentify,
+  traceStartStop
 } from '../../../utils'
 
 import {
@@ -37,24 +38,16 @@ import clone = require('clone')
 
 import {getDefaultSession} from '../../helpers/listing/utils'
 
-function should_retrieve({authorization, push_state}) {
-  return authorization && typeof push_state === 'object' && push_state.type === 'retrieve'
+function should_retrieve(push_state) {
+  return typeof push_state === 'object' && push_state.type === 'retrieve'
 }
 
-function should_create_new({authorization, push_state}) {
-  return authorization && !push_state
+function should_create_new(push_state) {
+  return !push_state
 }
 
-function should_render({authorization, push_state}) {
+function should_render(push_state) {
   return typeof push_state === 'object' && push_state.type === 'session'
-}
-
-function should_retrieve_from_storage({authorization, push_state}) {
-  return !authorization && !push_state
-}
-
-function is_invalid(val) {
-  return !val
 }
 
 function intent(sources) {
@@ -161,14 +154,22 @@ function view(state$, components) {
 function main(sources, inputs) {
   const actions = intent(sources)
   const {push_state$} = actions
-  const auth_push_state$ = combineObj({
-    authorization$: inputs.Authorization.status$,
-    push_state$
-  }).publishReplay(1).refCount()
+
+  const yes_auth$ = inputs.Authorization.status$
+    .filter(Boolean)
+  const no_auth$ = inputs.Authorization.status$
+    .filter(x => !x)
+
+  const from_storage$ = yes_auth$.switchMap(_ => sources.Storage.local.getItem('create_listing_session').take(1)).publishReplay(1).refCount()
+  const stored$ = from_storage$.filter(Boolean).map((x: any) => JSON.parse(x))
+  const not_stored$ = from_storage$.filter(x => !x)
+
+  const auth_push_state$ = not_stored$
+    .switchMap(_ => push_state$)
+    .publishReplay(1).refCount()
 
   const to_retrieve$ = auth_push_state$
     .filter(should_retrieve)
-    .map((info: any) => info.push_state)
     .pluck(`data`)
     .map(val => {
       return {
@@ -184,7 +185,6 @@ function main(sources, inputs) {
 
   const to_new$ = auth_push_state$
     .filter(should_create_new)
-    .map((info: any) => info.push_state)
     .map(val => {
       return {
         url: `/api/user`,
@@ -200,30 +200,19 @@ function main(sources, inputs) {
     .delay(1)
     .publish().refCount()
 
-  const to_render$ = auth_push_state$
+  const no_auth_push_state$ = no_auth$.switchMap(_ => push_state$)
+    .publishReplay(1).refCount()
+
+  const to_render$ = O.merge(auth_push_state$, no_auth_push_state$)
     .filter((x: any) => should_render(x))
-    .map((info: any) => info.push_state)
     .pluck(`data`)
     .publishReplay(1).refCount()
 
-  const from_storage$ = auth_push_state$
-    .filter((x: any) => should_retrieve_from_storage(x))
-    .switchMap(_ => sources.Storage.local.getItem('create_listing_session').take(1))
-    .publishReplay(1).refCount()
-
-  const stored_session$ = from_storage$
-    .filter(Boolean)
-    .publishReplay(1).refCount()
-
-  const no_stored_session$ = from_storage$
-    .filter(x => !x)
-
-  const no_auth_default_session$ = no_stored_session$
+  const no_auth_default_session$ = no_auth_push_state$
+    .filter(should_create_new)
     .map(x => {
       return getDefaultSession()
     })
-
-
 
   const content$ = to_render$
     .map((push_state: any) => {
@@ -255,14 +244,19 @@ function main(sources, inputs) {
 
   const state$ = model(actions, {...inputs, to_http$: waiting$})
   const vtree$ = view(state$, components)
+    .letBind(traceStartStop('trace create/listing/dom'))
 
   //waiting$.attach(to_http$)
 
   const merged = mergeSinks(content, navigator)
   const to_http$ = O.merge(
     merged.HTTP,
-    to_http_session$,
-  ).publish().refCount()
+      //.letBind(traceStartStop('trace create/listing/http/merged.HTTP')),
+    to_http_session$//
+      //.letBind(traceStartStop('trace create/listing/http/to_http_session$'))
+  )
+  //.letBind(traceStartStop('trace create/listing/http'))
+  .publish().refCount()
 
   // to_http$.subscribe(x => {
   //   console.log('to_http', x)
@@ -284,7 +278,7 @@ function main(sources, inputs) {
             .map(val => {
               return getDefaultSession(val)
             }),
-          stored_session$
+          stored$
             .map(x => {
               return x
             }),
@@ -304,15 +298,15 @@ function main(sources, inputs) {
               }
             }
           }),
-        push_state$
-          .filter(is_invalid)
-          .map(x => {
-            return {
-              pathname: `/create`,
-              type: 'replace',
-              action: `REPLACE`,
-            }
-          })
+        // push_state$
+        //   .filter(is_invalid)
+        //   .map(x => {
+        //     return {
+        //       pathname: `/create`,
+        //       type: 'replace',
+        //       action: `REPLACE`,
+        //     }
+        //   })
       )
     )
     .do(x => {

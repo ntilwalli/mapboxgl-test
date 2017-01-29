@@ -190,7 +190,7 @@ function model(actions, inputs) {
         time = info
       }
 
-      console.log('initializing', time)
+      //console.log('initializing', time)
       const init = {
         active: undefined,
         input_hour: time ? time.hour === 0 ? 12 : time.hour > 12 ? time.hour - 12 : time.hour : undefined,
@@ -204,7 +204,7 @@ function model(actions, inputs) {
       return reducer$.startWith(Immutable.Map(init)).scan((acc, f: Function) => f(acc))
     })
     .map((x: any) => x.toJS())
-    .do(x => console.log('time input', x))
+    //.do(x => console.log('time input', x))
     .publishReplay(1).refCount()
 }
 

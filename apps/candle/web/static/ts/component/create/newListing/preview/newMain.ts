@@ -43,8 +43,8 @@ function intent(sources) {
   const save_exit$ = DOM.select('.appSaveExitButton').events('click').publish().refCount()
 
 
-  const attempt_post$ = DOM.select('.appPostButton').events('click')
-  const attempt_stage$ = DOM.select('.appStageButton').events('click')
+  const attempt_post$ = DOM.select('.appPostButton').events('click').publish().refCount()
+  const attempt_stage$ = DOM.select('.appStageButton').events('click').publish().refCount()
 
   const post_streams = processHTTP(sources, 'postListing')
   const stage_streams = processHTTP(sources, 'stageListing')
@@ -52,6 +52,10 @@ function intent(sources) {
   const post_error$ = post_streams.error$
   const stage_success$ = stage_streams.success$
   const stage_error$ = stage_streams.error$
+
+  const login$ = DOM.select('.appLoginButton').events('click').publish().refCount()
+  const signup$ = DOM.select('.appSignupButton').events('click').publish().refCount()
+
 
   return {
     session$,
@@ -66,7 +70,9 @@ function intent(sources) {
     post_success$,
     post_error$,
     stage_success$,
-    stage_error$
+    stage_error$,
+    login$,
+    signup$
   }
 }
 
@@ -226,7 +232,37 @@ export function main(sources, inputs) {
         action: 'REPLACE',
         type: 'replace'
       }
+    }).publish().refCount()
+
+  const to_message_bus$ = O.merge(
+    actions.login$.withLatestFrom(state$, (_, state) => {
+      return ({to: `main`, message: {type: 'showLogin', data: {
+        redirect_url: '/create/listing'
+      }}})
+    }),
+    actions.signup$.withLatestFrom(state$, (_, state) => {
+      return ({to: `main`, message: {type: 'showSignup', data: {
+        redirect_url: '/create/listing'
+      }}})
     })
+  )
+
+  const to_storage$ = O.merge(
+    O.merge(
+      actions.login$, 
+      actions.signup$
+    ).withLatestFrom(state$, (_, state: any) => {
+      return {
+        action: `setItem`,
+        key: `create_listing_session`,
+        value: JSON.stringify(state.session)
+      }
+    }),
+    to_router$.mapTo({
+      action: `removeItem`,
+      key: `create_listing_session`,
+    })
+  )
 
   return {
     DOM: vtree$,
@@ -270,6 +306,8 @@ export function main(sources, inputs) {
             }
           }
         })
-    )
+    ),
+    Storage: to_storage$,
+    MessageBus: to_message_bus$
   }
 }

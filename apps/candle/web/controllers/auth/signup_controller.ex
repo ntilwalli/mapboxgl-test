@@ -5,7 +5,7 @@ defmodule Candle.SignupController do
   alias Candle.Auth.Helpers
   alias Incoming.Authorization.Signup, as: SignupMessage
 
-  #plug :save_redirect
+  plug :save_redirect
   plug Ueberauth
 
   def index(conn, params, current_user, _claims) do
@@ -24,7 +24,8 @@ defmodule Candle.SignupController do
               {:ok, user} ->
                 conn
                 |> Guardian.Plug.sign_in(user)
-                |> render(message: %{type: "success"})
+                |> manage_redirect
+                #|> render(message: %{type: "success"})
             end
         end
       _ ->  

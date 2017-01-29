@@ -23,7 +23,7 @@ defmodule Candle.Auth.Helpers do
   end
 
   def save_redirect(conn, _) do
-    IO.inspect {:save_redirect, conn.params}
+    #IO.inspect {:save_redirect, conn.params}
     case conn.params["redirect_url"] do
       nil -> conn
       url -> 
@@ -37,10 +37,11 @@ defmodule Candle.Auth.Helpers do
         conn
         |> Phoenix.Controller.redirect(conn, to: "/")
       url -> 
-        IO.inspect {:redirecting_to, url}
-        Plug.Conn.delete_session(conn, "redirect_url")
+        #IO.inspect {:redirecting_to, url}
 
         conn
+        |> Plug.Conn.delete_session("redirect_url")
+        |> Plug.Conn.put_resp_cookie("redirect_url", "", max_age: -1)
         |> Phoenix.Controller.redirect(to: url)
     end
   end

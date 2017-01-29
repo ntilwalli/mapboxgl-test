@@ -10,31 +10,19 @@ import {
   renderContactInfo
 }  from '../../../helpers/listing/renderBootstrap'
 
-function renderPostStageButtons(state) {
-  const {authorization} = state
-  const disabled = !authorization
-  return div('.row', [
-    div('.col-12', [
-      div('.row.mb-4', [
-        div(`.col-12.d-fx-a-c`, [
-          div('.mr-4', ['Staging a listing allows you to invite/confirm performers before going live.  Would you like to stage this listing?']),
-          button(`.appStageButton.btn.btn-outline-warning.d-fx-a-c.fx-j-c.p-0`, {class: {disabled}, attrs: {disabled}, style: {height: "2rem", 'min-width': "5rem"}}, [
-            div('.d-flex.justify-content-center.align-items-center.h-100.w-100', [
-              `Stage`
-            ])
+function renderAuthorizationButtons(state) {
+  return div('.authorization-section', {style: {display: state.authorization ? 'none' : 'flex'}}, [
+    div('.d-flex.flex-column.overlay', [
+      div('.mb-4', ["You must be logged in to post a listing.  Sign-up or login now and we'll bring you right back here.  Don't worry you won't lose any work."]),
+      div('.d-flex.justify-content-around', [
+        button(`.appLoginButton.btn.btn-outline-success.d-fx-a-c.fx-j-c.p-0`, {style: {height: "2rem", 'min-width': "5rem"}}, [
+          div('.d-flex.justify-content-center.align-items-center.h-100.w-100', [
+            `Log-in`
           ])
-        ])
-      ]),
-      div('.row.mb-4', [
-        div('.col-10.d-flex.fx-j-c.fw-bold', ['Or']),
-      ]),
-      div('.row', [
-        div(`.col-12.d-fx-a-c`, [
-          div('.mr-4', [`Posting makes your listing live, enabling you to distribute links/send out invitations and makes events discoverable on search. Would you like to post this event?`]),
-          button(`.appPostButton.btn.btn-outline-success.d-fx-a-c.fx-j-c.p-0`, {class: {disabled}, attrs: {disabled}, style: {height: "2rem", 'min-width': "5rem"}}, [
-            div('.d-flex.justify-content-center.align-items-center.h-100.w-100', [
-              `Post`
-            ])
+        ]),
+        button(`.appSignupButton.btn.btn-outline-success.d-fx-a-c.fx-j-c.p-0`, {style: {height: "2rem", 'min-width': "5rem"}}, [
+          div('.d-flex.justify-content-center.align-items-center.h-100.w-100', [
+            `Sign-up`
           ])
         ])
       ])
@@ -42,7 +30,46 @@ function renderPostStageButtons(state) {
   ])
 }
 
+function renderPostStageButtons(state) {
+  const {authorization} = state
+  const disabled = !authorization
+  return div('.pos-relative', [
+    div('.row',  {class: {disabled}}, [
+      div('.col-12', [
+        h6('.mb-xs', ['Stage or post']),
+        div('.row.mb-4', [
+          div(`.col-12.d-fx-a-c`, [
+            div('.mr-4', ['Staging a listing allows you to invite/confirm performers before going live.  Would you like to stage this listing?']),
+            button(`.appStageButton.btn.btn-outline-warning.d-fx-a-c.fx-j-c.p-0`, {class: {disabled}, attrs: {disabled}, style: {height: "2rem", 'min-width': "5rem"}}, [
+              div('.d-flex.justify-content-center.align-items-center.h-100.w-100', [
+                `Stage`
+              ])
+            ])
+          ])
+        ]),
+        div('.row.mb-4', [
+          div('.col-10.d-flex.fx-j-c.fw-bold', ['Or']),
+        ]),
+        div('.row', [
+          div(`.col-12.d-fx-a-c`, [
+            div('.mr-4', [`Posting makes your listing live, enabling you to distribute links/send out invitations and makes events discoverable on search. Would you like to post this event?`]),
+            button(`.appPostButton.btn.btn-outline-success.d-fx-a-c.fx-j-c.p-0`, {class: {disabled}, attrs: {disabled}, style: {height: "2rem", 'min-width': "5rem"}}, [
+              div('.d-flex.justify-content-center.align-items-center.h-100.w-100', [
+                `Post`
+              ])
+            ])
+          ])
+        ])
+      ])
+    ]),
+    renderAuthorizationButtons(state)
+  ])
+}
+
+
+
 function renderButtons(state) {
+  //return state.authorization ? renderPostStageButtons(state) : renderAuthorizationButtons(state)
   return renderPostStageButtons(state)
 }
 
@@ -184,8 +211,7 @@ export default function view(info) {
       ]),
     ]),
     div('.row', [
-      div('.col-12', {class: {disabled}}, [
-        h6('.mb-xs', ['Stage or post']),
+      div('.col-12', [
         renderButtons(state)  
       ])
     ])

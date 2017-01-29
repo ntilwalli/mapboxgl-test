@@ -276,12 +276,16 @@ address {
   align-items: center;
 }
 
+.pos-relative {
+  position: relative;
+}
+
 .ws-wrap {
   white-space: initial;
 }
 
 .disabled {
-  opacity: .4;
+  opacity: .25;
   pointer-events: none;
 }
 

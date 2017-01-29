@@ -101,11 +101,12 @@ function main(sources) {
         geoService.HTTP, 
         authorizationService.HTTP, 
         modal.HTTP
-      ),
-      // .do(x => {
-      //   console.log(`main/http sink`, x)
-      // }),
+      )
+      .do(x => {
+        console.log(`main/http sink`, x)
+      }),
     Router: O.merge(out.Router, toRouter$, modal.Router)
+      .delay(1)
       .do(x => {
         console.log(`main/router sink`, x)
       }),

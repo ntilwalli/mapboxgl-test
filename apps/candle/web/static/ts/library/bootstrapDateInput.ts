@@ -150,7 +150,7 @@ function model(actions, inputs) {
 
   return inputs.props$
     .switchMap(date => {
-      console.log('initializing', date)
+      //console.log('initializing', date)
       const init = {
         active: undefined,
         calendar_month: date ? date.month() : moment().month(),
@@ -163,7 +163,7 @@ function model(actions, inputs) {
       return reducer$.startWith(Immutable.Map(init)).scan((acc, f: Function) => f(acc))
     })
     .map((x: any) => clone(x.toJS()))
-    .do(x => console.log('date input', x))
+    //.do(x => console.log('date input', x))
     .publishReplay(1).refCount()
 }
 
