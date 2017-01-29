@@ -342,7 +342,6 @@ defmodule User.Individual do
 
   def handle_call({:listing_new, listing}, _from, %{user: user, listing_registry: l_reg} = state) do
     out = Listing.Registry.create(l_reg, listing, user)
-    out = Listing.Registry.create(l_reg, listing, user)
     {:reply, out, state}
   end
 

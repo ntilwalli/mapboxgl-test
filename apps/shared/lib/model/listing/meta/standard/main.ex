@@ -29,7 +29,6 @@ defmodule Meta.Standard do
   ]
 
   @required_fields [:type]
-  @required [:type, :name, :event_types, :categories]
   def changeset(schema, params \\ :empty) do
     schema
     |> cast(params, @allowed_fields)

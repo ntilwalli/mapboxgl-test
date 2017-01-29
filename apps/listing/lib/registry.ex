@@ -14,6 +14,7 @@ defmodule Listing.Registry do
   end
 
   def create(server, listing, user) do
+    #IO.inspect {:client_create_listing, listing}
     GenServer.call(server, {:create, listing, user})
   end
 
@@ -149,6 +150,7 @@ defmodule Listing.Registry do
   end
 
   defp create_listing(listing, user, w_sup) do
+    #IO.inspect {:create_listing, listing}
     {:ok, listing} = Shared.Manager.ListingManager.add(listing, user)
     {pid, ref} = start_listing(listing, w_sup)
     {:ok, {pid, ref, listing}}

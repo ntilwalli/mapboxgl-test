@@ -7,7 +7,7 @@ import {EventTypes, EventTypeToProperties} from '../../../../listingTypes'
 
 import {fromCheckbox, processCheckboxArray, has, metaPropertyToDefaultFunction} from '../../../helpers/listing/utils'
 
-const always_properties = ['name', 'event_types', 'categories', 'description']
+const always_properties = ['name', 'event_types', 'categories', 'description', 'type']
 function applyChange(session, val) {
   session.listing.meta.event_types = val
 

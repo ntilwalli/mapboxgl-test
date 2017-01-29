@@ -23,6 +23,7 @@ function intent(sources) {
   const enter_pressed$ = keydown$
     .filter(({keyCode}) => keyCode === ENTER_KEYCODE)
 
+  const root_click = DOM.select(':root').events('click')
   const input_blur$ = DOM.select('.appTimeInput').events('blur')
     .do(ev => console.log('blur$'))
     .publish().refCount()

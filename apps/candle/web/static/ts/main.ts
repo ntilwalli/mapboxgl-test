@@ -101,10 +101,10 @@ function main(sources) {
         geoService.HTTP, 
         authorizationService.HTTP, 
         modal.HTTP
-      ),
-      // .do(x => {
-      //   console.log(`main/http sink`, x)
-      // }),
+      )
+      .do(x => {
+        console.log(`main/http sink`, x)
+      }),
     Router: O.merge(out.Router, toRouter$, modal.Router)
       .delay(1),  // This is IMPORTANT in the case of double Routing, HTTP stream gets cut off without this for some reason, this ensures route is pushed on next event loop turn
       // .do(x => {
