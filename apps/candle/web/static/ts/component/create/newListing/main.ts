@@ -244,16 +244,14 @@ function main(sources, inputs) {
 
   const state$ = model(actions, {...inputs, to_http$: waiting$})
   const vtree$ = view(state$, components)
-    .letBind(traceStartStop('trace create/listing/dom'))
+    //.letBind(traceStartStop('trace create/listing/dom'))
 
   //waiting$.attach(to_http$)
 
   const merged = mergeSinks(content, navigator)
   const to_http$ = O.merge(
     merged.HTTP,
-      //.letBind(traceStartStop('trace create/listing/http/merged.HTTP')),
     to_http_session$//
-      //.letBind(traceStartStop('trace create/listing/http/to_http_session$'))
   )
   //.letBind(traceStartStop('trace create/listing/http'))
   .publish().refCount()
@@ -308,10 +306,10 @@ function main(sources, inputs) {
         //     }
         //   })
       )
-    )
-    .do(x => {
-      console.log(`to router`, x)
-    }),
+    ),
+    // .do(x => {
+    //   console.log(`to router`, x)
+    // }),
     MessageBus: O.merge(
       merged.MessageBus,
       O.merge(actions.error_retrieve$, actions.error_create$)
