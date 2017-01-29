@@ -8,18 +8,13 @@ import {notRead, isThisListing, isListingObject, inflate as inflateNotification}
 
 function intent(sources) {
   const {DOM, Phoenix} = sources
-  console.log('Phoenix', Phoenix)
-  const notifications$ = Phoenix.Channels.select('user:39').on('notifications')
-    .map(x => {
-      return x.notifications.map(x => inflateNotification(x))
-    })
+
   return {
-    notifications$
   }
 }
 
 function reducers(actions, inputs) {
-  const notifications_r = actions.notifications$.map(value => state => {
+  const notifications_r = inputs.notifications$.map(value => state => {
     const listing_result = state.get('listing_result')
     const out = value.filter(x => isThisListing(x, listing_result))
     const out2 = out.filter(x => {
@@ -86,13 +81,24 @@ function view(state$) {
 export default function main(sources, inputs) {
 
   const actions = intent(sources)
-  const state$ = model(actions, inputs)
+
+  const notifications$ = inputs.Authorization.status$.filter(Boolean)
+    .switchMap(user => {
+      return sources.Phoenix.Channels.select('user:' + user.id).on('notifications')
+    })
+    .map(x => {
+      return x.notifications.map(x => inflateNotification(x))
+    })
+
+  const state$ = model(actions, {...inputs, notifications$})
 
   return {
     DOM: view(state$),
-    Phoenix: O.of({
-      type: 'join',
-      channel: 'user:39'
+    Phoenix: inputs.Authorization.status$.filter(Boolean).map(user => {
+      return {
+        type: 'join',
+        channel: 'user:' + user.id
+      }
     }).map(x => {
       return x
     })

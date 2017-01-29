@@ -36,6 +36,7 @@ export const getCategoriesDefault = () => [CategoryTypes.COMEDY]
 export const getEventTypesDefault = () => [EventTypes.OPEN_MIC]
 export const getNameDefault = () => undefined
 export const getDescriptionDefault = () => undefined
+export const getMetaTypeDefault = () => "standard"
 
 export const metaPropertyToDefaultFunction = {}
 metaPropertyToDefaultFunction[MetaPropertyTypes.PERFORMER_SIGN_UP] = getPerformerSignupDefault
@@ -52,8 +53,6 @@ metaPropertyToDefaultFunction['name'] = getNameDefault
 metaPropertyToDefaultFunction['description'] = getDescriptionDefault
 metaPropertyToDefaultFunction['categories'] = getCategoriesDefault
 metaPropertyToDefaultFunction['event_types'] = getEventTypesDefault
-
-
 
 function addOpenMicDefaults(out) {
   out[MetaPropertyTypes.PERFORMER_SIGN_UP] = getPerformerSignupDefault()
@@ -80,6 +79,7 @@ function addShowDefaults(out) {
 
 function getDefaultListingMeta() {
   const out = {}
+  out['type'] = getMetaTypeDefault()
   out['event_types'] = getEventTypesDefault()
   out['name'] = getNameDefault()
   out['categories'] = getCategoriesDefault()

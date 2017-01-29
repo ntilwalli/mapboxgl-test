@@ -146,18 +146,19 @@ function main(sources, inputs) {
         })
     ),
     HTTP: retrieve$,
-    Storage: state$
-      .filter((state: any) => state.searchDateTime && state.results && state.filters)
-      .map((state: any) => ({
-        results: state.results,
-        searchDateTime: state.searchDateTime.toDate(),
-        filters: state.filters
-      }))
-      .map(val => ({
-        action: "setItem",
-        key: "calendar/oneDay",
-        value: JSON.stringify(val)
-      })),
+    Storage: O.never()
+    // state$
+    //   .filter((state: any) => state.searchDateTime && state.results && state.filters)
+    //   .map((state: any) => ({
+    //     results: state.results,
+    //     searchDateTime: state.searchDateTime.toDate(),
+    //     filters: state.filters
+    //   }))
+    //   .map(val => ({
+    //     action: "setItem",
+    //     key: "calendar/oneDay",
+    //     value: JSON.stringify(val)
+    //   })),
       //.filter(x => false)
       //.do(x => console.log(`to storage:`, x))
   }

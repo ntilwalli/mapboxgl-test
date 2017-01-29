@@ -71,12 +71,12 @@ defmodule User.Helpers do
           s.begins <= ^ends,
         select: s
 
-    #IO.inspect {:query, query}
+    #IO.inspect {:search_query, query}
 
     out = Repo.all(query)
     # IO.puts "search query/out"
     # IO.inspect query
-    # IO.inspect out
+    #IO.inspect {:search_results, out}
     out
   end
 

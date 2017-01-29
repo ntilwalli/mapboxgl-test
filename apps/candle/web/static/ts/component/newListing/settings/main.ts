@@ -33,10 +33,7 @@ function drillInflate(result) {
 
 function intent(sources) {
   const {DOM, Phoenix} = sources
-  console.log('Phoenix', Phoenix)
-  const notifications$ = Phoenix.Channels.select('user:39').on('notifications')
   return {
-    notifications$
   }
 }
 
@@ -123,7 +120,11 @@ export default function main(sources, inputs) {
     O.never()
   )
 
-  const state$ = model(sources, {...inputs, session$})
+  const notifications$ = inputs.Authorization.status$.filter(Boolean).switchMap(user => {
+    return sources.Phoenix.Channels.select('user:' + user.id).on('notifications')
+  })
+
+  const state$ = model(sources, {...inputs, notifications$, session$})
 
   const content$ = navigator.output$
     .map(page => {

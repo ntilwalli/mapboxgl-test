@@ -13,7 +13,12 @@ const onlyError = x => x.type === "error"
 const onlySingleStandard = x => {
   //console.log(x)
   const listing = x.listing
-  return listing.type === "single" && listing.meta.type === "standard" && listing.cuando.begins
+  //if (listing.type === "single" && listing.meta.type === "standard" && listing.cuando.begins) {
+  if (listing.type === "single" && listing.cuando.begins) {
+    return true
+  } else {
+    return false
+  }
 }
 
 function drillInflate(result) {
@@ -27,7 +32,12 @@ export default function intent(sources) {
   const success$ = good$
     .filter(onlySuccess)
     .pluck(`data`)
-    .map(x => x.filter(onlySingleStandard).map(drillInflate))
+    .map(x => {
+      const tmp1 = x.map(l => l.listing.id)
+      const tmp2 = x.map(l => l.listing)
+      const out = x.filter(onlySingleStandard).map(drillInflate)
+      return out
+    })
     .publish().refCount()
 
   // const error$ = good$
