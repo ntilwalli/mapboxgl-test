@@ -73,6 +73,17 @@ function intent(sources) {
       return x
     })
 
+  const save_stored = processHTTP(sources, `saveStoredSession`)
+  const success_save_stored$ = save_stored.success$
+    .map(x => {
+      return x
+    })
+  const error_save_stored$ = save_stored.error$
+    .map(x => {
+      return x
+    })
+
+
   const push_state$ = Router.history$.map(x => {
     return x.state
   }).publishReplay(1).refCount()
@@ -85,6 +96,8 @@ function intent(sources) {
     error_retrieve$,
     success_create$,
     error_create$,
+    success_save_stored$,
+    error_save_stored$,
     push_state$
   }
 }
@@ -157,12 +170,28 @@ function main(sources, inputs) {
 
   const yes_auth$ = inputs.Authorization.status$
     .filter(Boolean)
+    .map(x => {
+      return x
+    })
   const no_auth$ = inputs.Authorization.status$
     .filter(x => !x)
+    .map(x => {
+      return x
+    })
 
-  const from_storage$ = yes_auth$.switchMap(_ => sources.Storage.local.getItem('create_listing_session').take(1)).publishReplay(1).refCount()
+  const from_storage$ = yes_auth$.switchMap(_ => sources.Storage.local.getItem('create_listing_session').take(1))
+    .map(x => {
+      return x
+    })
+    .publishReplay(1).refCount()
   const stored$ = from_storage$.filter(Boolean).map((x: any) => JSON.parse(x))
+    .map(x => {
+      return x
+    })
   const not_stored$ = from_storage$.filter(x => !x)
+    .map(x => {
+      return x
+    })
 
   const auth_push_state$ = not_stored$
     .switchMap(_ => push_state$)
@@ -196,17 +225,30 @@ function main(sources, inputs) {
       }
     }).publishReplay(1).refCount()
 
-  const to_http_session$ = O.merge(to_new$, to_retrieve$)
+
+  const to_save_stored$ = stored$.map(session => {
+    return {
+      url: `/api/user`,
+      method: `post`,
+      category: `saveStoredSession`,
+      send: {
+        route: `/listing_session/save`,
+        data: session
+      }
+    }
+  })
+
+  const to_http_session$ = O.merge(to_save_stored$, to_new$, to_retrieve$)
     .delay(1)
     .publish().refCount()
 
   const no_auth_push_state$ = no_auth$.switchMap(_ => push_state$)
     .publishReplay(1).refCount()
 
-  const to_render$ = O.merge(auth_push_state$, no_auth_push_state$)
-    .filter((x: any) => should_render(x))
-    .pluck(`data`)
-    .publishReplay(1).refCount()
+  const to_render$ = O.merge(
+    O.merge(auth_push_state$.filter(should_render), no_auth_push_state$.filter(should_render))
+      .pluck(`data`)
+  ).publishReplay(1).refCount()
 
   const no_auth_default_session$ = no_auth_push_state$
     .filter(should_create_new)
@@ -244,26 +286,39 @@ function main(sources, inputs) {
 
   const state$ = model(actions, {...inputs, to_http$: waiting$})
   const vtree$ = view(state$, components)
-    //.letBind(traceStartStop('trace create/listing/dom'))
 
   //waiting$.attach(to_http$)
 
   const merged = mergeSinks(content, navigator)
-  const to_http$ = O.merge(
-    merged.HTTP,
-    to_http_session$//
-  )
-  //.letBind(traceStartStop('trace create/listing/http'))
-  .publish().refCount()
+  // const mergedRouter = merged.Router
+  //   .letBind(traceStartStop('mergedRouter'))
+  //   .publish().refCount()
+  // merged = {
+  //   ...merged,
+  //   Router: mergedRouter
+  // }
 
-  // to_http$.subscribe(x => {
-  //   console.log('to_http', x)
+  // mergedRouter.subscribe(x => {
+  //   console.log('mergedRouter', x)
   // })
+
+  const to_storage$ = O.merge(
+    merged.Storage,
+    actions.success_save_stored$.mapTo({
+      action: `removeItem`,
+      key: `create_listing_session`,
+    })
+  )
+
+
 
   const out = {
     ...merged,
     DOM: vtree$,
-    HTTP: to_http$,
+    HTTP: O.merge(
+      merged.HTTP,
+      to_http_session$
+    ),
     Router: O.merge(
       merged.Router,
       O.merge(
@@ -276,10 +331,10 @@ function main(sources, inputs) {
             .map(val => {
               return getDefaultSession(val)
             }),
-          stored$
+          actions.success_save_stored$
             .map(x => {
               return x
-            }),
+            }).delay(1),  // delay to allow Storage key deletion to occur first
           no_auth_default_session$
             .map(x => {
               return x
@@ -306,10 +361,12 @@ function main(sources, inputs) {
         //     }
         //   })
       )
-    ),
-    // .do(x => {
-    //   console.log(`to router`, x)
-    // }),
+    )
+    .do(x => {
+      console.log(`to router`, x)
+    })
+    .delay(1),
+    Storage: to_storage$,
     MessageBus: O.merge(
       merged.MessageBus,
       O.merge(actions.error_retrieve$, actions.error_create$)

@@ -29,10 +29,14 @@ function intent(sources) {
   const {DOM} = sources
   const switch$ = DOM.select('.appTreeSwitch').events('click')
   const edit$ = DOM.select('.appEditListing').events('click')
-    .map(ev => ev.target.listing)
+    .map(ev => {
+      return ev.ownerTarget.listing
+    })
 
   const go_to_listing$ = DOM.select('.appGoToListing').events('click')
-    .map(ev => ev.target.listing)
+    .map(ev => {
+      return ev.ownerTarget.listing
+    })
 
   return {
     switch$,

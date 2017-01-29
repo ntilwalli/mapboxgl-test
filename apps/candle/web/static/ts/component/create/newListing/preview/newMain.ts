@@ -272,6 +272,7 @@ export function main(sources, inputs) {
       post$
     ),
     Router: O.merge(
+
       to_router$,
       actions.go_to_basics$.withLatestFrom(state$, (_, state) => {
           return state

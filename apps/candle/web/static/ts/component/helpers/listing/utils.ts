@@ -312,20 +312,19 @@ export function inflateSession(session) {
   if (properties && listing) {
     const {type} = listing
 
-    if (session.properties.cuando.date) {
-      session.properties.cuando.date = moment(session.properties.cuando.date)
-    }
+    if (session.properties.cuando) {
+      if (session.properties.cuando.date) {
+        session.properties.cuando.date = moment(session.properties.cuando.date)
+      }
 
-    if (session.properties.cuando.recurrence) {
-      inflateRecurrence(session.properties.cuando.recurrence) 
+      if (session.properties.cuando.recurrence) {
+        inflateRecurrence(session.properties.cuando.recurrence) 
+      }
     }
 
     if (type === ListingTypes.RECURRING) {
       if (session.listing.cuando) { 
         inflateCuando(session.listing.cuando) 
-      }
-      if (session.properties.cuando.recurrence) {
-        inflateRecurrence(session.properties.cuando.recurrence) 
       }
     } else {
       if (session.listing.cuando) {
@@ -352,11 +351,13 @@ export function deflateSession(session) {
   if (properties && listing) {
     const {type} = listing
 
-    if (properties.cuando.date) {
-      properties.cuando.date = properties.cuando.date.toDate().toISOString()
-    }
+    if (properties.cuando) {
+      if (properties.cuando.date) {
+        properties.cuando.date = properties.cuando.date.toDate().toISOString()
+      }
 
-    if (properties.cuando.recurrence) { deflateRecurrence(properties.cuando.recurrence) }
+      if (properties.cuando.recurrence) { deflateRecurrence(properties.cuando.recurrence) }
+    }
 
     if (type === ListingTypes.RECURRING) {
       if (listing.cuando) { deflateCuando(session.listing.cuando) }

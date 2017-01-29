@@ -168,16 +168,16 @@ defmodule User.Individual do
     end
   end
 
-  def handle_call(:new_listing_session, _from, %{user: user} = state) do
-    session = Ecto.build_assoc(user, :listing_sessions, listing: nil)
-    {:ok, result} = Shared.Repo.insert(session)
-    {:reply, {:ok, result}, state}
-  end
-
   def handle_call(:settings, _from, %{user: user} = state) do
     result = Shared.Repo.get(Shared.Settings, user.id)
     # IO.inspect "settings"
     # IO.inspect result
+    {:reply, {:ok, result}, state}
+  end
+
+  def handle_call(:new_listing_session, _from, %{user: user} = state) do
+    session = Ecto.build_assoc(user, :listing_sessions)
+    {:ok, result} = Shared.Repo.insert(session)
     {:reply, {:ok, result}, state}
   end
 
@@ -211,6 +211,23 @@ defmodule User.Individual do
         {:reply, {:error, "Sent session params invalid"}, state}
     end
   end
+
+  def handle_call({:save_listing_session, params} , _from, %{user: user, listing_registry: l_reg} = state) do
+    IO.inspect {:save_listing_session, params}
+    session = Ecto.build_assoc(user, :listing_sessions)
+    session_cs = ListingSessionMessage.changeset(session, params)
+    case session_cs.valid? do
+      true -> 
+        #session = apply_changes(session_cs)
+        {:ok, session_info} = Shared.Repo.insert(session_cs)
+        #IO.inspect {:session_save_ok, session_info}
+        {:reply, {:ok, session_info}, state}
+      false -> 
+        IO.inspect {:session_save_error, session_cs}
+        {:reply, {:error, "Sent session params invalid"}, state}
+    end
+  end
+
 
   def handle_call({:delete_listing_session, id}, _from, %{user: user} = state) do
     session = Ecto.build_assoc(user, :listing_sessions, id: id)
