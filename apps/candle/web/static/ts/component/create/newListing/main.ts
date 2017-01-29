@@ -238,7 +238,7 @@ function main(sources, inputs) {
     }
   })
 
-  const to_http_session$ = O.merge(to_save_stored$, to_new$, to_retrieve$)
+  const to_http_session$ = O.merge(to_save_stored$, to_retrieve$)
     .delay(1)
     .publish().refCount()
 
@@ -250,8 +250,10 @@ function main(sources, inputs) {
       .pluck(`data`)
   ).publishReplay(1).refCount()
 
-  const no_auth_default_session$ = no_auth_push_state$
-    .filter(should_create_new)
+  const no_auth_default_session$ = O.merge(
+    no_auth_push_state$,
+    auth_push_state$
+  ).filter(should_create_new)
     .map(x => {
       return getDefaultSession()
     })

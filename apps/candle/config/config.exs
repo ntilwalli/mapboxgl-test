@@ -72,6 +72,7 @@ config :candle, ecto_repos: [Shared.Repo]
 # In your config/config.exs file
 config :candle, Candle.Mailer,
   adapter: Bamboo.SparkPostAdapter,
+  #api_key:
   server: "smtp.sparkpostmail.com",
   port: 587,
   username: System.get_env("SPARKPOST_USERNAME"),
