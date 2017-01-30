@@ -2,7 +2,7 @@ import {Observable as O} from 'rxjs'
 import Immutable = require('immutable')
 import {div, span, button, input, select, option} from '@cycle/dom'
 import isolate from '@cycle/isolate'
-import {combineObj, createProxy, between, notBetween, global_uid} from '../utils'
+import {combineObj, createProxy, between, notBetween, globalUID} from '../utils'
 import moment = require('moment')
 import deepEqual = require('deep-equal')
 import clone = require('clone')
@@ -15,7 +15,7 @@ const TAB_KEYCODE = 9
 
 function intent(sources) {
   const {DOM} = sources
-  const guid = global_uid()
+  const guid = globalUID()
 
   const click$ = DOM.select('.appTimeInput').events('click').publish().refCount()
   const keydown$ = DOM.select('.appTimeInput').events('keydown').publish().refCount()
