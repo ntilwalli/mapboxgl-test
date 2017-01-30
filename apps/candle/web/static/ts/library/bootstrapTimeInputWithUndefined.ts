@@ -2,8 +2,7 @@ import {Observable as O} from 'rxjs'
 import Immutable = require('immutable')
 import {div, span, button, input, select, option} from '@cycle/dom'
 import isolate from '@cycle/isolate'
-import {combineObj, createProxy, between, notBetween} from '../utils'
-import DateInputMonthCalendar from '../library/dateInputMonthCalendar'
+import {combineObj, createProxy, between, notBetween, global_uid} from '../utils'
 import moment = require('moment')
 import deepEqual = require('deep-equal')
 import clone = require('clone')
@@ -16,30 +15,25 @@ const TAB_KEYCODE = 9
 
 function intent(sources) {
   const {DOM} = sources
+  const guid = global_uid()
 
-  const click$ = DOM.select('.appTimeInput').events('click')
+  const click$ = DOM.select('.appTimeInput').events('click').publish().refCount()
   const keydown$ = DOM.select('.appTimeInput').events('keydown').publish().refCount()
 
   const enter_pressed$ = keydown$
     .filter(({keyCode}) => keyCode === ENTER_KEYCODE)
+  const esc_pressed$ = keydown$
+    .filter(({keyCode}) => keyCode === ESC_KEYCODE)
 
-  const root_click = DOM.select(':root').events('click')
-  const input_blur$ = DOM.select('.appTimeInput').events('blur')
-    .do(ev => console.log('blur$'))
-    .publish().refCount()
-  const dropdown_mousedown$ = DOM.select('.appTimeDropdown').events('mousedown')
-    .do(x => console.log('mousedown$'))
-    .publish().refCount()
-  const dropdown_mouseup$ = DOM.select('.appTimeDropdown').events('mouseup')
-    .do(x => console.log('mouseup$'))
-    .publish().refCount()
+  const click_elsewhere$ = DOM.select('body').events('click')
+    .filter(ev => {
+      return ev.guid !== guid
+    })
+    .withLatestFrom(click$, (_, ev) => {
+      return ev
+    })
 
-  const blur_to_dropdown$ = input_blur$
-    //.do(x => console.log(`blur to dropdown`))
-    .let(between(dropdown_mousedown$, dropdown_mouseup$))
-  const blur_to_elsewhere$ = input_blur$
-    //.do(x => console.log(`blur to elsewhere`))
-    .let(notBetween(dropdown_mousedown$, dropdown_mouseup$))
+  const dropdown_click$ = DOM.select('.appTimeDropdown').events('click')
 
   const hour$ = sources.DOM.select(`.appHourSelect`).events('change')
     .map(ev => {
@@ -61,11 +55,16 @@ function intent(sources) {
   return {
     click$,
     clear$,
-    blur_to_dropdown$,
-    close_dropdown$: O.merge(blur_to_elsewhere$, enter_pressed$),
+    //blur_to_dropdown$,
+    close_dropdown$: O.merge(click_elsewhere$, enter_pressed$, esc_pressed$),
     hour$,
     minute$,
-    meridiem$
+    meridiem$,
+    add_event_guid$: O.merge(click$, dropdown_click$)
+      .map(ev => ({
+        event: ev,
+        guid
+      }))
   }
 }
 
@@ -205,7 +204,9 @@ function model(actions, inputs) {
       return reducer$.startWith(Immutable.Map(init)).scan((acc, f: Function) => f(acc))
     })
     .map((x: any) => x.toJS())
-    //.do(x => console.log('time input', x))
+    .do(x => {
+      console.log('time input', x)
+    })
     .publishReplay(1).refCount()
 }
 
@@ -278,15 +279,14 @@ function view(state$, props_style_class) {
 
 export default function  main(sources, props$, style_class?) {
   const actions = intent(sources)
-  const calendar_date$ = createProxy()
-  const state$ = model(actions, {props$, calendar_date$})
+  const state$ = model(actions, {props$})
 
   return {
     DOM: view(state$, style_class),
-    Global: actions.blur_to_dropdown$.map(ev => {
+    Global: actions.add_event_guid$.map(data => {
       return {
-        type: 'preventDefault',
-        data: ev
+        type: 'addEventGuid',
+        data
       }
     }),
     output$: state$

@@ -96,6 +96,20 @@ export default function makeGlobalsDriver() {
       }).subscribe(() => {})
     
     sharedSource$
+      .filter(x => x.type === `stopPropagation`)
+      .map(x => x.data)
+      .map(ev => {
+        ev.stopPropagation()
+      }).subscribe(() => {})
+
+    sharedSource$
+      .filter(x => x.type === `addEventGuid`)
+      .map(x => x.data)
+      .do(data => {
+        data.event.guid = data.guid
+      }).subscribe(() => {})
+
+    sharedSource$
       .filter(x => x.type === `preventWindowBlur`)
       .do(x => console.log(`preventWindowBlur`))
       .map(x => x.data)
