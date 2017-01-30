@@ -32,7 +32,6 @@ defmodule Candle.PresignupController do
                     |> Guardian.Plug.sign_in(user)
                     |> Plug.Conn.delete_session("partial_authorization")
                     #|> Plug.Conn.delete_session("redirect_url")
-                    |> Plug.Conn.put_resp_cookie("redirect_url", "", max_age: -1)
                     |> manage_redirect
                     #|> render(message: %{type: "success"})
                 end

@@ -8,7 +8,7 @@ import {combineObj, mergeSinks, createProxy, traceStartStop, processHTTP, compon
 //import AdminNav from './adminNav'
 import AdminNav from '../../library/navigators/listing'
 import ListingProfile from './profile/main'
-import Settings from './settings/main'
+import Settings from './settings/parentMain'
 import Notifications from './notifications/main'
 import TimeoutLoader from '../../library/timeoutLoader'
 import WTF from '../../library/wtf'

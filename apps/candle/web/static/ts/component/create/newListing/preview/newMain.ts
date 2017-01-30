@@ -258,10 +258,10 @@ export function main(sources, inputs) {
         value: JSON.stringify(state.session)
       }
     }),
-    to_router$.mapTo({
-      action: `removeItem`,
-      key: `create_listing_session`,
-    })
+    // to_router$.mapTo({
+    //   action: `removeItem`,
+    //   key: `create_listing_session`,
+    // })
   )
 
   return {

@@ -1,18 +1,11 @@
 import {Observable as O} from 'rxjs'
 import Immutable = require('immutable')
-import {combineObj} from '../utils'
+import {combineObj, geotagToCityState} from '../utils'
 import {getState} from '../states'
 import {geoToLngLat} from '../mapUtils'
 import deepEqual = require('deep-equal')
 
 import FactualGeotagService from '../thirdParty/FactualGeotagService'
-
-function geotagToCityState(geotag) {
-  return geotag ? {
-    city: geotag.locality.name,
-    state_abbr: getState(geotag.region.name)
-  } : undefined
-}
 
 function enrichWithCityState(x) {
   const {geotag} = x

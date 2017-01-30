@@ -4,6 +4,7 @@ import {getState} from './states'
 import {geoToLngLat} from './mapUtils'
 import moment = require('moment')
 import clone = require('clone')
+import FactualGeotagService from './thirdParty/FactualGeotagService'
 
 export function capitalize(val) {
   return val.substring(0, 1).toUpperCase() + val.substring(1)
@@ -340,6 +341,40 @@ export function getPreferredRegion$(inputs) {
       return clone(settings.default_region)
     }
   })
+}
+
+export function geotagToCityState(geotag) {
+  return geotag ? {
+    city: geotag.locality.name,
+    state_abbr: getState(geotag.region.name)
+  } : undefined
+}
+
+export function PositionToRegion(sources, inputs) {
+    const geotag$ = inputs.position$.map(position => {
+      const geotagService = FactualGeotagService({
+        props$: O.of({category: `fromPosition`}),
+        lngLat$: O.of(position),
+        HTTP: sources.HTTP
+      })
+
+      return {
+        HTTP: geotagService.HTTP.delay(1),
+        output$: geotagService.result$.map(geotag => ({
+          position, 
+          geotag, 
+          city_state: geotagToCityState(geotag)
+        })),
+        waiting: geotagService.waiting$
+      }
+    })
+    .publishReplay(1).refCount()
+
+    return {
+      ...componentify(geotag$),
+      output$: geotag$.switchMap(x => x.output$),
+      waiting$: geotag$.switchMap(x => x.waiting$)
+    }
 }
   
 export function globalUID() {

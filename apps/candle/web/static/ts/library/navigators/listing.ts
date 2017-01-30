@@ -329,7 +329,9 @@ export default function main(sources, inputs) {
       return {
         to: `main`, message: {
           type: `showLeftMenu`, 
-          data: {redirect_url: state.listing_result && state.listing_result.listing && state.listing_result.listing.id ? '/listing/' + state.listing_result.listing.id : '/' }
+          data: {
+            redirect_url: state.listing_result && state.listing_result.listing && state.listing_result.listing.id ? '/listing/' + state.listing_result.listing.id : '/' 
+          }
         }
       }
     }).publish().refCount()

@@ -179,6 +179,20 @@ export function getDefaultSession(retrieved_session = {}) {
   }
 }
 
+function propertiesDondeFromListing(listing) {
+  return {
+    modal: undefined,
+
+  }
+}
+
+export function listingToSession(listing, search_area) {
+  const session = getDefaultSession()
+  session.properties.donde.search_area = search_area
+  session.listing = listing
+  return session
+}
+
 
 function inflateRecurrence(recurrence) {
   const {start_date, end_date, rdates, exdates} = recurrence
@@ -386,6 +400,8 @@ export function getSessionStream(sources) {
     .map(x => x.state.data)
     .map(inflateSession)
 }
+
+
 
 export function has(arr, type) {
   return arr.some(val => val === type)

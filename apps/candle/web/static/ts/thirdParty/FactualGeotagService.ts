@@ -62,7 +62,7 @@ export default function FactualGeotagService ({props$, lngLat$, HTTP}) {
 
   return {
     HTTP: toHTTP$.delay(4),
-    isProcessing$: O.merge(
+    waiting$: O.merge(
         fromHTTP$.map(() => false),
         toHTTP$.map(() => true)
       ).startWith(false),
