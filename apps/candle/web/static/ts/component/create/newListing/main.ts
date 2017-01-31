@@ -30,7 +30,7 @@ import {
 } from '../../../library/spinners'
 
 import {main as Basics} from './basics/containerMain'
-import {main as Advanced} from './advanced/newMain'
+import {main as Advanced} from './advanced/containerMain'
 import {main as Preview} from './preview/newMain'
 import {main as NextButton} from '../nextButton'
 import {main as BackNextButtons} from '../backNextButtons'
