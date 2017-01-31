@@ -264,11 +264,11 @@ function main(sources, inputs) {
       const {current_step} = push_state 
       switch (current_step) { 
         case "basics":
-          return Basics(sources, inputs)
+          return Basics(sources, {...inputs, session$: O.of(push_state)})
         case "advanced":
-          return Advanced(sources, inputs)
+          return Advanced(sources, {...inputs, session$: O.of(push_state)})
         case "preview":
-          return Preview(sources, inputs)
+          return Preview(sources, {...inputs, session$: O.of(push_state)})
         default:
           throw new Error(`Invalid current step given: ${current_step}`)
       }

@@ -66,7 +66,7 @@ export default function main(sources, inputs) {
 
   const search_area$ = position_to_region.output$.map(region => {
     return {
-      ...region,
+      region,
       radius: 10000
     }
   })

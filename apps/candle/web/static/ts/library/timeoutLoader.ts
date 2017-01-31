@@ -46,6 +46,7 @@ export default function main(sources, inputs) {
     DOM: vtree$,
     Router: actions.brand_button$.mapTo('/'),
     MessageBus: actions.show_menu$.mapTo({to: `main`, message: {type: `showLeftMenu`, data: {redirect_url: inputs.redirect_url || '/'}}}),
+    redirect$: O.never()
   }
 
   return out

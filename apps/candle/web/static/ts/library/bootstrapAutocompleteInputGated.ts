@@ -288,12 +288,22 @@ function renderComboBox({suggestions, highlighted, selected}, initialText, highl
 }
 
 function view(state$, initialText$, highlightError$, props) {
-  return combineObj({state$, initialText$, highlightError$}).map(({state, initialText, highlightError}: any) => {
-    const suggestions = state.suggestions
-    const highlighted = state.highlighted
-    const selected = state.selected
-    return renderComboBox({suggestions, highlighted, selected}, initialText, highlightError, props)
-  })
+  return combineObj({
+      state$: state$.map(x => {
+        return x
+      }), 
+      initialText$: initialText$.map(x => {
+        return x 
+      }), 
+      highlightError$: highlightError$.map(x => {
+        return x
+      }) 
+    }).map(({state, initialText, highlightError}: any) => {
+      const suggestions = state.suggestions
+      const highlighted = state.highlighted
+      const selected = state.selected
+      return renderComboBox({suggestions, highlighted, selected}, initialText, highlightError, props)
+    })
 }
 
 function preventedEvents(actions, state$) {

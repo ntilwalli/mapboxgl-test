@@ -215,8 +215,10 @@ function ellipsisSelected(page) {
 }
 
 function isMyListing(listing_result, authorization) {
+  if (listing_result.listing.donde.type === 'badslava') return false
+  
   if (authorization) {
-    return listing_result.listing.user_id === authorization.id || ['ntilwalli', 'tiger', 'nikhil'].some(x => x === authorization.username)
+    return  listing_result.listing.user_id === authorization.id || ['ntilwalli', 'tiger', 'nikhil'].some(x => x === authorization.username)
   } else {
     return false
   }
@@ -240,21 +242,22 @@ function view(state$) {
           .filter(notRead)
 
 
+    const my_listing = isMyListing(listing_result, authorization)
     return div([
       div('.navbar.navbar-light.bg-faded.container-fluid.fixed-top.navigator', [
         div('.user-navigator.d-flex.fx-j-sb', [
           button('.appBrandButton.h-2.hopscotch-icon.btn.btn-link.nav-brand', []),
-          type === 'recurring' || isMyListing(listing_result, authorization) ? span('.sub-navigator', [
-            type === 'recurring' || isMyListing(listing_result, authorization) ? span('.hidden-md-up' + profile_class, [button('.btn.btn-link.appProfileButton.menu-item', [span('.fa.fa-info', [])])]) : null,
+          type === 'recurring' || my_listing ? span('.sub-navigator', [
+            type === 'recurring' || my_listing ? span('.hidden-md-up' + profile_class, [button('.btn.btn-link.appProfileButton.menu-item', [span('.fa.fa-info', [])])]) : null,
             type === 'recurring' ? span('.hidden-md-up' + recurrences_class, [button('.btn.btn-link.appRecurrencesButton.menu-item', [span('.fa.fa-microphone', [])])]) : null,
-            isMyListing(listing_result, authorization) ? span('.hidden-md-up' + messages_class, [
+            my_listing ? span('.hidden-md-up' + messages_class, [
               button('.appMessagesButton.btn.btn-link.menu-item', [
                 div('.fa.fa-envelope', {style: {position: "relative"}}, [
                   messages.length ? renderAlertCircle(-4, -6) : null
                 ]),
               ])
             ]) : null,
-            isMyListing(listing_result, authorization) ? span('.hidden-md-up' + ellipsis_class, [
+            my_listing ? span('.hidden-md-up' + ellipsis_class, [
               button('.appEllipsisButton.btn.btn-link.menu-item', [
                 span('.fa.mr-xs' + getEllipsisIcon(page), {style: {position: "relative"}}, [
                   listing_notifications.length ? renderAlertCircle(-5, -7) : null,
@@ -263,9 +266,9 @@ function view(state$) {
               ])
             ]) : null,
             //span(calendar_class, [button('.hidden-md-up.btn.btn-link.appCalendarButton.menu-item', [span('.fa.fa-calendar', [])])]),
-            type === 'recurring' || isMyListing(listing_result, authorization) ? span('.hidden-sm-down' + profile_class, [button('.btn.btn-link.appProfileButton.menu-item', [span('.fa.fa-info.mr-xs', []), span('.fs-1', ['Profile'])])]) : null,
+            type === 'recurring' || my_listing ? span('.hidden-sm-down' + profile_class, [button('.btn.btn-link.appProfileButton.menu-item', [span('.fa.fa-info.mr-xs', []), span('.fs-1', ['Profile'])])]) : null,
             type === 'recurring' ? span('.hidden-sm-down' + recurrences_class, [button('.hidden-sm-down.btn.btn-link.appRecurrencesButton.menu-item', [span('.fa.fa-microphone.mr-xs', []), span('.fs-1', ['Recurrences'])])]) : null,
-            isMyListing(listing_result, authorization) ? span('.hidden-sm-down' + messages_class, [
+            my_listing ? span('.hidden-sm-down' + messages_class, [
               button('.btn.btn-link.appMessagesButton.menu-item', [
                 span('.fa.fa-envelope.mr-xs', {style: {position: "relative"}}, [
                   messages.length ? renderAlertCircle(-4, -6) : null
@@ -273,7 +276,7 @@ function view(state$) {
                 span('.fs-1', ['Messages'])
               ])
             ]) : null,
-            isMyListing(listing_result, authorization) ? span('.hidden-sm-down' + messages_class, [
+            my_listing ? span('.hidden-sm-down' + messages_class, [
               button('.btn.btn-link.appNotificationsButton.menu-item', [
                 span('.fa.fa-bell.mr-xs', {style: {position: "relative"}}, [
                   listing_notifications.length ? renderAlertCircle(-4, -6) : null
@@ -281,7 +284,7 @@ function view(state$) {
                 span('.fs-1', ['Notifications'])
               ])
             ]) : null,
-            isMyListing(listing_result, authorization) ? span('.hidden-sm-down' + messages_class, [
+            my_listing ? span('.hidden-sm-down' + messages_class, [
               button('.btn.btn-link.appSettingsButton.menu-item', [
                 span('.fa.fa-gear.mr-xs', {style: {position: "relative"}}, []), 
                 span('.fs-1', ['Settings'])
@@ -296,7 +299,7 @@ function view(state$) {
           ])
         ])
       ]),
-      show_ellipsis_menu ? div('.ellipsis-menu', [renderStuff(listing_result, notifications)]) : null 
+      my_listing && show_ellipsis_menu ? div('.ellipsis-menu', [renderStuff(listing_result, notifications)]) : null 
     ])
   })
 }
@@ -368,7 +371,7 @@ export default function main(sources, inputs) {
           pathname: out,
           state: state.listing_result
         }
-      })
+      }),
     ),
     Phoenix: inputs.Authorization.status$.switchMap(status => {
       if (status) {

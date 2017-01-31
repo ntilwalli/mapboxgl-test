@@ -150,7 +150,17 @@ function model(actions, inputs) {
 }
 
 function view(state$, props$, highlight_error$) {
-  return combineObj({state$, props$, highlight_error$}).map((info: any) => {
+  return combineObj({
+    state$: state$.map(x => {
+      return x
+    }), 
+    props$: props$.map(x => {
+      return x
+    }),
+    hightlight_error$: highlight_error$.map(x => {
+      return x
+    }), 
+  }).map((info: any) => {
     const {state, props, highlight_error} = info
     const placeholder = props && props.placeholder ? props.placeholder : undefined
     const type = props && props.type === `password` ? props.type : `text`
@@ -175,7 +185,7 @@ function main(sources, inputs) {
   const actions = intent(sources)
   const state$ = model(actions, enriched_inputs)
 
-  const vtree$ = view(state$, props$, inputs.highlight_error$)
+  const vtree$ = view(state$, props$, inputs.highlight_error$ || O.of(true))
     // .letBind(traceStartStop(`DOM trace`))
 
   const output$ = state$

@@ -139,6 +139,13 @@ function muxHTTP(sources) {
 
 //function toComponent(sources, inputs)
 
+function isInvalid(state) {
+  const a = (!state.authorization && (state.page !== 'profile' && state.page !== 'recurrences')) 
+  const b = state.listing_result.listing.donde.type === 'badslava' && (state.page !== 'profile' && state.page !== 'recurrences')
+
+  return a || b
+}
+
 export default function main(sources, inputs): any {
 
   const {Router} = sources
@@ -154,9 +161,23 @@ export default function main(sources, inputs): any {
         props$: O.of(result)
       })
 
+      const state$ = combineObj({
+        page$: navigator.output$,
+        authorization$: inputs.Authorization.status$,
+        listing_result$: O.of(result)
+      }).publishReplay(1).refCount()
 
-      const content$ = navigator.output$
-        .map(page => {
+      const valid_state$ = state$.filter(x => !isInvalid(x))
+        .map((x: any) => {
+          return x.page
+        })
+      const invalid_state$ = state$.filter(x => isInvalid(x))
+        .map(x => {
+          return x
+        })
+
+      const content$ = valid_state$
+        .map((page: any) => {
           if (!page || page === 'profile') {
             const out = ListingProfile({...sources, Router: router_with_listing_id.path(page)}, {...inputs, props$: O.of(result)})
             return out
@@ -181,7 +202,8 @@ export default function main(sources, inputs): any {
       const merged = mergeSinks(navigator, content)
       return {
         ...merged,
-        DOM: view(components, navigator.active$)
+        DOM: view(components, navigator.active$), 
+        redirect$: invalid_state$
       }
     })
   ).publishReplay(1).refCount()
@@ -218,6 +240,15 @@ export default function main(sources, inputs): any {
           action: 'REPLACE',
           pathname: route.location.pathname,
           state: result
+        }
+      }),
+      component$.switchMap((x: any) => {
+        return x.redirect$
+      }).map(_ => {
+        return {
+          type: 'replace',
+          action: 'REPLACE',
+          pathname: sources.Router.createHref('')
         }
       }),
       muxed_router.no_listing_id$.map(x => {

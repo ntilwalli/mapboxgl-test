@@ -29,20 +29,11 @@ import {renderSKFadingCircle6} from '../../../../library/spinners'
 const default_instruction = 'Click on a section to see tips'
 function intent(sources) {
   const {DOM, Global, Router} = sources
-  const session$ = Router.history$
-    .map(x => {
-      return inflateSession(x.state.data)
-    })
-    .map(x => {
-      return x
-    })
-    .publishReplay(1).refCount()
   
   const main_panel_click$ = DOM.select('.appMainPanel').events('click').filter(targetIsOwner)
     .mapTo(default_instruction)
 
   return {
-    session$, 
     main_panel_click$
   }
 }
@@ -91,7 +82,7 @@ function reducers(actions, inputs) {
 function model(actions, inputs) {
   const reducer$ = reducers(actions, inputs)
   return combineObj({
-      session$: actions.session$,
+      session$: inputs.session$,
     })
     .switchMap((info: any) => {
       //console.log('meta init', info)
@@ -193,52 +184,52 @@ export default function main(sources, inputs) {
   const show_errors$ = inputs.show_errors$.publishReplay(1).refCount()
 
   const name_instruction = 'Choose a name for the listing'
-  const name = isolate(Name)(sources, {...inputs, session$: actions.session$, highlight_error$: show_errors$})
+  const name = isolate(Name)(sources, {...inputs, session$: inputs.session$, highlight_error$: show_errors$})
   const name_section: any = isolate(FocusWrapper)(sources, {component: name, title: 'Name', instruction: name_instruction})
   
   const description_instruction = 'Describe the listing'
-  const description = isolate(Description)(sources, {...inputs, session$: actions.session$, highlight_error$: show_errors$})
+  const description = isolate(Description)(sources, {...inputs, session$: inputs.session$, highlight_error$: show_errors$})
   const description_section: any = isolate(FocusWrapper)(sources, {component: description, title: 'Description', instruction: description_instruction})
   
   const event_types_instruction = 'Choosing the right event type(s) allows you to configure additional properties like the performer sign-up start time (open-mic) or audience cost (show) if relevant.'
-  const event_types = isolate(EventTypes)(sources, {...inputs, session$: actions.session$})
+  const event_types = isolate(EventTypes)(sources, {...inputs, session$: inputs.session$})
   const event_types_section: any = isolate(FocusWrapper)(sources, {component: event_types, title: 'Event types', instruction: event_types_instruction})
   
   const categories_instruction = 'Categories determine what filters apply to the listing during search'
-  const categories = isolate(Categories)(sources, {...inputs, session$: actions.session$})
+  const categories = isolate(Categories)(sources, {...inputs, session$: inputs.session$})
   const categories_section: any = isolate(FocusWrapper)(sources, {component: categories, title: 'Categories', instruction: categories_instruction})
   
   const search_area_instruction = 'Select the city/region to use for the venue autocomplete'
-  const search_area = isolate(SearchArea)(sources, {...inputs, session$: actions.session$})
+  const search_area = isolate(SearchArea)(sources, {...inputs, session$: inputs.session$})
   const search_area_section: any = isolate(FocusWrapper)(sources, {component: search_area, title: 'Search area', instruction: search_area_instruction})
 
   const donde_instruction = 'Select the venue'
   const donde_invalid$ = show_errors$.startWith(false)
-  const donde = isolate(Venue)(sources, {...inputs, session$: actions.session$, search_area$: search_area_section.output$.pluck('data'), highlight_error$: donde_invalid$})
+  const donde = isolate(Venue)(sources, {...inputs, session$: inputs.session$, search_area$: search_area_section.output$.pluck('data'), highlight_error$: donde_invalid$})
   const donde_section: any = isolate(FocusWrapper)(sources, {component: donde, title: 'Venue', instruction: donde_instruction})
 
   const listing_type_instruction = 'Does this listing represent a single (one-off) event or an event which recurs?'
-  const listing_type = isolate(ListingType)(sources, {...inputs, session$: actions.session$})
+  const listing_type = isolate(ListingType)(sources, {...inputs, session$: inputs.session$})
   const listing_type_section: any = isolate(FocusWrapper)(sources, {component: listing_type, title: 'Type', instruction: listing_type_instruction})
 
   const start_time_instruction = 'Set the start time of the event'
-  const start_time = isolate(StartTime)(sources, {...inputs, session$: actions.session$})
+  const start_time = isolate(StartTime)(sources, {...inputs, session$: inputs.session$})
   const start_time_section: any = isolate(FocusWrapper)(sources, {component: start_time, title: 'Start time', instruction: start_time_instruction})
 
   const end_time_instruction = 'Set the end time of the event (optional)'
-  const end_time = isolate(EndTime)(sources, {...inputs, session$: actions.session$})
+  const end_time = isolate(EndTime)(sources, {...inputs, session$: inputs.session$})
   const end_time_section: any = isolate(FocusWrapper)(sources, {component: end_time, title: 'End time', instruction: end_time_instruction})
 
   const date_section$ = listing_type_section.output$.pluck('data')
     .map(type => {
       if (type === ListingTypes.SINGLE) {
         const date_instruction = 'Choose the event date'
-        const single_date = isolate(SingleDate)(sources, {...inputs, session$: actions.session$})
+        const single_date = isolate(SingleDate)(sources, {...inputs, session$: inputs.session$})
         const single_date_section: any = isolate(FocusWrapper)(sources, {component: single_date, title: 'Date', instruction: date_instruction})
         return single_date_section
       } else {
         const recurrence_instruction = 'Choose a rule for regular (weekly, monthly) events and/or select and exclude dates by clicking the calendar'
-        const recurrence = isolate(Recurrence)(sources, {...inputs, session$: actions.session$})
+        const recurrence = isolate(Recurrence)(sources, {...inputs, session$: inputs.session$})
         const recurrence_section: any = isolate(FocusWrapper)(sources, {
           component: recurrence, 
           title: 'Recurrence dates', 

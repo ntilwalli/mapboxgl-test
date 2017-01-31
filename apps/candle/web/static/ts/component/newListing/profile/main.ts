@@ -190,7 +190,7 @@ export function renderRecurringListing(state) {
     performer_limit, listed_hosts, note
   } = meta
 
-  const new_note = note.replace(/\n/g, ' ')
+  const new_note = note  ? note.replace(/\n/g, ' ') : ''
 
   const [full_cost, full_stage_time, merged_cost_stage_time] = 
     getFullCostAndStageTime(performer_cost, stage_time)
