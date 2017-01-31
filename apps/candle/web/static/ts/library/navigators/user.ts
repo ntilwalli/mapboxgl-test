@@ -320,7 +320,7 @@ export default function main(sources, inputs) {
   const vtree$ = view(state$)
 
   const to_message_bus$ = actions.show_menu$
-    .withLatestFrom(state$, (_, state) => {
+    .withLatestFrom(state$, (_, state: any) => {
       return {
         to: `main`, message: {
           type: `showLeftMenu`, 
@@ -338,7 +338,7 @@ export default function main(sources, inputs) {
     DOM: vtree$,
     Router: O.merge(
       actions.brand_button$.mapTo('/'),
-      page$.withLatestFrom(state$, (page, state) => {
+      page$.withLatestFrom(state$, (page, state: any) => {
         const out = page === 'profile' ? sources.Router.createHref('') : sources.Router.createHref('/' + page)
         return {
           action: 'PUSH',

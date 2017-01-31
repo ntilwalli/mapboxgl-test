@@ -5,26 +5,20 @@ import Immutable = require('immutable')
 import {combineObj, processHTTP, createProxy} from '../../../utils'
 
 const routes = [
-  {pattern: /^\/meta$/, value: {type: 'success', data: 'meta'}},
-  {pattern: /^\/where$/, value: {type: 'success', data: 'donde'}},
-  {pattern: /^\/when$/, value: {type: 'success', data: 'cuando'}},
-  {pattern: /^\/properties$/, value: {type: 'success', data: 'properties'}},
+  {pattern: /^\/basics$/, value: {type: 'success', data: 'basics'}},
+  {pattern: /^\/advanced$/, value: {type: 'success', data: 'advanced'}},
   {pattern: /^\/admin$/, value: {type: 'success', data: 'admin'}},
-  {pattern: /^\/$/, value: {type: 'success', data: 'meta'}},
+  //{pattern: /^\/$/, value: {type: 'success', data: 'basics'}},
   {pattern: /.*/, value: {type: "error"}}
 ]
 
 function intent(sources) {
   const {DOM} = sources
 
-  const meta$ = DOM.select('.appMetaButton').events('click').mapTo('meta')
-  const donde$ = DOM.select('.appDondeButton').events('click').mapTo('donde')
-  const cuando$ = DOM.select('.appCuandoButton').events('click').mapTo('cuando')
-  const properties$ = DOM.select('.appPropertiesButton').events('click').mapTo('properties')
-  const admin$ = DOM.select('.appAdminButton').events('click').mapTo('admin')
+  const page$ = DOM.select('.appMenuButton').events('click').map(ev => ev.target.dataset.page)
 
   return {
-    page$: O.merge(meta$, donde$, cuando$, properties$, admin$)
+    page$
   }
 }
 
@@ -67,19 +61,13 @@ function view(state$) {
         "margin-bottom": 0
       }}, [
       li([
-        button('.appMetaButton.btn.btn-link.h-100', ['Meta'])
+        button('.appMenuButton.btn.btn-link.h-100', {attrs: {"data-page": "basics"}}, ['Basics'])
       ]),
       li([
-        button('.appWhereButton.btn.btn-link.h-100', ['Where'])
+        button('.appMenuButton.btn.btn-link.h-100', {attrs: {"data-page": "advanced"}}, ['Advanced'])
       ]),
       li([
-        button('.appWhenButton.btn.btn-link.h-100', ['When'])
-      ]),
-      li([
-        button('.appPropertiesButton.btn.btn-link.h-100', ['Properties'])
-      ]),
-      li([
-        button('.appAdminButton.btn.btn-link.h-100', ['Admin'])
+        button('.appMenuButton.btn.btn-link.h-100', {attrs: {"data-page": "admin"}}, ['Admin'])
       ])
     ])
   })
@@ -94,8 +82,9 @@ export default function main(sources, inputs) {
     DOM: view(muxed_routes.valid_path$),
     Router: muxed_routes.invalid_path$.map(route => {
       return {
-        pathname: sources.Router.createHref('/meta'),
-        type: 'replace'
+        pathname: sources.Router.createHref('/basics'),
+        type: 'replace',
+        state: route.location.state
       }
     }),
     output$: valid_path$,

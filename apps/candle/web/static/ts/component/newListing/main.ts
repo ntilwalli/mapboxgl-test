@@ -4,9 +4,7 @@ import {div, nav, span, button} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 import {combineObj, mergeSinks, createProxy, traceStartStop, processHTTP, componentify} from '../../utils'
 
-//import BasicNav from './basicNav'
-//import AdminNav from './adminNav'
-import AdminNav from '../../library/navigators/listing'
+import Navigator from '../../library/navigators/listing'
 import ListingProfile from './profile/main'
 import Settings from './settings/parentMain'
 import Notifications from './notifications/main'
@@ -96,19 +94,23 @@ function muxRouter(sources) {
   const {Router} = sources
   const route$ = Router.define(routes)
     .publishReplay(1).refCount()
-  const success$ = route$.filter(route => route.value.info.type === 'success')
-    // .do(route => {
-    //   console.log('success route', route)
-    // })
+  const success$ = route$.filter(route => {
+      return route.value.info.type === 'success'
+    })
+    .do(route => {
+      console.log('success route', route)
+    })
     .publishReplay(1).refCount()
   const listing$ = success$
     .filter(route => !!route.location.state)
     .map(route => route.location.state)
-    // .do(x => {
-    //   console.log('result from router', x)
-    // })
+    .do(x => {
+      console.log('result from router', x)
+    })
     .publishReplay(1).refCount()
-  const li_wo_push_state$ = success$.filter(route => !route.location.state)
+  const li_wo_push_state$ = success$.filter(route => {
+    return !route.location.state
+  })
   const retrieve_listing_id$ = li_wo_push_state$
     .map(route => parseInt(route.value.match[1]))
     .publishReplay(1).refCount()
@@ -147,7 +149,7 @@ export default function main(sources, inputs): any {
     muxed_router.retrieve_listing_id$.map(_ => TimeoutLoader(sources, inputs)),
     muxed_router.listing_result_from_router$.map(result => {
       const router_with_listing_id = sources.Router.path(result.listing.id.toString())
-      const navigator = isolate(AdminNav)({...sources, Router: router_with_listing_id}, {
+      const navigator = isolate(Navigator)({...sources, Router: router_with_listing_id}, {
         ...inputs, 
         props$: O.of(result)
       })

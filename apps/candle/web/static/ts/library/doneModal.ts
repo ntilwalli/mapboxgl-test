@@ -62,12 +62,12 @@ function renderModal(info) {
   return div(`.appModalContainer.modal${styleClass}`, {style: {display: "inline-block"}}, [
     div('.modal-dialog.modal-lg', [
       div(`.modal-content`, [
-        div(`.modal-header.container-fluid`, [
-          div('.row', [
-            div('.col-6', [
+        div(`.modal-header.container-fluid.m-0`, [
+          div('.d-flex.justify-content-between.w-100', [
+            div([
               div(`.modal-title.modal-header-text`, [title]),
             ]),
-            div('.col-6.d-flex.justify-content-end', [
+            div('.d-flex.justify-content-end', [
               span(`.appModalClose.close.fa-2x`, [])
             ])
           ])

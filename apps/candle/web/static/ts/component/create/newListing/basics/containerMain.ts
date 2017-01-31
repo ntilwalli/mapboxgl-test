@@ -116,7 +116,7 @@ function renderInstructionSubpanel(info) {
   const {instruction} = components
   return div(`.instruction-panel`, [
     div(`.instruction-section`, [
-      div([
+      div('.d-flex.flex-column', [
         span(`.icon.fa.fa-lightbulb-o`),
         state.focus_instruction
       ])

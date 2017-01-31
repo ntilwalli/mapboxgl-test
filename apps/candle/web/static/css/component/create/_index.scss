@@ -63,6 +63,10 @@
   }
 
   @media (min-width: 768px) {
+    .instruction-panel {
+      top: 0;
+      right: 0;
+    }
     .main-panel {
       width: calc(100vw * 0.6);
     }

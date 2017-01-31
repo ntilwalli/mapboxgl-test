@@ -236,7 +236,7 @@
     height: 2rem;
   }
 
-  .donde {
+  .basics {
     .map {
       position: relative;
       height: 300px;
@@ -257,17 +257,18 @@
       }
     }
 
-    @media(min-width: 768px) {
-      .change-search-area-modal {
-        width: 400px;
-      }
-    }
+    // @media(min-width: 768px) {
+    //   .change-search-area-modal {
+    //     width: 400px;
+    //   }
+    // }
 
-    @media(max-width: 767px) {
-      .change-search-area-modal {
-        width: 100%;
-      }
-    }
+    // @media(max-width: 767px) {
+    //   .change-search-area-modal {
+    //     width: 100%;
+    //   }
+    // }
+    @import './searchArea/index';
   }
 
   .cuando-recurrence {

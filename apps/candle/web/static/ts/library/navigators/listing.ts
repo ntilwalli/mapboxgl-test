@@ -11,7 +11,7 @@ const routes = [
   {pattern: /^\/messages$/, value: {type: 'success', data: 'messages'}},
   {pattern: /^\/settings$/, value: {type: 'success', data: 'settings'}},
   {pattern: /^\/notifications$/, value: {type: 'success', data: 'notifications'}},
-  {pattern: /^\/settings$/, value: {type: 'success', data: 'settings'}},
+  {pattern: /^\/settings/, value: {type: 'success', data: 'settings'}},
   {pattern: /^\/$/, value: {type: 'success', data: 'profile'}},
   {pattern: /.*/, value: {type: "error"}}
 ]
@@ -108,11 +108,26 @@ function reducers(actions, channels_actions, inputs) {
 function model(actions, channels_actions, inputs) {
   const reducer$ = reducers(actions, channels_actions, inputs)
   return combineObj({
-      authorization$: inputs.Authorization.status$,
-      listing_result$: inputs.props$,
-      page$: inputs.page$,
-      notifications$: channels_actions.notifications$.take(1),
+      authorization$: inputs.Authorization.status$
+        .map(x => {
+          return x 
+        }),
+      listing_result$: inputs.props$
+        .map(x => {
+          return x 
+        }),
+      page$: inputs.page$
+        .map(x => {
+          return x 
+        }),
+      notifications$: channels_actions.notifications$.take(1)
+        .map(x => {
+          return x 
+        }),
       messages$: channels_actions.messages$.take(1)
+        .map(x => {
+          return x 
+        })
     })
     .switchMap((info: any) => {
       return reducer$

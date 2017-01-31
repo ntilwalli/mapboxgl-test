@@ -14,32 +14,18 @@ function NotImplemented(sources, inputs) {
   }
 }
 
-const routes = [
-  {pattern: /^\/meta$/, value: {type: 'success', data: 'meta'}},
-  {pattern: /^\/where$/, value: {type: 'success', data: 'donde'}},
-  {pattern: /^\/when$/, value: {type: 'success', data: 'cuando'}},
-  {pattern: /^\/properties$/, value: {type: 'success', data: 'properties'}},
-  {pattern: /^\/admin$/, value: {type: 'success', data: 'admin'}},
-  {pattern: /^\/$/, value: {type: 'success', data: 'meta'}},
-  {pattern: /.*/, value: {type: "error"}}
-]
-
 function muxRouter(sources) {
   const {Router} = sources
-  const route$ = Router.define(routes)
-    .publishReplay(1).refCount()
-  const success$ = route$.filter(route => {
-    return route.value.info.type === 'success'
-  })
+  const route$ = Router.history$
     .publishReplay(1).refCount()
 
-  const push_state$ = success$
-    .filter(route => !!route.location.state)
-    .map(route => route.location.state)
+  const push_state$ = route$
+    .filter(route => !!route.state)
+    .map(route => route.state)
     .publishReplay(1).refCount()
 
-  const no_push_state$ = success$
-    .filter(route => !route.location.state)
+  const no_push_state$ = route$ 
+    .filter(route => !route.state)
     .publishReplay(1).refCount()
 
   const listing$ = push_state$

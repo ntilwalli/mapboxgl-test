@@ -27,9 +27,10 @@ export default function main(sources, inputs) {
     initial_text$: inputs.session$.map(s => {
       return s.listing.meta.name
     }),
-    highlight_error$: inputs.highlight_error$.map(x => {
-      return x
-    }) || O.of(true)
+    highlight_error$: (inputs.highlight_error$ || O.of(true))
+      .map(x => {
+        return x
+      })
   })
 
   return {
