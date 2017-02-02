@@ -601,10 +601,7 @@ function main(sources, inputs) {
          return {
            pathname: `/create/listing`,
            type: `push`,
-           state: {
-             type: 'session',
-             data: {...session, current_step: nav}
-           }
+           state: {...session, current_step: nav}
          }
        }),
        O.merge(
@@ -625,10 +622,7 @@ function main(sources, inputs) {
                pathname: `/create/listing`,
                type: 'replace',
                action: `REPLACE`,
-               state: {
-                 type: 'session',
-                 data: session
-               }
+               state: session
              }
            }),
          push_state$.filter(is_invalid)

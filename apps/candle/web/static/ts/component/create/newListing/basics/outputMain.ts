@@ -313,10 +313,6 @@ export default function main(sources, inputs) {
           return {
             pathname: route.pathname,
             type: 'push',
-            // state: {
-            //   type: 'session', 
-            //   data: deflateSession(state.session)
-            // }
             state: deflateSession(state.session)
           }
         }).skip(1)

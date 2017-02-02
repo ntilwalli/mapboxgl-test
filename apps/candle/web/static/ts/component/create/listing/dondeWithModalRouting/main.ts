@@ -156,10 +156,7 @@ function main(sources, inputs) {
           pathname: `/create/listing`,
           type: `push`,
           action: 'PUSH',
-          state: {
-            type: 'session',
-            data: {...session, current_step: 'donde', seed: Math.random()}
-          }
+          state: {...session, current_step: 'donde', seed: Math.random()}
         }
       }),
       hide_modal$.withLatestFrom(state$, (_, state) => {
@@ -167,17 +164,6 @@ function main(sources, inputs) {
         session.properties['donde_modal'] = undefined
         return clone(session)
       }).mapTo({type: 'goBack'}),
-      // .map(session => {
-      //   return {
-      //     pathname: `/create/listing`,
-      //     type: `replace`,
-      //     action: 'REPLACE',
-      //     state: {
-      //       type: 'session',
-      //       data: {...session, current_step: 'donde'}
-      //     }
-      //   }
-      // }),
       search_area$.withLatestFrom(state$, (sa, state) => {
         const session = deflateSession(state.session)
         session.properties['donde_modal'] = undefined
@@ -187,10 +173,7 @@ function main(sources, inputs) {
         return {
           pathname: `/create/listing`,
           type: `replace`,
-          state: {
-            type: 'session',
-            data: {...session, current_step: 'donde'}
-          }
+          state: {...session, current_step: 'donde'}
         }
       }),
     ),

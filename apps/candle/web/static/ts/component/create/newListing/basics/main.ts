@@ -455,12 +455,9 @@ export function main(sources, inputs) {
             pathname: '/create/listing',
             type: 'push',
             state: {
-              type: 'session',
-              data: {
                 ...deflateSession(state.session),
                 current_step: 'preview'
               }
-            }
           }
         }),
       state$.map((x: any) => x.session.properties.donde.modal).distinctUntilChanged()
@@ -468,10 +465,7 @@ export function main(sources, inputs) {
           return {
             pathname: '/create/listing',
             type: 'push',
-            state: {
-              type: 'session', 
-              data: state.session
-            }
+            state: state.session
           }
         }).skip(1),
       actions.go_to_advanced$.withLatestFrom(state$, (_, state) => {
@@ -483,12 +477,9 @@ export function main(sources, inputs) {
             pathname: '/create/listing',
             type: 'push',
             state: {
-              type: 'session',
-              data: {
                 ...deflateSession(state.session),
                 current_step: 'advanced'
               }
-            }
           }
         })
     )

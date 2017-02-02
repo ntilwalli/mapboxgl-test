@@ -397,7 +397,7 @@ export function deflateSession(session) {
 
 export function getSessionStream(sources) {
   return sources.Router.history$
-    .map(x => x.state.data)
+    .map(x => x.state)
     .map(inflateSession)
 }
 

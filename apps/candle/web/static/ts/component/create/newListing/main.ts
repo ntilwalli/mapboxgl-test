@@ -47,7 +47,7 @@ function should_create_new(push_state) {
 }
 
 function should_render(push_state) {
-  return typeof push_state === 'object' && push_state.type === 'session'
+  return typeof push_state === 'object' && push_state.type !== 'retrieve'
 }
 
 function intent(sources) {
@@ -247,7 +247,6 @@ function main(sources, inputs) {
 
   const to_render$ = O.merge(
     O.merge(auth_push_state$.filter(should_render), no_auth_push_state$.filter(should_render))
-      .pluck(`data`)
       .map(inflateSession)
   ).publishReplay(1).refCount()
 
@@ -348,10 +347,7 @@ function main(sources, inputs) {
               pathname: `/create/listing`,
               type: 'replace',
               action: `REPLACE`,
-              state: {
-                type: 'session',
-                data: session
-              }
+              state: session
             }
           }),
         // push_state$

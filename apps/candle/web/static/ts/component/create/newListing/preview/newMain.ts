@@ -282,12 +282,9 @@ export function main(sources, inputs) {
             pathname: '/create/listing',
             type: 'push',
             state: {
-              type: 'session',
-              data: {
                 ...deflateSession(state.session),
                 current_step: 'basics'
               }
-            }
           }
         }),
       actions.go_to_advanced$
@@ -299,12 +296,9 @@ export function main(sources, inputs) {
             pathname: '/create/listing',
             type: 'push',
             state: {
-              type: 'session',
-              data: {
                 ...deflateSession(state.session),
                 current_step: 'advanced'
               }
-            }
           }
         })
     ),
