@@ -114,7 +114,7 @@ function renderMainPanel(info: any) {
     search_area, donde, listing_type, start_time,
     end_time, date
   } = components
-  return div(`.mt-4`, [
+  return div(`.pt-4`, [
     show_errors && errors.length ? div(`.form-group`, [
       div(`.alerts-area`, errors.map(e => {
           return div(`.alert.alert-danger`, [
@@ -303,15 +303,21 @@ export default function main(sources, inputs) {
     DOM: vtree$,
     Router: O.merge(
       merged.Router,
-      state$.map((x: any) => x.session.properties.donde.modal).distinctUntilChanged()
-        .withLatestFrom(state$, (_, state: any) => {
+      state$
+        .distinctUntilChanged(
+          (x: any, y: any) => {
+            return x.session.properties.donde.modal === y.session.properties.donde.modal
+          }
+        )
+        .withLatestFrom(sources.Router.history$, (state: any, route: any) => {
           return {
-            pathname: '/create/listing',
+            pathname: route.pathname,
             type: 'push',
-            state: {
-              type: 'session', 
-              data: deflateSession(state.session)
-            }
+            // state: {
+            //   type: 'session', 
+            //   data: deflateSession(state.session)
+            // }
+            state: deflateSession(state.session)
           }
         }).skip(1)
     ),

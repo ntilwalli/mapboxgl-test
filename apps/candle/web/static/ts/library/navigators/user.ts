@@ -98,11 +98,11 @@ function reducers(actions, channels_actions, inputs) {
     return state.update('show_ellipsis_menu', val=> !val)
   })
 
-  const resize_r = actions.resize$.map(_ => state => {
+  const close_r = O.merge(actions.resize$, (inputs.close_menu$ || O.never())).map(_ => state => {
     return state.set('show_ellipsis_menu', false)
   })
 
-  return O.merge(notifications_r, ellipsis_menu_r, resize_r)
+  return O.merge(notifications_r, ellipsis_menu_r, close_r)
 }
 
 function model(actions, channels_actions, inputs) {
@@ -214,7 +214,7 @@ function view(state$) {
     const settings_class = page === 'settings' ? '.selected' : '.not-selected'
     const calendar_class = page === 'calendar' ? '.selected' : '.not-selected'
     const profile_class = page === 'profile' ? '.selected' : '.not-selected'
-    const ellipsis_class = page ===  ellipsisSelected(page) ? '.selected' : '.not-selected'
+    const ellipsis_class = ellipsisSelected(page) ? '.selected' : '.not-selected'
 
     const user_notifications = notifications
           .filter(notRead)

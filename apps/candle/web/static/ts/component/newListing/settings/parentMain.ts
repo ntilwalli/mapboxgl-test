@@ -81,7 +81,7 @@ export default function main(sources, inputs) {
   })
 
   const session$ = O.merge(
-    muxed_routes.session$,
+    muxed_routes.session$.map(inflateSession),
     muxed_routes.listing$.switchMap(_ => listing_to_session$.startWith(undefined))
   )
 

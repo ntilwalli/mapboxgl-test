@@ -46,7 +46,7 @@ function view(components, active$) {
       const {navigator, content} = components
       return div(`.screen.listing-profile`, [
         navigator,
-        div({class: {"translate-down-listing": active}}, [
+        div({style: {"padding-top": active ? "6rem" : "0"}}, [
           content
         ])
       ])
@@ -179,13 +179,13 @@ export default function main(sources, inputs): any {
       const content$ = valid_state$
         .map((page: any) => {
           if (!page || page === 'profile') {
-            const out = ListingProfile({...sources, Router: router_with_listing_id.path(page)}, {...inputs, props$: O.of(result)})
+            const out = ListingProfile({...sources, Router: router_with_listing_id.path(page)}, {...inputs, props$: O.of(result), menu_active$: navigator.active$})
             return out
           } else if (!page || page === 'notifications') {
-            const out = Notifications({...sources, Router: router_with_listing_id.path(page)}, {...inputs, props$: O.of(result)})
+            const out = Notifications({...sources, Router: router_with_listing_id.path(page)}, {...inputs, props$: O.of(result), menu_active$: navigator.active$})
             return out
           } else if (!page || page === 'settings') {
-            const out = Settings({...sources, Router: router_with_listing_id.path(page)}, {...inputs, props$: O.of(result)})
+            const out = Settings({...sources, Router: router_with_listing_id.path(page)}, {...inputs, props$: O.of(result), menu_active$: navigator.active$})
             return out
           } else {
             return NotImplemented(sources, inputs)

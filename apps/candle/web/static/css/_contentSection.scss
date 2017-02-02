@@ -185,9 +185,7 @@
 
     .selected {
       padding-bottom: .3rem;
-      border-width: 0 0 .2rem 0;
-      border-style: solid;
-      border-color: $crayola-orange;
+      border-bottom: .2rem solid $crayola-orange;
     }
 
     .not-selected {
@@ -396,6 +394,12 @@
   }
 }
 
+.menu {
+  .selected {
+    border-bottom: .2rem solid $crayola-orange;
+  }
+}
+
 
 
 
@@ -422,3 +426,4 @@
 .fx-half-width {
   flex: 1 1 50%;
 }
+

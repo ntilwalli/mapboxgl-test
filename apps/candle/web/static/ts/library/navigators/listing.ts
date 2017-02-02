@@ -1,7 +1,7 @@
 import {Observable as O} from 'rxjs'
 import {div, button, span, ul, li} from '@cycle/dom'
 import isolate from '@cycle/isolate'
-import {between, notBetween, combineObj, spread, componentify, createProxy} from '../../utils'
+import {between, notBetween, combineObj, spread, componentify, createProxy, globalUID} from '../../utils'
 import {notRead, isThisListing, isListingObject} from '../../notificationUtils'
 import Immutable = require('immutable')
 
@@ -19,13 +19,24 @@ const routes = [
 function intent(sources) {
   const {DOM, Phoenix, Global} = sources
 
-  const recurrences$ = DOM.select('.appRecurrencesButton').events('click').mapTo('recurrences')
-  const messages$ = DOM.select('.appMessagesButton').events('click').mapTo('messages')
-  const settings$ = DOM.select('.appSettingsButton').events('click').mapTo('settings')
+
+  const guid = globalUID()
+
+
+  const click_elsewhere$ = DOM.select('body').events('click')
+    .filter(ev => {
+      return ev.guid !== guid
+    })
+
+  const nav_click$ = DOM.select('.appNavigatorBar').events('click')
+
+  const recurrences$ = DOM.select('.appRecurrencesButton').events('click').mapTo('recurrences').publish().refCount()
+  const messages$ = DOM.select('.appMessagesButton').events('click').mapTo('messages').publish().refCount()
+  const settings$ = DOM.select('.appSettingsButton').events('click').mapTo('settings').publish().refCount()
   //const calendar$ = DOM.select('.appCalendarButton').events('click').mapTo('calendar')
-  const notifications$ = DOM.select('.appNotificationsButton').events('click').mapTo('notifications')
-  const profile$ = DOM.select('.appProfileButton').events('click').mapTo('profile')
-  const ellipsis_menu$ = DOM.select('.appEllipsisButton').events('click').mapTo('ellipsis')
+  const notifications$ = DOM.select('.appNotificationsButton').events('click').mapTo('notifications').publish().refCount()
+  const profile$ = DOM.select('.appProfileButton').events('click').mapTo('profile').publish().refCount()
+  const ellipsis_menu$ = DOM.select('.appEllipsisButton').events('click').mapTo('ellipsis').publish().refCount()
   const show_menu$ = DOM.select('.appShowMenuButton').events('click')
     .publish().refCount()
 
@@ -33,6 +44,7 @@ function intent(sources) {
     .do(x =>{
       console.log('brand_button')
     })
+    .publish().refCount()
 
   return {
     page$: O.merge(
@@ -46,6 +58,12 @@ function intent(sources) {
     brand_button$,
     show_menu$,
     resize$: Global.resize$,
+    add_event_guid$: O.merge(nav_click$)
+      .map(ev => ({
+        event: ev,
+        guid
+      })),
+    click_elsewhere$
   }
 }
 
@@ -98,11 +116,11 @@ function reducers(actions, channels_actions, inputs) {
     return state.update('show_ellipsis_menu', val=> !val)
   })
 
-  const resize_r = actions.resize$.map(_ => state => {
+  const close_r = O.merge(actions.show_menu$, actions.resize$, actions.click_elsewhere$).map(_ => state => {
     return state.set('show_ellipsis_menu', false)
   })
 
-  return O.merge(notifications_r, ellipsis_menu_r, resize_r)
+  return O.merge(notifications_r, ellipsis_menu_r, close_r)
 }
 
 function model(actions, channels_actions, inputs) {
@@ -216,7 +234,7 @@ function ellipsisSelected(page) {
 
 function isMyListing(listing_result, authorization) {
   if (listing_result.listing.donde.type === 'badslava') return false
-  
+
   if (authorization) {
     return  listing_result.listing.user_id === authorization.id || ['ntilwalli', 'tiger', 'nikhil'].some(x => x === authorization.username)
   } else {
@@ -234,7 +252,7 @@ function view(state$) {
     const settings_class = page === 'settings' ? '.selected' : '.not-selected'
     const calendar_class = page === 'calendar' ? '.selected' : '.not-selected'
     const profile_class = page === 'profile' ? '.selected' : '.not-selected'
-    const ellipsis_class = page ===  ellipsisSelected(page) ? '.selected' : '.not-selected'
+    const ellipsis_class = ellipsisSelected(page) ? '.selected' : '.not-selected'
 
     const listing_notifications = notifications
           .filter(n => isThisListing(n, listing_result))
@@ -243,7 +261,7 @@ function view(state$) {
 
 
     const my_listing = isMyListing(listing_result, authorization)
-    return div([
+    return div('.appNavigatorBar', [
       div('.navbar.navbar-light.bg-faded.container-fluid.fixed-top.navigator', [
         div('.user-navigator.d-flex.fx-j-sb', [
           button('.appBrandButton.h-2.hopscotch-icon.btn.btn-link.nav-brand', []),
@@ -373,6 +391,12 @@ export default function main(sources, inputs) {
         }
       }),
     ),
+    Global: actions.add_event_guid$.map(data => {
+      return {
+        type: 'addEventGuid',
+        data
+      }
+    }),
     Phoenix: inputs.Authorization.status$.switchMap(status => {
       if (status) {
         return O.of({
@@ -384,7 +408,7 @@ export default function main(sources, inputs) {
       }
     }),
     MessageBus: to_message_bus$,
-    output$: state$.pluck('page').distinctUntilChanged(),
-    active$: state$.pluck('show_ellipsis_menu').distinctUntilChanged()
+    output$: state$.pluck('page').distinctUntilChanged().publishReplay(1).refCount() ,
+    active$: state$.pluck('show_ellipsis_menu').distinctUntilChanged().publishReplay(1).refCount()
   }
 }

@@ -1,7 +1,7 @@
 import {Observable as O} from 'rxjs'
 import {div, span, button, hr, nav} from '@cycle/dom'
 import Immutable = require('immutable')
-import {ListingTypes, deflateSession} from '../../helpers/listing/utils'
+import {ListingTypes, inflateSession, deflateSession} from '../../helpers/listing/utils'
 import moment = require('moment')
 import deepEqual = require('deep-equal')
 
@@ -248,6 +248,7 @@ function main(sources, inputs) {
   const to_render$ = O.merge(
     O.merge(auth_push_state$.filter(should_render), no_auth_push_state$.filter(should_render))
       .pluck(`data`)
+      .map(inflateSession)
   ).publishReplay(1).refCount()
 
   const no_auth_default_session$ = O.merge(
@@ -259,16 +260,16 @@ function main(sources, inputs) {
     })
 
   const content$ = to_render$
-    .map((push_state: any) => {
+    .map((session: any) => {
       //console.log(`push_state`, push_state)
-      const {current_step} = push_state 
+      const {current_step} = session
       switch (current_step) { 
         case "basics":
-          return Basics(sources, {...inputs, session$: O.of(push_state)})
+          return Basics(sources, {...inputs, session$: O.of(session)})
         case "advanced":
-          return Advanced(sources, {...inputs, session$: O.of(push_state)})
+          return Advanced(sources, {...inputs, session$: O.of(session)})
         case "preview":
-          return Preview(sources, {...inputs, session$: O.of(push_state)})
+          return Preview(sources, {...inputs, session$: O.of(session)})
         default:
           throw new Error(`Invalid current step given: ${current_step}`)
       }

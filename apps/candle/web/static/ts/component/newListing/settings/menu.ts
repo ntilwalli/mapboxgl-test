@@ -46,28 +46,16 @@ function muxRouter(sources) {
 }
 
 function view(state$) {
-  return state$.map(state => {
-    return ul('.d-flex.justify-content-around.list-unstyled', {
-      style: {
-        "border-width": "1px 0", 
-        "border-style": "solid", 
-        "border-color": "black", 
-        "background-color": "#F7F7F7", 
-        position: "fixed", 
-        width: "100%", 
-        height: "2rem", 
-        top: "3rem", 
-        "flex-flow": "1 1 auto",
-        "margin-bottom": 0
-      }}, [
+  return state$.map(page => {
+    return ul('.d-flex.justify-content-around.list-unstyled.menu.h-100.mb-0', {}, [
       li([
-        button('.appMenuButton.btn.btn-link.h-100', {attrs: {"data-page": "basics"}}, ['Basics'])
+        button('.appMenuButton.btn.btn-link.h-100', {class: {selected: page === 'basics'}, attrs: {"data-page": "basics"}}, ['Basics'])
       ]),
       li([
-        button('.appMenuButton.btn.btn-link.h-100', {attrs: {"data-page": "advanced"}}, ['Advanced'])
+        button('.appMenuButton.btn.btn-link.h-100', {class: {selected: page === 'advanced'}, attrs: {"data-page": "advanced"}}, ['Advanced'])
       ]),
       li([
-        button('.appMenuButton.btn.btn-link.h-100', {attrs: {"data-page": "admin"}}, ['Admin'])
+        button('.appMenuButton.btn.btn-link.h-100', {class: {selected: page === 'admin'}, attrs: {"data-page": "admin"}}, ['Admin'])
       ])
     ])
   })
