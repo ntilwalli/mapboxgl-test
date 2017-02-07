@@ -9,8 +9,10 @@ function intent(sources) {
   const {DOM} = sources
   const close$ = O.merge(
       DOM.select('.appModalClose').events('click'),
-      DOM.select('.appModalBackdrop').events('click')
-        .filter(targetIsOwner)
+      DOM.select('.appModalContainer').events('click')
+        .filter(x => {
+          return targetIsOwner(x)
+        })
     )
     .map(x => {
       return x

@@ -1,5 +1,5 @@
 import {Observable as O} from 'rxjs'
-import {div, span, input, textarea, label, h6, nav, button} from '@cycle/dom'
+import {div, span, input, textarea, pre, label, h6, nav, button} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 import Immutable = require('immutable')
 import {combineObj, createProxy, mergeSinks, componentify, targetIsOwner, processHTTP} from '../../../utils'
@@ -66,12 +66,15 @@ function model(actions, inputs) {
   const props$ = inputs.props$ || O.of({})
   return combineObj({
       session$: inputs.session$,
+      listing_result$: inputs.listing_result$,
       authorization$: inputs.Authorization.status$
     })
     .switchMap((info: any) => {
       const session = info.session
+      const listing_result = info.listing_result
       const init = {
         session,
+        listing_result,
         authorization: info.authorization,
         show_confirm: undefined,
         cancel_status: undefined,
@@ -126,6 +129,7 @@ function view(state$, components) {
     }, [
       is_expired ? renderExpiredAlert() : null,
       message ? renderSuccessAlert(message) : null,
+      pre([JSON.stringify(info.state.session.listing, undefined, 2)]),
       renderMainPanel(info),
       button('.appCloneButton.btn.btn-outline-primary.d-flex.cursor-pointer', [
         span('.d-flex.align-items-center', ['Clone this listing']),
@@ -220,7 +224,6 @@ function getPostModal(type, has_parent, sources, inputs) {
   }
 }
 
-
 function getModal(session, sources, inputs) {
   const admin = session.properties.admin
   const type = session.listing.type
@@ -270,12 +273,12 @@ export default function main(sources, inputs) {
       merged.Router,
       O.merge(actions.cancel$.mapTo('cancel'), actions.post$.mapTo('post'), actions.delete$.mapTo('delete'))
         .withLatestFrom(state$, (modal, state: any) => {
-          const session = state.session
-          session.properties.admin.modal = modal
+          const listing_result = state.listing_result
+          listing_result.session.properties.admin.modal = modal
           return {
             pathname: sources.Router.createHref('/'),
             type: 'push',
-            state: session
+            state: listing_result
           }
         }),
       actions.clone$
@@ -283,23 +286,23 @@ export default function main(sources, inputs) {
           return {
             pathname: '/create/listing',
             type: 'push',
-            state: getSessionClone(state.session)
+            state: getSessionClone(state.listing_result.session)
           }
         }),
       confirm_modal$.switchMap(x => x.close$)
         .withLatestFrom(state$, (_, state: any) => {
-          const new_session = state.session
-          new_session.properties.admin.modal = undefined
+          const listing_result = state.listing_result
+          listing_result.session.properties.admin.modal = undefined
           return {
             pathname: sources.Router.createHref('/'),
             type: 'replace',
-            state: new_session
+            state: listing_result
           }
         }),
       confirm_modal$.switchMap(x => x.confirm$)
         .withLatestFrom(state$, (message, state) => {
-          const session = state.session
-          const modal = session.properties.admin
+          const listing_result = state.listing_result
+          const modal = listing_result.session.properties.admin.modal
           if (modal === 'delete') {
             return {
               pathname: '/',
@@ -307,20 +310,26 @@ export default function main(sources, inputs) {
               state: [new MainAlert('Listing deleted successfully')]
             }
           } else if (modal === 'post') {
-            const new_session = listingToSession(inflateListing(message), session.properties.donde.search_area)
-            new_session.properties.admin.message = 'Listing posted successfully'
+            const listing = inflateListing(message)
+            listing_result.listing = listing
+            listing_result.session = listingToSession(listing, listing_result.session.properties.donde.search_area)
+            listing_result.session.properties.admin.message = 'Listing posted successfully'
+            listing_result.session.properties.admin.modal = undefined
             return {
               pathname: sources.Router.createHref('/'),
               type: 'push',
-              state: new_session
+              state: listing_result
             }
           } else if (modal === 'cancel') {
-            const new_session = listingToSession(inflateListing(message), session.properties.donde.search_area)
-            new_session.properties.admin.message = 'Listing canceled successfully'
+            const listing = inflateListing(message)
+            listing_result.listing = listing
+            listing_result.session = listingToSession(listing, listing_result.session.properties.donde.search_area)
+            listing_result.session.properties.admin.message = 'Listing canceled successfully'
+            listing_result.session.properties.admin.modal = undefined
             return {
               pathname: sources.Router.createHref('/'),
               type: 'push',
-              state: new_session
+              state: listing_result
             }
           } else {
             throw new Error('Invalid admin modal type: ' + modal)
@@ -328,15 +337,15 @@ export default function main(sources, inputs) {
         }),
       confirm_modal$.switchMap(x => x.confirm_all$)
         .withLatestFrom(state$, (message, state) => {
-          const session = state.session
-          const modal = session.properties.admin
+          const listing_result = state.listing_result
+          const modal = listing_result.session.properties.admin.modal
           if (modal === 'cancel') {
-            const new_session = listingToSession(inflateListing(message), session.properties.donde.search_area)
-            new_session.properties.admin.message = 'This and future recurrences canceled successfully'
+            listing_result.session = listingToSession(inflateListing(message), listing_result.session.properties.donde.search_area)
+            listing_result.session.properties.admin.message = 'This and future recurrences canceled successfully'
             return {
               pathname: sources.Router.createHref('/'),
               type: 'push',
-              state: new_session
+              state: listing_result
             }
           } else {
             throw new Error('Invalid admin modal type: ' + modal)

@@ -669,6 +669,20 @@ export function renderCuandoStatus(cuando) {
   ])
 }
 
+export function renderStatus(listing) {
+  const {release, cuando} = listing
+  if (release === 'posted') {
+    renderCuandoStatus(cuando)
+  } else if (release === 'canceled') {
+    return strong('.red.d-flex.justify-content-end', [capitalize(release)])
+  } else if (release === 'staged') {
+    return strong('.blue.d-flex.justify-content-end', [capitalize(release)])
+  }
+
+  return null
+
+}
+
 
 function renderSingleBegins(cuando) {
   const {begins} = cuando

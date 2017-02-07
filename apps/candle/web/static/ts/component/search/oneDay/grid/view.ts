@@ -1,4 +1,4 @@
-import {div, span, ul, li} from '@cycle/dom'
+import {div, span, strong, ul, li} from '@cycle/dom'
 import {combineObj} from '../../../../utils'
 import moment = require('moment')
 
@@ -6,7 +6,7 @@ import {CostOptions, TierPerkOptions, StageTimeOptions, MinutesTypeOptions} from
 
 import {
   renderName, renderCuando, renderDonde, 
-  renderCuandoStatus, renderCost, renderStageTime, renderPerformerSignup,
+  renderCuandoStatus, renderStatus, renderCost, renderStageTime, renderPerformerSignup,
   renderPerformerLimit, renderTextList, hasConsistentStageTimeType
 } from '../../../helpers/listing/renderBootstrap'
 
@@ -224,7 +224,7 @@ const compareBegins = (a, b) => {
 
 
 export function renderListingResult(listing) {
-  const {type, donde, cuando, meta} = listing
+  const {type, donde, cuando, meta, release} = listing
   const {
     name, event_types, categories, notes, 
     performer_cost, description, contact_info, 
@@ -238,7 +238,7 @@ export function renderListingResult(listing) {
         renderDonde(donde)
       ]),
       div('.col.flex-column', [
-        renderCuandoStatus(cuando),
+        release === 'canceled' ? renderStatus(listing) : null,
         performer_cost ? renderCost(listing) : null,
         stage_time ? renderStageTime(stage_time) : null,
         performer_sign_up ? renderPerformerSignup(performer_sign_up) : null,

@@ -119,7 +119,9 @@ defmodule Listing.Worker do
     case level do
       "canceled" -> 
         {:ok, listing} = Repo.update(cs)
-        remove_searchability(listing)
+        # Keep searchability for now since people may get confused when listing stops showing up...
+        #   filter this on the front-end
+        #remove_searchability(listing)
         {:reply, {:ok, listing}, %{state | listing: listing}}
       "posted" ->
         {:ok, listing} = Repo.update(cs)

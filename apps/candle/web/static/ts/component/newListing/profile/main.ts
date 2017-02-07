@@ -8,7 +8,7 @@ import * as Geolib from 'geolib'
 
 import {
   renderName, renderNameWithParentLink, renderCuando, renderDonde, 
-  renderCuandoStatus, renderCost, renderStageTime, renderPerformerSignup,
+  renderCuandoStatus, renderStatus, renderCost, renderStageTime, renderPerformerSignup,
   renderPerformerLimit, renderTextList, renderNote, getFullCostAndStageTime,
   renderContactInfo
 }  from '../../helpers/listing/renderBootstrap'
@@ -252,7 +252,7 @@ export function renderSingleListing(state) {
         renderContactInfo(contact_info),
       ]),
       div('.col-6', [
-        renderCuandoStatus(cuando),
+        renderStatus(listing),
         full_cost ? full_cost : null,
         full_stage_time ? full_stage_time : null,
         performer_sign_up ? renderPerformerSignup(performer_sign_up) : null,
