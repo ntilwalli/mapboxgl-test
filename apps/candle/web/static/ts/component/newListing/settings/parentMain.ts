@@ -17,39 +17,46 @@ function NotImplemented(sources, inputs) {
 function muxRouter(sources) {
   const {Router} = sources
   const route$ = Router.history$
+    .map(x => {
+      return x
+    })
     .publishReplay(1).refCount()
 
   const push_state$ = route$
     .filter(route => !!route.state)
     .map(route => route.state)
+    .map(x => {
+      return x
+    })
     .publishReplay(1).refCount()
 
   const no_push_state$ = route$ 
     .filter(route => !route.state)
-    .publishReplay(1).refCount()
-
-  const listing$ = push_state$
-    .filter(push_state => {
-      return !!push_state.children
-    })
-    .map(listing_result => {
-      return listing_result.listing
-    })
-    .map(inflateListing)
-    .publishReplay(1).refCount()
-  
-  const session$ = push_state$
-    .filter(push_state => !!push_state.properties)
     .map(x => {
       return x
     })
-    .map(inflateSession)
+    .publishReplay(1).refCount()
+
+  const without_session$ = push_state$
+    .filter(push_state => {
+      return !push_state.session
+    })
+    .map(x => {
+      return x
+    })
+    .publishReplay(1).refCount()
+  
+  const with_session$ = push_state$
+    .filter(push_state => !!push_state.session)
+    .map(x => {
+      return x
+    })
     .publishReplay(1).refCount()
 
 
   return {
-    listing$,
-    session$
+    with_session$,
+    without_session$
   }
 }
 
@@ -58,9 +65,9 @@ export default function main(sources, inputs) {
 
   const position_to_region = PositionToRegion(sources, {
     ...inputs, 
-    position$: muxed_routes.listing$
-      .map(x => {
-        return x.donde.lng_lat
+    position$: muxed_routes.without_session$
+      .map(listing_result => {
+        return listing_result.listing.donde.lng_lat
       })
     })
 
@@ -71,24 +78,35 @@ export default function main(sources, inputs) {
     }
   })
 
-  const listing_to_session$ = combineObj({
-    search_area$,
-    listing$: muxed_routes.listing$
-  }).map((info: any) => {
-    const {search_area, listing} = info
-    const session = listingToSession(listing, search_area)
-    return session
-  })
+  const enriched_result_with_session$ = search_area$
+    .withLatestFrom(muxed_routes.without_session$, ((search_area: any, listing_result: any) => {
+      const listing = inflateListing(listing_result.listing)
+      const session = listingToSession(listing, search_area)
+      return {
+        ...listing_result,
+        listing,
+        session
+      }
+    }))
 
-  const session$ = O.merge(
-    muxed_routes.session$.map(inflateSession),
-    muxed_routes.listing$.switchMap(_ => listing_to_session$.startWith(undefined))
+  const full_listing_result$ = O.merge(
+    muxed_routes.with_session$.map(listing_result => {
+      const out = {
+        ...listing_result, 
+        listing: inflateListing(listing_result.listing), 
+        session: inflateSession(listing_result.session)
+      }
+
+      return out
+    }),
+    enriched_result_with_session$
   )
 
-  const content$ = session$
-    .map(session => {
-      if (session) {
-        return Content(sources, {...inputs, session$: O.of(session)})
+  const content$ = full_listing_result$
+    .startWith(undefined)
+    .map(listing_result => {
+      if (listing_result) {
+        return Content(sources, {...inputs, listing_result$: O.of(listing_result)})
       } else {
         return {
           DOM: O.of(div(`.screen`, [

@@ -93,10 +93,16 @@ function model(actions, inputs) {
 function muxRouter(sources) {
   const {Router} = sources
   const route$ = Router.define(routes)
+    .map(x => {
+      return x
+    })
     .publishReplay(1).refCount()
 
   const yes_listing_id$ = route$.filter(route => {
       return route.value.info.type === 'success'
+    })
+    .map(x => {
+      return x
     })
     .publishReplay(1).refCount()
 
@@ -104,39 +110,48 @@ function muxRouter(sources) {
   const no_listing_id$ = route$.filter(route => {
       return route.value.info.type === 'error'
     })
+    .map(x => {
+      return x
+    })
     .publishReplay(1).refCount()
 
   const push_state$ = yes_listing_id$
     .filter(route => !!route.location.state)
     .map(route => route.location.state)
+    .map(x => {
+      return x
+    })
     .publishReplay(1).refCount()
 
   const no_push_state$ = yes_listing_id$
     .filter(route => !route.location.state)
+    .map(x => {
+      return x
+    })
 
   const listing_result$ = push_state$
-    .filter(push_state => {
-      return !!push_state.children
-    })
     .map(drillInflate)
-    .publishReplay(1).refCount()
-  
-  const session$ = push_state$
-    .filter(push_state => !!push_state.properties)
-    .map(inflateSession)
+    .map(x => {
+      return x
+    })
     .publishReplay(1).refCount()
 
   const li_wo_push_state$ = yes_listing_id$.filter(route => {
-    return !route.location.state
-  })
+      return !route.location.state
+    })
+    .map(x => {
+      return x
+    })
 
   const retrieve_listing_id$ = no_push_state$
     .map(route => parseInt(route.value.match[1]))
+    .map(x => {
+      return x
+    })
     .publishReplay(1).refCount()
 
   return {
     listing_result$,
-    session$,
     retrieve_listing_id$,
     no_listing_id$,
     route$
@@ -178,7 +193,7 @@ function fromListingResult(sources, inputs, result: any) {
   })
 
   const state$ = combineObj({
-    page$: navigator.output$,
+    page$: navigator.output$.take(1),
     authorization$: inputs.Authorization.status$,
     listing_result$: O.of(result)
   }).publishReplay(1).refCount()
@@ -219,60 +234,12 @@ function fromListingResult(sources, inputs, result: any) {
   return {
     ...merged,
     DOM: view(components, navigator.active$), 
-    redirect$: invalid_state$
+    redirect$: invalid_state$,
+    next$: navigator.output$.skip(1)
   }
 }
-
-function fromSession(sources, inputs, result) {
-  const router_with_listing_id = sources.Router.path(result.listing.id.toString())
-  const navigator = isolate(Navigator)({...sources, Router: router_with_listing_id}, {
-    ...inputs, 
-    props$: O.of(result)
-  })
-
-  const state$ = combineObj({
-    page$: navigator.output$,
-    authorization$: inputs.Authorization.status$,
-    listing_result$: O.of(result)
-  }).publishReplay(1).refCount()
-
-  const valid_state$ = state$.filter((x: any) => isValid(x))
-    .map((x: any) => {
-      return x.page
-    })
-  const invalid_state$ = state$.filter((x: any) => !isValid(x))
-    .map(x => {
-      return x
-    })
-
-  const content$ = valid_state$
-    .map((page: any) => {
-      if (!page || page === 'settings') {
-        const out = Settings({...sources, Router: router_with_listing_id.path(page)}, {...inputs, props$: O.of(result), menu_active$: navigator.active$})
-        return out
-      } else {
-        throw new Error('Session push_state is only for settings')
-      }
-    }).publishReplay(1).refCount()
-  
-  const content = componentify(content$)
-
-  const components = {
-    navigator: navigator.DOM,
-    content: content.DOM
-  }
-
-  const merged = mergeSinks(navigator, content)
-  return {
-    ...merged,
-    DOM: view(components, navigator.active$), 
-    redirect$: invalid_state$
-  }
-}
-
 
 export default function main(sources, inputs): any {
-
   const {Router} = sources
   const muxed_router: any = muxRouter(sources)
   const muxed_http = muxHTTP(sources)
@@ -280,7 +247,6 @@ export default function main(sources, inputs): any {
   const component$ = O.merge(
     muxed_router.retrieve_listing_id$.map(_ => TimeoutLoader(sources, inputs)),
     muxed_router.listing_result$.map((result: any) => fromListingResult(sources, inputs, result)),
-    muxed_router.session$.map((session: any) => fromSession(sources, inputs, session))
   ).publishReplay(1).refCount()
 
   const component = componentify(component$)

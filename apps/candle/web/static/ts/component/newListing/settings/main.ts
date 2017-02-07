@@ -85,7 +85,7 @@ function view(state$, components, menu_active$) {
 
 function reducers(actions, inputs) {
   const updated_result_r = inputs.updated_result$.map(result => state => {
-    return state.set('session', Immutable.fromJS(result.session)).set('updated', true).set('valid', result.valid)
+    return state.setIn(['listing_result', 'session'], Immutable.fromJS(result.session)).set('updated', true).set('valid', result.valid)
   })
 
   return O.merge(updated_result_r)
@@ -95,11 +95,11 @@ function model(actions, inputs) {
   const reducer$ = reducers(actions, inputs)
 
   return combineObj({
-    session$: inputs.session$,
+    listing_result$: inputs.listing_result$,
   }).take(1)
     .switchMap((info: any) => {
-      const {session} = info
-      return reducer$.startWith(Immutable.fromJS({session, valid: true, updated: false, save_status: undefined}))
+      const {listing_result} = info
+      return reducer$.startWith(Immutable.fromJS({listing_result, valid: true, updated: false, save_status: undefined}))
         .scan((acc, f: Function) => f(acc))
     })
     .map((x: any) => x.toJS())
@@ -115,14 +115,15 @@ export default function main(sources, inputs) {
   const content$ = navigator.output$
     .map((page: any) => {
       const new_sources = {...sources, Router: sources.Router.path(page)}
+      const session$ = inputs.listing_result$.pluck('session').publishReplay(1).refCount()
       if (page === 'basics') {
-        return Basics(new_sources, inputs)
+        return Basics(new_sources, {...inputs, session$})
       } else if (page === 'advanced') {
-        return Advanced(new_sources, inputs)
+        return Advanced(new_sources, {...inputs, session$})
       } else if (page === 'admin') {
-        return Admin(new_sources, inputs)
+        return Admin(new_sources, {...inputs, session$})
       } else {
-        return NotImplemented(new_sources, inputs)
+        return NotImplemented(new_sources, {...inputs, session$})
       }
     }).publishReplay(1).refCount()
 
@@ -147,10 +148,10 @@ export default function main(sources, inputs) {
     Router: O.merge(
       merged.Router,
       navigator.next$
-        .withLatestFrom(inputs.session$, (page, session: any) => {
+        .withLatestFrom(inputs.listing_result$, (page, listing_result: any) => {
           return {
             pathname: sources.Router.createHref('/' + page),
-            state: session,
+            state: listing_result,
             type: 'push'
           }
         })

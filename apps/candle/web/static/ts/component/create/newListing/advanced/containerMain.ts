@@ -7,7 +7,7 @@ import {
   ListingTypes, CategoryTypes, 
   EventTypeToProperties
 } from '../../../../listingTypes'
-import {inflateSession, deflateSession, fromCheckbox, getDefaultSession} from '../../../helpers/listing/utils'
+import {inflateSession, deflateSession, fromCheckbox, getDefaultSession, getSessionStream} from '../../../helpers/listing/utils'
 import clone = require('clone')
 
 import Content from './outputMain'
@@ -18,6 +18,9 @@ const default_instruction = 'Click on a section to see tips'
 function intent(sources) {
   const {DOM, Global, Router} = sources
   
+  const session$ = getSessionStream(sources)
+    .publishReplay(1).refCount()
+
   const open_instruction$ = DOM.select('.appOpenInstruction').events(`click`)
   const close_instruction$ = O.merge(
     Global.resize$,
@@ -34,6 +37,7 @@ function intent(sources) {
   const error_save_exit$ = saved_exit.error$
 
   return {
+    session$,
     open_instruction$,
     close_instruction$,
     go_to_preview$,
@@ -168,7 +172,7 @@ function view(state$, components) {
 
 export function main(sources, inputs) {
   const actions = intent(sources)
-  const content = Content(sources, {...inputs, show_errors$: actions.show_errors$})
+  const content = Content(sources, {...inputs, session$: actions.session$, show_errors$: actions.show_errors$})
 
   const state$ = model(actions, {...inputs, instruction_focus$: content.instruction_focus$})
   const vtree$ = view(state$, {content: content.DOM})

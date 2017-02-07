@@ -44,14 +44,11 @@ function arrayUnique(array) {
 
 function intent(sources) {
   const {DOM, Global, Router} = sources
-  const session$ = getSessionStream(sources)
-    .publishReplay(1).refCount()
 
   const main_panel_click$ = DOM.select('.appMainPanel').events('click').filter(targetIsOwner)
     .mapTo(default_instruction)
 
   return {
-    session$,
     main_panel_click$
   }
 }
@@ -249,7 +246,7 @@ function calculateComponentTypes(session) {
 function model(actions, inputs) {
   const reducer$ = reducers(actions, inputs)
   return combineObj({
-    session$: actions.session$.take(1),
+    session$: inputs.session$.take(1),
     authorization$: inputs.Authorization.status$
   })
     .switchMap((info: any) => {
