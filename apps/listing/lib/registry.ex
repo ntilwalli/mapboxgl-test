@@ -34,13 +34,13 @@ defmodule Listing.Registry do
     {:ok, state}
   end
 
-  def handle_call({:lookup, listing_id}, _, %{pids: pids, worker_supervisor: w_sup} = state) do
+  def handle_call({:lookup, listing_id}, _, %{pids: pids, worker_supervisor: w_sup, notification_manager: n_mgr} = state) do
     case Map.get(pids, listing_id) do
       nil -> 
         case Shared.Repo.get(Shared.Listing, listing_id) do
           nil -> {:reply, {:error, "Listing with id #{listing_id} does not exist in database."}, state}
           listing -> 
-            {pid, _ref} = val = start_listing(listing, w_sup)
+            {pid, _ref} = val = start_listing(listing, w_sup, n_mgr)
             new_state = get_new_state_w_add(listing.id, val, state)
             {:reply, {:ok, pid}, new_state}
         end
@@ -48,16 +48,16 @@ defmodule Listing.Registry do
     end
   end
 
-  def handle_call({:create, listing, user}, _, %{worker_supervisor: w_super, notification_manager: notification_manager} = state) do
+  def handle_call({:create, listing, user}, _, %{worker_supervisor: w_super, notification_manager: n_mgr} = state) do
     listing = add_timezone(listing)
-    {:ok, {pid, ref, listing}} = create_listing(listing, user, w_super)
+    {:ok, {pid, ref, listing}} = create_listing(listing, user, w_super, n_mgr)
     new_state = get_new_state_w_add(listing.id, {pid, ref}, state)
 
     object = listing.id
     verbs = ["create_listing"]
     subjects = [listing.user_id]
 
-    Notification.Manager.notify(notification_manager, object, verbs, subjects, user)
+    Notification.Manager.notify(n_mgr, object, verbs, subjects, user)
     Listing.GenerateRecurring.generate(Listing.GenerateRecurring, user, listing)
 
     {:reply, {:ok, listing}, new_state}
@@ -84,7 +84,7 @@ defmodule Listing.Registry do
     {:reply, "got bulk", state}
   end
 
-  def handle_info({:DOWN, ref, :process, _pid, reason}, %{pids: pids, refs: refs, worker_supervisor: w_sup} = state) do
+  def handle_info({:DOWN, ref, :process, _pid, reason}, %{pids: pids, refs: refs, worker_supervisor: w_sup, notification_manager: n_mgr} = state) do
     case reason do
       :normal -> 
         {listing_id, new_refs} = Map.pop(refs, ref)
@@ -94,7 +94,7 @@ defmodule Listing.Registry do
         {listing_id, refs} = Map.pop(refs, ref)
         new_pids = Map.delete(pids, listing_id)
         listing = Shared.Repo.one!(from l in Shared.Listing, where: l.id == ^listing_id)
-        {pid, ref} = start_listing(listing, w_sup)
+        {pid, ref} = start_listing(listing, w_sup, n_mgr)
         out = %{state | pids: Map.put(pids, listing_id, pid), refs: Map.put(refs, ref, listing_id)}
         {:noreply, out}
     end
@@ -118,13 +118,13 @@ defmodule Listing.Registry do
     %{listing | "donde" => Map.put(donde, "lng_lat", Map.put(lng_lat, "timezone", tz))}
   end
 
-  defp maybe_get_or_start(listing_id, %{pids: pids, worker_supervisor: w_sup} = state) do
+  defp maybe_get_or_start(listing_id, %{pids: pids, worker_supervisor: w_sup, notification_manager: n_mgr} = state) do
     case Map.get(pids, listing_id) do
       nil -> 
         case Shared.Repo.get(Shared.Listing, listing_id) do
           nil -> {:error, "Listing with id #{listing_id} does not exist in database."}
           listing -> 
-            {pid, _ref} = val = start_listing(listing, w_sup)
+            {pid, _ref} = val = start_listing(listing, w_sup, n_mgr)
             new_state = get_new_state_w_add(listing.id, val, state)
             {:started, pid, new_state}
         end
@@ -143,36 +143,36 @@ defmodule Listing.Registry do
     init_acc = %{pids: %{}, refs: %{}, worker_supervisor: worker_supervisor, notification_manager: notification_manager}
     out =
       listings |> Enum.reduce(init_acc, fn (listing, acc) -> 
-        info = start_listing(listing, worker_supervisor)
+        info = start_listing(listing, worker_supervisor, notification_manager)
         get_new_state_w_add(listing.id, info, acc)
       end)
     out
   end
 
-  defp create_listing(listing, user, w_sup) do
+  defp create_listing(listing, user, w_sup, n_mgr) do
     #IO.inspect {:create_listing, listing}
     {:ok, listing} = Shared.Manager.ListingManager.add(listing, user)
-    {pid, ref} = start_listing(listing, w_sup)
+    {pid, ref} = start_listing(listing, w_sup, n_mgr)
     {:ok, {pid, ref, listing}}
   end
 
-  defp start_listing(listing, w_sup) do
+  defp start_listing(listing, w_sup, n_mgr) do
     {:registered_name, self_name} = Process.info self, :registered_name
-    {:ok, pid} = Listing.Worker.Supervisor.start_worker(w_sup, listing, self_name)
+    {:ok, pid} = Listing.Worker.Supervisor.start_worker(w_sup, listing, self_name, n_mgr)
     ref = Process.monitor(pid)
     {pid, ref}
   end
 
-  defp test() do
-    cs = Shared.NotificationItem.changeset(%Shared.NotificationItem{}, %{
-      object: 12,
-      verbs: ["update_listing_name", "update_listing_start"],
-      subjects: [39],
-      user_id: 39
-    })
+  # defp test() do
+  #   cs = Shared.NotificationItem.changeset(%Shared.NotificationItem{}, %{
+  #     object: 12,
+  #     verbs: ["update_listing_name", "update_listing_start"],
+  #     subjects: [39],
+  #     user_id: 39
+  #   })
 
-    Process.send_after(self(), {:test, Notification.Manager, apply_changes(cs)}, 5000)
-  end
+  #   Process.send_after(self(), {:test, Notification.Manager, apply_changes(cs)}, 5000)
+  # end
 
   # def handle_call({:start, %{id: listing_id} = listing}, _, {pids, refs}) do
   #   case Map.get(pids, listing_id) do

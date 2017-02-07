@@ -23,7 +23,7 @@ function intent(sources) {
   const {DOM, Global, Router} = sources
   const session$ = Router.history$
     .map(x => {
-      return inflateSession(x.state.data)
+      return inflateSession(x.state)
     })
     .map(x => {
       return x

@@ -60,6 +60,7 @@ defmodule Shared.Listing do
     |> validate_required(@required_fields)
     |> validate_inclusion(:type, ["single", "recurring"])
     |> validate_inclusion(:visibility, ["public", "private", "hidden"])
+    |> validate_inclusion(:release, ["posted", "staged", "canceled"])
     |> cast_dynamic_parent_flag(:type, :cuando, %{"recurring" => Shared.Model.Recurring, "single" => Shared.Model.Once})
     # |> cast_dynamic_func(:meta, fn cs, dynamic_val -> 
       #   # IO.inspect dynamic_val

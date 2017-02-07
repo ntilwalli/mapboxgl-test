@@ -731,16 +731,16 @@ export function RelativeTimeComponent(sources, props$, options, component_id, he
     return div('.row ', [
       div('.col-12', [
         div('.row', [
-          div('.col-12.raw-line.fx-wrap', [
+          div('.col-12.d-flex.flex-wrap', [
             em('.mr-4', [heading_title]),
-            div('.content', [
+            div('.d-flex.align-items-center', [
               type,
               data && same_line ? span('.ml-xs', [data]) : null
             ]),
           ]), 
         ]),
         !same_line ? div('.secondary-line.mt-xs', [
-          div('.content', [data])
+          div('.d-flex.align-items-center', [data])
         ]) : null
       ])
     ])
@@ -805,13 +805,13 @@ export function BootstrapRelativeTimeComponent(sources, props$, options, compone
   }).debounceTime(0).map((components: any) => {
     const {relative_type, type, data} = components
     const same_line = relative_type !== RelativeTimeOptions.PREVIOUS_WEEKDAY_AT_TIME 
-    return div('.column', [
-      span('.row', [
-        div(`.item.flex.align-center`, [heading_title]), 
+    return div('.d-flex.flex-column', [
+      span('.d-flex', [
+        div(`.d-flex.align-center`, [heading_title]), 
         span({class: {item: same_line}}, [type]),
         same_line ? data : null
       ]),
-      !same_line? span('.column', {style: {width: "20rem"}}, [data]) : null
+      !same_line? span('.d-flex.flex-column', {style: {width: "20rem"}}, [data]) : null
     ])
   })
 

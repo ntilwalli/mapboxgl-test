@@ -28,8 +28,8 @@ function InAppCheckboxComponent(sources, props$) {
   const vtree$ = shared$.map(props => {
 
     return div('.row', [
-      span('.col-12.raw-line', [
-        span('.content', [
+      span('.col-12.d-flex', [
+        span('.d-flex.align-items-center', [
           div('.form-check.form-check-inline.mb-0', [
             label('.form-check-label', [
               input('.appInAppCheckInCheckbox.form-check-input.mr-xs', {attrs: {type: 'checkbox', name: 'in-app-checkin', checked: props === true}}, []),

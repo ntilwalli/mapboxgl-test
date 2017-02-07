@@ -5,8 +5,8 @@ defmodule Listing.Worker.Supervisor do
     Supervisor.start_link(__MODULE__, :ok, name: name)
   end
 
-  def start_worker(pid, listing, registry_name) do
-    Supervisor.start_child(pid, [listing, registry_name])
+  def start_worker(pid, listing, registry_name, notification_manager) do
+    Supervisor.start_child(pid, [listing, registry_name, notification_manager])
   end
 
   def stop_worker(pid, reason \\ :normal) do

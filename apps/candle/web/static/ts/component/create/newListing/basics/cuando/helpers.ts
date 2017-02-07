@@ -75,3 +75,8 @@ export function applyRecurringCuando(session) {
     listing.cuando.duration = getDuration(start_time, end_time)
   }
 }
+
+
+
+
+

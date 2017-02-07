@@ -289,6 +289,11 @@ address {
   pointer-events: none;
 }
 
+.light-disabled, .read-only {
+  opacity: .5;
+  pointer-events: none;
+}
+
 
 // .modal {
 //   vertical-align: middle;

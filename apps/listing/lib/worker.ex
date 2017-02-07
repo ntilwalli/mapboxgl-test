@@ -17,8 +17,8 @@ defmodule Listing.Worker do
   alias Shared.Model.Once, as: CuandoOnce
 
 
-  def start_link(listing, registry_name) do
-    GenServer.start_link(__MODULE__, {:ok, listing, registry_name}, [])
+  def start_link(listing, registry_name, notification_manager) do
+    GenServer.start_link(__MODULE__, {:ok, listing, registry_name, notification_manager}, [])
   end
 
   def delete(server, user) do
@@ -37,7 +37,6 @@ defmodule Listing.Worker do
     GenServer.call(server, {:add_child_from_struct, listing, user})#, listing, user})
   end
 
-
   def retrieve(server, user) do
     GenServer.call(server, {:retrieve, user})
   end
@@ -46,7 +45,11 @@ defmodule Listing.Worker do
     GenServer.call(server, {:check_in, user, lng_lat})
   end
 
-  def init({:ok, %Shared.Listing{id: listing_id}, r_name}) do
+  def change_release_level(server, user, level) do
+    GenServer.call(server, {:change_release_level, user, level})
+  end
+
+  def init({:ok, %Shared.Listing{id: listing_id}, r_name, n_mgr}) do
     Logger.metadata(listing_id: listing_id)
     case retrieve_listing_with_other_data(listing_id) do
       nil -> {:stop, "Listing not found in database"}
@@ -54,7 +57,7 @@ defmodule Listing.Worker do
         IO.inspect "Starting process for listing #{listing_id}"
         #IO.inspect listing
         :ok = ensure_searchability(listing)
-        {:ok, %{listing: listing, registry_name: r_name}, 60 * 1_000}
+        {:ok, %{listing: listing, registry_name: r_name, notification_manager: n_mgr}, 60 * 1_000}
     end
   end
 
@@ -108,6 +111,27 @@ defmodule Listing.Worker do
     Shared.Manager.ListingManager.delete_one(listing)
     IO.inspect {:attempting_delete, listing}
     {:stop, :normal, :ok, nil}
+  end
+
+  def handle_call({:change_release_level, user, level} = msg, _, %{listing: listing} = state) do
+    IO.inspect msg   
+    cs = Ecto.Changeset.change(listing, release: level)
+    case level do
+      "canceled" -> 
+        {:ok, listing} = Repo.update(cs)
+        remove_searchability(listing)
+        {:reply, {:ok, listing}, %{state | listing: listing}}
+      "posted" ->
+        {:ok, listing} = Repo.update(cs)
+        ensure_searchability(listing)
+        {:reply, {:ok, listing}, %{state | listing: listing}}
+      "staged" -> 
+        {:ok, listing} = Repo.update(cs)
+        remove_searchability(listing)
+        {:reply, {:ok, listing}, %{state | listing: listing}}
+      _ -> 
+        {:reply, {:error, "Invalid level received #{level}"}, state}
+    end
   end
 
   def handle_call({:check_in, user, %{lng: lng, lat: lat} = lng_lat}, _from, %{listing: listing} = state) do
@@ -227,7 +251,7 @@ defmodule Listing.Worker do
   end
 
   def ensure_searchability(listing) do
-    if listing.type == "single" do
+    if listing.type === "single"  && listing.release === "posted" && listing.visibility === "public" do
       listing_id = listing.id
       case Repo.get(Shared.SingleListingSearch, listing_id) do
         nil -> :ok
@@ -259,7 +283,22 @@ defmodule Listing.Worker do
     else
       :ok
     end
+  end
 
+  def remove_searchability(listing) do
+      listing_id = listing.id
+      case Repo.get(Shared.SingleListingSearch, listing_id) do
+        nil -> :ok
+        _ -> 
+          case Repo.transaction(fn -> 
+              from(p in SLSearch, where: p.listing_id == ^listing_id) |> Repo.delete_all
+              from(p in SLCategories, where: p.listing_id == ^listing_id) |> Repo.delete_all
+              from(p in SLEventTypes, where: p.listing_id == ^listing_id) |> Repo.delete_all
+            end) do
+              {:ok, _} -> :ok
+              val -> val
+          end
+      end
   end
 
   #defp update_children(_) do end

@@ -62,8 +62,8 @@ function PreRegistrationRadios(sources, props$) {
   const vtree$ = shared$.map(registration_type =>  {
 
     return div('.row', [
-      span('.col-12.raw-line', [
-        span('.content.fx-wrap', [
+      span('.col-12.d-flex', [
+        span('.d-flex.align-items-center.flex-wrap', [
           div('.form-check.form-check-inline.mb-0', [
             label('.form-check-label', [
               input('.appPreRegistrationTypeInput.form-check-input.mr-xs', {attrs: {type: 'radio', name: 'registration-type', value: 'app', checked: registration_type === 'app'}}, []),
@@ -108,9 +108,9 @@ function InPersonStyleComponent(sources, props$) {
 
   const vtree$ = shared$.map(styles =>  {
     return div('.row', [
-      span('.col-12.raw-line.fx-wrap', [
+      span('.col-12.d-flex.flex-wrap', [
         em('.mr-4', ['Style']),
-        span('.content', [
+        span('.d-flex.align-items-center', [
           div('.form-check.form-check-inline.mb-0', [
             label('.form-check-label', [
               input('.appInPersonStyleInput.form-check-input.mr-xs', {attrs: {type: 'checkbox', name: 'in-person-style', value: 'bucket', checked: styles.some(x => x === 'bucket')}}, []),
@@ -198,9 +198,9 @@ function InPersonComponent(sources, props$, component_id) {
     return div('.row', [
       div('.col-12', [
         div('.row.mb-xs', [
-          div('.col-12.raw-line.fx-wrap', [
+          div('.col-12.d-flex.flex-wrap', [
             em('.mr-4 ', ['Begins']),
-            div('.content.fx-wrap', [
+            div('.d-flex.align-items-center.flex-wrap', [
               span('.d-fx-a-c.mr-xs', [components.begins]),
               span('.d-fx-a-c', ['minutes before event start'])
             ]),

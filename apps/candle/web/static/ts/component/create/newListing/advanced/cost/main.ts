@@ -256,13 +256,13 @@ export default function main(sources, inputs) {
     }).debounceTime(0).map((components: any) => {
       const {type, cover, minimum_purchase, cost_per_minute} = components
       const both = cover && minimum_purchase
-      const line_type = inputs.heading_text ? '.input-line' : '.raw-line'
+      const line_type = inputs.heading_text ? '.input-line' : '.d-flex'
       return div('.row', [
         div('.col-12', [
           div('.row', [
             div('.col-12' + line_type, [
               inputs.heading_text ? div('.heading', [inputs.heading_text]) : null,
-              div('.content.fx-wrap', [
+              div('.d-flex.align-items-center.flex-wrap', [
                 div('.d-fx-a-c.fx-auto-width', {class: {'mb-xs': cover || minimum_purchase || cost_per_minute}}, [type]),
                 !both && cover ? span('.d-fx-a-c.ml-xs.mb-xs', [
                   cover,
@@ -277,7 +277,7 @@ export default function main(sources, inputs) {
           both ? div('.row', [
             div('.col-12', [
               div('.row', [
-                div('.col-12.raw-line.fx-auto-width.fx-wrap', [
+                div('.col-12.d-flex.fx-auto-width.flex-wrap', [
                   em('.mr-4', ['Cover']),
                   div('.d-fx-a-c', [
                     cover,
@@ -286,7 +286,7 @@ export default function main(sources, inputs) {
                 ])
               ]),
               div('.row', [
-                div('.col-12.raw-line.fx-auto-width.fx-wrap', [
+                div('.col-12.d-flex.fx-auto-width.flex-wrap', [
                   em('.mr-4', ['Minimum purchase']),
                   minimum_purchase
                 ])

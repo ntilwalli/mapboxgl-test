@@ -38,7 +38,7 @@ function NumberOfPeopleComponent(sources, props$, component_id) {
   const input = NumberInputComponent(sources, shared$.map(x => x.toString()), message)
 
   const vtree$ = input.DOM.map((input: any) => {
-    return div('.raw-line', [
+    return div('.d-flex', [
       span('.mr-xs', [input]),
       'people'
     ])
@@ -64,8 +64,8 @@ function EnableWaitlistComponent(sources, props$) {
 
   const vtree$ = shared$.map(props => {
     return div('.row', [
-      span('.col-12.raw-line', [
-        span('.content', [
+      span('.col-12.d-flex', [
+        span('.d-flex.align-items-center', [
           div('.form-check.form-check-inline.mb-0', [
             label('.form-check-label', [
               input('.appCheckbox.form-check-input.mr-xs', {attrs: {type: 'checkbox', name: 'in-app-waitlist', checked: props === true}}, []),
@@ -122,7 +122,7 @@ function ByTypeComponent(sources, props$, component_id) {
     type: type_combo.DOM, 
     data: input_component.DOM
   }).debounceTime(0).map((components: any) => {
-    return div('.raw-line', [
+    return div('.d-flex', [
       div('.mr-xs', [components.type]),
       components.data
     ])
@@ -207,13 +207,13 @@ function LimitByTypeComponent(sources, props$, in_app_enabled$, component_id) {
     return div('.row', [
       div('.col-12', [
         div('.row.mb-xs', [
-          div('.col-12.raw-line', [
+          div('.col-12.d-flex', [
             span('.mr-4', ['In-person']),
             components.in_person
           ])
         ]),
         div('.row.mb-xs', [
-          div('.col-12.raw-line', [
+          div('.col-12.d-flex', [
             span('.mr-4', ['Pre-registration']),
             components.pre_registration
           ])

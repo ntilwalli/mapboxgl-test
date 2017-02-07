@@ -141,7 +141,7 @@ function renderCategories(state) {
   return div(`.categories`, [
     div(`.switch-section`, [
       renderCheckbox(state, `.appFilterCategories`, `Categories`, `filterCategories`, true),
-      div(`.content`, [
+      div(`.d-flex.align-items-center`, [
         renderCheckbox(state, `.appCategoryComedy`, `Comedy`, `categories`, `comedy`, `filterCategories`),
         renderCheckbox(state, `.appCategoryMusic`, `Music`, `categories`, `music`, `filterCategories`),
         renderCheckbox(state, `.appCategoryPoetry`, `Poetry`, `categories`, `poetry`, `filterCategories`),
@@ -155,7 +155,7 @@ function renderCosts(state) {
   return div(`.cost`, [
     div(`.switch-section`, [
       renderCheckbox(state, `.appFilterCosts`, `Cost`, `filterCosts`, true),
-      div(`.content`, [
+      div(`.d-flex.align-items-center`, [
         renderCheckbox(state, `.appCostFree`, `Free`, `costs`, `free`, `filterCosts`),
         renderCheckbox(state, `.appCostPaid`, `Paid`, `costs`, `paid`, `filterCosts`)
       ])
@@ -170,7 +170,7 @@ function renderStageTime(info) {
   return div(`.stage-time`, [
     div(`.switch-section`, [
       renderCheckbox(state, `.appFilterStageTime`, `Minimum stage time (minutes)`, `filterStageTime`, true),
-      div(`.content`, [stageTime])
+      div(`.d-flex.align-items-center`, [stageTime])
     ])
   ])
 }

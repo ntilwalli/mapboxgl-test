@@ -276,9 +276,15 @@ function model(actions, inputs) {
 
 function view(state$, children$) {
   return combineObj({
-    state$,
-    children$
-  }).map((info: any) => {
+    state$: state$.map(x => {
+      return x
+    }),
+    children$: children$.map(x => {
+      return x
+    })
+  })
+  .debounceTime(0)
+  .map((info: any) => {
     const {state, children} = info
     const {properties, errors} = state
     const display_errors = 
@@ -293,7 +299,7 @@ function view(state$, children$) {
 
     return div('.properties', [
       ...display_errors,
-      div(children.map(x => div('.mb-4', [x])))
+      div('.mt-4', children.map(x => div({style: {"margin-bottom": "2rem"}}, [x])))
     ])
   })
 }

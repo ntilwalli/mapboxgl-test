@@ -102,9 +102,9 @@ export default function main(sources, inputs) {
       //div('.sub-heading.section-heading ', ['Check-in']),
       div('.col-12', [
         div('.row.mb-xs', [
-          div('.col-12.raw-line.fx-wrap', [
+          div('.col-12.d-flex.flex-wrap', [
             div('.mr-4', [em(['Begins'])]),
-            div('.content.fx-wrap', [
+            div('.d-flex.align-items-center.flex-wrap', [
               div('.mr-xs', [components.begins]),
               'minutes before event start'
             ]),

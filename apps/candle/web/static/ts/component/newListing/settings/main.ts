@@ -3,10 +3,12 @@ import Immutable = require('immutable')
 import {div, button, img, span, i, a, h6, em, strong, pre, ul, li} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 import {combineObj, createProxy, mergeSinks, componentify, processHTTP, PositionToRegion} from '../../../utils'
-import {inflateListing, inflateSession, listingToSession} from '../../helpers/listing/utils'
+import {inflateListing, inflateSession, listingToSession, isExpired} from '../../helpers/listing/utils'
 
 import Menu from './menu'
-import Basics from '../../create/newListing/basics/outputMain'
+import Basics from '../../create/newListing/basics/updateMain'
+import Advanced from '../../create/newListing/advanced/updateMain'
+import Admin from './admin'
 
 function NotImplemented(sources, inputs) {
   return {
@@ -32,21 +34,16 @@ function drillInflate(result) {
 
 function intent(sources) {
   const {DOM} = sources
-  const save$ = DOM.select('.appSaveButton').events('click')
   return {
-    save$
   }
 }
 
-function muxHTTP(sources) {
-  return processHTTP(sources, 'updateListing')
-}
-
 function renderButtons(state) {
+  const is_expired = isExpired(state.session)
   return div([
-    button('.appSaveButton.mt-4.btn.btn-outline-success.d-flex.cursor-pointer.mt-4', [
+    button('.appSaveButton.mt-4.btn.btn-outline-success.d-flex.cursor-pointer.mt-4', {class: {"read-only": is_expired}}, [
       span('.d-flex.align-items-center', ['Save changes']),
-      span('.fa.fa-angle-double-right.ml-2.d-flex.align-items-center', [])
+      //span('.fa.fa-angle-double-right.ml-2.d-flex.align-items-center', [])
     ])
   ])
 }
@@ -61,7 +58,7 @@ function view(state$, components, menu_active$) {
     .map((info: any) => {
         const {state, components, menu_active} = info
       const {navigator, content} = components
-      return div('listing-settings', [
+      return div('.listing-settings', [
         div({
           style: {
             "border-width": "1px 0", 
@@ -79,10 +76,9 @@ function view(state$, components, menu_active$) {
         }, [
           navigator
         ]),
-        div('.container', {style: {"margin-top": "5rem"}}, [
+        div('.container.mb-4', {style: {"margin-top": "5rem"}}, [
           content
         ]),
-        renderButtons(state)
       ])
     })
 }
@@ -92,11 +88,7 @@ function reducers(actions, inputs) {
     return state.set('session', Immutable.fromJS(result.session)).set('updated', true).set('valid', result.valid)
   })
 
-  const save_status_r = inputs.save_status$.map(status => state => {
-    return state.set('save_status', status)
-  })
-
-  return O.merge(updated_result_r, save_status_r)
+  return O.merge(updated_result_r)
 }
 
 function model(actions, inputs) {
@@ -120,23 +112,22 @@ function model(actions, inputs) {
 export default function main(sources, inputs) {
   const actions = intent(sources)
   const navigator = isolate(Menu)(sources, inputs)
-  const muxed_http = muxHTTP(sources)
   const content$ = navigator.output$
     .map((page: any) => {
+      const new_sources = {...sources, Router: sources.Router.path(page)}
       if (page === 'basics') {
-        return Basics(sources, {
-          ...inputs, 
-          show_errors$: actions.save$.mapTo(true).startWith(false), 
-          save_status$: muxed_http.good$,
-          
-        })
+        return Basics(new_sources, inputs)
+      } else if (page === 'advanced') {
+        return Advanced(new_sources, inputs)
+      } else if (page === 'admin') {
+        return Admin(new_sources, inputs)
       } else {
-        return NotImplemented(sources, inputs)
+        return NotImplemented(new_sources, inputs)
       }
     }).publishReplay(1).refCount()
 
   const content: any = componentify(content$)
-  const state$ = model({}, {...inputs, save_status$: muxed_http.good$, updated_result$: content$.switchMap((x: any) => x.output$)})
+  const state$ = model({}, {...inputs, updated_result$: content$.switchMap((x: any) => x.output$)})
 
   const components = {
     navigator: navigator.DOM
@@ -149,28 +140,10 @@ export default function main(sources, inputs) {
       })
   }
 
-  const to_http$ = actions.save$
-        .withLatestFrom(state$, (_, state: any) => {
-          return state
-        })
-        .filter((state: any) => state.updated && state.valid)
-        .map((state: any) => {
-          return {
-            url: `/api/user`,
-            method: `post`,
-            category: 'updateListing',
-            send: {
-              route: `/listing_session/save`,
-              data: state.session.listing
-            }
-          }
-        })
-
   const merged = mergeSinks(navigator, content)
   return {
     ...merged,
     DOM: view(state$, components, inputs.menu_active$),
-    HTTP: to_http$,
     Router: O.merge(
       merged.Router,
       navigator.next$

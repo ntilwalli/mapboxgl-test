@@ -12,7 +12,7 @@ import TimeoutLoader from '../../library/timeoutLoader'
 import WTF from '../../library/wtf'
 import ListingNotFound from '../../library/listingNotFound'
 
-import {inflateListing} from '../helpers/listing/utils'
+import {inflateListing, inflateSession} from '../helpers/listing/utils'
 
 const routes = [
   {pattern: /^\/(\d+)/, value: {type: "success"}},
@@ -94,33 +94,49 @@ function muxRouter(sources) {
   const {Router} = sources
   const route$ = Router.define(routes)
     .publishReplay(1).refCount()
-  const success$ = route$.filter(route => {
+
+  const yes_listing_id$ = route$.filter(route => {
       return route.value.info.type === 'success'
     })
-    .do(route => {
-      console.log('success route', route)
-    })
     .publishReplay(1).refCount()
-  const listing$ = success$
-    .filter(route => !!route.location.state)
-    .map(route => route.location.state)
-    .do(x => {
-      console.log('result from router', x)
-    })
-    .publishReplay(1).refCount()
-  const li_wo_push_state$ = success$.filter(route => {
-    return !route.location.state
-  })
-  const retrieve_listing_id$ = li_wo_push_state$
-    .map(route => parseInt(route.value.match[1]))
-    .publishReplay(1).refCount()
+
+
   const no_listing_id$ = route$.filter(route => {
       return route.value.info.type === 'error'
     })
     .publishReplay(1).refCount()
 
+  const push_state$ = yes_listing_id$
+    .filter(route => !!route.location.state)
+    .map(route => route.location.state)
+    .publishReplay(1).refCount()
+
+  const no_push_state$ = yes_listing_id$
+    .filter(route => !route.location.state)
+
+  const listing_result$ = push_state$
+    .filter(push_state => {
+      return !!push_state.children
+    })
+    .map(drillInflate)
+    .publishReplay(1).refCount()
+  
+  const session$ = push_state$
+    .filter(push_state => !!push_state.properties)
+    .map(inflateSession)
+    .publishReplay(1).refCount()
+
+  const li_wo_push_state$ = yes_listing_id$.filter(route => {
+    return !route.location.state
+  })
+
+  const retrieve_listing_id$ = no_push_state$
+    .map(route => parseInt(route.value.match[1]))
+    .publishReplay(1).refCount()
+
   return {
-    listing_result_from_router$: listing$.map(drillInflate),
+    listing_result$,
+    session$,
     retrieve_listing_id$,
     no_listing_id$,
     route$
@@ -139,73 +155,132 @@ function muxHTTP(sources) {
 
 //function toComponent(sources, inputs)
 
-function isInvalid(state) {
-  const a = (!state.authorization && (state.page !== 'profile' && state.page !== 'recurrences')) 
-  const b = state.listing_result.listing.donde.type === 'badslava' && (state.page !== 'profile' && state.page !== 'recurrences')
-
-  return a || b
+function isValid({page, authorization, listing_result}) {
+  const type = listing_result.listing.donde.type
+  const listing_user = listing_result.listing.user_id
+  if (page === 'profile' || page === 'recurrences') {
+    return true
+  } else {
+    const {id, username} = authorization
+    if (authorization && (listing_user === id || username === 'tiger' || username === 'nikhil') && type !== 'badslava') {
+      return true
+    } else {
+      return false
+    }
+  }
 }
+
+function fromListingResult(sources, inputs, result: any) {
+  const router_with_listing_id = sources.Router.path(result.listing.id.toString())
+  const navigator = isolate(Navigator)({...sources, Router: router_with_listing_id}, {
+    ...inputs, 
+    props$: O.of(result)
+  })
+
+  const state$ = combineObj({
+    page$: navigator.output$,
+    authorization$: inputs.Authorization.status$,
+    listing_result$: O.of(result)
+  }).publishReplay(1).refCount()
+
+  const valid_state$ = state$.filter((x: any) => isValid(x))
+    .map((x: any) => {
+      return x.page
+    })
+  const invalid_state$ = state$.filter((x: any) => !isValid(x))
+    .map(x => {
+      return x
+    })
+
+  const content$ = valid_state$
+    .map((page: any) => {
+      if (!page || page === 'profile') {
+        const out = ListingProfile({...sources, Router: router_with_listing_id.path(page)}, {...inputs, props$: O.of(result), menu_active$: navigator.active$})
+        return out
+      } else if (!page || page === 'notifications') {
+        const out = Notifications({...sources, Router: router_with_listing_id.path(page)}, {...inputs, props$: O.of(result), menu_active$: navigator.active$})
+        return out
+      } else if (!page || page === 'settings') {
+        const out = Settings({...sources, Router: router_with_listing_id.path(page)}, {...inputs, props$: O.of(result), menu_active$: navigator.active$})
+        return out
+      } else {
+        return NotImplemented(sources, inputs)
+      }
+    }).publishReplay(1).refCount()
+  
+  const content = componentify(content$)
+
+  const components = {
+    navigator: navigator.DOM,
+    content: content.DOM
+  }
+
+  const merged = mergeSinks(navigator, content)
+  return {
+    ...merged,
+    DOM: view(components, navigator.active$), 
+    redirect$: invalid_state$
+  }
+}
+
+function fromSession(sources, inputs, result) {
+  const router_with_listing_id = sources.Router.path(result.listing.id.toString())
+  const navigator = isolate(Navigator)({...sources, Router: router_with_listing_id}, {
+    ...inputs, 
+    props$: O.of(result)
+  })
+
+  const state$ = combineObj({
+    page$: navigator.output$,
+    authorization$: inputs.Authorization.status$,
+    listing_result$: O.of(result)
+  }).publishReplay(1).refCount()
+
+  const valid_state$ = state$.filter((x: any) => isValid(x))
+    .map((x: any) => {
+      return x.page
+    })
+  const invalid_state$ = state$.filter((x: any) => !isValid(x))
+    .map(x => {
+      return x
+    })
+
+  const content$ = valid_state$
+    .map((page: any) => {
+      if (!page || page === 'settings') {
+        const out = Settings({...sources, Router: router_with_listing_id.path(page)}, {...inputs, props$: O.of(result), menu_active$: navigator.active$})
+        return out
+      } else {
+        throw new Error('Session push_state is only for settings')
+      }
+    }).publishReplay(1).refCount()
+  
+  const content = componentify(content$)
+
+  const components = {
+    navigator: navigator.DOM,
+    content: content.DOM
+  }
+
+  const merged = mergeSinks(navigator, content)
+  return {
+    ...merged,
+    DOM: view(components, navigator.active$), 
+    redirect$: invalid_state$
+  }
+}
+
 
 export default function main(sources, inputs): any {
 
   const {Router} = sources
-  const muxed_router = muxRouter(sources)
+  const muxed_router: any = muxRouter(sources)
   const muxed_http = muxHTTP(sources)
 
   const component$ = O.merge(
     muxed_router.retrieve_listing_id$.map(_ => TimeoutLoader(sources, inputs)),
-    muxed_router.listing_result_from_router$.map(result => {
-      const router_with_listing_id = sources.Router.path(result.listing.id.toString())
-      const navigator = isolate(Navigator)({...sources, Router: router_with_listing_id}, {
-        ...inputs, 
-        props$: O.of(result)
-      })
-
-      const state$ = combineObj({
-        page$: navigator.output$,
-        authorization$: inputs.Authorization.status$,
-        listing_result$: O.of(result)
-      }).publishReplay(1).refCount()
-
-      const valid_state$ = state$.filter(x => !isInvalid(x))
-        .map((x: any) => {
-          return x.page
-        })
-      const invalid_state$ = state$.filter(x => isInvalid(x))
-        .map(x => {
-          return x
-        })
-
-      const content$ = valid_state$
-        .map((page: any) => {
-          if (!page || page === 'profile') {
-            const out = ListingProfile({...sources, Router: router_with_listing_id.path(page)}, {...inputs, props$: O.of(result), menu_active$: navigator.active$})
-            return out
-          } else if (!page || page === 'notifications') {
-            const out = Notifications({...sources, Router: router_with_listing_id.path(page)}, {...inputs, props$: O.of(result), menu_active$: navigator.active$})
-            return out
-          } else if (!page || page === 'settings') {
-            const out = Settings({...sources, Router: router_with_listing_id.path(page)}, {...inputs, props$: O.of(result), menu_active$: navigator.active$})
-            return out
-          } else {
-            return NotImplemented(sources, inputs)
-          }
-        }).publishReplay(1).refCount()
-      
-      const content = componentify(content$)
-
-      const components = {
-        navigator: navigator.DOM,
-        content: content.DOM
-      }
-
-      const merged = mergeSinks(navigator, content)
-      return {
-        ...merged,
-        DOM: view(components, navigator.active$), 
-        redirect$: invalid_state$
-      }
-    })
+    muxed_router.listing_result$.map((result: any) => fromListingResult(sources, inputs, result)),
+    muxed_router.session$.map((session: any) => fromSession(sources, inputs, session))
   ).publishReplay(1).refCount()
 
   const component = componentify(component$)

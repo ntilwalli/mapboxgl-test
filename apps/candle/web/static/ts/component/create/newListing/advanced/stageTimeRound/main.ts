@@ -108,7 +108,7 @@ function RangeMinutesComponent(sources, props$, component_id) {
     min: min_input.DOM
   }).map((components: any) => {
     const {max, min} = components
-    return div('.raw-line', [
+    return div('.d-flex', [
       span('.mr-xs', ['Min']),
       span('.mr-xs', [min]),
       span('.mr-xs', ['Max']),
@@ -187,7 +187,7 @@ function MinutesComponent(sources, options, props$, component_id) {
     data: data_component.DOM
   }).map((components: any) => {
     const {type, data} = components
-    return div('.raw-line', [
+    return div('.d-flex', [
       span('.mr-xs', [type]),
       data,
     ])
@@ -350,14 +350,14 @@ export default function main(sources, inputs) {
     const {type, minutes, songs} = components
 
     const both = minutes && songs
-    const line_type = inputs.heading_text ? '.input-line' : '.raw-line'
+    const line_type = inputs.heading_text ? '.input-line' : '.d-flex'
 
     return div('.row', [
       div('.col-12', [
         div('.row', [
           div('.col-12' + line_type, [
             inputs.heading_text ? div('.heading', [inputs.heading_text]) : null,
-            div('.content.fx-wrap', [
+            div('.d-flex.align-items-center.flex-wrap', [
               div('.d-fx-a-c.fx-auto-width', {class: {'mb-xs': both}}, [type]),
               !both && minutes ? span('.d-fx-a-c.ml-xs', [
                 minutes
@@ -371,7 +371,7 @@ export default function main(sources, inputs) {
         both ? div('.row', [
           div('.col-12', [
             div('.row.mb-xs', [
-              div('.col-12.raw-line.fx-auto-width.fx-wrap', [
+              div('.col-12.d-flex.fx-auto-width.flex-wrap', [
                 em('.mr-4', ['Minutes']),
                 div('.d-fx-a-c', [
                   minutes,
@@ -379,7 +379,7 @@ export default function main(sources, inputs) {
               ])
             ]),
             div('.row', [
-              div('.col-12.raw-line.fx-auto-width.fx-wrap', [
+              div('.col-12.d-flex.fx-auto-width.flex-wrap', [
                 em('.mr-4', ['Songs']),
                 songs
               ])

@@ -1,4 +1,6 @@
 import moment = require('moment')
+import Immutable = require('immutable')
+import {div} from '@cycle/dom'
 import {RRule, RRuleSet} from 'rrule'
 import {getDatetimeFromObj} from '../../../helpers/time'
 
@@ -166,6 +168,10 @@ function getDefaultSessionProperties() {
       recurrence: getEmptyRecurrence(),
       date: getDefaultDate(),
       ...getDefaultTimes()
+    },
+    admin: {
+      modal: undefined,
+      message: undefined
     }
   }
 }
@@ -181,16 +187,113 @@ export function getDefaultSession(retrieved_session = {}) {
 
 function propertiesDondeFromListing(listing) {
   return {
-    modal: undefined,
-
+    modal: undefined
   }
 }
+
+/*
+    cuando: {
+      recurrence: getEmptyRecurrence(),
+      date: getDefaultDate(),
+      ...getDefaultTimes()
+    },
+*/
+
 
 export function listingToSession(listing, search_area) {
   const session = getDefaultSession()
   session.properties.donde.search_area = search_area
   session.listing = listing
+  if (listing.type === 'single') {
+    session.properties.cuando.date = listing.cuando.begins.clone().startOf('day')
+    session.properties.cuando.start_time = {
+      hour: listing.cuando.begins.hour(),
+      minute: listing.cuando.begins.minute()
+    }
+
+    if (session.listing.cuando.ends) {
+      session.properties.cuando.end_time = {
+        hour: listing.cuando.ends.hour(),
+        minute: listing.cuando.ends.minute()
+      }
+    }
+  }
+
+  if (listing.type === 'recurring') {
+    session.properties.cuando = recurringListingCuandoToPropertiesCuando(listing)
+  }
+
   return session
+}
+
+export function recurringListingCuandoToPropertiesCuando(listing) {
+  const {rrules, rdates, exdates, duration} = listing.cuando
+  // const {recurrence, start_time, end_time} = cuando
+  // const {start_date, end_date, rules, rdates, exdates} = recurrence
+
+  const cuando = {
+    recurrence: {
+      rules: [],
+      rdates: [],
+      exdates: [],
+      start_date: undefined,
+      end_date: undefined
+    },
+    date: undefined,
+    start_time: undefined,
+    end_time: undefined
+  }
+
+  if (rrules.length) {
+    cuando.recurrence.rules = rrules.map(toRule)
+    const rule = rrules[0]
+    cuando.recurrence.start_date = rule.dtstart.clone().startOf('day')
+    if (rule.until) {
+      cuando.recurrence.end_date = rule.until.clone().endOf('day')
+    }
+
+    cuando.start_time = {
+      hour: rule.dtstart.hour(),
+      minute: rule.dtstart.minute()
+    }
+
+    if (duration) {
+      const dtend = rule.dtstart.clone().add('minute', duration)
+      cuando.end_time = {
+        hour: dtend.hour(),
+        minute: dtend.minute()
+      }
+    }
+  }
+
+  if (rdates.length) {
+    if (!cuando.start_time) {
+      cuando.start_time = {
+        hour: rdates[0].hour(),
+        minute: rdates[0].minute()
+      }
+
+      if (duration) {
+        const dtend = rdates[0].clone().add('minute', duration)
+        cuando.end_time = {
+          hour: dtend.hour(),
+          minute: dtend.minute()
+        }
+      }
+    }
+
+    cuando.recurrence.rdates = rdates.map(rdate => rdate.startOf('day'))
+  } else {
+    cuando.recurrence.rdates = []
+  }
+
+  if (exdates.length) {
+    cuando.recurrence.exdates = exdates.map(exdate => exdate.startOf('day'))
+  } else {
+    cuando.recurrence.exdates = []
+  }
+
+  return cuando
 }
 
 
@@ -284,9 +387,7 @@ function deflateCuando(container) {
 }
 
 export function inflateListing(listing) {
-
   const {type} = listing
-
 
   if (type === ListingTypes.RECURRING) {
     if (listing.cuando) { inflateCuando(listing.cuando) }
@@ -317,9 +418,6 @@ export function deflateListing(listing) {
 
   return listing
 }
-
-
-
 
 export function inflateSession(session) {
   const {properties, listing, inserted_at, updated_at} = session
@@ -399,6 +497,18 @@ export function getSessionStream(sources) {
   return sources.Router.history$
     .map(x => x.state)
     .map(inflateSession)
+}
+
+export function getSessionClone(session) {
+  const new_session = Immutable.fromJS(session).toJS()
+
+  new_session.listing.id = null
+  new_session.listing.cuando = getDefaultListingCuando()
+  new_session.listing.type = getDefaultListingType()
+
+  new_session.properties = getDefaultSessionProperties() 
+
+  return new_session
 }
 
 
@@ -561,4 +671,32 @@ export function toRule(rule) {
       interval: rule.interval || 1
     }
   }
+}
+
+export function isExpired(session) {
+  const {listing, properties} = session
+  const {cuando, type} = listing
+  const {begins, ends} = cuando
+  const props_cuando = properties.cuando
+  const {end_date} = props_cuando.recurrence
+
+  if (type === 'single') {
+    return moment().isSameOrAfter(begins)
+  } else if (end_date) {
+    return moment().isSameOrAfter(end_date)
+  }
+
+  return false
+}
+
+export function renderExpiredAlert() {
+  return div('.pt-4', [div(`.alert.alert-danger`, [
+    'This is a past listing, it cannot be updated.'
+  ])])
+}
+
+export function renderSuccessAlert(message) {
+  return div('.pt-4', [div('.alert.alert-success', [
+    message
+  ])])
 }

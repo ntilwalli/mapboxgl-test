@@ -75,6 +75,10 @@ defmodule User.Individual do
     GenServer.call(pid, {:listing_new, listing})
   end
 
+  def route(user, "/listing/change_release_level", message) do
+    pid = ensure_started(user)
+    GenServer.call(pid, {:listing_change_release_level, message})
+  end
 
   def route(user, "/listing/update", listing) do
     pid = ensure_started(user)
@@ -352,6 +356,13 @@ defmodule User.Individual do
   def handle_call({:listing_delete, listing_id}, _from, %{user: user} = state) do
     {:reply, :ok, state}
   end
+
+  def handle_call({:listing_change_release_level, %{"type" => level, "data" => listing_id} = message}, _from, %{user: user, listing_registry: l_reg} = state) do
+    {:ok, pid} = Listing.Registry.lookup(l_reg, listing_id)
+    out = Listing.Worker.change_release_level(pid, user, level)
+    {:reply, out, state}
+  end
+
 
   def handle_cast({:read_notifications, notification_ids}, %{user: user} = state) do
     User.Notifications.read(user, notification_ids)

@@ -3,7 +3,6 @@ import {div, h6, button, span} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 import Immutable = require('immutable')
 import PerformerSignup from './performerSignUp/main'
-//import PerformerCheckIn from './performerCheckIn/main'
 import PerformerCheckIn from './togglePerformerCheckIn/main'
 import Cost from './cost/main'
 import CollapseCollection from './collapseCollection/main'
@@ -20,7 +19,7 @@ import {
   EventTypeToProperties, 
   CostOptions
 } from '../../../../listingTypes'
-import {getSessionStream, deflateSession} from '../../../helpers/listing/utils'
+import {getSessionStream, isExpired, renderExpiredAlert} from '../../../helpers/listing/utils'
 import {NotesInput} from './helpers'
 import {combineObj, createProxy, traceStartStop, componentify, mergeSinks, targetIsOwner, processHTTP} from '../../../../utils'
 import clone = require('clone')
@@ -29,38 +28,33 @@ import deepEqual = require('deep-equal')
 import FocusWrapper from '../focusWrapperWithInstruction'
 
 const default_instruction = 'Click on a section to see tips'
+
+function arrayUnique(array) {
+    var a = array.concat();
+    for(var i=0; i<a.length; ++i) {
+        for(var j=i+1; j<a.length; ++j) {
+            if(a[i] === a[j])
+                a.splice(j--, 1);
+        }
+    }
+
+    return a;
+}
+
 function intent(sources) {
   const {DOM, Global, Router} = sources
   const session$ = getSessionStream(sources)
     .publishReplay(1).refCount()
-  
-  const open_instruction$ = DOM.select('.appOpenInstruction').events(`click`)
-  const close_instruction$ = O.merge(
-    Global.resize$,
-    DOM.select('.appCloseInstruction').events(`click`)
-  )
 
   const main_panel_click$ = DOM.select('.appMainPanel').events('click').filter(targetIsOwner)
     .mapTo(default_instruction)
-  const go_to_preview$ = DOM.select('.appGoToPreviewButton').events('click').publish().refCount()
-  const go_to_basics$ = DOM.select('.appGoToBasicsButton').events('click').publish().refCount()
-  const save_exit$ = DOM.select('.appSaveExitButton').events('click').publish().refCount()
 
-  const saved_exit = processHTTP(sources, `saveExitSession`)
-  const success_save_exit$ = saved_exit.success$
-  const error_save_exit$ = saved_exit.error$
+  const save$ = DOM.select('.appSaveButton').events('click').publish().refCount()
 
   return {
     session$,
-    open_instruction$,
-    close_instruction$,
     main_panel_click$,
-    go_to_preview$,
-    go_to_basics$,
-    show_errors$: O.merge(go_to_preview$, go_to_basics$).mapTo(true).startWith(false).publishReplay(1).refCount(),
-    save_exit$,
-    success_save_exit$,
-    error_save_exit$
+    save$
   }
 }
 
@@ -100,7 +94,7 @@ function toComponent(type, meta, session$, sources, inputs, authorization) {
         const instruction = "Configure the performer cost. Enable multiple cost-tiers by clicking the plus button."
         return wrapWithFocus(
           sources, 
-          isolate(CostCollection)(sources, {
+          CostCollection(sources, {
             ...inputs, 
             component_id: 'Performer cost', 
             item_heading: 'Tier',
@@ -217,56 +211,32 @@ function toComponent(type, meta, session$, sources, inputs, authorization) {
   return wrapOutput(component, type, meta, session$, sources, inputs)
 }
 
-
-
 function reducers(actions, inputs) {
-
-  const open_instruction_r = actions.open_instruction$.map(_ => state => {
-    return state.set('show_instruction', true)
+  const save_success_r = inputs.success$.map(status => state => {
+    return state.set('save_status', status).set('waiting', false)
   })
 
-  const close_instruction_r = actions.close_instruction$.map(_ => state => {
-    return state.set('show_instruction', false)
+  const save_error_r = inputs.error$.map(status => state => {
+    return state.set('waiting', false)
   })
 
-  const properties_r = inputs.properties$.map(properties => state => {
+  const waiting_r = inputs.waiting$.map(_ => state => state.set('waiting', true))
+
+  const properties_r = inputs.properties$.map(message => state => {
+    //console.log(`properties message`, message)
+    let  properties = state.get(`properties`).toJS()
+    properties[message.type] = message.data
     const session = state.get(`session`).toJS()
-    properties.forEach(p => session.listing.meta[p.type] = p.data.data)
-    const errors = properties.reduce((acc, val) => acc.concat(val.data.errors), [])
-
+    session.listing.meta[message.type] = message.data.data
+    const errors = Object.keys(properties).reduce((acc, val) => acc.concat(properties[val].errors), [])
     return state.set('properties', Immutable.fromJS(properties))
       .set(`session`, Immutable.fromJS(session))
       .set('component_types', Immutable.fromJS(calculateComponentTypes(session)))
-      .set('errors', Immutable.fromJS(errors))
+      .set('errors', errors)
       .set('valid', errors.length === 0)
   })
 
-  const instruction_r = O.merge(inputs.instruction_focus$, actions.main_panel_click$)
-    .map(x => state => {
-      return state.set('focus_instruction', x)
-    })
-
-  // const main_panel_click_r = actions.main_panel_click$.map(_ => state => {
-  //   return state.set('focus', undefined)
-  // })
-
-  const show_errors_r = actions.show_errors$.map(val => state => {
-    return state.set('show_errors', val)
-  })
-
-  return O.merge(properties_r, instruction_r, open_instruction_r, close_instruction_r, show_errors_r)
-}
-
-function arrayUnique(array) {
-    var a = array.concat();
-    for(var i=0; i<a.length; ++i) {
-        for(var j=i+1; j<a.length; ++j) {
-            if(a[i] === a[j])
-                a.splice(j--, 1);
-        }
-    }
-
-    return a;
+  return O.merge(properties_r, save_success_r, save_error_r, waiting_r)
 }
 
 function calculateComponentTypes(session) {
@@ -275,148 +245,105 @@ function calculateComponentTypes(session) {
   const {event_types, performer_cost} = meta
   const foo_components = event_types.reduce((acc, val) => acc.concat(EventTypeToProperties[val]), [])
   let out = arrayUnique(foo_components)
+
+
+  // if (out.indexOf('stage_time') > -1 &&
+  //     performer_cost && 
+  //     performer_cost.length > 1) {
+  //   const index = out.findIndex(x => x === 'stage_time')
+  //   out.splice(index, 1)
+  //   listing.meta.stage_time = undefined
+  // }
+
   return out
 }
 
 function model(actions, inputs) {
   const reducer$ = reducers(actions, inputs)
   return combineObj({
-      session$: actions.session$,
-      authorization$: inputs.Authorization.status$
-    })
+    session$: actions.session$.take(1),
+    authorization$: inputs.Authorization.status$
+  })
     .switchMap((info: any) => {
-      //console.log('meta init', info)
-      
-      const session = info.session
       const init = {
-        focus_instruction: default_instruction,
-        show_instruction: false,
-        authorization: info.authorization,
-        waiting: false,
+        session: info.session,
+        component_types: calculateComponentTypes(info.session),
+        properties: {},
         errors: [],
-        show_errors: false,
-        session,
         valid: false,
-        component_types: calculateComponentTypes(session),
-        properties: {}
+        waiting: false,
+        save_status: undefined
       }
 
       return reducer$
         .startWith(Immutable.fromJS(init))
         .scan((acc, f: Function) => f(acc))
     })
-    .map((x: any) => x.toJS())
-    //.do(x => console.log(`meta state`, x))
+    .map((x: any) => {
+      return x.toJS()
+    })
+    .debounceTime(0)  // ensure all valid flags have been collected before calculating validity
+    //.do(x => console.log('properties state', x))
+    //.letBind(traceStartStop('state$ trace'))
     .publishReplay(1).refCount()
 }
 
-function renderMainPanel(info: any) {
-  const {state, components} = info
-  const {show_errors, errors, authorization} = state
-  return div(`.main-panel.container-fluid.mt-4`, [
-      show_errors && errors.length ? div(`.form-group`, [
-        div(`.alerts-area`, errors.map(e => {
-            return div(`.alert.alert-danger`, [
-              e
-            ])
-        }))
-      ]) : null,
-    ]
-    .concat([
-      div('.appGoToBasicsButton.btn.btn-link.cursor-pointer.d-flex.mb-4', {style: {"flex-flow": "row nowrap", flex: "0 0 fixed"}}, [
-        span('.fa.fa-angle-double-left.mr-2.d-flex.align-items-center', []),
-        span('.d-flex.align-items-center', ['Back to basic settings'])
-      ])
-    ])
-    .concat(components.map((x, index) => index ? div('.mt-4', [x]) : x))
-    .concat([
-      // div('.appGoToBasicsButton.mt-4.btn.btn-link.cursor-pointer.d-flex', {style: {"flex-flow": "row nowrap", flex: "0 0 fixed"}}, [
-      //   span('.fa.fa-angle-double-left.mr-2.d-flex.align-items-center', []),
-      //   span('.d-flex.align-items-center', ['Back to basic settings'])
-      // ]),
-      authorization ? button('.appSaveExitButton.mt-4.btn.btn-outline-warning.d-flex.cursor-pointer.mt-4', [
-        span('.d-flex.align-items-center', ['Save/Finish later']),
-        span('.fa.fa-angle-double-right.ml-2.d-flex.align-items-center', [])
-      ]) : null,
-      button('.appGoToPreviewButton.mt-4.btn.btn-outline-success.d-flex.cursor-pointer.mt-4', [
-        span('.d-flex.align-items-center', ['Preview and post']),
-        span('.fa.fa-angle-double-right.ml-2.d-flex.align-items-center', [])
-      ])
-    ])
-  )
-}
-
-function renderInstructionPanel(info: any) {
-  return div(`.instruction-panel`, [
-    renderInstructionSubpanel(info)
+function renderSaveButton(info) {
+  const is_expired = isExpired(info.state.session)
+  return button('.appSaveButton.mt-4.btn.btn-outline-success.d-flex.cursor-pointer.mt-4', {class: {"read-only": is_expired}}, [
+    span('.d-flex.align-items-center', ['Save changes']),
   ])
 }
 
-function renderSmallInstructionPanel(info) {
-  const {state, components} = info
-  const {focus_instruction, show_instruction} = state
-  return div('.small-instruction-panel', {
-      class: {
-        appOpenInstruction: !show_instruction,
-        rounded: show_instruction,
-        'rounded-circle': !show_instruction
-        //hide: !show_instruction
-      }
-    }, [
-      div([span(`.appCloseInstruction.close`, {style: {display: !!show_instruction ? 'inline' : 'none'}}, []),
-      span(`.icon.fa.fa-lightbulb-o`)]),
-      div({style: {display: !!show_instruction ? 'block' : 'none'}}, [focus_instruction || default_instruction])
-    ])
-}
 
-function renderInstructionSubpanel(info) {
-  const {state, components} = info
-  const {instruction} = components
-  return div(`.instruction-panel`, [
-    div(`.instruction-section`, [
-      div([
-        span(`.icon.fa.fa-lightbulb-o`),
-        state.focus_instruction || default_instruction
-      ])
-    ])
-  ])
-}
-
-function view(state$, components$) {
+function view(state$, children$) {
   return combineObj({
     state$,
-    components$
-  }).map((info: any) => {
-    const {state, components} = info
-    const {show_instruction} = state
-    const {name} = components
+    children$
+  })
+  .debounceTime(0)
+  .map((info: any) => {
+    const {state, children} = info
+    const {properties, errors} = state
+    const display_errors = 
+      errors
+        .map(x => div('.form-group', [
+          div('.alerts-area', [
+            div('.alert.alert-danger', [
+              x
+            ])
+          ])
+        ]))
 
-    return div(`.screen.create-component`, [
-      div('.properties.d-flex.align-items-center-section.nav-fixed-offset.appMainPanel',  {
-        // hook: {
-        //   create: (emptyVNode, {elm}) => {
-        //     window.scrollTo(0, 0)
-        //   },
-        //   update: (old, {elm}) => {
-        //     window.scrollTo(0, 0)
-        //   }
-        // }
-      } ,[
-        renderMainPanel(info),
-        renderSmallInstructionPanel(info),
-        renderInstructionPanel(info)
-      ])
+    const is_expired = isExpired(state.session)
+
+
+    // return div('.properties', [
+    //   ...display_errors,
+    //   div('.mt-4', children.map(x => div({style: {"margin-bottom": "2rem"}}, [x])))
+    // ])
+
+    return div('.properties', [
+      ...display_errors,
+      is_expired ? renderExpiredAlert() : null,
+      div('.pt-4', {class: {"read-only": is_expired}}, children.map(x => div({style: {"margin-bottom": "3rem"}}, [x]))),
+      renderSaveButton(info)
     ])
   })
 }
 
-const toName = (session) => session.listing.meta.name
+function muxHTTP(sources) {
+  return processHTTP(sources, 'updateListing')
+}
 
-export function main(sources, inputs) {
+export default function main(sources, inputs) {
   const actions = intent(sources)
   const properties$ = createProxy()
-  const instruction_focus$ = createProxy()
-  const state$ = model(actions, {...inputs, properties$, instruction_focus$})
+
+  const waiting$ = createProxy()
+  const muxed_http = muxHTTP(sources)
+
+  const state$ = model(actions, {...inputs, properties$, waiting$, error$: muxed_http.error$, success$: muxed_http.success$})
 
   const session$ = state$.pluck('session').publishReplay(1).refCount()
   const components$ = state$
@@ -429,7 +356,7 @@ export function main(sources, inputs) {
       })
 
       const DOM = O.combineLatest(...components.map(c => c.DOM))
-      const output$ = O.combineLatest(...components.map(c => c.output$))
+      const output$ = O.merge(...components.map(c => c.output$))
       const focus$ = O.merge(...components.filter(c => c.focus$).map(c => c.focus$))
 
       const merged = mergeSinks(...components)
@@ -442,78 +369,55 @@ export function main(sources, inputs) {
       }
     })
     .publishReplay(1).refCount()
-
+  
+  const components = componentify(components$)
   properties$.attach(components$.switchMap(x => x.output$))
-  instruction_focus$.attach(components$.switchMap(x => x.focus$))
+  const properties_dom$ = components.DOM
 
-  const component = componentify(components$)
-  const vtree$ = view(state$, component.DOM)
-
-  const to_save_exit$ = actions.save_exit$.withLatestFrom(state$, (_, state) => {
-    return {
-      url: `/api/user`,
-      method: `post`,
-      category: `saveExitSession`,
-      send: {
-        route: `/listing_session/save`,
-        data: state.session
+  const to_http$ = actions.save$
+    .withLatestFrom(state$, (_, state: any) => {
+      return state
+    })
+    .filter((state: any) => state.updated && state.valid)
+    .map((state: any) => {
+      return {
+        url: '/api/user',
+        method: 'post',
+        category: 'updateListing',
+        send: {
+          route: '/listing_session/save',
+          data: state.session.listing
+        }
       }
-    }
-  }).publish().refCount()
+    }).publish().refCount()
+
+  waiting$.attach(to_http$)
+
 
   return {
-    ...component,
-    DOM: vtree$,
+    ...components,
+    DOM: view(state$, properties_dom$),
     HTTP: O.merge(
-      component.HTTP,
-      to_save_exit$
+      components.HTTP,
+      to_http$
     ),
-    Router: O.merge(
-      component.Router,
-      actions.success_save_exit$.withLatestFrom(inputs.Authorization.status$, (_, user) => user)
-        .map(user => {
-          return {
-            pathname: '/' + user.username + '/listings',
-            action: 'REPLACE',
-            type: 'replace'
+    MessageBus: O.merge(
+      components.MessageBus,
+      muxed_http.error$.map(status => {
+        return {
+          to: `main`, message: {
+            type: `error`, 
+            data: status
           }
-        }),
-      actions.go_to_preview$.withLatestFrom(state$, (_, state) => {
-          return state
-        })
-        .filter(state => state.valid)
-        .map(state => {
-          return {
-            pathname: '/create/listing',
-            type: 'push',
-            state: {
-                ...deflateSession(state.session),
-                current_step: 'preview'
-              }
-          }
-        }),
-      state$.map((x: any) => x.session.properties.donde.modal).distinctUntilChanged()
-        .withLatestFrom(state$, (_, state: any) => {
-          return {
-            pathname: '/create/listing',
-            type: 'push',
-            state: state.session
-          }
-        }).skip(1),
-      actions.go_to_basics$.withLatestFrom(state$, (_, state) => {
-          return state
-        })
-        .filter(state => state.valid)
-        .map(state => {
-          return {
-            pathname: '/create/listing',
-            type: 'push',
-            state: {
-                ...deflateSession(state.session),
-                current_step: 'basics'
-              }
-          }
-        })
-    )
+        }
+      })
+    ),
+    output$: state$.map((state: any) => {
+      return {
+        valid: state.valid,
+        session: state.session
+      }
+    }),
+    instruction_focus$: O.merge(components$.switchMap(x => x.focus$), actions.main_panel_click$.mapTo(default_instruction).startWith(default_instruction))
   }
 }

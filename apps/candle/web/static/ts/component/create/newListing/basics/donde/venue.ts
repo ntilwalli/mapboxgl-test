@@ -68,7 +68,7 @@ function view(state$, components) {
         venue ? //null
           div(`.row.map`, {style: {display: venue ? 'block' : 'none'}}, [
             div('.col-12', {style: {position: 'relative'}}, [
-              div(`#basicsSelectVenueMapAnchor`),
+              div(`#basicsSelectVenueMapAnchor`, {key: "basicsSelectVenueMapAnchor"}),
               div(`.location-info`, [
                 div(`.name`, [getVenueName(venue)]),
                 div(`.address`, [getVenueAddress(venue)])
@@ -169,7 +169,11 @@ export default function main(sources, inputs) {
 
   const out = {
     DOM: view(state$, {venue_autocomplete$: venue_autocomplete.DOM}),
-    MapJSON: mapview(state$),
+    MapJSON: mapview(state$)
+      .delay(10)
+      .map(x => {
+        return x
+      }),
     //Global: venue_autocomplete.Global,
     HTTP: to_http$,
     output$: state$.map(state => {

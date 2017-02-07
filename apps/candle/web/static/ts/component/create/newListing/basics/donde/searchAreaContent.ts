@@ -157,7 +157,11 @@ export default function main(sources, inputs) {
 
   const out = {
     DOM: vtree$,
-    MapJSON: mapview(state$).do(x => console.log(`mapjson`, x)).publish().refCount(),
+    MapJSON: mapview(state$).do(x => console.log(`mapjson`, x))
+      .map(x => {
+        return x
+      })
+      .publish().refCount(),
     HTTP: O.merge(region_autocomplete.HTTP, actions.to_http$).publish().refCount(),
     output$: state$
   }

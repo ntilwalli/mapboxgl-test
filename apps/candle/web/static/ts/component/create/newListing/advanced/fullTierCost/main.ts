@@ -50,7 +50,7 @@ export default function main(sources, inputs) {
             ])
           ]),
           div('.row', [
-            div('.col-12.raw-line', [
+            div('.col-12.d-flex', [
               span('.d-fx-a-c.mr-4', [inputs.heading_text || 'Perk?']),
               perk
             ])

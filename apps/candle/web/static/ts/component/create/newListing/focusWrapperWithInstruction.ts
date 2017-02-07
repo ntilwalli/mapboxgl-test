@@ -1,5 +1,5 @@
 import {Observable as O} from 'rxjs'
-import {div, h6} from '@cycle/dom'
+import {div, h6, h5, h4} from '@cycle/dom'
 import {targetIsOwner} from '../../../utils'
 
 export default function main(sources, {component, title, instruction, skip_children}) {
@@ -7,7 +7,7 @@ export default function main(sources, {component, title, instruction, skip_child
     ...component,
     DOM: component.DOM.map(c => {
       return div('.appClickSection', [
-        title && title.length ? h6({props: {"isTitle": true}}, [title]) : null,
+        title && title.length ? h4({props: {"isTitle": true}}, [title]) : null,
         c
       ])
     }),

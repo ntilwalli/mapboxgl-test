@@ -79,31 +79,31 @@ export default function main(sources, inputs) {
     //   h6('.card-title', ['Contact info']),
     return div([
       div('.row.mb-xs', [
-        div('.col-12.raw-line', [
+        div('.col-12.d-flex', [
           em('.mr-4', ['E-mail']),
           components.email
         ])
       ]),
       div('.row.mb-xs', [
-        div('.col-12.raw-line', [
+        div('.col-12.d-flex', [
           em('.mr-4', ['Website']),
           components.website
         ])
       ]),
       div('.row.mb-xs', [
-        div('.col-12.raw-line', [
+        div('.col-12.d-flex', [
           em('.mr-4', ['Twitter']),
           components.twitter
         ])
       ]),
       div('.row.mb-xs', [
-        div('.col-12.raw-line', [
+        div('.col-12.d-flex', [
           em('.mr-4', ['Facebook']),
           components.facebook
         ])
       ]),
       div('.row', [
-        div('.col-12.raw-line', [
+        div('.col-12.d-flex', [
           em('.mr-4', ['Instagram']),
           components.instagram
         ])

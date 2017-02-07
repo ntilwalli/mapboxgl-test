@@ -31,7 +31,7 @@ export default function main(sources, inputs) {
   }).map((info: any) => {
     const {name, title} = info
     return div('.row', [
-      div('.col-12.raw-line', [
+      div('.col-12.d-flex', [
         div('.mr-xs', [name]),
         title
       ])

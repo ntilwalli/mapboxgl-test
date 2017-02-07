@@ -134,7 +134,7 @@ function view(state$, components) {
     const {content} = components
 
     return div(`.screen.create-component`, [
-      div('.basics.content-section.nav-fixed-offset', {
+      div('.basics.d-flex.align-items-center-section.nav-fixed-offset', {
         // hook: {
         //   create: (emptyVNode, {elm}) => {
         //     window.scrollTo(0, 0)

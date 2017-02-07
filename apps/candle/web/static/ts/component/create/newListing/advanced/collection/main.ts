@@ -1,5 +1,5 @@
 import {Observable as O} from 'rxjs'
-import {div, span, button, h6, em} from '@cycle/dom'
+import {div, span, button, h6, h5, h4, em} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 import Immutable = require('immutable')
 import {combineObj, createProxy} from '../../../../../utils'
@@ -17,7 +17,7 @@ function render(state, component_id, item_heading) {
     children = state.map((x, index) => {
       const margin_class = index !== state.length - 1 ? '.mb-xs' : ''
       return div('.row' + margin_class, [
-        div('.col-12.raw-line.fx-auto-width', [
+        div('.col-12.d-flex.fx-auto-width', [
           div('.mr-4', [x]),
           span('.appCollectionSubtractButton.plus-button.fa.fa-minus.btn.btn-link', {attrs: {'data-index': index}}, [])
         ])
@@ -27,7 +27,7 @@ function render(state, component_id, item_heading) {
 
   return div([
     div('.d-flex.mb-2', [
-      h6('.mb-0.mr-4', [component_id]),
+      h4('.mb-0.mr-4', [component_id]),
       button('.appCollectionAddButton.fa.fa-plus.plus-button.btn.btn-link', [])
     ]),
   ].concat(children))
