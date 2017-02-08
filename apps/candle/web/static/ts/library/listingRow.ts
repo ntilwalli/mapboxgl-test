@@ -9,7 +9,7 @@ import moment = require('moment')
 
 import {
   renderName, renderNameWithParentLink, renderCuando, renderDonde, 
-  renderCuandoStatus, renderCost, renderStageTime, renderPerformerSignup,
+  renderCuandoStatus, renderStatus, renderCost, renderStageTime, renderPerformerSignup,
   renderPerformerLimit, renderTextList, renderNote, getFullCostAndStageTime,
   renderContactInfo, getFreqSummary, getDateTimeString, getCuandoStatus,
   getDondeNameString, getDondeCityString, getDondeStateString
@@ -100,8 +100,8 @@ function renderCuandoRecurringInfo(listing) {
 
 function renderCuandoSingleInfo(listing) {
   return div('.row', [
-    div('.col-12.d-flex.fx-j-e.flex-column', [
-      renderRightAligned(getCuandoStatus(listing.cuando)),
+    div('.col-12.d-flex.justify-content-end.flex-column', [
+      renderStatus(listing),
       renderRightAligned(getDateTimeString(listing.cuando.begins))
     ])
   ])

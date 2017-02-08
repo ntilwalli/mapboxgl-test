@@ -129,7 +129,7 @@ function view(state$, components) {
     }, [
       is_expired ? renderExpiredAlert() : null,
       message ? renderSuccessAlert(message) : null,
-      pre([JSON.stringify(info.state.session.listing, undefined, 2)]),
+      //pre([JSON.stringify(info.state.session.listing, undefined, 2)]),
       renderMainPanel(info),
       button('.appCloneButton.btn.btn-outline-primary.d-flex.cursor-pointer', [
         span('.d-flex.align-items-center', ['Clone this listing']),
