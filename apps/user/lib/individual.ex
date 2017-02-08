@@ -298,16 +298,19 @@ defmodule User.Individual do
   end
 
   def handle_call({:home_listings} = msg, _from, %{user: user, listing_registry: l_reg} = state) do
+
     listing_sessions = User.Helpers.gather_listing_sessions(user)
     staged = User.Helpers.gather_listings(user, "staged")
     posted = User.Helpers.gather_listings(user, "posted")
+    canceled = User.Helpers.gather_listings(user, "canceled")
+    IO.inspect {:home_listings, staged}
+
     out = %Home.Listings.Outgoing{
       sessions: listing_sessions,
       staged: staged,
-      posted: posted
+      posted: posted,
+      canceled: canceled
     }
-    # IO.puts "Check-in output..."
-    # IO.inspect out
     {:reply, {:ok, out}, state}
   end
 

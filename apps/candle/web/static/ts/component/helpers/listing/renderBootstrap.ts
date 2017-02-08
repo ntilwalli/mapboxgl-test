@@ -713,15 +713,27 @@ export function renderSingle(cuando) {
   ])
 }
 
-export function renderRecurring(cuando) {
+export function renderRecurring(cuando, release) {
   const rruleset = cuandoToRRuleSet(cuando)
   const upcoming_dates = rruleset.between(moment().toDate(), moment().add(90, 'day').toDate())
   const upcoming_date = upcoming_dates.length ? moment(upcoming_dates[0].toISOString()) : undefined
-  const upcoming = upcoming_date ? 
-    div([
-      em('.mr-xs', ['Next event:']),
-      span([upcoming_date.format('ddd, M/D/YY h:mm a')])
-    ]) : null
+  let upcoming = null
+  if (release !== 'canceled') {
+    if (upcoming_date) {
+      upcoming = div([
+        em('.mr-xs', ['Next event:']),
+        span([upcoming_date.format('ddd, M/D/YY h:mm a')])
+      ])
+    }
+  } 
+  // else {
+  //   const recent_dates = rruleset.between(moment().subtract(30, 'day').toDate(), moment().toDate())
+  //   const recent_date = recent_dates.length ? moment(recent_dates[recent_dates.length - 1].toISOString()) : undefined
+  //   upcoming = div([
+  //     em('.mr-xs', ['Last event:']),
+  //     span([recent_date.format('ddd, M/D/YY h:mm a')])
+  //   ])
+  // }
 
   const {rrules, rdates, exdates} = cuando 
   if ((rdates && rdates.length) || (exdates && exdates.length)) {
@@ -733,7 +745,7 @@ export function renderRecurring(cuando) {
     //if(rrules.length === 1) {
       return div([
         div([
-          span('.mr-xs', ['Recurs:']),
+          span('.mr-xs', [release === 'canceled' ? 'Recurred:' : 'Recurs:']),
           span([getFreqSummary(rrules)])
         ]),
         upcoming
@@ -747,11 +759,11 @@ export function renderRecurring(cuando) {
 }
 
 export function renderCuando(listing) {
-  const {type, cuando} = listing
+  const {type, cuando, release} = listing
   if (type === 'single') {
     return renderSingle(cuando)
   } else {
-    return renderRecurring(cuando)
+    return renderRecurring(cuando, release)
   }
 }
 

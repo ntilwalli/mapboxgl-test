@@ -9,7 +9,7 @@ defmodule Listing do
     # Define workers and child supervisors to be supervised
     children = [
       # Starts a worker by calling: Listing.Worker.start_link(arg1, arg2, arg3)
-      supervisor(Listing.Worker.Supervisor, [Listing.Worker.Supervisor]),
+      supervisor(Listing.Worker.Supervisor, [Listing.Worker.Supervisor, Listing.GenerateRecurring]),
       worker(Listing.Registry, [Listing.Registry, Listing.Worker.Supervisor, Notification.Manager]),
       worker(Listing.GenerateRecurring, [Listing.GenerateRecurring, Listing.Registry])
     ]

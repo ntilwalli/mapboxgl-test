@@ -12,6 +12,7 @@ defmodule User.Helpers do
   alias Shared.Model.Once, as: CuandoOnce
 
   alias Shared.ListingSession
+
   def gather_check_ins(
     %DateTimeRangeMessage{begins: begins, ends: ends}, 
     %Shared.User{id: user_id}
@@ -47,7 +48,7 @@ defmodule User.Helpers do
   end
 
   def gather_listings_info(query, user, listing_registry) do
-    IO.inspect {:query, query}
+    #IO.inspect {:query, query}
     search_results = search(query, user)
     #IO.inspect {:search_results, search_results}
     listings_info =
@@ -105,25 +106,25 @@ defmodule User.Helpers do
         where: s.user_id == ^user_id,
         select: s
 
-    IO.puts "gather_listing_sessions..."
-    IO.inspect query
+    #IO.puts "gather_listing_sessions..."
+    #IO.inspect query
 
     results = Repo.all(query)
-    IO.inspect {:user_sessions, results}
+    #IO.inspect {:user_sessions, results}
     results
   end
 
   def gather_listings(%Shared.User{id: user_id}, release_type) do
     query = from s in Shared.Listing,
-        where: s.user_id == ^user_id and
-          s.release == ^release_type,
-        select: s
+      where: s.user_id == ^user_id and
+        s.release == ^release_type,
+      select: s
 
-    IO.puts "gather " <> release_type <> " listings..."
-    IO.inspect query
+    #IO.puts "gather " <> release_type <> " listings..."
+    #IO.inspect query
 
     results = Repo.all(query)
-    IO.inspect {:user_listings, results}
+    #IO.inspect {:user_listings, results}
     results
   end
 end

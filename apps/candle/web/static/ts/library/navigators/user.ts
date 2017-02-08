@@ -36,12 +36,12 @@ function intent(sources) {
 
   return {
     page$: O.merge(
-      listings$, messages$, profile$, settings$, notifications$
-    )
-    .map(x => {
-      return x
-    })
-    .publishReplay(1).refCount(),
+        listings$, messages$, profile$, settings$, notifications$
+      )
+      .map(x => {
+        return x
+      })
+      .publishReplay(1).refCount(),
     ellipsis_menu$,
     brand_button$,
     show_menu$,
@@ -244,7 +244,7 @@ function view(state$) {
             ]) : null,
             //span(calendar_class, [button('.hidden-md-up.btn.btn-link.appCalendarButton.menu-item', [span('.fa.fa-calendar', [])])]),
             isAuthorizedUser(user_result, authorization) ? span('.hidden-sm-down' + profile_class, [button('.btn.btn-link.appProfileButton.menu-item', [span('.fa.fa-info.mr-xs', []), span('.fs-1', ['Profile'])])]) : null,
-            span('.hidden-sm-down' + listings_class, [button('.hidden-sm-down.btn.btn-link.appRecurrencesButton.menu-item', [span('.fa.fa-microphone.mr-xs', []), span('.fs-1', ['Recurrences'])])]),
+            span('.hidden-sm-down' + listings_class, [button('.hidden-sm-down.btn.btn-link.appListingsButton.menu-item', [span('.fa.fa-microphone.mr-xs', []), span('.fs-1', ['Listings'])])]),
             isAuthorizedUser(user_result, authorization) ? span('.hidden-sm-down' + messages_class, [
               button('.btn.btn-link.appMessagesButton.menu-item', [
                 span('.fa.fa-envelope.mr-xs', {style: {position: "relative"}}, [

@@ -2,9 +2,9 @@ import {Observable as O} from 'rxjs'
 import Immutable = require('immutable')
 import {div, em, ul, li, strong, button, img, span, i, a} from '@cycle/dom'
 import isolate from '@cycle/isolate'
-import {combineObj, mergeSinks, componentify} from '../../../utils'
-import ComboBox from '../../../library/comboBox'
-import {RecurrenceDisplayFilterOptions} from '../../../listingTypes'
+import {combineObj, mergeSinks, componentify} from '../utils'
+import ComboBox from './comboBox'
+import {RecurrenceDisplayFilterOptions} from '../listingTypes'
 import moment = require('moment')
 
 import {
@@ -13,7 +13,7 @@ import {
   renderPerformerLimit, renderTextList, renderNote, getFullCostAndStageTime,
   renderContactInfo, getFreqSummary, getDateTimeString, getCuandoStatus,
   getDondeNameString, getDondeCityString, getDondeStateString
-}  from '../../helpers/listing/renderBootstrap'
+}  from '../component/helpers/listing/renderBootstrap'
 
 function getListingLine(listing) {
   const {type, parent_id, cuando, meta} = listing

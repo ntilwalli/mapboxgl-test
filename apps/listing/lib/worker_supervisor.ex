@@ -1,8 +1,8 @@
 defmodule Listing.Worker.Supervisor do
   use Supervisor
 
-  def start_link(name) do
-    Supervisor.start_link(__MODULE__, :ok, name: name)
+  def start_link(name, generator) do
+    Supervisor.start_link(__MODULE__, {:ok, generator}, name: name)
   end
 
   def start_worker(pid, listing, registry_name, notification_manager) do
@@ -13,9 +13,9 @@ defmodule Listing.Worker.Supervisor do
     Supervisor.terminate_child(pid, reason)
   end
 
-  def init(:ok) do
+  def init({:ok, generator}) do
     children = [
-      worker(Listing.Worker, [], restart: :temporary)
+      worker(Listing.Worker, [generator], restart: :temporary)
     ]
 
     supervise(children, strategy: :simple_one_for_one)

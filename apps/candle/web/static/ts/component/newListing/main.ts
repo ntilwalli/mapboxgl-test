@@ -8,6 +8,7 @@ import Navigator from '../../library/navigators/listing'
 import ListingProfile from './profile/main'
 import Settings from './settings/parentMain'
 import Notifications from './notifications/main'
+import Recurrences from './recurrences/main'
 import TimeoutLoader from '../../library/timeoutLoader'
 import WTF from '../../library/wtf'
 import ListingNotFound from '../../library/listingNotFound'
@@ -214,6 +215,9 @@ function fromListingResult(sources, inputs, result: any) {
         return out
       } else if (!page || page === 'notifications') {
         const out = Notifications({...sources, Router: router_with_listing_id.path(page)}, {...inputs, props$: O.of(result), menu_active$: navigator.active$})
+        return out
+      } else if (!page || page === 'recurrences') {
+        const out = Recurrences({...sources, Router: router_with_listing_id.path(page)}, {...inputs, props$: O.of(result), menu_active$: navigator.active$})
         return out
       } else if (!page || page === 'settings') {
         const out = Settings({...sources, Router: router_with_listing_id.path(page)}, {...inputs, props$: O.of(result), menu_active$: navigator.active$})

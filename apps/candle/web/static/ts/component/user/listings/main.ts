@@ -5,13 +5,14 @@ import isolate from '@cycle/isolate'
 import {combineObj, createProxy, mergeSinks, componentify, processHTTP} from '../../../utils'
 import {inflateListing, inflateSession} from '../../helpers/listing/utils'
 
-import ListingRow from './listingRow'
+import ListingRow from '../../../library/listingRow'
 import SessionRow from './sessionRow'
 
 function drillInflate(result) {
   result.sessions = result.sessions.map(inflateSession)
   result.staged = result.staged.map(inflateListing)
   result.posted = result.posted.map(inflateListing)
+  result.canceled = result.canceled.map(inflateListing)
   return result
 }
 function hasParent(l) { return !!l.parent_id}
@@ -48,7 +49,8 @@ function intent(sources) {
       return {
         ...resp,
         staged: toHierarchy(resp.staged),
-        posted: toHierarchy(resp.posted)
+        posted: toHierarchy(resp.posted),
+        canceled: toHierarchy(resp.canceled)
       }
     })
     .publish().refCount()
@@ -107,10 +109,16 @@ function view(state$, components) {
     components: combineObj(components)
   }).map((info: any) => {
     const {state, components} = info
-    const {posted, sessions, staged} = components
+    const {posted, sessions, staged, canceled} = components
     const {waiting} = state
     console.log('state', state)
     return waiting ? div('.loader') : div('.container.nav-fixed-offset.user-listings.mt-4', [
+      sessions ? div('.row', [
+        div('.col-12', [
+          h6([strong(['In progress'])]),
+          sessions ? sessions : renderSimpleRow(['No listings in progress'])
+        ])
+      ]) : null,
       div('.row.mb-4', [
         div('.col-12', [
           h6([strong(['Posted'])]),
@@ -123,12 +131,12 @@ function view(state$, components) {
           staged ? staged : renderSimpleRow(['No staged listings'])
         ])
       ]),
-      div('.row', [
+      canceled ? div('.row.mb-4', [
         div('.col-12', [
-          h6([strong(['In progress'])]),
-          sessions ? sessions : renderSimpleRow(['No listings in progress'])
+          h6([strong(['Canceled'])]),
+          canceled ? canceled : renderSimpleRow(['No staged listings'])
         ])
-      ])
+      ]) : null,
     ])
   })
 }
@@ -240,29 +248,48 @@ export default function main(sources, inputs) {
     })
   }
 
+  const canceled$ = state$
+    .map(state => {
+      const {results} = state
+      if (results && results.canceled && results.canceled.length) {
+        const items = results.canceled.map(x => isolate(ListingRow)(sources, {...inputs, props$: O.of(x)}))
+        const merged = mergeSinks(...items)
+        return {
+          ...merged,
+          DOM: O.combineLatest(...items.map(x => x.DOM))
+        }
+      } else {
+        return {
+          DOM: O.of(undefined)
+        }
+      }
+    }).publishReplay(1).refCount()
+
+  const canceled = componentify(canceled$)
+  const canceled_w_row = {
+    ...canceled,
+    DOM: canceled.DOM.map(x => {
+      if (x) {
+        return div('.trees.row', [
+          div('.col-12', x)
+        ])
+      } else {
+        return undefined
+      }
+    })
+  }
+
+  //canceled.DOM.subscribe()
+
+
 
 
   const components = {
     sessions: sessions_w_row.DOM,
     posted: posted_w_row.DOM,
-    staged: staged_w_row.DOM
+    staged: staged_w_row.DOM,
+    canceled: canceled_w_row.DOM
   }
-
-  // const to_http$ = O.of(undefined)
-  //   .map(x => {
-  //     return {
-  //         url: `/api/user`,
-  //         method: `post`,
-  //         send: {
-  //           route: "/retrieve_listing",
-  //           data: 1
-  //         },
-  //         category: `getTreeListing`
-  //     }
-  //   })
-  //   .delay(0)
-  //   .do(x => console.log(`retrieve listing toHTTP`, x))
-  //   .publishReplay(1).refCount()
 
   const to_http$ = O.of(undefined).withLatestFrom(inputs.Authorization.status$, (_, user: any) => {
       return {
@@ -282,7 +309,7 @@ export default function main(sources, inputs) {
 
   waiting$.attach(to_http$)
 
-  const merged = mergeSinks(posted_w_row, sessions_w_row)
+  const merged = mergeSinks(posted_w_row, staged_w_row, sessions_w_row, canceled_w_row)
 
   return {
     ...merged,

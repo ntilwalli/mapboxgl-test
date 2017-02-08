@@ -17,8 +17,8 @@ defmodule Listing.Worker do
   alias Shared.Model.Once, as: CuandoOnce
 
 
-  def start_link(listing, registry_name, notification_manager) do
-    GenServer.start_link(__MODULE__, {:ok, listing, registry_name, notification_manager}, [])
+  def start_link(generator, listing, registry_name, notification_manager) do
+    GenServer.start_link(__MODULE__, {:ok, listing, registry_name, notification_manager, generator}, [])
   end
 
   def delete(server, user) do
@@ -49,7 +49,7 @@ defmodule Listing.Worker do
     GenServer.call(server, {:change_release_level, user, level})
   end
 
-  def init({:ok, %Shared.Listing{id: listing_id}, r_name, n_mgr}) do
+  def init({:ok, %Shared.Listing{id: listing_id}, r_name, n_mgr, gen_mgr}) do
     Logger.metadata(listing_id: listing_id)
     case retrieve_listing_with_other_data(listing_id) do
       nil -> {:stop, "Listing not found in database"}
@@ -57,7 +57,12 @@ defmodule Listing.Worker do
         IO.inspect "Starting process for listing #{listing_id}"
         #IO.inspect listing
         :ok = ensure_searchability(listing)
-        {:ok, %{listing: listing, registry_name: r_name, notification_manager: n_mgr}, 60 * 1_000}
+        {:ok, %{
+          listing: listing, 
+          registry_name: r_name, 
+          notification_manager: n_mgr, 
+          generator_manager: gen_mgr
+        }, 60 * 1_000}
     end
   end
 
@@ -113,7 +118,7 @@ defmodule Listing.Worker do
     {:stop, :normal, :ok, nil}
   end
 
-  def handle_call({:change_release_level, user, level} = msg, _, %{listing: listing} = state) do
+  def handle_call({:change_release_level, user, level} = msg, _, %{listing: listing, registry_name: r_name, generator_manager: gen_mgr} = state) do
     IO.inspect msg   
     cs = Ecto.Changeset.change(listing, release: level)
     case level do
@@ -122,10 +127,12 @@ defmodule Listing.Worker do
         # Keep searchability for now since people may get confused when listing stops showing up...
         #   filter this on the front-end
         #remove_searchability(listing)
+        change_release_level_recurrences(user, listing, level, r_name)
         {:reply, {:ok, listing}, %{state | listing: listing}}
       "posted" ->
         {:ok, listing} = Repo.update(cs)
         ensure_searchability(listing)
+        Listing.GenerateRecurring.generate(gen_mgr, user, listing)
         {:reply, {:ok, listing}, %{state | listing: listing}}
       "staged" -> 
         {:ok, listing} = Repo.update(cs)
@@ -159,6 +166,21 @@ defmodule Listing.Worker do
   #   new_state = %{state | listing: retrieve_listing_with_other_data(listing_id)}
   #   {:reply, {:ok, result}, new_state}
   # end
+
+  defp change_release_level_recurrences(user, listing, level, r_name) do
+    if listing.type === "recurring" do
+      query = from l in Shared.Listing,
+        where: l.parent_id == ^listing.id and
+          fragment("(?->>'begins')::timestamptz > now()", l.cuando)
+      
+      results = Repo.all(query)
+
+      Enum.map(results, fn l -> 
+        {:ok, pid} = Listing.Registry.lookup(r_name, l.id)
+        Listing.Worker.change_release_level(pid, user, level)
+      end)
+    end
+  end
 
   defp get_check_in_ability(user, %{lng: lng, lat: lat} = lng_lat, listing) do
     l_type = listing.type

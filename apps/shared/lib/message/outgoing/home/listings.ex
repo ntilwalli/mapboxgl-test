@@ -7,6 +7,7 @@ defmodule Home.Listings.Outgoing do
     embeds_many :sessions, Shared.ListingSession
     embeds_many :staged, Shared.Listing
     embeds_many :posted, Shared.Listing
+    embeds_many :canceled, Shared.Listing
   end
 
   @required_fields []
@@ -16,5 +17,6 @@ defmodule Home.Listings.Outgoing do
     |> cast_embed(:listing_sessions)
     |> cast_embed(:staged)
     |> cast_embed(:posted)
+    |> cast_embed(:canceled)
   end
 end

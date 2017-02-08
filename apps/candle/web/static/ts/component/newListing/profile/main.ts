@@ -182,7 +182,7 @@ function renderUpcomingEvents(children) {
 export function renderRecurringListing(state) {
 
   const {listing, children} = state
-  const {type, donde, cuando, meta} = listing
+  const {type, donde, cuando, meta, release} = listing
   const {
     name, event_types, categories, notes, 
     performer_cost, description, contact_info, 
@@ -204,6 +204,7 @@ export function renderRecurringListing(state) {
         renderContactInfo(contact_info),
       ]),
       div('.col-6', [
+        renderStatus(listing),
         full_cost ? full_cost : null,
         full_stage_time ? full_stage_time : null,
         performer_sign_up ? renderPerformerSignup(performer_sign_up) : null,
@@ -220,7 +221,7 @@ export function renderRecurringListing(state) {
       renderMarkerInfo(donde),
       div(`#listing-location-map`)
     ]),
-    renderUpcomingEvents(children)
+    release === 'canceled' ? null : renderUpcomingEvents(children)
   ])
 }
 
