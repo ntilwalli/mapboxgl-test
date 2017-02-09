@@ -97,7 +97,7 @@ function view(state$, components) {
 
       div('.row.mb-4', [
         div('.col-12', [
-          h6([strong(['Recurrences'])]),
+          h6([strong(['Calendar'])]),
           posted
         ])
       ])

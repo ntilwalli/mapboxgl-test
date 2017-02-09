@@ -7,7 +7,7 @@ import Immutable = require('immutable')
 
 const routes = [
   {pattern: /^\/profile$/, value: {type: 'success', data: 'profile'}},
-  {pattern: /^\/recurrences$/, value: {type: 'success', data: 'recurrences'}},
+  {pattern: /^\/calendar$/, value: {type: 'success', data: 'calendar'}},
   {pattern: /^\/messages$/, value: {type: 'success', data: 'messages'}},
   {pattern: /^\/settings$/, value: {type: 'success', data: 'settings'}},
   {pattern: /^\/notifications$/, value: {type: 'success', data: 'notifications'}},
@@ -30,7 +30,7 @@ function intent(sources) {
 
   const nav_click$ = DOM.select('.appNavigatorBar').events('click')
 
-  const recurrences$ = DOM.select('.appRecurrencesButton').events('click').mapTo('recurrences').publish().refCount()
+  const calendar$ = DOM.select('.appCalendarButton').events('click').mapTo('calendar').publish().refCount()
   const messages$ = DOM.select('.appMessagesButton').events('click').mapTo('messages').publish().refCount()
   const settings$ = DOM.select('.appSettingsButton').events('click').mapTo('settings').publish().refCount()
   //const calendar$ = DOM.select('.appCalendarButton').events('click').mapTo('calendar')
@@ -48,7 +48,7 @@ function intent(sources) {
 
   return {
     page$: O.merge(
-      recurrences$, messages$, profile$, settings$, notifications$
+      calendar$, messages$, profile$, settings$, notifications$
     )
     .map(x => {
       return x
@@ -229,7 +229,7 @@ function renderStuff(listing_result, notifications) {
 }
 
 function ellipsisSelected(page) {
-  return ['calendar', 'settings', 'messages'].some(x => x === page)
+  return ['notifications', 'settings'].some(x => x === page)
 }
 
 function isMyListing(listing_result, authorization) {
@@ -247,10 +247,10 @@ function view(state$) {
     const {state} = info
     const {authorization, page, listing_result, notifications, messages, show_ellipsis_menu} = state
     const type = listing_result && listing_result.listing && listing_result.listing.type
-    const recurrences_class = page === 'recurrences' ? '.selected' : '.not-selected'
+    const calendar_class = page === 'calendar' ? '.selected' : '.not-selected'
     const messages_class = page === 'messages' ? '.selected' : '.not-selected'
     const settings_class = page === 'settings' ? '.selected' : '.not-selected'
-    const calendar_class = page === 'calendar' ? '.selected' : '.not-selected'
+    const notifications_class = page === 'notifications' ? '.selected' : '.not-selected'
     const profile_class = page === 'profile' ? '.selected' : '.not-selected'
     const ellipsis_class = ellipsisSelected(page) ? '.selected' : '.not-selected'
 
@@ -267,14 +267,14 @@ function view(state$) {
           button('.appBrandButton.h-2.hopscotch-icon.btn.btn-link.nav-brand', []),
           type === 'recurring' || my_listing ? span('.sub-navigator', [
             type === 'recurring' || my_listing ? span('.hidden-md-up' + profile_class, [button('.btn.btn-link.appProfileButton.menu-item', [span('.fa.fa-info', [])])]) : null,
-            type === 'recurring' ? span('.hidden-md-up' + recurrences_class, [button('.btn.btn-link.appRecurrencesButton.menu-item', [span('.fa.fa-microphone', [])])]) : null,
-            my_listing ? span('.hidden-md-up' + messages_class, [
-              button('.appMessagesButton.btn.btn-link.menu-item', [
-                div('.fa.fa-envelope', {style: {position: "relative"}}, [
-                  messages.length ? renderAlertCircle(-4, -6) : null
-                ]),
-              ])
-            ]) : null,
+            type === 'recurring' ? span('.hidden-md-up' + calendar_class, [button('.btn.btn-link.appCalendarButton.menu-item', [span('.fa.fa-calendar', [])])]) : null,
+            // my_listing ? span('.hidden-md-up' + messages_class, [
+            //   button('.appMessagesButton.btn.btn-link.menu-item', [
+            //     div('.fa.fa-envelope', {style: {position: "relative"}}, [
+            //       messages.length ? renderAlertCircle(-4, -6) : null
+            //     ]),
+            //   ])
+            // ]) : null,
             my_listing ? span('.hidden-md-up' + ellipsis_class, [
               button('.appEllipsisButton.btn.btn-link.menu-item', [
                 span('.fa.mr-xs' + getEllipsisIcon(page), {style: {position: "relative"}}, [
@@ -285,16 +285,16 @@ function view(state$) {
             ]) : null,
             //span(calendar_class, [button('.hidden-md-up.btn.btn-link.appCalendarButton.menu-item', [span('.fa.fa-calendar', [])])]),
             type === 'recurring' || my_listing ? span('.hidden-sm-down' + profile_class, [button('.btn.btn-link.appProfileButton.menu-item', [span('.fa.fa-info.mr-xs', []), span('.fs-1', ['Profile'])])]) : null,
-            type === 'recurring' ? span('.hidden-sm-down' + recurrences_class, [button('.hidden-sm-down.btn.btn-link.appRecurrencesButton.menu-item', [span('.fa.fa-microphone.mr-xs', []), span('.fs-1', ['Recurrences'])])]) : null,
-            my_listing ? span('.hidden-sm-down' + messages_class, [
-              button('.btn.btn-link.appMessagesButton.menu-item', [
-                span('.fa.fa-envelope.mr-xs', {style: {position: "relative"}}, [
-                  messages.length ? renderAlertCircle(-4, -6) : null
-                ]), 
-                span('.fs-1', ['Messages'])
-              ])
-            ]) : null,
-            my_listing ? span('.hidden-sm-down' + messages_class, [
+            type === 'recurring' ? span('.hidden-sm-down' + calendar_class, [button('.hidden-sm-down.btn.btn-link.appCalendarButton.menu-item', [span('.fa.fa-calendar.mr-xs', []), span('.fs-1', ['Calendar'])])]) : null,
+            // my_listing ? span('.hidden-sm-down' + messages_class, [
+            //   button('.btn.btn-link.appMessagesButton.menu-item', [
+            //     span('.fa.fa-envelope.mr-xs', {style: {position: "relative"}}, [
+            //       messages.length ? renderAlertCircle(-4, -6) : null
+            //     ]), 
+            //     span('.fs-1', ['Messages'])
+            //   ])
+            // ]) : null,
+            my_listing ? span('.hidden-sm-down' + notifications_class, [
               button('.btn.btn-link.appNotificationsButton.menu-item', [
                 span('.fa.fa-bell.mr-xs', {style: {position: "relative"}}, [
                   listing_notifications.length ? renderAlertCircle(-4, -6) : null
@@ -302,7 +302,7 @@ function view(state$) {
                 span('.fs-1', ['Notifications'])
               ])
             ]) : null,
-            my_listing ? span('.hidden-sm-down' + messages_class, [
+            my_listing ? span('.hidden-sm-down' + settings_class, [
               button('.btn.btn-link.appSettingsButton.menu-item', [
                 span('.fa.fa-gear.mr-xs', {style: {position: "relative"}}, []), 
                 span('.fs-1', ['Settings'])

@@ -7,7 +7,7 @@ import {
   ListingTypes, CategoryTypes, 
   EventTypeToProperties
 } from '../../../../listingTypes'
-import {inflateSession, deflateSession, fromCheckbox, getDefaultSession, isExpired, renderExpiredAlert} from '../../../helpers/listing/utils'
+import {inflateSession, deflateSession, fromCheckbox, getDefaultSession, isUpdateDisabled, renderDisabledAlert} from '../../../helpers/listing/utils'
 import clone = require('clone')
 import moment = require('moment')
 
@@ -133,9 +133,9 @@ function renderMainPanel(info: any) {
     end_time, date
   } = components
 
-  const is_expired = isExpired(state.session)
+  const is_update_disabled = isUpdateDisabled(state.session)
 
-  return div('.pt-4', {class: {"read-only": is_expired}}, [
+  return div('.pt-4', {class: {"read-only": is_update_disabled}}, [
     show_errors && errors.length ? div(`.form-group`, [
       div(`.alerts-area`, errors.map(e => {
           return div(`.alert.alert-danger`, [
@@ -143,7 +143,7 @@ function renderMainPanel(info: any) {
           ])
       }))
     ]) : null,
-    div({class: {"read-only": is_expired ? false : true}}, [
+    div({class: {"read-only": is_update_disabled ? false : true}}, [
       listing_type
     ]),
     div('.mt-4', [
@@ -177,8 +177,8 @@ function renderMainPanel(info: any) {
 }
 
 function renderSaveButton(info) {
-  const is_expired = isExpired(info.state.session)
-  return button('.appSaveButton.mt-4.btn.btn-outline-success.d-flex.cursor-pointer.mt-4', {class: {"read-only": is_expired}}, [
+  const is_update_disabled = isUpdateDisabled(info.state.session)
+  return button('.appSaveButton.mt-4.btn.btn-outline-success.d-flex.cursor-pointer.mt-4', {class: {"read-only": is_update_disabled}}, [
     span('.d-flex.align-items-center', ['Save changes']),
   ])
 }
@@ -198,8 +198,6 @@ function view(state$, components) {
     const {show_instruction} = state
     const {name} = components
 
-    const is_expired = isExpired(state.session)
-
     return div('.basics.appMainPanel', {
         // hook: {
         //   create: (emptyVNode, {elm}) => {
@@ -210,7 +208,7 @@ function view(state$, components) {
         //   }
         // }
     }, [
-      is_expired ? renderExpiredAlert() : null,
+      renderDisabledAlert(state.session),
       renderMainPanel(info),
       renderSaveButton(info)
     ])

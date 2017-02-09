@@ -1,0 +1,18 @@
+defmodule Listing.Query.Donde do
+  use Shared.Lib, :model
+
+  @derive {Poison.Encoder, except: [:__meta__]}
+  @primary_key false
+  embedded_schema do
+    field :radius, :float
+    embeds_one :center, Shared.Message.LngLat
+  end
+
+  @required_fields [:radius]
+  def changeset(schema, params \\ :empty) do
+    schema
+    |> cast(params, @required_fields)
+    |> cast_embed(:center)
+    |> validate_required(@required_fields)
+  end
+end

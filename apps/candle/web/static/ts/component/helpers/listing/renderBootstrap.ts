@@ -44,7 +44,7 @@ export function getDondeCityString(donde) {
     if (donde.source === 'foursquare') {
       const {data} = donde
       const {location} = data
-      return location.city + ','
+      return location.city
     } 
   } else if (type === 'badslava') {
     return donde.city 

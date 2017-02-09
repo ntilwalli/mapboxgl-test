@@ -87,7 +87,12 @@ defmodule User.Individual do
 
   def route(user, "/listing/delete", listing_id) do
     pid = ensure_started(user)
-    GenServer.call(pid, {:delete_listing, listing_id})
+    GenServer.call(pid, {:listing_delete, listing_id})
+  end
+
+  def route(user, "/listing/query", query) do
+    pid = ensure_started(user)
+    GenServer.call(pid, {:listing_query, query})
   end
 
   def route(user, "/listing_session/new") do
@@ -151,6 +156,7 @@ defmodule User.Individual do
   end
 
   def route(user, unknown_route, message) do 
+    IO.inspect {:user_unknown_route, unknown_route, message}
     {:error, "Unknown route: #{unknown_route}"}
   end
 
@@ -358,6 +364,19 @@ defmodule User.Individual do
 
   def handle_call({:listing_delete, listing_id}, _from, %{user: user} = state) do
     {:reply, :ok, state}
+  end
+
+  def handle_call({:listing_query, params}, _from, %{user: user} = state) do
+    cs = Listing.Query.changeset(%Listing.Query{}, params)
+    case cs.valid? do
+      true ->
+        # IO.puts "Saved settings"
+        query = apply_changes(cs)
+        result = User.Helpers.listing_query(user, query)
+        {:reply, {:ok, result}, state}
+      false ->
+        {:reply, {:error, "Sent invalid listing query parameters"}, state}
+    end
   end
 
   def handle_call({:listing_change_release_level, %{"type" => level, "data" => listing_id} = message}, _from, %{user: user, listing_registry: l_reg} = state) do

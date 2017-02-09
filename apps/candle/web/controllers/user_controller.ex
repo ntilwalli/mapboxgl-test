@@ -67,9 +67,11 @@ defmodule Candle.UserController do
         nil -> 
           #IO.puts "Anonymous"
           aid = conn.cookies["aid"]
+          IO.inspect {:anon_route_w_message, route, message}
           User.Anon.route(aid, route, message)
         _ -> 
           #IO.puts "User"
+          IO.inspect {:user_route_w_message, route, message}
           User.Individual.route(current_user, route, message)
       end
 
@@ -86,11 +88,12 @@ defmodule Candle.UserController do
       case current_user do
         nil -> 
           #IO.puts "Anonymous"
+          IO.inspect {:anonymous_route, route}
           aid = conn.cookies["aid"]
           User.Anon.route(aid, route)
         _ -> 
           #IO.puts "User"
-          #IO.inspect {:route, route}
+          IO.inspect {:user_route, route}
           out = User.Individual.route(current_user, route)
           #IO.inspect {:out, out}
           out

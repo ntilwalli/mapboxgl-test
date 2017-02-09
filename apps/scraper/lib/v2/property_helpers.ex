@@ -110,17 +110,36 @@ defmodule Helpers.V2 do
     email
   end
 
+  def convert_hour(hour, meridiem) do
+    case meridiem do
+      "AM" -> 
+        case hour do
+          12 -> 0
+          _ -> hour
+        end
+      "PM" -> 
+        case hour do
+          12 -> 12
+          _ -> hour + 12
+        end
+    end
+  end
+
 
   def convert_to_time(val) do
     #IO.inspect val
-    captures = Regex.named_captures(~r/^(?<hour>\d\d?):(?<minute>\d\d)(?<meridiem>(am|pm|AM|PM))$/, val)
+    captures = Regex.named_captures(~r/^(?<hour>\d\d?):(?<minute>\d\d)(?<meridiem>(am|pm|AM|PM|a.m.|p.m.|A.M.|P.M.))$/, val)
 
     meridiem = captures["meridiem"]
     hour = case meridiem do
-      "am" -> String.to_integer(captures["hour"])
-      "pm" -> String.to_integer(captures["hour"]) + 12
-      "AM" -> String.to_integer(captures["hour"])
-      "PM" -> String.to_integer(captures["hour"]) + 12
+      "am" -> convert_hour(String.to_integer(captures["hour"]), "AM")
+      "pm" -> convert_hour(String.to_integer(captures["hour"]), "PM")
+      "AM" -> convert_hour(String.to_integer(captures["hour"]), "AM")
+      "PM" -> convert_hour(String.to_integer(captures["hour"]), "PM")
+      "a.m." -> convert_hour(String.to_integer(captures["hour"]), "AM")
+      "p.m." -> convert_hour(String.to_integer(captures["hour"]), "PM")
+      "A.M." -> convert_hour(String.to_integer(captures["hour"]), "AM")
+      "P.M." -> convert_hour(String.to_integer(captures["hour"]), "PM")
     end
     minute = String.to_integer(captures["minute"])
     case Time.new(hour, minute, 0) do

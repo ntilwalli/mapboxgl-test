@@ -275,7 +275,7 @@ defmodule Listing.Worker do
   end
 
   def ensure_searchability(listing) do
-    if listing.type === "single"  && listing.release === "posted" && listing.visibility === "public" do
+    if listing.type === "single"  && listing.visibility === "public" do
       listing_id = listing.id
       case Repo.get(Shared.SingleListingSearch, listing_id) do
         nil -> :ok

@@ -19,7 +19,7 @@ import {
   EventTypeToProperties, 
   CostOptions
 } from '../../../../listingTypes'
-import {getSessionStream, isExpired, renderExpiredAlert} from '../../../helpers/listing/utils'
+import {getSessionStream, isExpired, renderExpiredAlert, isUpdateDisabled, renderDisabledAlert} from '../../../helpers/listing/utils'
 import {NotesInput} from './helpers'
 import {combineObj, createProxy, traceStartStop, componentify, mergeSinks, targetIsOwner, processHTTP} from '../../../../utils'
 import clone = require('clone')
@@ -286,8 +286,8 @@ function model(actions, inputs) {
 }
 
 function renderSaveButton(info) {
-  const is_expired = isExpired(info.state.session)
-  return button('.appSaveButton.mt-4.btn.btn-outline-success.d-flex.cursor-pointer.mt-4', {class: {"read-only": is_expired}}, [
+  const is_update_disabled = isUpdateDisabled(info.state.session)
+  return button('.appSaveButton.mt-4.btn.btn-outline-success.d-flex.cursor-pointer.mt-4', {class: {"read-only": is_update_disabled}}, [
     span('.d-flex.align-items-center', ['Save changes']),
   ])
 }
@@ -312,7 +312,7 @@ function view(state$, children$) {
           ])
         ]))
 
-    const is_expired = isExpired(state.session)
+    const is_update_disabled = isUpdateDisabled(state.session)
 
 
     // return div('.properties', [
@@ -322,8 +322,8 @@ function view(state$, children$) {
 
     return div('.properties', [
       ...display_errors,
-      is_expired ? renderExpiredAlert() : null,
-      div('.pt-4', {class: {"read-only": is_expired}}, children.map(x => div({style: {"margin-bottom": "3rem"}}, [x]))),
+      renderDisabledAlert(state.session),
+      div('.pt-4', {class: {"read-only": is_update_disabled}}, children.map(x => div({style: {"margin-bottom": "3rem"}}, [x]))),
       renderSaveButton(info)
     ])
   })

@@ -63,7 +63,7 @@ defmodule User.Anon do
   end
 
   def route(anonymous_id, unknown_route, message) do 
-    name = ensure_started(anonymous_id)
+    IO.inspect {:anon_unknown_route, unknown_route, message}
     {:error, "Unknown route: #{unknown_route}"}
   end
 

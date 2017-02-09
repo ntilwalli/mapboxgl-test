@@ -13,6 +13,8 @@ defmodule User.Helpers do
 
   alias Shared.ListingSession
 
+  alias Listing.Query.Cuando, as: Cuando
+
   def gather_check_ins(
     %DateTimeRangeMessage{begins: begins, ends: ends}, 
     %Shared.User{id: user_id}
@@ -126,5 +128,46 @@ defmodule User.Helpers do
     results = Repo.all(query)
     #IO.inspect {:user_listings, results}
     results
+  end
+
+  def listing_query(user, %Listing.Query{} = request) do
+    #%Listing.Query{cuando: cuando, releases: releases, parent_id: parent_id} = request
+    query = from l in Shared.Listing, select: l
+    
+    query = 
+      case request.cuando do
+        nil -> query
+        %Cuando{begins: nil, ends: nil} -> 
+            query
+        %Cuando{begins: begins, ends: nil} -> 
+          from q in query, 
+            join: s in Shared.SingleListingSearch, 
+              where: q.id == s.listing_id and
+                s.begins >= ^begins
+        %Cuando{begins: nil, ends: ends} -> 
+          from q in query, 
+            join: s in Shared.SingleListingSearch, 
+              where: q.id == s.listing_id and
+              s.begins <= ^ends
+        %Cuando{begins: begins, ends: ends} ->  
+          from q in query, 
+            join: s in Shared.SingleListingSearch, 
+              where: q.id == s.listing_id and
+              s.begins >= ^begins and 
+              s.begins <= ^ends
+
+      end
+
+    query = 
+      case request.parent_id do
+        nil -> query
+        parent_id -> 
+          from q in query, 
+            where: q.parent_id == ^parent_id
+      end
+
+    IO.inspect {:listing_query, query}
+
+    Shared.Repo.all(query)
   end
 end

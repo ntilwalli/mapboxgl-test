@@ -7,7 +7,7 @@ import {
   ListingTypes, CategoryTypes, 
   EventTypeToProperties
 } from '../../../listingTypes'
-import {inflateSession, deflateSession, fromCheckbox, getDefaultSession, isExpired, renderExpiredAlert, renderSuccessAlert, getSessionClone, inflateListing, listingToSession} from '../../helpers/listing/utils'
+import {inflateSession, deflateSession, fromCheckbox, getDefaultSession, isUpdateDisabled, renderDisabledAlert, renderSuccessAlert, getSessionClone, inflateListing, listingToSession} from '../../helpers/listing/utils'
 import clone = require('clone')
 import moment = require('moment')
 
@@ -99,18 +99,18 @@ function renderMainPanel(info: any) {
   const {listing} = session
   const {release} = listing
 
-  const is_expired = isExpired(state.session)
+  const is_update_disabled = isUpdateDisabled(state.session)
 
   return div([
-    release === 'staged' ? button('.appPostButton.btn.btn-outline-success.d-flex.cursor-pointer.mb-4', {class: {"read-only": is_expired}}, [
+    release === 'staged' ? button('.appPostButton.btn.btn-outline-success.d-flex.cursor-pointer.mb-4', {class: {"read-only": is_update_disabled}}, [
       span('.d-flex.align-items-center', ['Post listing']),
       //span('.fa.fa-angle-double-right.ml-2.d-flex.align-items-center', [])
     ]) : null,
-    release === 'staged' ? button('.appDeleteButton.btn.btn-outline-danger.d-flex.cursor-pointer.mb-4', {class: {"read-only": is_expired}}, [
+    release === 'staged' ? button('.appDeleteButton.btn.btn-outline-danger.d-flex.cursor-pointer.mb-4', {class: {"read-only": is_update_disabled}}, [
       span('.d-flex.align-items-center', ['Delete listing']),
       //span('.fa.fa-angle-double-right.ml-2.d-flex.align-items-center', [])
     ]) : null,
-    release === 'posted' ? button('.appCancelButton.btn.btn-outline-danger.d-flex.cursor-pointer.mb-4', {class: {"read-only": is_expired}}, [
+    release === 'posted' ? button('.appCancelButton.btn.btn-outline-danger.d-flex.cursor-pointer.mb-4', {class: {"read-only": is_update_disabled}}, [
       span('.d-flex.align-items-center', ['Cancel listing']),
       //span('.fa.fa-angle-double-right.ml-2.d-flex.align-items-center', [])
     ]) : null
@@ -123,11 +123,11 @@ function view(state$, components) {
     components$: combineObj(components)
   }).map((info: any) => {
     const {confirm_modal} = info.components
-    const is_expired = isExpired(info.state.session)
+    const is_update_disabled = isUpdateDisabled(info.state.session)
     const message = info.state.session.properties.admin.message
-    return div('.basics.appMainPanel.pt-4', {
+    return div('.basics.appMainPanel', {
     }, [
-      is_expired ? renderExpiredAlert() : null,
+      renderDisabledAlert(info.state.session),
       message ? renderSuccessAlert(message) : null,
       //pre([JSON.stringify(info.state.session.listing, undefined, 2)]),
       renderMainPanel(info),

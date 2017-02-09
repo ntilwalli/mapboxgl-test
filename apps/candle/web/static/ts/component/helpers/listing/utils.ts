@@ -9,7 +9,7 @@ import {
   DayOfWeek, RecurrenceFrequency, ListingTypes, CategoryTypes,
   PerformerSignupOptions, PreRegistrationOptions, PerformerLimitOptions,
   StageTimeOptions, TierPerkOptions, MinutesTypeOptions, RelativeTimeOptions,
-  CostOptions, PurchaseTypeOptions, UndefinedOption
+  CostOptions, PurchaseTypeOptions, UndefinedOption, RecurrenceDisplayFilterOptions
 } from '../../../listingTypes'
 
 import {getDefault as getContactInfoDefault} from '../../create/newListing/advanced/contactInfo/main'
@@ -689,6 +689,18 @@ export function isExpired(session) {
   return false
 }
 
+
+export function isCanceled(session) {
+  return session.listing.release === 'canceled'
+}
+
+export function renderCanceledAlert() {
+  return div('.pt-4', [div(`.alert.alert-danger`, [
+    'This is a canceled listing, it cannot be updated.'
+  ])])
+}
+
+
 export function renderExpiredAlert() {
   return div('.pt-4', [div(`.alert.alert-danger`, [
     'This is a past listing, it cannot be updated.'
@@ -699,4 +711,42 @@ export function renderSuccessAlert(message) {
   return div('.pt-4', [div('.alert.alert-success', [
     message
   ])])
+}
+
+export function isUpdateDisabled(session) {
+  return  isCanceled(session) || isExpired(session)
+}
+
+export function renderDisabledAlert(session) {
+  return isCanceled(session) ? renderCanceledAlert() : isExpired(session) ? renderExpiredAlert() : null
+}
+
+export function recurrenceDisplayFilterOptionToRange(option) {
+  switch (option) {
+    case RecurrenceDisplayFilterOptions.ALL:
+      return {
+        begins: null,
+        ends: null
+      }
+    case RecurrenceDisplayFilterOptions.ALL_PAST:
+      return {
+        begins: null,
+        ends: moment()
+      }
+    case RecurrenceDisplayFilterOptions.ALL_FUTURE:
+      return {
+        begins: moment(),
+        ends: null
+      }
+    case RecurrenceDisplayFilterOptions.LAST_30_DAYS:
+      return {
+        begins: moment().subtract('days', 30),
+        ends: moment()
+      }
+    case RecurrenceDisplayFilterOptions.NEXT_30_DAYS:
+      return {
+        begins: moment(),
+        ends: moment().add('days', 30),
+      }
+  }
 }
