@@ -250,7 +250,7 @@ export default function main(sources, inputs): any {
 
   const component$ = O.merge(
     muxed_router.retrieve_listing_id$.map(_ => TimeoutLoader(sources, inputs)),
-    muxed_router.listing_result$.map((result: any) => fromListingResult(sources, inputs, result)),
+    muxed_router.listing_result$.map((result: any) => fromListingResult(sources, inputs, result))
   ).publishReplay(1).refCount()
 
   const component = componentify(component$)

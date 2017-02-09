@@ -1,5 +1,5 @@
 import {Observable as O} from 'rxjs'
-import {div, ul, li} from '@cycle/dom'
+import {div, h6, ul, li} from '@cycle/dom'
 import Immutable = require('immutable')
 import isolate from '@cycle/isolate'
 import {combineObj, mergeSinks} from '../../../utils'
@@ -8,6 +8,17 @@ import {ListingQueryRequest} from '../../../interfaces'
 import {RecurrenceDisplayFilterOptions} from '../../../listingTypes'
 import {recurrenceDisplayFilterOptionToRange} from '../../helpers/listing/utils'
 import ComboBox from '../../../library/comboBox'
+import {renderStatus} from '../../helpers/listing/renderBootstrap'
+
+import moment = require('moment')
+
+function notStaged(x) {
+  return x.release !== 'staged'
+}
+
+function sortDates(x, y) {
+  return x.cuando.begins - y.cuando.begins
+}
 
 function intent(sources) {
   const {DOM} = sources
@@ -27,19 +38,20 @@ function model(actions, inputs) {
 
 function renderListing(listing) {
   const {meta, cuando, donde, release} = listing
-  return li('.appRecurrenceListing.listing', {props: {listing}}, [
-    div([
-      meta.name
+  return li('.appRecurrenceListing.listing.d-flex.justify-content-between.list-group-item.hover-gray', {props: {listing}}, [
+    div('.d-flex.flex-column', [
+      h6([meta.name]),
+      div({class: {red: cuando.begins.isSameOrBefore(moment())}}, [cuando.begins.format('LLLL')])
     ]),
     div([
-      release
+      renderStatus(listing)
     ])
   ])
 }
 
 function view(state$) {
   return state$.map(state => {
-    return ul('.list-unstyled.recurrence-display', state.map(renderListing))
+    return ul('.recurrence-display.list-group.w-100', state.sort(sortDates).filter(notStaged).map(renderListing))
   })
 }
 

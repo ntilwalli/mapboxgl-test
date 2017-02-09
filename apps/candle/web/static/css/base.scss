@@ -441,6 +441,10 @@ span.close::after {
   color: red;
 }
 
+.hover-gray:hover {
+  background-color: lightgray;
+}
+
 @font-face {
   font-family: Corona4Typewriter;
   src: local("Corona4Typewriter"), url("/fonts/corona4typewriter.ttf") format('truetype')
@@ -585,3 +589,4 @@ html, body {
 @import './profile';
 @import './create';
 
+@import 'newComponent/_index';

@@ -1,19 +1,28 @@
 import {Observable as O} from 'rxjs'
-import {div} from '@cycle/dom'
+import {div, h4} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 import {combineObj, mergeSinks} from '../../../utils'
 import ListingQuery from '../../../query/listingQuery'
 import {ListingQueryRequest} from '../../../interfaces'
 import {RecurrenceDisplayFilterOptions} from '../../../listingTypes'
-import {recurrenceDisplayFilterOptionToRange} from '../../helpers/listing/utils'
+import {recurrenceDisplayFilterOptionToRange, inflateListing} from '../../helpers/listing/utils'
 import ComboBox from '../../../library/comboBox'
 import RecurrenceDisplay from './recurrenceDisplay'
 
+function sortDates(x, y) {
+  return x.cuando.begins - y.cuando.begins
+}
+
 function view(components) {
   return combineObj(components).map((info: any) => {
-    return div('.container.nav-fixed-offset.mt-xs', [
-      info.date_range,
-      info.recurrence_display
+    return div('.container.nav-fixed-offset.mt-4.d-flex.flex-column', [
+      div('.d-flex.flex-row.justify-content-between.mb-2', [
+        h4(['Calendar']), 
+        div({style: {flex: '0 0 fixed'}}, [info.date_range])
+      ]),
+      div('.d-flex', [
+        info.recurrence_display
+      ])
     ])
   })
 }
@@ -47,7 +56,7 @@ export default function main(sources, inputs) {
     })
 
   const listing_query = ListingQuery(sources, {props$: query$})
-  const recurrence_display = RecurrenceDisplay(sources, {...inputs, props$: listing_query.output$})
+  const recurrence_display = RecurrenceDisplay(sources, {...inputs, props$: listing_query.output$.map(x => x.map(inflateListing))})
 
   const components = {
     date_range$: date_range.DOM,
