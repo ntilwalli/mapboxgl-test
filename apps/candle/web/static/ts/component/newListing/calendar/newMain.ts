@@ -11,7 +11,7 @@ import RecurrenceDisplay from './recurrenceDisplay'
 
 function view(components) {
   return combineObj(components).map((info: any) => {
-    return div([
+    return div('.container.nav-fixed-offset.mt-xs', [
       info.date_range,
       info.recurrence_display
     ])
