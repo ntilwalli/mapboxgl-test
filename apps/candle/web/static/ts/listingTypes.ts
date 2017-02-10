@@ -107,7 +107,7 @@ const ListingTypes = {
 const CategoryTypes = {
   COMEDY: 'comedy',
   MUSIC: 'music',
-  POETRY: 'poetry',
+  SPOKEN_WORD: 'spoken_word',
   STORYTELLING: 'storytelling',
   DANCE: 'dance',
   VARIETY: 'variety'

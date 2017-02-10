@@ -51,8 +51,8 @@ export default function main(sources, inputs) {
         ]),
         div('.form-check.form-check-inline', [
           label('.form-check-label', [
-            input(`.appCategoriesInput.form-check-input`, {attrs: {type: 'checkbox', name: 'categories', value: CategoryTypes.POETRY, checked: has(categories, CategoryTypes.POETRY)}}, []),
-            span('.ml-xs', ['poetry'])
+            input(`.appCategoriesInput.form-check-input`, {attrs: {type: 'checkbox', name: 'categories', value: CategoryTypes.SPOKEN_WORD, checked: has(categories, CategoryTypes.SPOKEN_WORD)}}, []),
+            span('.ml-xs', ['spoken-word'])
           ]),
         ]),
         div('.form-check.form-check-inline', [
