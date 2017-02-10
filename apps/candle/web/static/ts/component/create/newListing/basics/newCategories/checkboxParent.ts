@@ -80,11 +80,11 @@ export default function main(sources, inputs) {
     props$: shared_props$,
     initial_state$: shared_initial_state$
   }).switchMap(({props, initial_state}: any) => {
-    const cats = initial_state.filter(props.finder)
-    const checked = cats.length > 0
-    const length = props.base ? Object.keys(props.base).length : undefined
+    const categories = props.finder ? initial_state.filter(props.finder) : []
+    const deep_categories = categories.map(x => x.split('/').filter(Boolean)).filter(x => x.length > 1)
+    const checked = categories.length > 0
     let specific = false
-    if (length && cats.length < length && cats.length > 0) {
+    if (deep_categories.length > 0) {
       specific = true
     }
     return reducer$.startWith(Immutable.fromJS({checked, specific})).scan((acc, f: Function) => f(acc))
@@ -131,13 +131,14 @@ export default function main(sources, inputs) {
         }),
         ((info: any, props: any) => {
           if (props.base) {
-            if (!info.state.specific || info.subcategories.length === 0) {
-              return Object.keys(props.base).map(key => '/' + props.parent_category + '/' + props.base[key])
+            if (info.state.checked && !info.state.specific) {
+              return ['/' + props.parent_category]
+              //Object.keys(props.base).map(key => '/' + props.parent_category + '/' + props.base[key])
             } else {
-              return info.subcategories.map(category => '/' + props.parent_category + '/' + category)
+              return info.subcategories
             }
           } else {
-            info.state.checked ? ['/' + props.parent_category] : []
+            return info.state.checked ? ['/' + props.parent_category] : []
           }
         })
       )

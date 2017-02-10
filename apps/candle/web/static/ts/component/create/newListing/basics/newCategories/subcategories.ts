@@ -67,7 +67,7 @@ function view(state$) {
       return div('.form-check.form-check-inline', [
         label('.form-check-label', [
           input(`.appCheckInput.form-check-input`, {props: {checked}, attrs: {type: 'checkbox', name: 'categories', value, checked}}, []),
-          span('.ml-xs', [value])
+          span('.ml-xs', [value.replace(/_/g, '-')])
         ])
       ])
     })
@@ -88,11 +88,11 @@ export default function main(sources, inputs) {
     DOM: vtree$,
     output$: state$
       .withLatestFrom(shared_props$, (state: any, props: any) => {
-        if (state.categories.length === 0) {
-          return Object.keys(props.base).map(key => '/' + props.parent_category + '/' + props.base[key])
-        } else {
+      //   if (state.categories.length === 0) {
+      //     return Object.keys(props.base).map(key => '/' + props.parent_category + '/' + props.base[key])
+      //   } else {
           return state.categories.map(cat => '/' + props.parent_category + '/' + cat)
-        }
+      //  }
       })
       .publishReplay(1).refCount()
   }

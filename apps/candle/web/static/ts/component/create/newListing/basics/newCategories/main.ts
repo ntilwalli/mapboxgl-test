@@ -21,12 +21,14 @@ function BlankComponent() {
   }
 }
 
-const findComedy = x => x.indexOf('/comedy') === 0
-const findMusic = x => x.indexOf('/music') === 0
-const findSpokenWord = x => x.indexOf('/spoken_word') === 0
-const findStorytelling = x => x.indexOf('/storytelling') === 0
-const findDance = x => x.indexOf('/dance') === 0
-const findVariety = x => x.indexOf('/variety') === 0
+const findComedy = (x: string) => {
+  return x.indexOf('/comedy') === 0
+}
+const findMusic = (x: string) => x.indexOf('/music') === 0
+const findSpokenWord = (x: string) => x.indexOf('/spoken_word') === 0
+const findStorytelling = (x: string) => x.indexOf('/storytelling') === 0
+const findDance = (x: string) => x.indexOf('/dance') === 0
+const findVariety = (x: string) => x.indexOf('/variety') === 0
 
 export default function main(sources, inputs) {
   const init_categories$ = inputs.session$
