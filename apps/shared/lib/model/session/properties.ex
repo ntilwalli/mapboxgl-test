@@ -4,15 +4,16 @@ defmodule ListingSession.Properties do
   @derive {Poison.Encoder, except: [:__meta__]}
   @primary_key false
   embedded_schema do
-    embeds_one :search_area, ListingSession.SearchArea
-    embeds_one :recurrence, ListingSession.Recurrence
+    embeds_one :donde, ListingSession.Properties.Donde
+    embeds_one :cuando, ListingSession.Properties.Cuando
+    field :admin, :map
   end
 
-  @allowed_fields []
+  @allowed_fields [:admin]
   def changeset(model, params \\ :empty) do
     model
     |> cast(params, @allowed_fields)
-    |> cast_embed(:search_area)
-    |> cast_embed(:recurrence)
+    |> cast_embed(:donde)
+    |> cast_embed(:cuando)
   end
 end

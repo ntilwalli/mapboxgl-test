@@ -1,4 +1,4 @@
-defmodule ListingSession.Recurrence do
+defmodule ListingSession.Properties.Recurrence do
   use Shared.Lib, :model
 
   @derive {Poison.Encoder, except: [:__meta__]}
@@ -7,17 +7,13 @@ defmodule ListingSession.Recurrence do
     field :rules, {:array, :map}
     field :rdates, {:array, :naive_datetime}
     field :exdates, {:array, :naive_datetime}
-    field :start_time, :map
-    field :end_time, :map
-    field :start_date, :naive_datetime
-    field :end_date, :naive_datetime
+    field :start_date, :utc_datetime
+    field :end_date, :utc_datetime
   end
 
-  @required_fields []
-  @allowed_fields [:rules, :rdates, :exdates, :start_time, :end_time, :start_date, :end_date]
+  @allowed_fields [:rules, :rdates, :exdates, :start_date, :end_date]
   def changeset(model, params \\ :empty) do
     model
     |> cast(params, @allowed_fields)
-    |> validate_required(@required_fields)
   end
 end
