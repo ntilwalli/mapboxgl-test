@@ -35,7 +35,7 @@ function arrayToEventTypeComboOption(arr) {
   if (!arr || !arr.length) throw new Error('Invalid event types array')
 
   if (has(arr, EventTypes.OPEN_MIC) && has(arr, EventTypes.SHOW) && arr.length === 2) {
-    EventTypeComboOptions.OPEN_MIC_AND_SHOW
+    return EventTypeComboOptions.OPEN_MIC_AND_SHOW
   } else if(arr.length === 1) {
     return arr[0]
   }

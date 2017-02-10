@@ -15,7 +15,7 @@ defmodule Shared.ListingSession do
   end
 
   @required_fields [:user_id]
-  @allowed_fields [:listing, :user_id, :current_step]
+  @allowed_fields [:id, :listing, :user_id, :current_step]
 
   def changeset(schema, params \\ :empty) do
     schema

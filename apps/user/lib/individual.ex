@@ -353,9 +353,23 @@ defmodule User.Individual do
     {:reply, User.Notifications.retrieve(user), state}
   end
 
-  def handle_call({:listing_new, listing}, _from, %{user: user, listing_registry: l_reg} = state) do
-    out = Listing.Registry.create(l_reg, listing, user)
-    {:reply, out, state}
+  def handle_call({:listing_new, params}, _from, %{user: user, listing_registry: l_reg} = state) do
+    session_cs = Ecto.build_assoc(user, :listing_sessions)
+    cs = Shared.ListingSession.changeset(session_cs, params)
+    case cs.valid? do
+      true ->
+        session = apply_changes(cs)
+        out = Listing.Registry.create(l_reg, session.listing, user)
+        IO.inspect {:listing_new_session, session}
+        case session.id do
+          nil -> nil
+          _ ->     
+            {:ok, result} = Shared.Repo.delete(session)
+        end
+        {:reply, out, state}
+      false ->
+        {:reply, {:error, "Sent invalid listing session parameters when trying to create new listing"}, state}
+    end
   end
 
   def handle_call({:listing_update, listing}, _from, %{user: user} = state) do

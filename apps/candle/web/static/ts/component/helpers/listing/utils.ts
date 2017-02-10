@@ -44,8 +44,8 @@ export const getMetaTypeDefault = () => "standard"
 export const metaPropertyToDefaultFunction = {}
 metaPropertyToDefaultFunction[MetaPropertyTypes.PERFORMER_SIGN_UP] = getPerformerSignupDefault
 metaPropertyToDefaultFunction[MetaPropertyTypes.PERFORMER_CHECK_IN] = getPerformerCheckinDefault
-metaPropertyToDefaultFunction[MetaPropertyTypes.PERFORMER_COST] = () => getPerformerCostDefault
-metaPropertyToDefaultFunction[MetaPropertyTypes.STAGE_TIME] = () => getStageTimeDefault
+metaPropertyToDefaultFunction[MetaPropertyTypes.PERFORMER_COST] = getPerformerCostDefault
+metaPropertyToDefaultFunction[MetaPropertyTypes.STAGE_TIME] = getStageTimeDefault
 metaPropertyToDefaultFunction[MetaPropertyTypes.PERFORMER_LIMIT] = getPerformerLimitDefault
 metaPropertyToDefaultFunction[MetaPropertyTypes.NOTES] = getNotesDefault
 metaPropertyToDefaultFunction[MetaPropertyTypes.LISTED_HOSTS] = getListedHostsDefault

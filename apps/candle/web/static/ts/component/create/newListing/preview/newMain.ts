@@ -197,12 +197,12 @@ export function main(sources, inputs) {
       state.session.listing.visibility = 'public'
       
       return {
-        url: `/api/user`,
-        method: `post`,
-        category: `postListing`,
+        url: '/api/user',
+        method: 'post',
+        category: 'postListing',
         send: {
-          route: `/listing/new`,
-          data: state.session.listing
+          route: '/listing/new',
+          data: state.session
         }
       }
     })
@@ -212,12 +212,12 @@ export function main(sources, inputs) {
       state.session.listing.release = 'staged'
       state.session.listing.visibility = 'public'
       return {
-        url: `/api/user`,
-        method: `post`,
-        category: `stageListing`,
+        url: '/api/user',
+        method: 'post',
+        category: 'stageListing',
         send: {
-          route: `/listing/new`,
-          data: state.session.listing
+          route: '/listing/new',
+          data: state.session
         }
       }
     })

@@ -7,7 +7,7 @@ import {
   renderName, renderNameWithParentLink, renderCuando, renderDonde, 
   renderCuandoStatus, renderStatus, renderCost, renderStageTime, renderPerformerSignup,
   renderPerformerLimit, renderTextList, renderNote, getFullCostAndStageTime,
-  renderContactInfo
+  renderContactInfo, isOpenMic, isShow
 }  from '../../../helpers/listing/renderBootstrap'
 
 function renderAuthorizationButtons(state) {
@@ -102,13 +102,13 @@ export function renderRecurringListingPreview(state) {
     name, event_types, categories, notes, 
     performer_cost, description, contact_info, 
     performer_sign_up, stage_time, 
-    performer_limit, listed_hosts, note
+    performer_limit, listed_hosts, note, participation_cost
   } = meta
 
   const new_note = note ? note.replace(/\n/g, ' ') : undefined
 
   const [full_cost, full_stage_time, merged_cost_stage_time] = 
-    getFullCostAndStageTime(performer_cost, stage_time)
+    getFullCostAndStageTime(performer_cost, stage_time, participation_cost, listing)
 
   return div('.listing-card.pt-xs', [
     div('.row.mb-4', [
@@ -123,6 +123,7 @@ export function renderRecurringListingPreview(state) {
         full_stage_time ? full_stage_time : null,
         performer_sign_up ? renderPerformerSignup(performer_sign_up) : null,
         performer_limit ? renderPerformerLimit(performer_limit) : null,
+        event_types.length ? renderTextList(event_types) : null,
         categories.length ? renderTextList(categories) : null
       ])
     ]),
@@ -149,10 +150,10 @@ export function renderSingleListingPreview(state) {
     name, event_types, categories, notes, 
     performer_cost, description, contact_info, 
     performer_sign_up, stage_time, 
-    performer_limit, listed_hosts, note} = meta
+    performer_limit, listed_hosts, note, participation_cost} = meta
 
   const [full_cost, full_stage_time, merged_cost_stage_time] = 
-    getFullCostAndStageTime(performer_cost, stage_time)
+    getFullCostAndStageTime(performer_cost, stage_time, participation_cost, listing)
 
   const new_note = note ? note.replace(/\n/g, ' ') : undefined
 
@@ -170,6 +171,7 @@ export function renderSingleListingPreview(state) {
         full_stage_time ? full_stage_time : null,
         performer_sign_up ? renderPerformerSignup(performer_sign_up) : null,
         performer_limit ? renderPerformerLimit(performer_limit) : null,
+        event_types.length ? renderTextList(event_types) : null,
         categories.length ? renderTextList(categories) : null,
       ])
     ]),
@@ -204,12 +206,12 @@ export default function view(info) {
         type === 'single' ? renderSingleListingPreview(session) : renderRecurringListingPreview(session)         
       ]),
     ]),
-    div('.row.mb-4', [
+    isOpenMic(listing) || isShow(listing) ? div('.row.mb-4', [
       div('.col-12', [
         h6('.mb-xs', ['Interaction properties']),
         renderSummary(listing)    
       ]),
-    ]),
+    ]) : null,
     div('.row', [
       div('.col-12', [
         renderButtons(state)  

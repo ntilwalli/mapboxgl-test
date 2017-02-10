@@ -1,6 +1,6 @@
 import {Observable as O} from 'rxjs'
 import Immutable = require('immutable')
-import {div, button, img, span, i, a, h6, em, strong} from '@cycle/dom'
+import {div, button, img, span, i, a, h6, h4, em, strong} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 import {combineObj, createProxy, mergeSinks, componentify, processHTTP} from '../../../utils'
 import {inflateListing, inflateSession} from '../../helpers/listing/utils'
@@ -113,27 +113,27 @@ function view(state$, components) {
     const {waiting} = state
     console.log('state', state)
     return waiting ? div('.loader') : div('.container.nav-fixed-offset.user-listings.mt-4', [
-      sessions ? div('.row', [
+      sessions ? div('.row.mb-4', [
         div('.col-12', [
-          h6([strong(['In progress'])]),
+          h4([strong(['In progress'])]),
           sessions ? sessions : renderSimpleRow(['No listings in progress'])
         ])
       ]) : null,
       div('.row.mb-4', [
         div('.col-12', [
-          h6([strong(['Posted'])]),
+          h4([strong(['Posted'])]),
           posted ? posted : renderSimpleRow(['No posted listings'])
         ])
       ]),
       div('.row.mb-4', [
         div('.col-12', [
-          h6([strong(['Staged'])]),
+          h4([strong(['Staged'])]),
           staged ? staged : renderSimpleRow(['No staged listings'])
         ])
       ]),
       canceled ? div('.row.mb-4', [
         div('.col-12', [
-          h6([strong(['Canceled'])]),
+          h4([strong(['Canceled'])]),
           canceled ? canceled : renderSimpleRow(['No staged listings'])
         ])
       ]) : null,

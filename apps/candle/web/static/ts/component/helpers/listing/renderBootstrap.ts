@@ -204,6 +204,9 @@ function getAudienceCostString(info) {
   return getCostString(info)
 }
 
+const getParticipationCostString = getAudienceCostString
+
+
 function getPerformerCostSummary(info) {
   return `Performer cost: ${getCostString(info)}`
 }
@@ -520,16 +523,24 @@ export function renderParentLink(listing) {
 
 
 
-function isOpenMic(listing) {
+export function isOpenMic(listing) {
   return listing.meta.event_types.some(x => x === EventTypes.OPEN_MIC)
 }
 
-function isShow(listing) {
+export function isShow(listing) {
   return listing.meta.event_types.some(x => x === EventTypes.SHOW)
 }
 
 function isOpenMicAndShow(listing) {
   return isOpenMic(listing) && isShow(listing)
+}
+
+function isDance(listing) {
+  return listing.meta.event_types.some(x => x === EventTypes.DANCE)
+}
+
+function isTrivia(listing) {
+  return listing.meta.event_types.some(x => x === EventTypes.TRIVIA)
 }
 
 function getSummaryPerformerCostString(cost) {
@@ -553,7 +564,7 @@ function getSummaryPerformerCostString(cost) {
 }
 
 export function renderCost(listing) {
-  const {audience_cost, performer_cost} = listing.meta
+  const {audience_cost, performer_cost, participation_cost} = listing.meta
   let out
   if (isOpenMicAndShow(listing)) {
     if (performer_cost.length === 1 && deepEqual(audience_cost, performer_cost[0])) {
@@ -576,6 +587,10 @@ export function renderCost(listing) {
     out = getAudienceCostString(audience_cost)
   } else if (isOpenMic(listing)) {
     out = getSummaryPerformerCostString(performer_cost)
+  } else if (isTrivia(listing)) {
+    out = getParticipationCostString(participation_cost)
+  } else if (isDance(listing)) {
+    out = getParticipationCostString(participation_cost)
   } else {
     return null
   }
@@ -1296,11 +1311,19 @@ function renderMergedPerformerCostAndStageTime(performer_cost, stage_time) {
   ])
 }
 
-export function getFullCostAndStageTime(performer_cost, stage_time) {
-  if (performer_cost.length > 1 && stage_time.length === 1) {
-    return [undefined, undefined, renderMergedPerformerCostAndStageTime(performer_cost, stage_time[0])]
+export function getFullCostAndStageTime(performer_cost, stage_time, participation_cost, listing) {
+  if (performer_cost && stage_time) {
+    if (performer_cost.length > 1 && stage_time.length === 1) {
+      return [undefined, undefined, renderMergedPerformerCostAndStageTime(performer_cost, stage_time[0])]
+    } else {
+      return [renderFullPerformerCost(performer_cost), renderFullStageTime(stage_time), undefined]
+    }
   } else {
-    return [renderFullPerformerCost(performer_cost), renderFullStageTime(stage_time), undefined]
+    if (participation_cost) {
+      return [renderCost(listing), undefined, undefined]
+    } else {
+      return [undefined, undefined, undefined]
+    }
   }
 }
 

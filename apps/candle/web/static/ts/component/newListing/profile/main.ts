@@ -187,13 +187,13 @@ export function renderRecurringListing(state) {
     name, event_types, categories, notes, 
     performer_cost, description, contact_info, 
     performer_sign_up, stage_time, 
-    performer_limit, listed_hosts, note
+    performer_limit, listed_hosts, note, participation_cost
   } = meta
 
   const new_note = note  ? note.replace(/\n/g, ' ') : ''
 
   const [full_cost, full_stage_time, merged_cost_stage_time] = 
-    getFullCostAndStageTime(performer_cost, stage_time)
+    getFullCostAndStageTime(performer_cost, stage_time, participation_cost, listing)
 
   return div('.container-fluid.nav-fixed-offset.mt-xs', [
     div('.row.mb-4', [
@@ -209,6 +209,7 @@ export function renderRecurringListing(state) {
         full_stage_time ? full_stage_time : null,
         performer_sign_up ? renderPerformerSignup(performer_sign_up) : null,
         performer_limit ? renderPerformerLimit(performer_limit) : null,
+        event_types.length ? renderTextList(event_types) : null,
         categories.length ? renderTextList(categories) : null,
         // event_types.length ? div('.row.no-gutter', [
         //   renderTextList(event_types)
@@ -233,10 +234,10 @@ export function renderSingleListing(state) {
     name, event_types, categories, notes, 
     performer_cost, description, contact_info, 
     performer_sign_up, stage_time, 
-    performer_limit, listed_hosts, note} = meta
+    performer_limit, listed_hosts, note, participation_cost} = meta
 
   const [full_cost, full_stage_time, merged_cost_stage_time] = 
-    getFullCostAndStageTime(performer_cost, stage_time)
+    getFullCostAndStageTime(performer_cost, stage_time, participation_cost, listing)
 
   return div('.container-fluid.nav-fixed-offset.mt-xs', [
     div('.row.mb-4', [
@@ -259,6 +260,7 @@ export function renderSingleListing(state) {
         full_stage_time ? full_stage_time : null,
         performer_sign_up ? renderPerformerSignup(performer_sign_up) : null,
         performer_limit ? renderPerformerLimit(performer_limit) : null,
+        event_types.length ? renderTextList(event_types) : null,
         categories.length ? renderTextList(categories) : null,
         // event_types.length ? div('.row.no-gutter', [
         //   renderTextList(event_types)

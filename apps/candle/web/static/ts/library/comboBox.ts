@@ -19,7 +19,7 @@ export default function StyledComboBox(sources, options, props$, style_class = '
     })
   const state$ = O.merge(shared$, click$).publishReplay(1).refCount()
   const vtree$ = shared$.map(state => {
-    return select(`.appComboBoxSelect.form-control.form-control-sm` + style_class, options.map(opt => {
+    return select(`.appComboBoxSelect.form-control` + style_class, options.map(opt => {
         return option({attrs: {value: opt, selected: state === opt}}, [
           getTextFromOption(opt)
         ])
