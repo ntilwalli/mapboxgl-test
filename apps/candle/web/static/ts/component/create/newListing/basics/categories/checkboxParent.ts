@@ -49,7 +49,7 @@ function view(state$, props$, components) {
           ]),
           props.base ? button('.appSpecificButton.btn.btn-link.d-flex.align-items-center.ml-4.mb-1', [small([!specific ? 'Be more specific' : 'Be less specific'])]) : null
         ]),
-        specific ? components.subcategories : null
+        specific ? div('.ml-4', [components.subcategories]) : null
       ])
   })
 }
@@ -131,11 +131,15 @@ export default function main(sources, inputs) {
         }),
         ((info: any, props: any) => {
           if (props.base) {
-            if (info.state.checked && !info.state.specific) {
-              return ['/' + props.parent_category]
+            if (info.state.checked) {
+              if (!info.state.specific) {
+                return ['/' + props.parent_category]
+              } else {
+                return info.subcategories
+              }
               //Object.keys(props.base).map(key => '/' + props.parent_category + '/' + props.base[key])
             } else {
-              return info.subcategories
+              return []
             }
           } else {
             return info.state.checked ? ['/' + props.parent_category] : []

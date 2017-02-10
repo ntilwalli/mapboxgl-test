@@ -52,6 +52,7 @@ metaPropertyToDefaultFunction[MetaPropertyTypes.LISTED_HOSTS] = getListedHostsDe
 metaPropertyToDefaultFunction[MetaPropertyTypes.CONTACT_INFO] = getContactInfoDefault
 metaPropertyToDefaultFunction[MetaPropertyTypes.LISTED_PERFORMERS] = getListedPerformersDefault
 metaPropertyToDefaultFunction[MetaPropertyTypes.AUDIENCE_COST] = getCostDefault
+metaPropertyToDefaultFunction[MetaPropertyTypes.PARTICIPATION_COST] = getCostDefault
 metaPropertyToDefaultFunction['name'] = getNameDefault
 metaPropertyToDefaultFunction['description'] = getDescriptionDefault
 metaPropertyToDefaultFunction['categories'] = getCategoriesDefault

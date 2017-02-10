@@ -6,10 +6,10 @@ export default function main(sources, {component, title, instruction, skip_child
   return {
     ...component,
     DOM: component.DOM.map(c => {
-      return div('.appClickSection', [
+      return c ? div({class: {appClickSection: true}}, [  //HACK: props class instead of .class because of some DOM insertion issue
         title && title.length ? h4({props: {"isTitle": true}}, [title]) : null,
         c
-      ])
+      ]) : div([])
     }),
     focus$: O.merge(
       (component.focus$ || O.never()), 

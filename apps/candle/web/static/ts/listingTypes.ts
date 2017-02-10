@@ -3,7 +3,7 @@ const UndefinedOption = ''
 const EventTypes = {
   OPEN_MIC: 'open_mic',
   SHOW: 'show',
-  DANCE_SOCIAL: 'dance_social',
+  DANCE: 'dance',
   TRIVIA: 'trivia'
 }
 
@@ -47,6 +47,7 @@ const MetaPropertyTypes = {
   PERFORMER_SIGN_UP: 'performer_sign_up',
   PERFORMER_CHECK_IN: 'performer_check_in',
   PERFORMER_COST: 'performer_cost',
+  PARTICIPATION_COST: 'participation_cost',
   STAGE_TIME: 'stage_time',
   PERFORMER_LIMIT: 'performer_limit', 
   LISTED_HOSTS: 'listed_hosts',
@@ -72,6 +73,19 @@ const EventTypeToProperties = {
     MetaPropertyTypes.LISTED_PERFORMERS,
     MetaPropertyTypes.AUDIENCE_COST,
     MetaPropertyTypes.CONTACT_INFO
+  ],
+  trivia: [
+    MetaPropertyTypes.PARTICIPATION_COST,
+    MetaPropertyTypes.LISTED_HOSTS,
+    MetaPropertyTypes.CONTACT_INFO,
+    MetaPropertyTypes.NOTES,
+  ],
+  dance: [
+    MetaPropertyTypes.PARTICIPATION_COST,
+    MetaPropertyTypes.LISTED_HOSTS,
+    MetaPropertyTypes.LISTED_PERFORMERS,
+    MetaPropertyTypes.CONTACT_INFO,
+    MetaPropertyTypes.NOTES
   ]
 }
 

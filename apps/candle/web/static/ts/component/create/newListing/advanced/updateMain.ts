@@ -174,7 +174,7 @@ function toComponent(type, meta, session$, sources, inputs, authorization) {
               errors: []
             })
           }),
-          'Listed performers',
+          undefined,
           instruction
         )
       }

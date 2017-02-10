@@ -99,6 +99,22 @@ function toComponent(type, meta, session$, sources, inputs, authorization) {
         )
       }
       break
+    case MetaPropertyTypes.PARTICIPATION_COST:
+      component = (sources, inputs) => {
+        const options = [
+          CostOptions.FREE,
+          CostOptions.COVER,
+          CostOptions.MINIMUM_PURCHASE,
+          CostOptions.COVER_AND_MINIMUM_PURCHASE
+        ]
+
+        const component = isolate(Cost)(sources, {...inputs, options})
+        const instruction = "Cost to attend per participant/team"
+        const out = wrapWithFocus(sources, component, 'Participation cost', instruction)
+        return out
+      }
+
+      break
     case MetaPropertyTypes.STAGE_TIME:
       component = (sources, inputs) => {
         const instruction = 'Set the amount of stage time performers get. Enable mulitiple rounds by clicking the plus sign.'
@@ -162,7 +178,7 @@ function toComponent(type, meta, session$, sources, inputs, authorization) {
             initEmpty: true,
             item_heading: 'performer',
             item: PersonNameTitle, 
-            component_id: 'Performers', 
+            component_id: 'Listed Performers', 
             itemDefault: () => ({
               data: {
                 name: '',
@@ -172,7 +188,7 @@ function toComponent(type, meta, session$, sources, inputs, authorization) {
               errors: []
             })
           }),
-          'Listed performers',
+          undefined,
           instruction
         )
       }

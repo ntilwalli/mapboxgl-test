@@ -3,9 +3,17 @@ import {div, label, h6, span, input} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 import Immutable = require('immutable')
 import {combineObj, mergeSinks, componentify} from '../../../../utils'
-import {EventTypes, EventTypeToProperties} from '../../../../listingTypes'
+import {
+  EventTypes, 
+  EventTypeToProperties, 
+  EventTypeComboOptions, 
+  arrayToEventTypeComboOption, 
+  eventTypeComboOptionToArray
+} from '../../../../listingTypes'
 
 import {fromCheckbox, processCheckboxArray, has, metaPropertyToDefaultFunction} from '../../../helpers/listing/utils'
+import ComboBox from '../../../../library/comboBox'
+
 
 const always_properties = ['name', 'event_types', 'categories', 'description', 'type']
 function applyChange(session, val) {
@@ -52,53 +60,18 @@ function applyChange(session, val) {
 
 export default function main(sources, inputs) {
 
-  const reducer$ = sources.DOM.select('.appEventTypeInput').events('click')
-    .map(fromCheckbox)
-    .map(msg => state => {
-      return state.update('event_types', (event_types: any) => {
-        //console.log(`category`, val)
-        const new_event_types = event_types.toJS()
-        const out = processCheckboxArray(msg, new_event_types)
-        return Immutable.fromJS(out)
-      })
-    })
+  const options = Object.keys(EventTypeComboOptions).map(x => EventTypeComboOptions[x])
+  const props$ = inputs.session$
+    .map(session => session.listing.meta.event_types)
+    .map(arrayToEventTypeComboOption)
 
-  const event_types$ = inputs.session$
-    .map((session: any) => {
-      return session.listing.meta.event_types
-    })
-    .switchMap(event_types => {
-      return reducer$.startWith(Immutable.fromJS({event_types})).scan((acc, f: Function) => f(acc))
-    })
-    .map((x: any) => x.toJS().event_types)
-    .publishReplay(1).refCount()
-
-
-  const vtree$ = event_types$
-    .map(event_types => {
-      const disable_open_mic = has(event_types, EventTypes.OPEN_MIC) && event_types.length === 1
-      const disable_show = has(event_types, EventTypes.SHOW) && event_types.length === 1
-      return div([
-        div('.form-check.form-check-inline', [
-          label('.form-check-label', [
-            input(`.appEventTypeInput.form-check-input`, {attrs: {disabled: disable_open_mic, type: 'checkbox', name: 'eventTypes', value: EventTypes.OPEN_MIC, checked: has(event_types, EventTypes.OPEN_MIC)}}, []),
-            span('.ml-xs', ['open-mic'])
-          ]),
-        ]),
-        div('.form-check.form-check-inline', [
-          label('.form-check-label', [
-            input(`.appEventTypeInput.form-check-input`, {attrs: {disabled: disable_show, type: 'checkbox', name: 'eventTypes', value: EventTypes.SHOW, checked: has(event_types, EventTypes.SHOW)}}, []),
-            span('.ml-xs', ['show'])
-          ])
-        ])
-      ])
-    })
+  const event_type = isolate(ComboBox)(sources, options, props$)
 
   return {
-    DOM: vtree$,
-    output$: event_types$.map(event_types => {
+    DOM: event_type.DOM,
+    output$: event_type.output$.map(event_types => {
       return {
-        data: event_types,
+        data: eventTypeComboOptionToArray(event_types),
         apply: applyChange,
         valid: true,
         errors: []

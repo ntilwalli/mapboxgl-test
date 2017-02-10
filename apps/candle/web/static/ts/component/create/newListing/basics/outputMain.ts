@@ -14,8 +14,7 @@ import FocusWrapper from '../focusWrapperWithInstruction'
 import FocusCardWrapper from '../focusCardWrapper'
 import Name from './name'
 import Description from './description'
-import Categories from './newCategories/main'
-import EventTypes from './newEventTypes'
+import EventTypesAndCategories from './eventTypesAndCategories'
 import Venue from './donde/venue'
 import SearchArea from './donde/searchArea'
 import ListingType from './listingType'
@@ -110,7 +109,7 @@ function renderMainPanel(info: any) {
   const {state, components} = info
   const {show_errors, errors} = state
   const {
-    name, description, event_types, categories, 
+    name, description, event_types_and_categories,
     search_area, donde, listing_type, start_time,
     end_time, date
   } = components
@@ -132,10 +131,7 @@ function renderMainPanel(info: any) {
       description
     ]),
     div('.mt-4', [
-      event_types,
-    ]),
-    div('.mt-4', [
-      categories
+      event_types_and_categories,
     ]),
     div('.mt-4', [
       search_area
@@ -191,14 +187,8 @@ export default function main(sources, inputs) {
   const description = isolate(Description)(sources, {...inputs, session$: inputs.session$, highlight_error$: show_errors$})
   const description_section: any = isolate(FocusWrapper)(sources, {component: description, title: 'Description', instruction: description_instruction})
   
-  const event_types_instruction = 'Choosing the right event type allows you to configure additional properties like the performer sign-up start time (open-mic) or audience cost (show) if relevant.'
-  const event_types = isolate(EventTypes)(sources, {...inputs, session$: inputs.session$})
-  const event_types_section: any = isolate(FocusWrapper)(sources, {component: event_types, title: 'Event type', instruction: event_types_instruction})
-  
-  const categories_instruction = 'Categories determine what filters apply to the listing during search'
-  const categories = isolate(Categories)(sources, {...inputs, session$: inputs.session$})
-  const categories_section: any = isolate(FocusWrapper)(sources, {component: categories, title: 'Categories', instruction: categories_instruction})
-  
+  const event_types_and_categories_section = isolate(EventTypesAndCategories)(sources, {...inputs, session$: inputs.session$})
+
   const search_area_instruction = 'Select the city/region to use for the venue autocomplete'
   const search_area = isolate(SearchArea)(sources, {...inputs, session$: inputs.session$})
   const search_area_section: any = isolate(FocusWrapper)(sources, {component: search_area, title: 'Search area', instruction: search_area_instruction})
@@ -245,8 +235,7 @@ export default function main(sources, inputs) {
   const instruction_focus$ = O.merge(
     name_section.focus$, 
     description_section.focus$, 
-    event_types_section.focus$, 
-    categories_section.focus$,
+    event_types_and_categories_section.focus$, 
     search_area_section.focus$,
     donde_section.focus$,
     listing_type_section.focus$,
@@ -259,8 +248,7 @@ export default function main(sources, inputs) {
   const properties$ = O.combineLatest(
     name_section.output$,
     description_section.output$,
-    event_types_section.output$,
-    categories_section.output$,
+    event_types_and_categories_section.output$,
     search_area_section.output$,
     donde_section.output$,
     listing_type_section.output$,
@@ -272,8 +260,7 @@ export default function main(sources, inputs) {
   const components = {
     name: name_section.DOM,
     description: description_section.DOM,
-    event_types: event_types_section.DOM,
-    categories: categories_section.DOM,
+    event_types_and_categories: event_types_and_categories_section.DOM,
     search_area: search_area_section.DOM,
     donde: donde_section.DOM,
     listing_type: listing_type_section.DOM,
@@ -285,8 +272,7 @@ export default function main(sources, inputs) {
   const merged = mergeSinks(
     name_section, 
     description_section, 
-    event_types_section, 
-    categories_section, 
+    event_types_and_categories_section, 
     search_area_section,
     donde_section,
     listing_type_section,
