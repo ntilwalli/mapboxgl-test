@@ -14,8 +14,8 @@ import FocusWrapper from '../focusWrapperWithInstruction'
 import FocusCardWrapper from '../focusCardWrapper'
 import Name from './name'
 import Description from './description'
-import Categories from './categories'
-import EventTypes from './eventTypes'
+import Categories from './newCategories/main'
+import EventTypes from './newEventTypes'
 import Venue from './donde/venue'
 import SearchArea from './donde/searchArea'
 import ListingType from './listingType'
@@ -100,9 +100,9 @@ function model(actions, inputs) {
         .scan((acc, f: Function) => f(acc))
     })
     .map((x: any) => x.toJS())
-    .do(x => {
-      console.log(`meta state`, x)
-    })
+    // .do(x => {
+    //   console.log(`meta state`, x)
+    // })
     .publishReplay(1).refCount()
 }
 
@@ -191,9 +191,9 @@ export default function main(sources, inputs) {
   const description = isolate(Description)(sources, {...inputs, session$: inputs.session$, highlight_error$: show_errors$})
   const description_section: any = isolate(FocusWrapper)(sources, {component: description, title: 'Description', instruction: description_instruction})
   
-  const event_types_instruction = 'Choosing the right event type(s) allows you to configure additional properties like the performer sign-up start time (open-mic) or audience cost (show) if relevant.'
+  const event_types_instruction = 'Choosing the right event type allows you to configure additional properties like the performer sign-up start time (open-mic) or audience cost (show) if relevant.'
   const event_types = isolate(EventTypes)(sources, {...inputs, session$: inputs.session$})
-  const event_types_section: any = isolate(FocusWrapper)(sources, {component: event_types, title: 'Event types', instruction: event_types_instruction})
+  const event_types_section: any = isolate(FocusWrapper)(sources, {component: event_types, title: 'Event type', instruction: event_types_instruction})
   
   const categories_instruction = 'Categories determine what filters apply to the listing during search'
   const categories = isolate(Categories)(sources, {...inputs, session$: inputs.session$})

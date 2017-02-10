@@ -9,7 +9,8 @@ import {
   DayOfWeek, RecurrenceFrequency, ListingTypes, CategoryTypes,
   PerformerSignupOptions, PreRegistrationOptions, PerformerLimitOptions,
   StageTimeOptions, TierPerkOptions, MinutesTypeOptions, RelativeTimeOptions,
-  CostOptions, PurchaseTypeOptions, UndefinedOption, RecurrenceDisplayFilterOptions
+  CostOptions, PurchaseTypeOptions, UndefinedOption, RecurrenceDisplayFilterOptions,
+  ComedyTypes, MusicTypes, DanceTypes
 } from '../../../listingTypes'
 
 import {getDefault as getContactInfoDefault} from '../../create/newListing/advanced/contactInfo/main'
@@ -34,8 +35,8 @@ export const getListedPerformersDefault = () => []
 export const getNotesDefault = () => undefined
 export const getPerformerCostDefault = () => [getFullTierCostDefault()]
 export const getStageTimeDefault = () => [getStageTimeRoundDefault()]
-export const getCategoriesDefault = () => [CategoryTypes.COMEDY]
-export const getEventTypesDefault = () => [EventTypes.OPEN_MIC]
+export const getCategoriesDefault = () => ['/' + CategoryTypes.COMEDY + '/' + ComedyTypes.STAND_UP]
+export const getEventTypesDefault = () => [EventTypes.OPEN_MIC] 
 export const getNameDefault = () => undefined
 export const getDescriptionDefault = () => undefined
 export const getMetaTypeDefault = () => "standard"
@@ -740,13 +741,13 @@ export function recurrenceDisplayFilterOptionToRange(option) {
       }
     case RecurrenceDisplayFilterOptions.LAST_30_DAYS:
       return {
-        begins: moment().subtract('days', 30),
+        begins: moment().subtract(30, 'days'),
         ends: moment()
       }
     case RecurrenceDisplayFilterOptions.NEXT_30_DAYS:
       return {
         begins: moment(),
-        ends: moment().add('days', 30),
+        ends: moment().add(30, 'days'),
       }
   }
 }

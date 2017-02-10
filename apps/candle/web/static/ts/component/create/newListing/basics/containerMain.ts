@@ -83,9 +83,9 @@ function model(actions, inputs) {
         .scan((acc, f: Function) => f(acc))
     })
     .map((x: any) => x.toJS())
-    .do(x => {
-      console.log(`meta state`, x)
-    })
+    // .do(x => {
+    //   console.log(`meta state`, x)
+    // })
     .publishReplay(1).refCount()
 }
 

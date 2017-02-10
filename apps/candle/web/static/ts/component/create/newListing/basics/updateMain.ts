@@ -16,7 +16,7 @@ import FocusCardWrapper from '../focusCardWrapper'
 import Name from './name'
 import Description from './description'
 import Categories from './categories'
-import EventTypes from './eventTypes'
+import EventTypes from './newEventTypes'
 import Venue from './donde/venue'
 import SearchArea from './donde/searchArea'
 import ListingType from './listingType'
@@ -117,10 +117,10 @@ function model(actions, inputs) {
         .startWith(Immutable.fromJS(init))
         .scan((acc, f: Function) => f(acc))
     })
-    .map((x: any) => x.toJS())
-    .do(x => {
-      console.log(`meta state`, x)
-    })
+    // .map((x: any) => x.toJS())
+    // .do(x => {
+    //   console.log(`meta state`, x)
+    // })
     .publishReplay(1).refCount()
 }
 

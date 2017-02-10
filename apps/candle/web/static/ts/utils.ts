@@ -386,3 +386,11 @@ export function globalUID() {
   return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
     s4() + '-' + s4() + s4() + s4();
 }
+
+export function has(arr, val) {
+  return arr.some(x => x === val)
+}
+
+export function arrayUnique(item, index, inputArray) {
+  return inputArray.indexOf(item) == index;
+}

@@ -2,7 +2,45 @@ const UndefinedOption = ''
 
 const EventTypes = {
   OPEN_MIC: 'open_mic',
-  SHOW: 'show'
+  SHOW: 'show',
+  DANCE_SOCIAL: 'dance_social',
+  TRIVIA: 'trivia'
+}
+
+const EventTypeComboOptions = {
+    SHOW: "show",
+    OPEN_MIC: "open_mic",
+    OPEN_MIC_AND_SHOW: "open_mic_and_show",
+    TRIVIA: "trivia",
+    DANCE: "dance"
+}
+
+const EventTypeComboOptionsToArray = {
+  show: [EventTypeComboOptions.SHOW],
+  open_mic: [EventTypeComboOptions.OPEN_MIC],
+  open_mic_and_show: [EventTypeComboOptions.SHOW, EventTypeComboOptions.OPEN_MIC],
+  trivia: [EventTypeComboOptions.TRIVIA],
+  dance: [EventTypeComboOptions.DANCE]
+}
+
+function eventTypeComboOptionToArray(option) {
+  return EventTypeComboOptionsToArray[option]
+}
+
+function has(arr, val) {
+  return arr.some(x => x === val)
+}
+
+function arrayToEventTypeComboOption(arr) {
+  if (!arr || !arr.length) throw new Error('Invalid event types array')
+
+  if (has(arr, EventTypes.OPEN_MIC) && has(arr, EventTypes.SHOW) && arr.length === 2) {
+    EventTypeComboOptions.OPEN_MIC_AND_SHOW
+  } else if(arr.length === 1) {
+    return arr[0]
+  }
+
+  throw new Error('Invalid event types array')
 }
 
 const MetaPropertyTypes = {
@@ -70,7 +108,44 @@ const CategoryTypes = {
   COMEDY: 'comedy',
   MUSIC: 'music',
   POETRY: 'poetry',
-  STORYTELLING: 'storytelling'
+  STORYTELLING: 'storytelling',
+  DANCE: 'dance',
+  VARIETY: 'variety'
+}
+
+const ComedyTypes = {
+  STAND_UP: 'stand_up',
+  SKETCH: 'sketch',
+  IMPROV: 'improv'
+}
+
+const MusicTypes = {
+  RHYTHM_AND_BLUES: 'rhythm_and_blues',
+  HIP_HOP: 'hip_hop',
+  POP: 'pop',
+  BLUES: 'blues',
+  ALTERNATIVE: 'alternative',
+  ROCK: 'rock',
+  JAZZ: 'jazz',
+  LATIN: 'latin',
+  OPERA: 'opera',
+  CLASSICAL: 'classical',
+  ELECTRONIC: 'electronic',
+  DANCE: 'dance',
+  COUNTRY: 'country',
+  SINGER_SONGWRITER: 'singer_songwriter',
+  WORLD: 'world',
+  OTHER: 'other'
+}
+
+const DanceTypes = {
+  CONCERT: 'concert',
+  JAZZ: 'jazz',
+  SWING: 'swing',
+  LATIN: 'latin',
+  BALLROOM: 'ballroom',
+  STREET: 'street',
+  OTHER: 'other'
 }
 
 const PerformerSignupOptions = {
@@ -160,5 +235,6 @@ export {
   PerformerSignupOptions, PreRegistrationOptions, PerformerLimitOptions,
   StageTimeOptions, TierPerkOptions, MinutesTypeOptions, RelativeTimeOptions,
   CostOptions, PurchaseTypeOptions, UndefinedOption, RecurrenceDisplayFilterOptions,
-  SetPositionTypes
+  SetPositionTypes, EventTypeComboOptions, ComedyTypes, MusicTypes, DanceTypes,
+  arrayToEventTypeComboOption, eventTypeComboOptionToArray
 }

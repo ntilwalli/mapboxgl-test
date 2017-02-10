@@ -2,10 +2,10 @@ import {Observable as O} from 'rxjs'
 import {div, label, h6, span, input} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 import Immutable = require('immutable')
-import {combineObj, mergeSinks, componentify} from '../../../../utils'
-import {CategoryTypes} from '../../../../listingTypes'
+import {combineObj, mergeSinks, componentify} from '../../../../../utils'
+import {CategoryTypes} from '../../../../../listingTypes'
 
-import {fromCheckbox, processCheckboxArray, has} from '../../../helpers/listing/utils'
+import {fromCheckbox, processCheckboxArray, has} from '../../../../helpers/listing/utils'
 
 function applyChange(session, val) {
   session.listing.meta.categories = val
@@ -60,19 +60,24 @@ export default function main(sources, inputs) {
             input(`.appCategoriesInput.form-check-input`, {attrs: {type: 'checkbox', name: 'categories', value: CategoryTypes.STORYTELLING, checked: has(categories, CategoryTypes.STORYTELLING)}}, []),
             span('.ml-xs', ['storytelling'])
           ])
+        ]),
+        div('.form-check.form-check-inline', [
+          label('.form-check-label', [
+            input(`.appCategoriesInput.form-check-input`, {attrs: {type: 'checkbox', name: 'categories', value: CategoryTypes.DANCE, checked: has(categories, CategoryTypes.DANCE)}}, []),
+            span('.ml-xs', ['dance'])
+          ])
+        ]),
+        div('.form-check.form-check-inline', [
+          label('.form-check-label', [
+            input(`.appCategoriesInput.form-check-input`, {attrs: {type: 'checkbox', name: 'categories', value: CategoryTypes.VARIETY, checked: has(categories, CategoryTypes.VARIETY)}}, []),
+            span('.ml-xs', ['variety'])
+          ])
         ])
       ])
     })
 
   return {
     DOM: vtree$,
-    output$: categories$.map(categories => {
-      return {
-        data: categories,
-        apply: applyChange,
-        valid: true,
-        errors: []
-      }
-    }).publishReplay(1).refCount()
+    output$: categories$.publishReplay(1).refCount()
   }
 }

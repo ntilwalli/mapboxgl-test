@@ -497,8 +497,27 @@ export function renderName(info) {
 export function renderNameWithParentLink(listing) {
   const {meta, parent_id} = listing
   const {name} = meta
-  return name ? parent_id ? button('.appGoToParent.btn.btn-link.wrap-link', [strong([name])]) : strong([name]) :null
+  return name ? parent_id ? div('.d-flex.flex-column', [
+    button('.appGoToParent.btn.btn-link.wrap-link.mb-2', [
+      span('.fa.fa-angle-double-up..mr-1', []),
+      strong(['Go to parent listing'])
+    ]),
+    strong([name])
+   ]) : strong([name]) :null
 }
+
+export function renderParentLink(listing) {
+  const {meta, parent_id} = listing
+  const {name} = meta
+  return parent_id ? div('.d-flex.flex-column', [
+    button('.appGoToParent.btn.btn-link.wrap-link.mb-2', [
+      span('.fa.fa-angle-double-left..mr-1', []),
+      strong(['Go to parent listing'])
+    ]),
+   ]) : null
+}
+
+
 
 
 function isOpenMic(listing) {

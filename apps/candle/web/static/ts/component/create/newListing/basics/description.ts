@@ -37,6 +37,6 @@ export default function main(sources, inputs) {
         apply: applyChange,
         errors: val.errors.map(x => 'Description: ' + x)
       }
-    })
+    }).publishReplay(1).refCount()
   }
 }

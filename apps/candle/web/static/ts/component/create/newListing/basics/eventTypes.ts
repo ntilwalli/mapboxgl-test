@@ -103,6 +103,6 @@ export default function main(sources, inputs) {
         valid: true,
         errors: []
       }
-    })
+    }).publishReplay(1).refCount()
   }
 }

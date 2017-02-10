@@ -7,7 +7,7 @@ import moment = require('moment')
 import * as Geolib from 'geolib'
 
 import {
-  renderName, renderNameWithParentLink, renderCuando, renderDonde, 
+  renderName, renderNameWithParentLink, renderParentLink, renderCuando, renderDonde, 
   renderCuandoStatus, renderStatus, renderCost, renderStageTime, renderPerformerSignup,
   renderPerformerLimit, renderTextList, renderNote, getFullCostAndStageTime,
   renderContactInfo
@@ -242,7 +242,7 @@ export function renderSingleListing(state) {
     div('.row.mb-4', [
       div('.col-6', [
         div('.row.no-gutter', [
-          renderNameWithParentLink(listing)
+          renderName(listing.meta.name)
         ]),
         div('.row.no-gutter', [
           renderCuando(listing)
@@ -251,6 +251,7 @@ export function renderSingleListing(state) {
           renderDonde(donde)
         ]),
         renderContactInfo(contact_info),
+        div('.mt-2', [renderParentLink(listing)])
       ]),
       div('.col-6', [
         renderStatus(listing),
