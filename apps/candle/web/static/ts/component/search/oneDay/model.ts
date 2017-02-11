@@ -10,12 +10,12 @@ const onlyUserRegion = settings => settings.use_region === `user`
 const onlyDefaultRegion = settings => settings.use_region === `default`
 
 function reducers(actions, inputs) {
-  const retrieveR = inputs.retrieve$.map(_ => state => {
+  const retrieveR = inputs.waiting$.map(_ => state => {
     //console.log(`Retrieval status updated...`)
     return state.set(`retrieving`, true)
   })
 
-  const resultsR = actions.results$.map(results => state => {
+  const resultsR = inputs.results$.map(results => state => {
     //console.log(`Search results updated...`)
     return state.set(`results`, Immutable.fromJS(results)).set(`retrieving`, false)
   })

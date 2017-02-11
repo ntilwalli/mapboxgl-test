@@ -2,7 +2,7 @@ import {Observable as O} from 'rxjs'
 import Immutable = require('immutable')
 import {div, nav, span, button} from '@cycle/dom'
 import isolate from '@cycle/isolate'
-import {combineObj, mergeSinks, createProxy, traceStartStop, processHTTP, componentify} from '../../utils'
+import {combineObj, mergeSinks, createProxy, traceStartStop, processHTTP, componentify, universalAuth} from '../../utils'
 
 import Navigator from '../../library/navigators/listing'
 import ListingProfile from './profile/main'
@@ -14,6 +14,7 @@ import WTF from '../../library/wtf'
 import ListingNotFound from '../../library/listingNotFound'
 
 import {inflateListing, inflateSession} from '../helpers/listing/utils'
+import {ReleaseTypes, VisibilityTypes} from '../../listingTypes'
 
 const routes = [
   {pattern: /^\/(\d+)/, value: {type: "success"}},
@@ -186,6 +187,22 @@ function isValid({page, authorization, listing_result}) {
   }
 }
 
+function isAuthorized(auth, listing) {
+  if (listing.user_id === auth.id) {
+    return true
+  } else {
+    if (listing.visibility === VisibilityTypes.PUBLIC) {
+      if (listing.release !== ReleaseTypes.STAGED) {
+        return true
+      } else {
+        return false
+      }
+    } else {
+      return false
+    }
+  }
+}
+
 function fromListingResult(sources, inputs, result: any) {
   const router_with_listing_id = sources.Router.path(result.listing.id.toString())
   const navigator = isolate(Navigator)({...sources, Router: router_with_listing_id}, {
@@ -208,7 +225,11 @@ function fromListingResult(sources, inputs, result: any) {
       return x
     })
 
-  const content$ = valid_state$
+  const authorized$ = inputs.Authorization.status$.filter(auth => isAuthorized(auth, result.listing))
+  const not_authorized$ = inputs.Authorization.status$.filter(auth => !isAuthorized(auth, result.listing))
+
+  const content$ = authorized$
+    .switchMap(_ => valid_state$)
     .map((page: any) => {
       if (!page || page === 'profile') {
         const out = ListingProfile({...sources, Router: router_with_listing_id.path(page)}, {...inputs, props$: O.of(result), menu_active$: navigator.active$})
@@ -239,7 +260,8 @@ function fromListingResult(sources, inputs, result: any) {
     ...merged,
     DOM: view(components, navigator.active$), 
     redirect$: invalid_state$,
-    next$: navigator.output$.skip(1)
+    next$: navigator.output$.skip(1),
+    not_authorized$
   }
 }
 
@@ -297,6 +319,15 @@ export default function main(sources, inputs): any {
         }
       }),
       muxed_router.no_listing_id$.map(x => {
+        return {
+          type: 'replace',
+          action: 'REPLACE',
+          pathname: '/'
+        }
+      }),
+      component$.switchMap((x: any) => {
+        return (x.not_authorized$ || O.never())
+      }).map(x => {
         return {
           type: 'replace',
           action: 'REPLACE',

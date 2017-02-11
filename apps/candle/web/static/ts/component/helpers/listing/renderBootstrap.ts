@@ -604,7 +604,9 @@ const CuandoStatusTypes = {
   ENDING_SOON: 'ending-soon',
   IN_PROGRESS: 'in-progress',
   STARTING_SOON: 'starting-soon',
-  FUTURE: 'future'
+  FUTURE: 'future',
+  ACTIVE: 'active',
+  EXPIRED: 'expired'
 }
 
 function cuandoStatusToClass(type) {
@@ -620,7 +622,11 @@ function cuandoStatusToClass(type) {
     case CuandoStatusTypes.STARTING_SOON:
       return '.text-warning.font-italic'
     case CuandoStatusTypes.FUTURE:
-      return '.text-primary'      
+      return '.text-primary'   
+    case CuandoStatusTypes.ACTIVE:
+      return '.text-success'
+    case CuandoStatusTypes.FUTURE:
+      return '.text-dange.font-italic'      
   }
 }
 
@@ -638,6 +644,10 @@ function cuandoStatusToText(type) {
       return 'Starting soon'
     case CuandoStatusTypes.FUTURE:
       return 'Future'  
+    case CuandoStatusTypes.ACTIVE:
+      return 'Active'
+    case CuandoStatusTypes.EXPIRED:
+      return 'Expired'  
   }
 }
 
@@ -654,36 +664,49 @@ export function getDateTimeString(d) {
   }
 }
 
-export function getCuandoStatus(cuando) {
+export function getCuandoStatus(listing) {
   //onsole.log(cuando)
-  const {begins} = cuando
-  const half_hour_before_start = begins.clone().subtract(30, 'minute')
-  const ends = cuando.ends ? cuando.ends : begins.clone().add(120, 'minutes')
-  const half_hour_before_end = ends.clone().subtract(30, 'minute')
-  const six_hours_after_end = ends.clone().add(6, 'hours')
+  if (listing.type === ListingTypes.SINGLE) {
+    const {cuando} = listing
+    const {begins} = cuando
+    const half_hour_before_start = begins.clone().subtract(30, 'minute')
+    const ends = cuando.ends ? cuando.ends : begins.clone().add(120, 'minutes')
+    const half_hour_before_end = ends.clone().subtract(30, 'minute')
+    const six_hours_after_end = ends.clone().add(6, 'hours')
 
-  const now = moment()
-  if (now.isBefore(begins)) {
-    //console.log(moment().add(30, 'minutes').isAfter(begins))
-    if (now.isAfter(half_hour_before_start)) {
-      return CuandoStatusTypes.STARTING_SOON
+    const now = moment()
+    if (now.isBefore(begins)) {
+      //console.log(moment().add(30, 'minutes').isAfter(begins))
+      if (now.isAfter(half_hour_before_start)) {
+        return CuandoStatusTypes.STARTING_SOON
+      } else {
+        return CuandoStatusTypes.FUTURE
+      }
     } else {
-      return CuandoStatusTypes.FUTURE
+      if (now.isAfter(ends)) {
+        if (now.isAfter(six_hours_after_end)) {
+          return CuandoStatusTypes.PAST
+        } else {
+          return CuandoStatusTypes.ENDED_RECENTLY
+        }
+
+      } else {
+        if (now.isAfter(half_hour_before_end)) {
+          return CuandoStatusTypes.ENDING_SOON
+        } else {
+          return CuandoStatusTypes.IN_PROGRESS
+        }
+      }
     }
-  } else {
-    if (now.isAfter(ends)) {
-      if (now.isAfter(six_hours_after_end)) {
-        return CuandoStatusTypes.PAST
-      } else {
-        return CuandoStatusTypes.ENDED_RECENTLY
-      }
-
+  } else if (listing.type === ListingTypes.RECURRING) {
+    const {cuando} = listing
+    // const {rrules, rdates, exdates} = cuando
+    const rruleset = cuandoToRRuleSet(cuando)
+    const upcoming_dates = rruleset.between(moment().toDate(), moment().add(90, 'day').toDate())
+    if (upcoming_dates.length) {
+      return CuandoStatusTypes.ACTIVE
     } else {
-      if (now.isAfter(half_hour_before_end)) {
-        return CuandoStatusTypes.ENDING_SOON
-      } else {
-        return CuandoStatusTypes.IN_PROGRESS
-      }
+      return CuandoStatusTypes.EXPIRED
     }
   }
 }
@@ -692,13 +715,13 @@ function getCuandoStatusClass(cuando) {
   return cuandoStatusToClass(getCuandoStatus(cuando))
 }
 
-export function renderCuandoStatus(cuando) {
-  const status = getCuandoStatus(cuando)
+export function renderCuandoStatus(listing) {
+  const status = getCuandoStatus(listing)
   if (status === CuandoStatusTypes.FUTURE) {
     return null
   }
 
-  return strong(`${getCuandoStatusClass(cuando)}.d-flex.justify-content-end`, [
+  return strong(`${getCuandoStatusClass(listing)}.d-flex.justify-content-end`, [
     cuandoStatusToText(status)
   ])
 }
@@ -706,7 +729,7 @@ export function renderCuandoStatus(cuando) {
 export function renderStatus(listing) {
   const {release, cuando} = listing
   if (release === 'posted') {
-    renderCuandoStatus(cuando)
+    renderCuandoStatus(listing)
   } else if (release === 'canceled') {
     return strong('.red.d-flex.justify-content-end', [capitalize(release)])
   } else if (release === 'staged') {

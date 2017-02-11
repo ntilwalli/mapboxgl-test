@@ -2,7 +2,7 @@ import {Observable as O} from 'rxjs'
 import {div, span, input, textarea, label, h6, nav, button} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 import Immutable = require('immutable')
-import {combineObj, createProxy, mergeSinks, componentify, targetIsOwner, processHTTP} from '../../../../utils'
+import {combineObj, createProxy, mergeSinks, componentify, targetIsOwner, processHTTP, toMessageBusMainError} from '../../../../utils'
 import {
   ListingTypes, CategoryTypes, 
   EventTypeToProperties
@@ -24,6 +24,8 @@ import EndTime from './cuando/times/endTime'
 import SingleDate from './cuando/date'
 import Recurrence from './cuando/recurrence/main'
 
+import UpdateListingQuery from '../../../../query/updateListing'
+
 import {renderSKFadingCircle6} from '../../../../library/spinners'
 
 const default_instruction = 'Click on a section to see tips'
@@ -43,15 +45,11 @@ function intent(sources) {
 
 function reducers(actions, inputs) {
 
-  const save_success_r = inputs.success$.map(status => state => {
-    return state.set('save_status', status).set('waiting', false)
+  const waiting_r = inputs.waiting$.map(status => state => {
+    return state.set('waiting', status)
   })
 
-  const save_error_r = inputs.error$.map(status => state => {
-    return state.set('waiting', false)
-  })
-
-  const waiting_r = inputs.waiting$.map(_ => state => state.set('waiting', true))
+  const save_success_r = inputs.success$.map(status => state => state.set('save_status', status))
 
   const properties_r = inputs.properties$.map(properties => state => {
     const session = state.get('session').toJS()
@@ -89,7 +87,7 @@ function reducers(actions, inputs) {
     return state.set('show_errors', val)
   })
 
-  return O.merge(properties_r, show_errors_r, save_success_r, save_error_r, waiting_r)
+  return O.merge(properties_r, show_errors_r, save_success_r, waiting_r)
 }
 
 function model(actions, inputs) {
@@ -116,7 +114,7 @@ function model(actions, inputs) {
         .startWith(Immutable.fromJS(init))
         .scan((acc, f: Function) => f(acc))
     })
-    // .map((x: any) => x.toJS())
+    .map((x: any) => x.toJS())
     // .do(x => {
     //   console.log(`meta state`, x)
     // })
@@ -309,6 +307,28 @@ export default function main(sources, inputs) {
     date: date_section.DOM
   }
 
+
+
+
+  const waiting$ = createProxy()
+  const success$ = createProxy()
+  const muxed_http = muxHTTP(sources)
+
+
+  const state$ = model(actions, {...inputs, properties$, waiting$, success$})
+  const save_attempt$ = actions.save$
+    .withLatestFrom(state$, (_, state) => state.session.listing)
+    .map(x => {
+      return x
+    })
+
+  const update_listing_query = UpdateListingQuery(sources, {props$: save_attempt$})
+
+  const vtree$ = view(state$, components)
+  
+  waiting$.attach(update_listing_query.waiting$)
+  success$.attach(update_listing_query.success$)
+
   const merged = mergeSinks(
     name_section, 
     description_section, 
@@ -318,43 +338,13 @@ export default function main(sources, inputs) {
     listing_type_section,
     start_time_section,
     end_time_section,
-    date_section
+    date_section,
+    update_listing_query
   )
-
-  const waiting$ = createProxy()
-  const muxed_http = muxHTTP(sources)
-
-  const state$ = model(actions, {...inputs, properties$, waiting$, error$: muxed_http.error$, success$: muxed_http.success$})
-  const vtree$ = view(state$, components)
-
-
-
-  const to_http$ = actions.save$
-    .withLatestFrom(state$, (_, state: any) => {
-      return state
-    })
-    .filter((state: any) => state.updated && state.valid)
-    .map((state: any) => {
-      return {
-        url: '/api/user',
-        method: 'post',
-        category: 'updateListing',
-        send: {
-          route: '/listing_session/save',
-          data: state.session.listing
-        }
-      }
-    }).publish().refCount()
-
-  waiting$.attach(to_http$)
 
   return {
     ...merged,
     DOM: vtree$,
-    HTTP: O.merge(
-      merged.HTTP,
-      to_http$
-    ),
     Router: O.merge(
       merged.Router,
       state$
@@ -380,7 +370,8 @@ export default function main(sources, inputs) {
             data: status
           }
         }
-      })
+      }),
+      update_listing_query.error$.map(toMessageBusMainError)
     ),
     output$: state$.map((state: any) => {
       return {

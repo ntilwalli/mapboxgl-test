@@ -1,7 +1,7 @@
 import {Observable as O} from 'rxjs'
 import {div} from '@cycle/dom'
-import {combineObj, normalizeSink, spread, createProxy, componentify, mergeSinks} from '../../../utils'
-
+import {combineObj, normalizeSink, spread, createProxy, componentify, mergeSinks, toMessageBusMainError} from '../../../utils'
+import {inflateListing} from '../../helpers/listing/utils'
 import deepEqual = require('deep-equal')
 import moment = require('moment')
 
@@ -13,7 +13,27 @@ import DoneModal from '../../../library/doneModal'
 import Filters from './filters'
 import Navigator from '../../../library/navigators/search'
 
+import ListingInfoQuery from '../../../query/listingInfoQuery'
+
 const log = console.log.bind(console)
+
+const onlySingleStandard = x => {
+  //console.log(x)
+  const listing = x.listing
+  //if (listing.type === "single" && listing.meta.type === "standard" && listing.cuando.begins) {
+  if (listing.type === "single" && listing.cuando.begins) {
+    return true
+  } else {
+    return false
+  }
+}
+
+function drillInflate(result) {
+  result.listing = inflateListing(result.listing)
+  return result
+}
+
+
 const shouldRefreshSearch = (x, y) => {
   //console.log(x, y)
   const x_dt = x.searchDateTime
@@ -23,7 +43,8 @@ const shouldRefreshSearch = (x, y) => {
 
 function main(sources, inputs) {
   const actions = intent(sources)
-  const retrieve$ = createProxy()
+  const waiting$ = createProxy()
+  const results$ = createProxy()
   const hide_filters$ = createProxy()
   const update_filters$ = createProxy()
   const show_filters$ = createProxy()
@@ -38,11 +59,13 @@ function main(sources, inputs) {
     actions, {
       ...inputs, 
       props$: router_state$, 
-      retrieve$, 
+      waiting$, 
       hide_filters$, 
       update_filters$,
-      show_filters$
+      show_filters$,
+      results$
     })
+
   const grid = Grid(sources, {
     props$: state$.map(x => {
         return {results: x.results, filters: x.filters}
@@ -93,7 +116,7 @@ function main(sources, inputs) {
   }
   const vtree$ = view(state$, components).publishReplay(1).refCount()
 
-  const toHTTP$ = state$
+  const request$ = state$
     .filter((state: any) => state.searchDateTime && state.searchPosition)
     .map((state: any) => ({
       searchDateTime: state.searchDateTime,
@@ -103,27 +126,27 @@ function main(sources, inputs) {
     .map((info: any) => {
       const {searchDateTime, searchPosition} = info
       return {
-        url: "/api/user",
-        method: "post",
-        type: "json",
-        send: {
-          route: "/search",
-          data: {
-            begins: searchDateTime.clone().startOf('day'),
-            ends: searchDateTime.clone().endOf('day'),
-            center: searchPosition.data,
-            radius: 100000
-          }
+        donde: {
+          center: searchPosition.data,
+          radius: 100000
         },
-        category: `searchOneDay`
+        cuando: {
+          begins: searchDateTime.clone().startOf('day'),
+          ends: searchDateTime.clone().endOf('day'),
+        },
+        releases: ['posted']
       }
     })
-    //.do(x => console.log(`query: `, x))
-    .publishReplay(1).refCount()
 
-  retrieve$.attach(toHTTP$)
+  const listing_info_query = ListingInfoQuery(sources, {props$: request$})
 
-  const merged = mergeSinks(navigator, grid, filters_modal)
+  waiting$.attach(listing_info_query.waiting$)
+  results$.attach(
+    listing_info_query.success$
+      .map(results => results.map(drillInflate).filter(onlySingleStandard))
+  )
+
+  const merged = mergeSinks(navigator, grid, filters_modal, listing_info_query)
 
   return {
     ...merged,
@@ -145,7 +168,10 @@ function main(sources, inputs) {
           }
         })
     ),
-    HTTP: retrieve$,
+    MessageBus: O.merge(
+      merged.MessageBus,
+      listing_info_query.error$.map(toMessageBusMainError)
+    ),
     Storage: O.never()
     // state$
     //   .filter((state: any) => state.searchDateTime && state.results && state.filters)

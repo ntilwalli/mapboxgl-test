@@ -1,7 +1,7 @@
 import {Observable as O} from 'rxjs'
 import {div, h4} from '@cycle/dom'
 import isolate from '@cycle/isolate'
-import {combineObj, mergeSinks} from '../../../utils'
+import {combineObj, mergeSinks, toMessageBusMainError} from '../../../utils'
 import ListingQuery from '../../../query/listingQuery'
 import {ListingQueryRequest} from '../../../interfaces'
 import {RecurrenceDisplayFilterOptions} from '../../../listingTypes'
@@ -56,7 +56,7 @@ export default function main(sources, inputs) {
     })
 
   const listing_query = ListingQuery(sources, {props$: query$})
-  const recurrence_display = RecurrenceDisplay(sources, {...inputs, props$: listing_query.output$.map(x => x.map(inflateListing))})
+  const recurrence_display = RecurrenceDisplay(sources, {...inputs, props$: listing_query.success$.map(x => x.map(inflateListing))})
 
   const components = {
     date_range$: date_range.DOM,
@@ -68,7 +68,11 @@ export default function main(sources, inputs) {
 
   return {
     ...merged,
-    DOM: vtree$
+    DOM: vtree$,
+    MessageBus: O.merge(
+      merged.MessageBus,
+      listing_query.error$.map(toMessageBusMainError)
+    )
   }
 
 }

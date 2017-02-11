@@ -14,6 +14,7 @@ defmodule User.Helpers do
   alias Shared.ListingSession
 
   alias Listing.Query.Cuando, as: Cuando
+  alias Listing.Query.Donde, as: Donde
 
   def gather_check_ins(
     %DateTimeRangeMessage{begins: begins, ends: ends}, 
@@ -56,6 +57,18 @@ defmodule User.Helpers do
     listings_info =
       for l <- search_results do
         {:ok, pid} = Listing.Registry.lookup(listing_registry, l.listing_id)
+        {:ok, result} = Listing.Worker.retrieve(pid, user)
+        #IO.inspect {:gather_result, result}
+        result
+      end
+
+    listings_info
+  end
+
+  def get_listings_info_from_results(results, user, listing_registry) do
+    listings_info =
+      for l <- results do
+        {:ok, pid} = Listing.Registry.lookup(listing_registry, l.id)
         {:ok, result} = Listing.Worker.retrieve(pid, user)
         #IO.inspect {:gather_result, result}
         result
@@ -148,14 +161,30 @@ defmodule User.Helpers do
           from q in query, 
             join: s in Shared.SingleListingSearch, 
               where: q.id == s.listing_id and
-              s.begins <= ^ends
+                s.begins <= ^ends
         %Cuando{begins: begins, ends: ends} ->  
           from q in query, 
             join: s in Shared.SingleListingSearch, 
               where: q.id == s.listing_id and
-              s.begins >= ^begins and 
-              s.begins <= ^ends
+                s.begins >= ^begins and 
+                s.begins <= ^ends
 
+      end
+
+    query = 
+      case request.donde do
+        nil -> query
+        # %Donde{center: point, radius: nil} -> 
+        #   from q in query
+        #     join: s in Shared.SingleListingSearch,
+        #     where: q.id == s.listing_id and
+        #       st_dwithin_geog(s.geom, ^point, ^10000)
+        %Donde{center: %Shared.Message.LngLat{lng: lng, lat: lat}, radius: radius} -> 
+          point = %Geo.Point{coordinates: {lng, lat}, srid: 4326}
+          from q in query,
+            join: s in Shared.SingleListingSearch,
+            where: q.id == s.listing_id and
+              st_dwithin_geog(s.geom, ^point, ^radius)
       end
 
     query = 
@@ -164,6 +193,15 @@ defmodule User.Helpers do
         parent_id -> 
           from q in query, 
             where: q.parent_id == ^parent_id
+      end
+    
+    query = 
+      case request.releases do
+        nil -> query
+        releases when is_list(releases) -> 
+          from q in query, 
+            where: q.release in ^releases
+        _ -> query
       end
 
     IO.inspect {:listing_query, query}

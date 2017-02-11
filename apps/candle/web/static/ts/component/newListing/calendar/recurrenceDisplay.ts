@@ -32,7 +32,10 @@ function intent(sources) {
 }
 
 function model(actions, inputs) {
-  return inputs.props$
+  return combineObj({
+      props$: inputs.props$,
+      authorization$: inputs.Authorization.status$
+    })
     .publishReplay(1).refCount()
 }
 
@@ -51,7 +54,10 @@ function renderListing(listing) {
 
 function view(state$) {
   return state$.map(state => {
-    return ul('.recurrence-display.list-group.w-100', state.sort(sortDates).filter(notStaged).map(renderListing))
+    const {props, authorization} = state
+    const listings = props.sort(sortDates)
+    const children = listings.length ? listings.map(renderListing) : [div(['No recurrences available'])]
+    return ul('.recurrence-display.list-group.w-100', children)
   })
 }
 

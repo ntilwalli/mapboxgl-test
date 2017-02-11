@@ -2,7 +2,7 @@ import {Observable as O} from 'rxjs'
 import {div, span, input, textarea, pre, label, h6, nav, button} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 import Immutable = require('immutable')
-import {combineObj, createProxy, mergeSinks, componentify, targetIsOwner, processHTTP} from '../../../utils'
+import {combineObj, createProxy, mergeSinks, componentify, targetIsOwner, processHTTP, toMessageBusMainError} from '../../../utils'
 import {
   ListingTypes, CategoryTypes, 
   EventTypeToProperties
@@ -14,6 +14,8 @@ import moment = require('moment')
 import {renderSKFadingCircle6} from '../../../library/spinners'
 import ConfirmModal from '../../../library/httpConfirmModal'
 import MainAlert from '../../../library/pushState/mainAlert'
+
+import DeleteListingQuery from '../../../query/deleteListing'
 
 function intent(sources) {
   const {DOM, Global, Router} = sources
@@ -27,7 +29,6 @@ function intent(sources) {
   const confirm_post$ = DOM.select('.appConfirmPost').events('click')
   const confirm_cancel$ = DOM.select('.appConfirmCancel').events('click')
 
-  const delete_http = processHTTP(sources, 'deleteListing')
   const post_http = processHTTP(sources, 'cloneListing')
   const cancel_http = processHTTP(sources, 'cancelListing')
 
@@ -39,7 +40,6 @@ function intent(sources) {
     confirm_post$,
     confirm_cancel$,
     cancel$,
-    delete_http,
     post_http,
     cancel_http
   }
@@ -106,10 +106,6 @@ function renderMainPanel(info: any) {
       span('.d-flex.align-items-center', ['Post listing']),
       //span('.fa.fa-angle-double-right.ml-2.d-flex.align-items-center', [])
     ]) : null,
-    release === 'staged' ? button('.appDeleteButton.btn.btn-outline-danger.d-flex.cursor-pointer.mb-4', {class: {"read-only": is_update_disabled}}, [
-      span('.d-flex.align-items-center', ['Delete listing']),
-      //span('.fa.fa-angle-double-right.ml-2.d-flex.align-items-center', [])
-    ]) : null,
     release === 'posted' ? button('.appCancelButton.btn.btn-outline-danger.d-flex.cursor-pointer.mb-4', {class: {"read-only": is_update_disabled}}, [
       span('.d-flex.align-items-center', ['Cancel listing']),
       //span('.fa.fa-angle-double-right.ml-2.d-flex.align-items-center', [])
@@ -122,6 +118,11 @@ function view(state$, components) {
     state$, 
     components$: combineObj(components)
   }).map((info: any) => {
+    const {state} = info
+    const {session} = state
+    const {listing} = session
+    const {release} = listing
+
     const {confirm_modal} = info.components
     const is_update_disabled = isUpdateDisabled(info.state.session)
     const message = info.state.session.properties.admin.message
@@ -131,6 +132,10 @@ function view(state$, components) {
       message ? renderSuccessAlert(message) : null,
       //pre([JSON.stringify(info.state.session.listing, undefined, 2)]),
       renderMainPanel(info),
+      release === 'staged' || release === 'posted' ? button('.appDeleteButton.btn.btn-outline-danger.d-flex.cursor-pointer.mb-4', [
+        span('.d-flex.align-items-center', ['Delete listing']),
+        //span('.fa.fa-angle-double-right.ml-2.d-flex.align-items-center', [])
+      ]) : null,
       button('.appCloneButton.btn.btn-outline-primary.d-flex.cursor-pointer', [
         span('.d-flex.align-items-center', ['Clone this listing']),
         //span('.fa.fa-angle-double-right.ml-2.d-flex.align-items-center', [])
@@ -253,6 +258,7 @@ export default function main(sources, inputs) {
   const actions = intent(sources)
   const confirm_modal$ =  inputs.session$.map(session => getModal(session, sources, inputs)).publishReplay(1).refCount()
   const confirm_modal: any = componentify(confirm_modal$)
+
   const state$ = model(actions, {
     ...inputs, 
     confirm_all$: confirm_modal$.switchMap(x => x.confirm_all$), 
@@ -265,12 +271,31 @@ export default function main(sources, inputs) {
 
   const vtree$ = view(state$, components)
 
+  const delete_attempt$ = actions.confirm_delete$.withLatestFrom(state$, (_, state) => state.session.listing.id)
+
+  const delete_listing_query = DeleteListingQuery(sources, {props$: delete_attempt$})
+
   const merged = mergeSinks(confirm_modal)
   return {
     ...merged,
     DOM: vtree$,
     Router: O.merge(
       merged.Router,
+      delete_listing_query.success$
+        .withLatestFrom(state$, (status, state) => {
+          const listing = state.listing_result.session.listing
+          const authorization = state.authorization
+
+          const messages = [status]
+          const pathname = '/' + authorization.username + '/listings'
+          return {
+            pathname,
+            type: 'replace',
+            state: {
+              messages
+            }
+          }
+        }),
       O.merge(actions.cancel$.mapTo('cancel'), actions.post$.mapTo('post'), actions.delete$.mapTo('delete'))
         .withLatestFrom(state$, (modal, state: any) => {
           const listing_result = state.listing_result
@@ -351,6 +376,10 @@ export default function main(sources, inputs) {
             throw new Error('Invalid admin modal type: ' + modal)
           }
         })
+    ),
+    MessageBus: O.merge(
+      merged.MessageBus,
+      delete_listing_query.error$.map(toMessageBusMainError)
     ),
     output$: O.never()
   }

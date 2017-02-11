@@ -394,3 +394,16 @@ export function has(arr, val) {
 export function arrayUnique(item, index, inputArray) {
   return inputArray.indexOf(item) == index;
 }
+
+export function universalAuth(auth) {
+  return auth.username === 'tiger' || auth.username === 'ntilwalli'
+}
+
+export function toMessageBusMainError(status) {
+    return {
+    to: 'main', message: {
+      type: 'error', 
+      data: status
+    }
+  }
+}

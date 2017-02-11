@@ -1,5 +1,17 @@
 const UndefinedOption = ''
 
+const ReleaseTypes = {
+  POSTED: 'posted',
+  STAGED: 'staged',
+  CANCELED: 'canceled',
+}
+
+const VisibilityTypes = {
+  PUBLIC: 'public',
+  PRIVATE: 'private',
+  HIDDEN: 'hidden',
+}
+
 const EventTypes = {
   OPEN_MIC: 'open_mic',
   SHOW: 'show',
@@ -244,7 +256,7 @@ const RecurrenceDisplayFilterOptions = {
 }
 
 export {
-  EventTypes, MetaPropertyTypes, EventTypeToProperties,
+  ReleaseTypes, VisibilityTypes, EventTypes, MetaPropertyTypes, EventTypeToProperties,
   DayOfWeek, RecurrenceFrequency, ListingTypes, CategoryTypes,
   PerformerSignupOptions, PreRegistrationOptions, PerformerLimitOptions,
   StageTimeOptions, TierPerkOptions, MinutesTypeOptions, RelativeTimeOptions,

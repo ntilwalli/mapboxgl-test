@@ -62,6 +62,16 @@ defmodule User.Anon do
     GenServer.call(name, {:retrieve_listing, listing_id})
   end
 
+  def route(user, "/listing/query", query) do
+    pid = ensure_started(user)
+    GenServer.call(pid, {:listing_query, query})
+  end
+
+  def route(user, "/listing/info_query", query) do
+    pid = ensure_started(user)
+    GenServer.call(pid, {:listing_info_query, query})
+  end
+
   def route(anonymous_id, unknown_route, message) do 
     IO.inspect {:anon_unknown_route, unknown_route, message}
     {:error, "Unknown route: #{unknown_route}"}
@@ -118,6 +128,33 @@ defmodule User.Anon do
         {:reply, {:ok, listings_info}, state}
       false -> 
         {:reply, {:error, "Sent search params invalid"}, state}
+    end
+  end
+
+  def handle_call({:listing_query, params}, _from, state) do
+    cs = Listing.Query.changeset(%Listing.Query{}, params)
+    case cs.valid? do
+      true ->
+        # IO.puts "Saved settings"
+        query = apply_changes(cs)
+        result = User.Helpers.listing_query(nil, query)
+        {:reply, {:ok, result}, state}
+      false ->
+        {:reply, {:error, "Sent invalid listing query parameters"}, state}
+    end
+  end
+
+  def handle_call({:listing_info_query, params}, _from, %{listing_registry: l_reg} = state) do
+    cs = Listing.Query.changeset(%Listing.Query{}, params)
+    case cs.valid? do
+      true ->
+        # IO.puts "Saved settings"
+        query = apply_changes(cs)
+        results = User.Helpers.listing_query(nil, query)
+        info_results = User.Helpers.get_listings_info_from_results(results, nil, l_reg)
+        {:reply, {:ok, info_results}, state}
+      false ->
+        {:reply, {:error, "Sent invalid listing info query parameters"}, state}
     end
   end
 

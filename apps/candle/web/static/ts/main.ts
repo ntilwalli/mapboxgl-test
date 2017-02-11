@@ -19,9 +19,6 @@ import routeFunction from './routeFunction'
 import SettingsService from  './service/settings'
 import AuthorizationService from './service/authorization/main'
 import GeolocationService from './service/geolocation'
-// import SearchApp from './component/search/oneDay/main'
-// import SmartTextInput from './library/smartTextInput'
-// import LeftMenuModal from './library/leftMenuModal'
 
 import getModal from './getModal'
 import intent from './intent'
@@ -52,10 +49,18 @@ function main(sources) {
 
   inputs.Authorization.status$.subscribe()
   
-  //const out = normalizeComponent(OneDayCalendar(sources, inputs))
+  sources.MessageBus.address('main')
   const out = routing(sources, inputs)
 
   const actions = intent(sources)
+
+  // Print main MessageBus errors to console for now...
+  actions.main_error$
+    .map(message => 'Error: ' + message)
+    .subscribe(message => {
+      console.error(message)
+    })
+
   const state$ = model(actions, {})
   const modal$ = state$.map((state: any) => getModal(state.modal, sources, inputs))
     .publishReplay(1).refCount()

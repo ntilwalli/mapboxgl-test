@@ -95,6 +95,11 @@ defmodule User.Individual do
     GenServer.call(pid, {:listing_query, query})
   end
 
+  def route(user, "/listing/info_query", query) do
+    pid = ensure_started(user)
+    GenServer.call(pid, {:listing_info_query, query})
+  end
+
   def route(user, "/listing_session/new") do
     pid = ensure_started(user)
     GenServer.call(pid, :new_listing_session)
@@ -376,8 +381,9 @@ defmodule User.Individual do
     {:reply, :ok, state}
   end
 
-  def handle_call({:listing_delete, listing_id}, _from, %{user: user} = state) do
-    {:reply, :ok, state}
+  def handle_call({:listing_delete, listing_id}, _from, %{user: user, listing_registry: l_reg} = state) do
+    :ok = Listing.Registry.delete(l_reg, listing_id, user)
+    {:reply, {:ok, "Listing #{listing_id} deleted"}, state}
   end
 
   def handle_call({:listing_query, params}, _from, %{user: user} = state) do
@@ -390,6 +396,20 @@ defmodule User.Individual do
         {:reply, {:ok, result}, state}
       false ->
         {:reply, {:error, "Sent invalid listing query parameters"}, state}
+    end
+  end
+
+  def handle_call({:listing_info_query, params}, _from, %{user: user, listing_registry: l_reg} = state) do
+    cs = Listing.Query.changeset(%Listing.Query{}, params)
+    case cs.valid? do
+      true ->
+        # IO.puts "Saved settings"
+        query = apply_changes(cs)
+        results = User.Helpers.listing_query(user, query)
+        info_results = User.Helpers.get_listings_info_from_results(results, user, l_reg)
+        {:reply, {:ok, info_results}, state}
+      false ->
+        {:reply, {:error, "Sent invalid listing info query parameters"}, state}
     end
   end
 

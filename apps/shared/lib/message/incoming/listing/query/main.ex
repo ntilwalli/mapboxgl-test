@@ -6,6 +6,7 @@ defmodule Listing.Query do
   embedded_schema do
     field :types, {:array, :string}
     field :releases, {:array, :string}
+    field :visibilities, {:array, :string}
     field :parent_id, :integer
     embeds_one :donde, Listing.Query.Donde
     embeds_one :cuando, Listing.Query.Cuando

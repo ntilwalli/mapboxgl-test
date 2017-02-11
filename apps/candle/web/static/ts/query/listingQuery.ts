@@ -14,7 +14,7 @@ export default function main(sources, {props$}) {
       },
       category: 'listingQuery'
     } 
-  })
+  }).publish().refCount()
 
   const response = processHTTP(sources, 'listingQuery')
 
@@ -23,16 +23,11 @@ export default function main(sources, {props$}) {
 
   return {
     HTTP: to_http$.delay(1),
-    MessageBus: response.error$
-      .map(status => {
-        return {
-          to: 'main', message: {
-            type: 'error', 
-            data: status
-          }
-        }
-      }),
-    output$: response.success$,
-
+    error$: response.error$,
+    success$: response.success$,
+    waiting$: O.merge(
+      to_http$.mapTo(true), 
+      O.merge(response.error$, response.success$).mapTo(false)
+    )
   }
 }

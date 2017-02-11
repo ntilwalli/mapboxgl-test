@@ -27,24 +27,6 @@ function drillInflate(result) {
 }
 
 export default function intent(sources) {
-  const {DOM, HTTP, Global} = sources
-  const {good$, bad$, ugly$} = processHTTP(sources, `searchOneDay`)
-  const success$ = good$
-    .filter(onlySuccess)
-    .pluck(`data`)
-    .map(x => {
-      const tmp1 = x.map(l => l.listing.id)
-      const tmp2 = x.map(l => l.listing)
-      const out = x.filter(onlySingleStandard).map(drillInflate)
-      return out
-    })
-    .publish().refCount()
-
-  // const error$ = good$
-  //   .filter(onlyError)
-  //   .pluck(`data`)
-  //   .subscribe(x => console.log(`listing search error`, x))
-
   const cached$ = sources.Storage.local.getItem(`calendar/oneDay`)
     .map(stored => {
       //console.log(`from storage:`, stored)
@@ -62,7 +44,6 @@ export default function intent(sources) {
 
 
   return {
-    results$: success$,
     cached$
   }
 }

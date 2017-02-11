@@ -9,7 +9,7 @@ defmodule Shared.Listing do
   # alias When.Once
 
   @derive {Poison.Encoder, except: [
-    :__meta__, :sort_id, :source, :user_id, :parent, :children,
+    :__meta__, :sort_id, :source, :parent, :children,
     :user, :group_child_listings, :user_child_listing,
     :single_listing_search, :single_listing_categories, 
     :single_listing_event_types, :check_ins, :inserted_at, :updated_at
