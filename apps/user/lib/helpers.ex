@@ -204,7 +204,7 @@ defmodule User.Helpers do
         _ -> query
       end
 
-    IO.inspect {:listing_query, query}
+    #IO.inspect {:listing_query, query}
 
     Shared.Repo.all(query)
   end

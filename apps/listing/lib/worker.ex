@@ -100,21 +100,23 @@ defmodule Listing.Worker do
     {:reply, {:ok, updated_listing}, %{state | listing: updated_listing}}
   end
 
-  def handle_call({:delete, user}, _, %{listing: listing, registry_name: r_name}) do
-    IO.inspect {:delete_listing, listing}
-    listing_id = listing.id
-    query = from l in Shared.Listing,
-      where: l.parent_id == ^listing_id
+  def handle_call({:delete, user}, _, %{listing: listing, registry_name: r_name} = state) do
+    # IO.inspect {:delete_listing, listing.id}
+    # listing_id = listing.id
+    # query = from l in Shared.Listing,
+    #   where: l.parent_id == ^listing_id
 
-    results = Repo.all(query) 
+    # results = Repo.all(query) 
 
-    Enum.map(results, fn l -> 
-      pid = Listing.Registry.lookup(r_name, l.id)
-      Listing.Worker.delete(pid, user)
-    end)
+    # Enum.map(results, fn l -> 
+    #   IO.inspect {:attempting_delete, l.id}
+    #   pid = Listing.Registry.lookup(r_name, l.id)
+    #   Listing.Worker.delete(pid, user)
+    # end)
 
-    Shared.Manager.ListingManager.delete_one(listing)
-    IO.inspect {:attempting_delete, listing}
+    #Shared.Manager.ListingManager.delete_one(listing)
+    {:ok, struct} = delete_self(user, listing, r_name)
+    #{:reply, :ok, state}
     {:stop, :normal, :ok, nil}
   end
 
@@ -156,6 +158,30 @@ defmodule Listing.Worker do
         new_state = %{state | listing: retrieve_listing_with_other_data(listing_id)}
         {:reply, {:ok, result}, new_state}
     end
+  end
+
+  def handle_info({:delete, user}, %{listing: listing, registry_name: r_name}) do
+    {:ok, struct} = delete_self(user, listing, r_name)
+    {:stop, :normal, :ok, nil}
+  end 
+
+  def delete_self(user, listing, r_name) do
+    #IO.inspect {:delete_self, listing.id}
+    listing_id = listing.id
+    query = from l in Shared.Listing,
+      where: l.parent_id == ^listing_id
+
+    results = Repo.all(query) 
+
+    Enum.each(results, fn l -> 
+      IO.inspect {:attempting_delete, l.id}
+      {:ok, pid} = Listing.Registry.lookup(r_name, l.id)
+      IO.inspect {:got_pid, pid}
+      Listing.Worker.delete(pid, user)
+    end)
+
+    Shared.Manager.ListingManager.delete_one(listing)
+    {:ok, nil}
   end
 
   # def handle_call({:remove_check_in, user}, _from, %{listing: listing} = state) do

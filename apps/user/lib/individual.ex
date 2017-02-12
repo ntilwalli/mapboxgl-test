@@ -314,7 +314,7 @@ defmodule User.Individual do
     staged = User.Helpers.gather_listings(user, "staged")
     posted = User.Helpers.gather_listings(user, "posted")
     canceled = User.Helpers.gather_listings(user, "canceled")
-    IO.inspect {:home_listings, staged}
+    #IO.inspect {:home_listings, staged}
 
     out = %Home.Listings.Outgoing{
       sessions: listing_sessions,
@@ -382,7 +382,8 @@ defmodule User.Individual do
   end
 
   def handle_call({:listing_delete, listing_id}, _from, %{user: user, listing_registry: l_reg} = state) do
-    :ok = Listing.Registry.delete(l_reg, listing_id, user)
+    {:ok, pid} = Listing.Registry.lookup(l_reg, listing_id)
+    :ok = Listing.Worker.delete(pid, user)
     {:reply, {:ok, "Listing #{listing_id} deleted"}, state}
   end
 

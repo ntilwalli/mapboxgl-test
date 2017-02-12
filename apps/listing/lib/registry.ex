@@ -35,16 +35,10 @@ defmodule Listing.Registry do
   end
 
   def handle_call({:lookup, listing_id}, _, %{pids: pids, worker_supervisor: w_sup, notification_manager: n_mgr} = state) do
-    case Map.get(pids, listing_id) do
-      nil -> 
-        case Shared.Repo.get(Shared.Listing, listing_id) do
-          nil -> {:reply, {:error, "Listing with id #{listing_id} does not exist in database."}, state}
-          listing -> 
-            {pid, _ref} = val = start_listing(listing, w_sup, n_mgr)
-            new_state = get_new_state_w_add(listing.id, val, state)
-            {:reply, {:ok, pid}, new_state}
-        end
-      pid -> {:reply, {:ok, pid}, state}
+    case maybe_get_or_start(listing_id, state) do
+      {:ok, pid} -> {:reply, {:ok, pid}, state}
+      {:started, pid, new_state} -> {:reply, {:ok, pid}, new_state}
+      {:error, _} = val -> {:reply, val, state}
     end
   end
 
@@ -67,7 +61,7 @@ defmodule Listing.Registry do
     listing = add_timezone(listing)
     case maybe_get_or_start(listing_id, state) do
       {:ok, pid} -> {:reply, Listing.Worker.update(pid, listing, user), state}
-      {:added, pid, new_state} -> {:reply, Listing.Worker.update(pid, listing, user), new_state}
+      {:started, pid, new_state} -> {:reply, Listing.Worker.update(pid, listing, user), new_state}
       {:error, _} = val -> val
     end
   end
@@ -75,8 +69,11 @@ defmodule Listing.Registry do
   def handle_call({:delete, listing_id, user}, _, state) do
     case maybe_get_or_start(listing_id, state) do
       {:ok, pid} -> {:reply, Listing.Worker.delete(pid, user), state}
-      {:added, pid, new_state} -> {:reply, Listing.Worker.delete(pid, user), new_state}
+      {:started, pid, new_state} -> {:reply, Listing.Worker.delete(pid, user), new_state}
       {:error, _} = val -> val
+      foo -> 
+        IO.inspect {:foo, foo}
+        {:reply, {:error, "maybe_get_or_start in delete, Should not get here..."}, state}
     end
   end
 
