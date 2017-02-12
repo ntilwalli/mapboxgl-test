@@ -1,5 +1,5 @@
 import {Observable as O} from 'rxjs'
-import {processHTTP, inflateListing} from '../../../utils'
+import {drillInflate} from './helpers'
 import moment = require('moment')
 
 const onlySuccess = x => x.type === "success"
@@ -10,21 +10,7 @@ const onlyError = x => x.type === "error"
 //   return listing.type === "single" && listing.meta.type === "badslava" && listing.cuando.begins
 // }
 
-const onlySingleStandard = x => {
-  //console.log(x)
-  const listing = x.listing
-  //if (listing.type === "single" && listing.meta.type === "standard" && listing.cuando.begins) {
-  if (listing.type === "single" && listing.cuando.begins) {
-    return true
-  } else {
-    return false
-  }
-}
 
-function drillInflate(result) {
-  result.listing = inflateListing(result.listing)
-  return result
-}
 
 export default function intent(sources) {
   const cached$ = sources.Storage.local.getItem(`calendar/oneDay`)

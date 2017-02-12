@@ -1,3 +1,5 @@
+import {inflateListing} from '../../helpers/listing/utils'
+
 export function getDefaultFilters() {
   return {
     filterCategories: false,
@@ -7,4 +9,9 @@ export function getDefaultFilters() {
     filterStageTime: false,
     stageTime: undefined
   }
+}
+
+export function drillInflate(result) {
+  result.listing = inflateListing(result.listing)
+  return result
 }

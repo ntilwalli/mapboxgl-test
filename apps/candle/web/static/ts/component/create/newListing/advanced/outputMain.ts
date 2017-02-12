@@ -3,6 +3,7 @@ import {div, h6} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 import Immutable = require('immutable')
 import PerformerSignup from './performerSignUp/main'
+import ParticipantSignup from './participantSignUp/main'
 //import PerformerCheckIn from './performerCheckIn/main'
 import PerformerCheckIn from './togglePerformerCheckIn/main'
 import Cost from './cost/main'
@@ -99,7 +100,7 @@ function toComponent(type, meta, session$, sources, inputs, authorization) {
         )
       }
       break
-    case MetaPropertyTypes.PARTICIPATION_COST:
+    case MetaPropertyTypes.PARTICIPANT_COST:
       component = (sources, inputs) => {
         const options = [
           CostOptions.FREE,
@@ -114,6 +115,18 @@ function toComponent(type, meta, session$, sources, inputs, authorization) {
         return out
       }
 
+      break
+    case MetaPropertyTypes.PARTICIPANT_LIMIT:
+      component = (sources, inputs) => {
+        const instruction = "Set the number of participant slots available for the event"
+        return wrapWithFocus(sources, PerformerLimit(sources, inputs), 'Participant limit', instruction)
+      }
+      break
+    case MetaPropertyTypes.PARTICIPANT_SIGN_UP:
+      component = (sources, inputs) => {
+        const instruction = "Configure how/when participants can sign-up for the event"
+        return wrapWithFocus(sources, ParticipantSignup(sources, inputs), 'Participant sign-up', instruction)
+      }
       break
     case MetaPropertyTypes.STAGE_TIME:
       component = (sources, inputs) => {

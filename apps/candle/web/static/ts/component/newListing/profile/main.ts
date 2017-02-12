@@ -187,13 +187,13 @@ export function renderRecurringListing(state) {
     name, event_types, categories, notes, 
     performer_cost, description, contact_info, 
     performer_sign_up, stage_time, 
-    performer_limit, listed_hosts, note, participation_cost
+    performer_limit, listed_hosts, note, participant_cost
   } = meta
 
   const new_note = note  ? note.replace(/\n/g, ' ') : ''
 
   const [full_cost, full_stage_time, merged_cost_stage_time] = 
-    getFullCostAndStageTime(performer_cost, stage_time, participation_cost, listing)
+    getFullCostAndStageTime(performer_cost, stage_time, participant_cost, listing)
 
   return div('.container-fluid.nav-fixed-offset.mt-xs', [
     div('.row.mb-4', [
@@ -234,10 +234,10 @@ export function renderSingleListing(state) {
     name, event_types, categories, notes, 
     performer_cost, description, contact_info, 
     performer_sign_up, stage_time, 
-    performer_limit, listed_hosts, note, participation_cost} = meta
+    performer_limit, listed_hosts, note, participant_cost} = meta
 
   const [full_cost, full_stage_time, merged_cost_stage_time] = 
-    getFullCostAndStageTime(performer_cost, stage_time, participation_cost, listing)
+    getFullCostAndStageTime(performer_cost, stage_time, participant_cost, listing)
 
   return div('.container-fluid.nav-fixed-offset.mt-xs', [
     div('.row.mb-4', [

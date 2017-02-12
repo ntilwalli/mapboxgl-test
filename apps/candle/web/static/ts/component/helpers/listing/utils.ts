@@ -20,7 +20,7 @@ import {getDefault as getPerformerCheckinDefault} from '../../create/newListing/
 import {getDefault as getPerformerSignupDefault} from '../../create/newListing/advanced/performerSignUp/main'
 import {getDefault as getPerformerLimitDefault} from '../../create/newListing/advanced/performerLimit/main'
 import {getDefault as getStageTimeRoundDefault} from '../../create/newListing/advanced/stageTimeRound/main'
-
+import {getDefault as getParticipantSignupDefault} from '../../create/newListing/advanced/participantSignUp/main'
 export {
   EventTypes, MetaPropertyTypes, EventTypeToProperties,
   DayOfWeek, RecurrenceFrequency, ListingTypes, CategoryTypes,
@@ -52,7 +52,9 @@ metaPropertyToDefaultFunction[MetaPropertyTypes.LISTED_HOSTS] = getListedHostsDe
 metaPropertyToDefaultFunction[MetaPropertyTypes.CONTACT_INFO] = getContactInfoDefault
 metaPropertyToDefaultFunction[MetaPropertyTypes.LISTED_PERFORMERS] = getListedPerformersDefault
 metaPropertyToDefaultFunction[MetaPropertyTypes.AUDIENCE_COST] = getCostDefault
-metaPropertyToDefaultFunction[MetaPropertyTypes.PARTICIPATION_COST] = getCostDefault
+metaPropertyToDefaultFunction[MetaPropertyTypes.PARTICIPANT_COST] = getCostDefault
+metaPropertyToDefaultFunction[MetaPropertyTypes.PARTICIPANT_LIMIT] = getPerformerLimitDefault
+metaPropertyToDefaultFunction[MetaPropertyTypes.PARTICIPANT_SIGN_UP] = getParticipantSignupDefault
 metaPropertyToDefaultFunction['name'] = getNameDefault
 metaPropertyToDefaultFunction['description'] = getDescriptionDefault
 metaPropertyToDefaultFunction['categories'] = getCategoriesDefault

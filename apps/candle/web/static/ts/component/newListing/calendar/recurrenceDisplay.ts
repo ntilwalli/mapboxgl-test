@@ -3,8 +3,6 @@ import {div, h6, ul, li} from '@cycle/dom'
 import Immutable = require('immutable')
 import isolate from '@cycle/isolate'
 import {combineObj, mergeSinks} from '../../../utils'
-import ListingQuery from '../../../query/listingQuery'
-import {ListingQueryRequest} from '../../../interfaces'
 import {RecurrenceDisplayFilterOptions} from '../../../listingTypes'
 import {recurrenceDisplayFilterOptionToRange} from '../../helpers/listing/utils'
 import ComboBox from '../../../library/comboBox'

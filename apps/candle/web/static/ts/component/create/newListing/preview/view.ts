@@ -6,7 +6,7 @@ import {renderSummary} from '../../../helpers/listing/render'
 import {
   renderName, renderNameWithParentLink, renderCuando, renderDonde, 
   renderCuandoStatus, renderStatus, renderCost, renderStageTime, renderPerformerSignup,
-  renderPerformerLimit, renderTextList, renderNote, getFullCostAndStageTime,
+  renderPerformerLimit, renderParticipantLimit, renderTextList, renderNote, getFullCostAndStageTime,
   renderContactInfo, isOpenMic, isShow
 }  from '../../../helpers/listing/renderBootstrap'
 
@@ -102,13 +102,14 @@ export function renderRecurringListingPreview(state) {
     name, event_types, categories, notes, 
     performer_cost, description, contact_info, 
     performer_sign_up, stage_time, 
-    performer_limit, listed_hosts, note, participation_cost
+    performer_limit, listed_hosts, note, participant_cost,
+    participant_limit
   } = meta
 
   const new_note = note ? note.replace(/\n/g, ' ') : undefined
 
   const [full_cost, full_stage_time, merged_cost_stage_time] = 
-    getFullCostAndStageTime(performer_cost, stage_time, participation_cost, listing)
+    getFullCostAndStageTime(performer_cost, stage_time, participant_cost, listing)
 
   return div('.listing-card.pt-xs', [
     div('.row.mb-4', [
@@ -123,6 +124,7 @@ export function renderRecurringListingPreview(state) {
         full_stage_time ? full_stage_time : null,
         performer_sign_up ? renderPerformerSignup(performer_sign_up) : null,
         performer_limit ? renderPerformerLimit(performer_limit) : null,
+        participant_limit ? renderParticipantLimit(performer_limit) : null,
         event_types.length ? renderTextList(event_types) : null,
         categories.length ? renderTextList(categories) : null
       ])
@@ -150,10 +152,12 @@ export function renderSingleListingPreview(state) {
     name, event_types, categories, notes, 
     performer_cost, description, contact_info, 
     performer_sign_up, stage_time, 
-    performer_limit, listed_hosts, note, participation_cost} = meta
+    performer_limit, listed_hosts, note, participant_cost,
+    participant_limit
+  } = meta
 
   const [full_cost, full_stage_time, merged_cost_stage_time] = 
-    getFullCostAndStageTime(performer_cost, stage_time, participation_cost, listing)
+    getFullCostAndStageTime(performer_cost, stage_time, participant_cost, listing)
 
   const new_note = note ? note.replace(/\n/g, ' ') : undefined
 
@@ -171,6 +175,7 @@ export function renderSingleListingPreview(state) {
         full_stage_time ? full_stage_time : null,
         performer_sign_up ? renderPerformerSignup(performer_sign_up) : null,
         performer_limit ? renderPerformerLimit(performer_limit) : null,
+        participant_limit ? renderParticipantLimit(performer_limit) : null,
         event_types.length ? renderTextList(event_types) : null,
         categories.length ? renderTextList(categories) : null,
       ])

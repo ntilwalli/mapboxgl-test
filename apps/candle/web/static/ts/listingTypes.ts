@@ -59,7 +59,9 @@ const MetaPropertyTypes = {
   PERFORMER_SIGN_UP: 'performer_sign_up',
   PERFORMER_CHECK_IN: 'performer_check_in',
   PERFORMER_COST: 'performer_cost',
-  PARTICIPATION_COST: 'participation_cost',
+  PARTICIPANT_SIGN_UP: 'participant_sign_up',
+  PARTICIPANT_COST: 'participant_cost',
+  PARTICIPANT_LIMIT: 'participant_limit',
   STAGE_TIME: 'stage_time',
   PERFORMER_LIMIT: 'performer_limit', 
   LISTED_HOSTS: 'listed_hosts',
@@ -87,13 +89,15 @@ const EventTypeToProperties = {
     MetaPropertyTypes.CONTACT_INFO
   ],
   trivia: [
-    MetaPropertyTypes.PARTICIPATION_COST,
+    MetaPropertyTypes.PARTICIPANT_SIGN_UP,
+    MetaPropertyTypes.PARTICIPANT_COST,
+    MetaPropertyTypes.PARTICIPANT_LIMIT,
     MetaPropertyTypes.LISTED_HOSTS,
     MetaPropertyTypes.CONTACT_INFO,
     MetaPropertyTypes.NOTES,
   ],
   dance: [
-    MetaPropertyTypes.PARTICIPATION_COST,
+    MetaPropertyTypes.PARTICIPANT_COST,
     MetaPropertyTypes.LISTED_HOSTS,
     MetaPropertyTypes.LISTED_PERFORMERS,
     MetaPropertyTypes.CONTACT_INFO,

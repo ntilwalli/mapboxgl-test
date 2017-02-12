@@ -8,9 +8,8 @@ defmodule Shared.Repo.Migrations.CreateNotificationTables do
       add :user_id, references(:users, on_delete: :delete_all), null: false
       add :behalf_of, references(:users, on_delete: :delete_all)
       add :object, :bigserial, null: false
-      add :verbs, :map, null: false
+      add :actions, :map, null: false
       add :subjects, :map, null: false
-      add :data, :map
       timestamps()
     end
 

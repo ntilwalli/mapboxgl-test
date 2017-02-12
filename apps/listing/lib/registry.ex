@@ -48,7 +48,7 @@ defmodule Listing.Registry do
     new_state = get_new_state_w_add(listing.id, {pid, ref}, state)
 
     object = listing.id
-    verbs = ["create_listing"]
+    verbs = [%{type: "create_listing"}]
     subjects = [listing.user_id]
 
     Notification.Manager.notify(n_mgr, object, verbs, subjects, user)

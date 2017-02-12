@@ -88,35 +88,29 @@ defmodule Listing.Worker do
     {:reply, {:ok, result}, state}
   end
 
+
+
   def handle_call({:update, updated_listing, user}, _, %{listing: listing, registry_name: r_name} = state) do
     IO.inspect {:updated_listing, updated_listing}
     IO.inspect {:listing, listing}
 
-    u_listing = Ecto.build_assoc(user, :listings)
-    u_listing = Map.put(u_listing, :id, listing.id)
-    cs = ListingTable.changeset(u_listing, updated_listing)
-    updated_listing = Repo.update!(cs)
-    update_children(updated_listing, r_name)
+    # u_listing = Ecto.build_assoc(user, :listings)
+    # u_listing = Map.put(u_listing, :id, listing.id)
+    # cs = ListingTable.changeset(u_listing, updated_listing)
+    # updated_listing = Repo.update!(cs)
+    updated_listing = update_self(user, updated_listing, listing)
+    diff = determine_diff(updated_listing, listing)
+    actions = generate_notify_actions(diff)
+
+    IO.inspect {:notify_actions, actions}
+    
+    update_children(user, updated_listing, diff, r_name)
+
     {:reply, {:ok, updated_listing}, %{state | listing: updated_listing}}
   end
 
   def handle_call({:delete, user}, _, %{listing: listing, registry_name: r_name} = state) do
-    # IO.inspect {:delete_listing, listing.id}
-    # listing_id = listing.id
-    # query = from l in Shared.Listing,
-    #   where: l.parent_id == ^listing_id
-
-    # results = Repo.all(query) 
-
-    # Enum.map(results, fn l -> 
-    #   IO.inspect {:attempting_delete, l.id}
-    #   pid = Listing.Registry.lookup(r_name, l.id)
-    #   Listing.Worker.delete(pid, user)
-    # end)
-
-    #Shared.Manager.ListingManager.delete_one(listing)
     {:ok, struct} = delete_self(user, listing, r_name)
-    #{:reply, :ok, state}
     {:stop, :normal, :ok, nil}
   end
 
@@ -160,13 +154,7 @@ defmodule Listing.Worker do
     end
   end
 
-  def handle_info({:delete, user}, %{listing: listing, registry_name: r_name}) do
-    {:ok, struct} = delete_self(user, listing, r_name)
-    {:stop, :normal, :ok, nil}
-  end 
-
   def delete_self(user, listing, r_name) do
-    #IO.inspect {:delete_self, listing.id}
     listing_id = listing.id
     query = from l in Shared.Listing,
       where: l.parent_id == ^listing_id
@@ -174,15 +162,129 @@ defmodule Listing.Worker do
     results = Repo.all(query) 
 
     Enum.each(results, fn l -> 
-      IO.inspect {:attempting_delete, l.id}
       {:ok, pid} = Listing.Registry.lookup(r_name, l.id)
-      IO.inspect {:got_pid, pid}
       Listing.Worker.delete(pid, user)
     end)
 
     Shared.Manager.ListingManager.delete_one(listing)
-    {:ok, nil}
   end
+
+  defp determine_diff(updated, current) do
+    current_json = Poison.encode!(current)
+    current_map = Poison.decode!(current_json)
+    updated_json = Poison.encode!(updated)
+    updated_map = Poison.decode!(updated_json)
+
+    IO.inspect {:diff_current_json, current_map}
+    IO.inspect {:diff_updated_json, updated_map}
+    diff = JsonDiffEx.diff(current_map, updated_map)
+    IO.inspect {:update_diff, diff}
+    diff
+  end
+
+  defp update_self(user, updated_listing, current_listing) do
+    u_listing = Ecto.build_assoc(user, :listings)
+    u_listing = Map.put(u_listing, :id, current_listing.id)
+    cs = ListingTable.changeset(u_listing, updated_listing)
+    updated_listing = apply_changes(cs)
+    #updated_listing = Repo.update!(cs)
+    updated_listing
+  end
+
+  defp update_children(user, %ListingTable{} = listing, diff, r_name) do
+    listing_id = listing.id
+    query = from l in Shared.Listing,
+      where: l.parent_id == ^listing_id
+
+    results = Repo.all(query) 
+
+    Enum.each(results, fn l -> 
+      {:ok, pid} = Listing.Registry.lookup(r_name, l.id)
+      updated_listing = l
+      Listing.Worker.update(pid, updated_listing, user)
+    end)
+  end
+
+  defp generate_notify_actions(diff) do
+    # Cuando
+    # Donde
+    # Meta
+    ## Name
+    ## Description
+    ## Short Description
+    ## Event types
+    ## Categories
+    ## Performer sign-up
+    ## Performer check-in
+    ## Performer cost (array)
+    ## Performer stage-time (array)
+    ## Performer limit
+    ## Notes
+    ## Contact info
+    ## Audience cost
+    ## Participant sign-up
+    ## Participant limit
+    ## Participant cost
+    ## Listed hosts (array)
+    ## Listed performers (array)
+
+    diff |> Map.keys() |> Enum.flat_map(fn key -> 
+
+      case key do
+        "cuando" ->
+          IO.inspect {"got_cuando"}
+          diff_begins = get_cuando_diff("begins", diff["cuando"])
+          diff_ends = get_cuando_diff("ends", diff["cuando"])
+          Enum.filter([diff_begins, diff_ends], fn x -> !!x end)
+        "meta" ->
+          meta_diff = diff["meta"]
+          meta_actions = meta_diff |> Map.keys() |> Enum.map(fn key ->
+            get_simple_diff(key, meta_diff)
+          end)
+          meta_actions
+        _ -> 
+          IO.inspect {"got_" <> key}
+          [get_simple_diff(key, diff)]
+      end
+    end)
+  end
+
+  defp get_simple_diff(key, diff) do
+    item = diff[key]
+    IO.inspect {:item, item}
+    case item do
+      [added] ->%{type: "added_" <> key, data: added}
+      [from, to] -> %{type: "updated_" <> key, data: %{from: from, to: to}}
+      [deleted, 0, 0] -> %{type: "deleted_" <> key}
+      %{"_t" => "a"} -> %{type: "added_item_" <> key}
+      _ -> %{type: "unhandled_diff_type_" <> key}
+    end
+  end
+
+  defp get_cuando_diff(key, diff) do
+    item = diff[key]
+    case item do
+      [added] ->%{type: "added_" <> key, data: added}
+      [to, from] -> 
+        {:ok, from_dt} = Calendar.DateTime.Parse.rfc3339_utc(from)
+        {:ok, to_dt} = Calendar.DateTime.Parse.rfc3339_utc(to)
+        case Calendar.DateTime.diff(from_dt, to_dt) do
+          {:ok, 0, 0, :same_time} -> nil
+          _ -> %{type: "updated_" <> key, data: %{from: from, to: to}}
+        end
+      [deleted, 0, 0] -> %{type: "deleted_" <> key}
+      %{"_t" => "a"} -> %{type: "added_item_" <> key}
+      _ -> %{type: "unhandled_diff_type_" <> key}
+    end
+  end
+
+  defp diff_name(diff) do
+    case diff["name"] do
+      nil ->
+    end
+  end
+
+
 
   # def handle_call({:remove_check_in, user}, _from, %{listing: listing} = state) do
   #   listing_id = listing.id
@@ -297,8 +399,6 @@ defmodule Listing.Worker do
     Repo.one(query)
   end
 
-  def update_children(%ListingTable{} = _listing, _registry_name) do
-  end
 
   def ensure_searchability(listing) do
     if listing.type === "single"  && listing.visibility === "public" do

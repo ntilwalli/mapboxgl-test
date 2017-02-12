@@ -1,5 +1,6 @@
 defmodule User.Individual do
   use GenServer
+  require Logger
 
   import Ecto.Changeset, only: [apply_changes: 1]
   import Ecto.Query, only: [from: 2]
@@ -377,8 +378,20 @@ defmodule User.Individual do
     end
   end
 
-  def handle_call({:listing_update, listing}, _from, %{user: user} = state) do
-    {:reply, :ok, state}
+  def handle_call({:listing_update, listing_map}, _from, %{user: user, listing_registry: l_reg} = state) do
+    # listing_cs = Ecto.build_assoc(user, :listings)
+    # cs = Shared.Listing.changeset(listing_cs, params)
+    # case cs.valid? do
+    #   true ->
+    #     listing = apply_changes(cs)
+        listing_id = listing_map["id"]
+        {:ok, pid} = Listing.Registry.lookup(l_reg, listing_id)
+        {:ok, updated_listing} = out = Listing.Worker.update(pid, listing_map, user)
+        IO.inspect {:listing_update, "Listing #{listing_id} updated"}
+        {:reply, out, state}
+      # false ->
+      #   {:reply, {:error, "Sent invalid listing parameters for update"}, state}
+    # end
   end
 
   def handle_call({:listing_delete, listing_id}, _from, %{user: user, listing_registry: l_reg} = state) do

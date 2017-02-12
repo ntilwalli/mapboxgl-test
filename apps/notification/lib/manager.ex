@@ -25,10 +25,10 @@ defmodule Notification.Manager do
   #   GenServer.cast(server, {:notify, notification_item})
   # end
 
-  def notify(server, object, verbs, subjects, actor) do
-    GenServer.cast(server, {:notify, object, verbs, subjects, actor})
+  def notify(server, object, actions, subjects, actor) do
+    GenServer.cast(server, {:notify, object, actions, subjects, actor})
   end
-
+  
   def read(server, user, notification_ids) do
     GenServer.cast(server, {:read, user, notification_ids})
   end
@@ -82,10 +82,10 @@ defmodule Notification.Manager do
   #   {:noreply, state}
   # end
 
-  def handle_cast({:notify, object, verbs, subjects, actor}, state) do
+  def handle_cast({:notify, object, actions, subjects, actor}, state) do
     cs = Shared.NotificationItem.changeset(%Shared.NotificationItem{}, %{
       object: object,
-      verbs: verbs,
+      actions: actions,
       subjects: subjects,
       user_id: actor.id
     })
