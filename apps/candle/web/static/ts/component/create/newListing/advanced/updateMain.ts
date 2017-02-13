@@ -22,9 +22,11 @@ import {
 } from '../../../../listingTypes'
 import {getSessionStream, isExpired, renderExpiredAlert, isUpdateDisabled, renderDisabledAlert} from '../../../helpers/listing/utils'
 import {NotesInput} from './helpers'
-import {combineObj, createProxy, traceStartStop, componentify, mergeSinks, targetIsOwner, processHTTP} from '../../../../utils'
+import {combineObj, createProxy, traceStartStop, componentify, mergeSinks, targetIsOwner, processHTTP, toMessageBusMainError} from '../../../../utils'
 import clone = require('clone')
 import deepEqual = require('deep-equal')
+
+import UpdateListingQuery from '../../../../query/updateListing'
 
 import FocusWrapper from '../focusWrapperWithInstruction'
 
@@ -242,10 +244,6 @@ function reducers(actions, inputs) {
     return state.set('save_status', status).set('waiting', false)
   })
 
-  const save_error_r = inputs.error$.map(status => state => {
-    return state.set('waiting', false)
-  })
-
   const waiting_r = inputs.waiting$.map(_ => state => state.set('waiting', true))
 
   const properties_r = inputs.properties$.map(message => state => {
@@ -262,7 +260,7 @@ function reducers(actions, inputs) {
       .set('valid', errors.length === 0)
   })
 
-  return O.merge(properties_r, save_success_r, save_error_r, waiting_r)
+  return O.merge(properties_r, save_success_r, waiting_r)
 }
 
 function calculateComponentTypes(session) {
@@ -316,7 +314,7 @@ function model(actions, inputs) {
 
 function renderSaveButton(info) {
   const is_update_disabled = isUpdateDisabled(info.state.session)
-  return button('.appSaveButton.mt-4.btn.btn-outline-success.d-flex.cursor-pointer.mt-4', {class: {"read-only": is_update_disabled}}, [
+  return button('.appSaveButton.mt-4.btn.btn-outline-success.d-flex.cursor-pointer.mt-4', {class: {"read-only": is_update_disabled || !info.state.valid}}, [
     span('.d-flex.align-items-center', ['Save changes']),
   ])
 }
@@ -367,9 +365,9 @@ export default function main(sources, inputs) {
   const properties$ = createProxy()
 
   const waiting$ = createProxy()
-  const muxed_http = muxHTTP(sources)
+  const success$ = createProxy()
 
-  const state$ = model(actions, {...inputs, properties$, waiting$, error$: muxed_http.error$, success$: muxed_http.success$})
+  const state$ = model(actions, {...inputs, properties$, waiting$, success$})
 
   const session$ = state$.pluck('session').publishReplay(1).refCount()
   const components$ = state$
@@ -400,43 +398,27 @@ export default function main(sources, inputs) {
   properties$.attach(components$.switchMap(x => x.output$))
   const properties_dom$ = components.DOM
 
-  const to_http$ = actions.save$
+  const save_attempt$ = actions.save$
     .withLatestFrom(state$, (_, state: any) => {
       return state
     })
-    .filter((state: any) => state.updated && state.valid)
-    .map((state: any) => {
-      return {
-        url: '/api/user',
-        method: 'post',
-        category: 'updateListing',
-        send: {
-          route: '/listing_session/save',
-          data: state.session.listing
-        }
-      }
-    }).publish().refCount()
+    .filter((state: any) => state.valid)
+    .map((state: any) => state.session.listing)
+    .publish().refCount()
 
-  waiting$.attach(to_http$)
+  const update_listing_query= UpdateListingQuery(sources, {props$: save_attempt$})
 
+  waiting$.attach(update_listing_query.waiting$)
+  success$.attach(update_listing_query.success$)
+
+  const merged = mergeSinks(components, update_listing_query)
 
   return {
-    ...components,
+    ...merged,
     DOM: view(state$, properties_dom$),
-    HTTP: O.merge(
-      components.HTTP,
-      to_http$
-    ),
     MessageBus: O.merge(
-      components.MessageBus,
-      muxed_http.error$.map(status => {
-        return {
-          to: `main`, message: {
-            type: `error`, 
-            data: status
-          }
-        }
-      })
+      merged.MessageBus,
+      update_listing_query.error$.map(toMessageBusMainError)
     ),
     output$: state$.map((state: any) => {
       return {

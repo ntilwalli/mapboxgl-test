@@ -92,7 +92,7 @@ defmodule Listing.Worker do
 
   def handle_call({:update, updated_listing, user}, _, %{listing: listing, registry_name: r_name} = state) do
     IO.inspect {:updated_listing, updated_listing}
-    IO.inspect {:listing, listing}
+    #IO.inspect {:listing, listing}
 
     # u_listing = Ecto.build_assoc(user, :listings)
     # u_listing = Map.put(u_listing, :id, listing.id)
@@ -100,7 +100,8 @@ defmodule Listing.Worker do
     # updated_listing = Repo.update!(cs)
     updated_listing = update_self(user, updated_listing, listing)
     diff = determine_diff(updated_listing, listing)
-    actions = generate_notify_actions(diff)
+    object = %{type: "listing", id: updated_listing.id}
+    actions = classify_diff(diff, "")
 
     IO.inspect {:notify_actions, actions}
     
@@ -205,6 +206,35 @@ defmodule Listing.Worker do
     end)
   end
 
+  defp classify_diff(diff, base) do
+    IO.inspect {:base, base}
+    diff |> Map.keys() |> Enum.flat_map(fn key -> 
+      item = diff[key]
+      address = "#{base}/#{key}"
+      case item do
+        [added] -> [%{type: "add_property", address: address, data: added}]
+        [from, to] -> [%{type: "update_property", address: address, data: %{from: from, to: to}}]
+        [deleted, 0, 0] -> [%{type: "delete_property", address: address}]
+        %{"_t" => "a"} -> classify_array_diff(item, base <> "/" <> key)
+        %{} -> classify_diff(item, base <> "/" <> key)
+        _ -> %{type: "unhandled", address: address}
+      end
+    end)
+  end
+
+  defp classify_array_diff(diff, base) do
+    address = "#{base}"
+    # diff |> Map.keys() |> Enum.flat_map(fn key -> 
+    #   case item do
+    #     "_" <> index -> [%{type: abs_type <> "mod" <> address, data: added}]
+    #     index -> [%{type: abs_type <> "update_property" <> address, data: %{from: from, to: to}}]
+    #     _ -> %{type: abs_type <> "unhandled" <> address}
+    #   end
+    # end)
+
+    [%{type: "modify_array", address: address, data: diff}]
+  end
+
   defp generate_notify_actions(diff) do
     # Cuando
     # Donde
@@ -233,47 +263,64 @@ defmodule Listing.Worker do
       case key do
         "cuando" ->
           IO.inspect {"got_cuando"}
-          diff_begins = get_cuando_diff("begins", diff["cuando"])
-          diff_ends = get_cuando_diff("ends", diff["cuando"])
-          Enum.filter([diff_begins, diff_ends], fn x -> !!x end)
+          cuando_diff = diff["cuando"]
+          cuando_actions = cuando_diff |> Map.keys() |> Enum.map(fn key ->
+            get_cuando_diff(key, cuando_diff)
+          end)
+          Enum.filter(cuando_actions, fn x -> x end)
         "meta" ->
           meta_diff = diff["meta"]
           meta_actions = meta_diff |> Map.keys() |> Enum.map(fn key ->
-            get_simple_diff(key, meta_diff)
+            get_meta_diff(key, meta_diff)
           end)
           meta_actions
         _ -> 
           IO.inspect {"got_" <> key}
-          [get_simple_diff(key, diff)]
+          [get_simple_diff(key, diff, "")]
       end
     end)
   end
 
-  defp get_simple_diff(key, diff) do
+  defp get_simple_diff(key, diff, base) do
     item = diff[key]
+    address = "/" <> base <> "/" <> key
     IO.inspect {:item, item}
     case item do
-      [added] ->%{type: "added_" <> key, data: added}
-      [from, to] -> %{type: "updated_" <> key, data: %{from: from, to: to}}
-      [deleted, 0, 0] -> %{type: "deleted_" <> key}
-      %{"_t" => "a"} -> %{type: "added_item_" <> key}
-      _ -> %{type: "unhandled_diff_type_" <> key}
+      [added] ->%{type: "/listing/add_property" <> address, data: added}
+      [from, to] -> %{type: "/listing/update_property" <> address, data: %{from: from, to: to}}
+      [deleted, 0, 0] -> %{type: "/listing/delete_property" <> address}
+      %{"_t" => "a"} -> %{type: "/listing/add_property_items" <> address}
+      _ -> %{type: "/listing/unhandled" <> address}
+    end
+  end
+
+  defp get_meta_diff(key, diff) do
+    item = diff[key]
+    address = "/" <> "meta" <> "/" <> key
+    IO.inspect {:item, item}
+    case key do
+      [added] ->%{type: "/listing/add_property" <> address, data: added}
+      [from, to] -> %{type: "/listing/update_property" <> address, data: %{from: from, to: to}}
+      [deleted, 0, 0] -> %{type: "/listing/delete_property" <> address}
+      %{"_t" => "a"} -> %{type: "/listing/add_property_items" <> address}
+      _ -> %{type: "/listing/unhandled" <> address}
     end
   end
 
   defp get_cuando_diff(key, diff) do
     item = diff[key]
+    address = "/cuando/" <> key
     case item do
-      [added] ->%{type: "added_" <> key, data: added}
-      [to, from] -> 
+      [added] ->%{type: "/listing/add_property" <> address, address: address, data: added}
+      [from, to] -> 
         {:ok, from_dt} = Calendar.DateTime.Parse.rfc3339_utc(from)
         {:ok, to_dt} = Calendar.DateTime.Parse.rfc3339_utc(to)
         case Calendar.DateTime.diff(from_dt, to_dt) do
           {:ok, 0, 0, :same_time} -> nil
-          _ -> %{type: "updated_" <> key, data: %{from: from, to: to}}
+          _ -> %{type: "/listing/update_property" <> address, data: %{from: from, to: to}}
         end
-      [deleted, 0, 0] -> %{type: "deleted_" <> key}
-      %{"_t" => "a"} -> %{type: "added_item_" <> key}
+      [deleted, 0, 0] -> %{type: "/listing/delete_property"}
+      %{"_t" => "a"} -> %{type: "/listing/add_property_items" <> address}
       _ -> %{type: "unhandled_diff_type_" <> key}
     end
   end

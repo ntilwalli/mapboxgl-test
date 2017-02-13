@@ -87,10 +87,10 @@ function toComponent(type, meta, session$, sources, inputs, authorization) {
       break
     case MetaPropertyTypes.PERFORMER_COST:
       component = (sources, inputs) => {
-        const instruction = "Configure the performer cost. Enable multiple cost-tiers by clicking the plus button."
+        const instruction = "Configure the performer cost. Enable multiple cost-tiers by clicking the plus button. Perk (optional) indicates what additional benefit is offered by the cost-tier."
         return wrapWithFocus(
           sources, 
-          CostCollection(sources, {
+          isolate(CostCollection)(sources, {
             ...inputs, 
             component_id: 'Performer cost', 
             item_heading: 'Tier',

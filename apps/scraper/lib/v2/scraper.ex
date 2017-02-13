@@ -95,13 +95,17 @@ defmodule Scraper.BadslavaScraper.V2 do
     updated = Enum.map(update, fn x -> 
       #IO.inspect x
       {listing_id, data} = x
-      {:ok, result} = Listing.Registry.update(Listing.Registry, listing_id, convert(data), user) 
+      {:ok, pid} = Listing.Registry.lookup(Listing.Registry, listing_id) 
+      listing = Map.put(convert(data), "id", listing_id)
+      IO.inspect {:scraper_update_listing, listing}
+      {:ok, result} = Listing.Worker.update(pid, listing, user) 
       x
     end)
 
     deleted = Enum.map(delete, fn x ->
       val = Shared.Repo.delete!(%Shared.Scrapings{listing_id: x}) 
-      :ok = Listing.Registry.delete(Listing.Registry, x, user) 
+      {:ok, pid} = Listing.Registry.lookup(Listing.Registry, x) 
+      :ok = Listing.Worker.delete(pid, user) 
       x
     end)
 

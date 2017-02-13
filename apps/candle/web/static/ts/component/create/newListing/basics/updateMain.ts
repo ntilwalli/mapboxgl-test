@@ -172,7 +172,7 @@ function renderMainPanel(info: any) {
 
 function renderSaveButton(info) {
   const is_update_disabled = isUpdateDisabled(info.state.session)
-  return button('.appSaveButton.mt-4.btn.btn-outline-success.d-flex.cursor-pointer.mt-4', {class: {"read-only": is_update_disabled}}, [
+  return button('.appSaveButton.mt-4.btn.btn-outline-success.d-flex.cursor-pointer.mt-4', {class: {"read-only": is_update_disabled || !info.state.valid}}, [
     span('.d-flex.align-items-center', ['Save changes']),
   ])
 }
@@ -317,10 +317,11 @@ export default function main(sources, inputs) {
 
   const state$ = model(actions, {...inputs, properties$, waiting$, success$})
   const save_attempt$ = actions.save$
-    .withLatestFrom(state$, (_, state) => state.session.listing)
-    .map(x => {
-      return x
+    .withLatestFrom(state$, (_, state) => {
+      return state
     })
+    .filter((state: any) => state.valid)
+    .map((state: any) => state.session.listing)
 
   const update_listing_query = UpdateListingQuery(sources, {props$: save_attempt$})
 

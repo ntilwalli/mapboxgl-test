@@ -46,11 +46,19 @@ function render(state, component_id, item_heading) {
 function intent(sources) {
   const {DOM} = sources
 
+  const add$ = DOM.select('.appCostCollectionAddButton').events('click')
+    .publish().refCount()
+  const subtract$ =DOM.select('.appCostCollectionSubtractButton').events('click').map(ev => {
+    return parseInt(ev.target.dataset['index'])
+  })
+
+  add$.subscribe(x => {
+    console.log('cost collection: add$ clicked')
+  })
+
   return {
-    add$: DOM.select('.appCostCollectionAddButton').events('click'),
-    subtract$: DOM.select('.appCostCollectionSubtractButton').events('click').map(ev => {
-      return parseInt(ev.target.dataset['index'])
-    })
+    add$,
+    subtract$
   }
 }
 

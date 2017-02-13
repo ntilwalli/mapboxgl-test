@@ -7,7 +7,7 @@ defmodule Shared.Repo.Migrations.CreateNotificationTables do
       add :sort_id, :bigint, default: fragment("next_insta_id()")
       add :user_id, references(:users, on_delete: :delete_all), null: false
       add :behalf_of, references(:users, on_delete: :delete_all)
-      add :object, :bigserial, null: false
+      add :object, :map, null: false
       add :actions, :map, null: false
       add :subjects, :map, null: false
       timestamps()

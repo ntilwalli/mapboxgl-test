@@ -5,7 +5,7 @@ defmodule Shared.NotificationItem do
   @primary_key {:id, :id, autogenerate: true}
   schema "notification_items" do
     field :sort_id, :id
-    field :object, :id, null: false
+    field :object, :map, null: false
     field :actions, {:array, :map}, null: false
     field :subjects, {:array, :id}, null: false
     belongs_to :user, Shared.User
