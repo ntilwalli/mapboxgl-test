@@ -61,47 +61,15 @@ defmodule Shared.Listing do
     |> validate_inclusion(:type, ["single", "recurring"])
     |> validate_inclusion(:visibility, ["public", "private", "hidden"])
     |> validate_inclusion(:release, ["posted", "staged", "canceled"])
-    |> cast_dynamic_parent_flag(:type, :cuando, %{"recurring" => Shared.Model.Recurring, "single" => Shared.Model.Once})
-    # |> cast_dynamic_func(:meta, fn cs, dynamic_val -> 
-      #   # IO.inspect dynamic_val
-      #   changes = cs.changes
-      #   # type = changes["type"]
-      #   # IO.inspect changes
-
-      #   type = cond do
-      #     val = Map.get(changes, :type) -> val
-      #     val = Map.get(changes, "type") -> val
-      #     true -> :error
-      #   end
-
-      #   dynamic_type = cond do
-      #     val = Map.get(dynamic_val, :type) -> val
-      #     val = Map.get(dynamic_val, "type") -> val
-      #     true -> :error
-      #   end
-
-      #   case type do
-      #     "recurring" ->
-      #       case dynamic_type do
-      #         "badslava" -> Shared.Model.Listing.Meta.Badslava.Template
-      #         _ -> nil
-      #       end
-      #     "single" -> 
-      #       case dynamic_type do
-      #         "badslava" -> Shared.Model.Listing.Meta.Badslava
-      #         _ -> nil
-      #       end
-      #     _ -> nil
-      #   end
-      # end)
-    |> cast_dynamic(:meta, %{
-      "badslava" => Shared.Model.Listing.Meta.Badslava,
-      "standard" => Meta.Standard
-    })
-    |> cast_dynamic(:donde, %{
-      "badslava" => Donde.Badslava,
-      "venue" => Donde.Venue
-    })
+    # |> cast_dynamic_parent_flag(:type, :cuando, %{"recurring" => Shared.Model.Recurring, "single" => Shared.Model.Once})
+    # |> cast_dynamic(:meta, %{
+    #   "badslava" => Shared.Model.Listing.Meta.Badslava,
+    #   "standard" => Meta.Standard
+    # })
+    # |> cast_dynamic(:donde, %{
+    #   "badslava" => Donde.Badslava,
+    #   "venue" => Donde.Venue
+    # })
     |> assoc_constraint(:user)
     |> assoc_constraint(:parent)
 

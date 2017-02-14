@@ -146,12 +146,18 @@ function InPersonComponent(sources, props$, component_id) {
           div('.col-12.d-flex.flex-wrap', [
             em('.mr-4 ', ['Begins']),
             div('.d-flex.align-items-center.flex-wrap', [
-              span('.d-fx-a-c.mr-xs', [components.begins]),
-              span('.d-fx-a-c', ['minutes before event start'])
-            ]),
+              span('.d-fx-a-c.mr-xs', [
+                components.begins
+              ]),
+              span('.d-fx-a-c', [
+                'minutes before event start'
+              ])
+            ])
           ])
         ]),
-        div([components.ends])
+        div([
+          components.ends
+        ])
       ])
     ])
   })

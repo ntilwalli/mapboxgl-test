@@ -1,7 +1,8 @@
 import {Observable as O} from 'rxjs'
 import {div} from '@cycle/dom'
 import {combineObj, normalizeSink, spread, createProxy, componentify, mergeSinks, toMessageBusMainError} from '../../../utils'
-import {inflateListing} from '../../helpers/listing/utils'
+
+import {drillInflate} from './helpers'
 import deepEqual = require('deep-equal')
 import moment = require('moment')
 
@@ -27,12 +28,6 @@ const onlySingleStandard = x => {
     return false
   }
 }
-
-function drillInflate(result) {
-  result.listing = inflateListing(result.listing)
-  return result
-}
-
 
 const shouldRefreshSearch = (x, y) => {
   //console.log(x, y)

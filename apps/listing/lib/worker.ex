@@ -29,6 +29,10 @@ defmodule Listing.Worker do
     GenServer.call(server, {:update, listing, user})
   end
 
+  def update_internal(server, updates, user) do
+    GenServer.call(server, {:update_internal, updates, user})
+  end
+
   def add_child_from_map(server, listing, user) do
     GenServer.call(server, {:add_child_from_map, listing, user})#, listing, user})
   end
@@ -67,15 +71,8 @@ defmodule Listing.Worker do
   end
 
   def handle_call({:retrieve, user}, _from, %{listing: listing} = state) do
-    status = 
-      case user do
-        nil -> nil
-        _ -> %{checked_in: listing.check_ins |> Enum.any?(fn x -> x.user_id === user.id end)}
-      end
-
-    #IO.puts "Retrieve listing..."
-    #IO.inspect  %{listing: listing, children: listing.children, status: status}
-    {:reply, {:ok, %{listing: listing, children: listing.children, status: status}}, state}
+    out = get_listing_info(listing, user)
+    {:reply, {:ok, out}, state}
   end
 
   def handle_call({:add_child_from_map, child_listing, user}, _from, %{listing: listing, registry_name: r_name} = state) do
@@ -87,8 +84,6 @@ defmodule Listing.Worker do
     {:ok, result} = info = Listing.Registry.create(r_name, child_listing, user) 
     {:reply, {:ok, result}, state}
   end
-
-
 
   def handle_call({:update, updated_listing, user}, _, %{listing: listing, registry_name: r_name} = state) do
     IO.inspect {:updated_listing, updated_listing}
@@ -106,9 +101,24 @@ defmodule Listing.Worker do
     IO.inspect {:notify_actions, actions}
     
     update_children(user, updated_listing, diff, r_name)
-
-    {:reply, {:ok, updated_listing}, %{state | listing: updated_listing}}
+    enriched_listing = retrieve_listing_with_other_data(listing.id)
+    listing_w_info = get_listing_info(enriched_listing, user)
+    {:reply, {:ok, listing_w_info}, %{state | listing: updated_listing}}
   end
+
+  def handle_call({:update_internal, updates, user}, _, %{listing: listing, registry_name: r_name} = state) do
+    cs = ListingTable.changeset(listing, updates)
+    updated_listing = Repo.update!(cs)
+    diff = determine_diff(updated_listing, listing)
+    object = %{type: "listing", id: updated_listing.id}
+    actions = classify_diff(diff, "")
+    update_children(user, updated_listing, diff, r_name)
+    enriched_listing  = retrieve_listing_with_other_data(updated_listing.id)
+    IO.inspect {:enriched_listing, enriched_listing.id}
+    listing_w_info = get_listing_info(enriched_listing, user)
+    {:reply, {:ok, listing_w_info}, %{state | listing: enriched_listing}}
+  end
+
 
   def handle_call({:delete, user}, _, %{listing: listing, registry_name: r_name} = state) do
     {:ok, struct} = delete_self(user, listing, r_name)
@@ -155,6 +165,20 @@ defmodule Listing.Worker do
     end
   end
 
+  defp get_listing_info(listing, user) do
+    status = 
+      case user do
+        nil -> nil
+        _ -> %{checked_in: listing.check_ins |> Enum.any?(fn x -> x.user_id === user.id end)}
+      end
+
+    %{
+      listing: listing, 
+      children: listing.children, 
+      status: status
+    }
+  end
+
   def delete_self(user, listing, r_name) do
     listing_id = listing.id
     query = from l in Shared.Listing,
@@ -183,12 +207,11 @@ defmodule Listing.Worker do
     diff
   end
 
-  defp update_self(user, updated_listing, current_listing) do
+  defp update_self(user, %{} = updated_listing, current_listing) do
     u_listing = Ecto.build_assoc(user, :listings)
     u_listing = Map.put(u_listing, :id, current_listing.id)
     cs = ListingTable.changeset(u_listing, updated_listing)
-    updated_listing = apply_changes(cs)
-    #updated_listing = Repo.update!(cs)
+    updated_listing = Repo.update!(cs)
     updated_listing
   end
 
@@ -201,8 +224,14 @@ defmodule Listing.Worker do
 
     Enum.each(results, fn l -> 
       {:ok, pid} = Listing.Registry.lookup(r_name, l.id)
-      updated_listing = l
-      Listing.Worker.update(pid, updated_listing, user)
+
+      updates = %{
+        meta: listing.meta,
+        donde: listing.donde,
+        settings: listing.settings
+      }
+
+      Listing.Worker.update_internal(pid, updates, user)
     end)
   end
 

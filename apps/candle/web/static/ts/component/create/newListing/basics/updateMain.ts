@@ -7,7 +7,7 @@ import {
   ListingTypes, CategoryTypes, 
   EventTypeToProperties
 } from '../../../../listingTypes'
-import {inflateSession, deflateSession, fromCheckbox, getDefaultSession, isUpdateDisabled, renderDisabledAlert} from '../../../helpers/listing/utils'
+import {clearAdminMessage, inflateSession, deflateSession, inflateListing, listingToSession, fromCheckbox, getDefaultSession, isUpdateDisabled, renderDisabledAlert, renderSuccessAlert} from '../../../helpers/listing/utils'
 import clone = require('clone')
 import moment = require('moment')
 
@@ -123,7 +123,11 @@ function model(actions, inputs) {
 
 function renderMainPanel(info: any) {
   const {state, components} = info
-  const {show_errors, errors} = state
+  const {show_errors, errors, session} = state
+  const {properties} = state.session
+  const {admin} = properties
+  const {message} = admin
+
   const {
     name, description, event_types_and_categories,
     search_area, donde, listing_type, start_time,
@@ -133,6 +137,7 @@ function renderMainPanel(info: any) {
   const is_update_disabled = isUpdateDisabled(state.session)
 
   return div('.pt-4', {class: {"read-only": is_update_disabled}}, [
+    message ? renderSuccessAlert(message) : null,
     show_errors && errors.length ? div(`.form-group`, [
       div(`.alerts-area`, errors.map(e => {
           return div(`.alert.alert-danger`, [
@@ -328,7 +333,7 @@ export default function main(sources, inputs) {
   const vtree$ = view(state$, components)
   
   waiting$.attach(update_listing_query.waiting$)
-  success$.attach(update_listing_query.success$)
+  //success$.attach(update_listing_query.success$)
 
   const merged = mergeSinks(
     name_section, 
@@ -355,12 +360,26 @@ export default function main(sources, inputs) {
           }
         )
         .withLatestFrom(sources.Router.history$, (state: any, route: any) => {
+          clearAdminMessage(state.session)
+
           return {
             pathname: route.pathname,
             type: 'push',
             state: deflateSession(state.session)
           }
-        }).skip(1)
+        }).skip(1),
+      update_listing_query.success$.withLatestFrom(state$, (listing_result, state: any) => {
+        listing_result.listing = inflateListing(listing_result.listing)
+        listing_result.session = listingToSession(listing_result.listing, state.session.properties.donde.search_area)
+        listing_result.session.properties.admin.message = 'Changes saved successfully'
+        const out = {
+          pathname: sources.Router.createHref('/'),
+          type: 'replace',
+          state: listing_result
+        }
+
+        return out
+      })
     ).publishReplay(1).refCount(),
     MessageBus: O.merge(
       merged.MessageBus,

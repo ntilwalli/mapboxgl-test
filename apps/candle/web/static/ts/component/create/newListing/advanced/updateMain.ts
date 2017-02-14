@@ -20,7 +20,7 @@ import {
   EventTypeToProperties, 
   CostOptions
 } from '../../../../listingTypes'
-import {getSessionStream, isExpired, renderExpiredAlert, isUpdateDisabled, renderDisabledAlert} from '../../../helpers/listing/utils'
+import {inflateListing, listingToSession, getSessionStream, isExpired, renderExpiredAlert, isUpdateDisabled, renderDisabledAlert, renderSuccessAlert} from '../../../helpers/listing/utils'
 import {NotesInput} from './helpers'
 import {combineObj, createProxy, traceStartStop, componentify, mergeSinks, targetIsOwner, processHTTP, toMessageBusMainError} from '../../../../utils'
 import clone = require('clone')
@@ -94,7 +94,7 @@ function toComponent(type, meta, session$, sources, inputs, authorization) {
         const instruction = "Configure the performer cost. Enable multiple cost-tiers by clicking the plus button."
         return wrapWithFocus(
           sources, 
-          CostCollection(sources, {
+          isolate(CostCollection)(sources, {
             ...inputs, 
             component_id: 'Performer cost', 
             item_heading: 'Tier',
@@ -328,6 +328,7 @@ function view(state$, children$) {
   .debounceTime(0)
   .map((info: any) => {
     const {state, children} = info
+    const message = state.session.properties.admin.message
     const {properties, errors} = state
     const display_errors = 
       errors
@@ -347,10 +348,11 @@ function view(state$, children$) {
     //   div('.mt-4', children.map(x => div({style: {"margin-bottom": "2rem"}}, [x])))
     // ])
 
-    return div('.properties', [
+    return div('.properties.pt-4', [
       ...display_errors,
+      message ? renderSuccessAlert(message) : null,
       renderDisabledAlert(state.session),
-      div('.pt-4', {class: {"read-only": is_update_disabled}}, children.map(x => div({style: {"margin-bottom": "3rem"}}, [x]))),
+      div({class: {"read-only": is_update_disabled}}, children.map(x => div({style: {"margin-bottom": "3rem"}}, [x]))),
       renderSaveButton(info)
     ])
   })
@@ -409,13 +411,28 @@ export default function main(sources, inputs) {
   const update_listing_query= UpdateListingQuery(sources, {props$: save_attempt$})
 
   waiting$.attach(update_listing_query.waiting$)
-  success$.attach(update_listing_query.success$)
+  //success$.attach(update_listing_query.success$)
 
   const merged = mergeSinks(components, update_listing_query)
 
   return {
     ...merged,
     DOM: view(state$, properties_dom$),
+    Router: O.merge(
+      merged.Router,
+      update_listing_query.success$.withLatestFrom(state$, (listing_result, state: any) => {
+        listing_result.listing = inflateListing(listing_result.listing)
+        listing_result.session = listingToSession(listing_result.listing, state.session.properties.donde.search_area)
+        listing_result.session.properties.admin.message = 'Changes saved successfully'
+        const out = {
+          pathname: sources.Router.createHref('/'),
+          type: 'replace',
+          state: listing_result
+        }
+
+        return out
+      })
+    ),
     MessageBus: O.merge(
       merged.MessageBus,
       update_listing_query.error$.map(toMessageBusMainError)

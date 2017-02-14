@@ -3,7 +3,7 @@ import Immutable = require('immutable')
 import {div, button, img, span, i, a, h6, em, strong, pre, ul, li} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 import {combineObj, createProxy, mergeSinks, componentify, processHTTP, PositionToRegion} from '../../../utils'
-import {inflateListing, inflateSession, listingToSession, isExpired} from '../../helpers/listing/utils'
+import {inflateListing, inflateSession, listingToSession, isExpired, clearAdminMessage} from '../../helpers/listing/utils'
 
 import Menu from './menu'
 import Basics from '../../create/newListing/basics/updateMain'
@@ -149,6 +149,8 @@ export default function main(sources, inputs) {
       merged.Router,
       navigator.next$
         .withLatestFrom(inputs.listing_result$, (page, listing_result: any) => {
+          clearAdminMessage(listing_result.session)
+
           return {
             pathname: sources.Router.createHref('/' + page),
             state: listing_result,

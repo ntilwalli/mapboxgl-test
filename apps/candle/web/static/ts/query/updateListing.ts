@@ -20,8 +20,14 @@ export default function main(sources, {props$}) {
 
   return {
     HTTP: to_http$.delay(1),
-    error$: response.error$,
-    success$: response.success$,
+    error$: response.error$
+      .map(x => {
+        return x 
+      }),
+    success$: response.success$
+      .map(x => {
+        return x 
+      }),
     waiting$: O.merge(
       to_http$.mapTo(true), 
       O.merge(response.error$, response.success$).mapTo(false)

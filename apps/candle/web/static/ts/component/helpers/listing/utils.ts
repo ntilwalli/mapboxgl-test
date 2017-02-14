@@ -203,7 +203,6 @@ function propertiesDondeFromListing(listing) {
     },
 */
 
-
 export function listingToSession(listing, search_area) {
   const session = getDefaultSession()
   session.properties.donde.search_area = search_area
@@ -699,20 +698,20 @@ export function isCanceled(session) {
 }
 
 export function renderCanceledAlert() {
-  return div('.pt-4', [div(`.alert.alert-danger`, [
+  return div([div(`.alert.alert-danger`, [
     'This is a canceled listing, it cannot be updated.'
   ])])
 }
 
 
 export function renderExpiredAlert() {
-  return div('.pt-4', [div(`.alert.alert-danger`, [
+  return div([div(`.alert.alert-danger`, [
     'This is a past listing, it cannot be updated.'
   ])])
 }
 
 export function renderSuccessAlert(message) {
-  return div('.pt-4', [div('.alert.alert-success', [
+  return div([div('.alert.alert-success', [
     message
   ])])
 }
@@ -753,4 +752,8 @@ export function recurrenceDisplayFilterOptionToRange(option) {
         ends: moment().add(30, 'days'),
       }
   }
+}
+
+export function clearAdminMessage(session) {
+  session.properties.admin.message = undefined
 }

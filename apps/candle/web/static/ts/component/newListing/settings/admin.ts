@@ -126,7 +126,7 @@ function view(state$, components) {
     const {confirm_modal} = info.components
     const is_update_disabled = isUpdateDisabled(info.state.session)
     const message = info.state.session.properties.admin.message
-    return div('.basics.appMainPanel', {
+    return div('.basics.appMainPanel.pt-4', {
     }, [
       renderDisabledAlert(info.state.session),
       message ? renderSuccessAlert(message) : null,
