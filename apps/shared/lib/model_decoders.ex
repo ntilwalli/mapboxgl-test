@@ -21,8 +21,11 @@ defmodule Shared.Model.Decoders do
   def decode_cuando(type, val) do
     case type do
       "recurring" ->
+        #IO.inspect {:decode_cuando, val}
         cuando_cs = Shared.Model.Recurring.changeset(%Shared.Model.Recurring{}, val)
-        apply_changes(cuando_cs)
+        out = apply_changes(cuando_cs)
+        #IO.inspect {:decode_cuando, val, out}
+        out
       "single" -> 
         cuando_cs = CuandoOnce.changeset(%CuandoOnce{}, val)
         apply_changes(cuando_cs)

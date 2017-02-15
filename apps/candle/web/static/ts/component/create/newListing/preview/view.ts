@@ -1,5 +1,5 @@
 import {Observable as O} from 'rxjs'
-import {div, h6, a, pre, span, input, button} from '@cycle/dom'
+import {div, h6, h4, a, pre, span, input, button} from '@cycle/dom'
 import {combineObj} from '../../../../utils'
 import {renderSummary} from '../../../helpers/listing/render'
 
@@ -36,23 +36,24 @@ function renderPostStageButtons(state) {
   return div('.pos-relative', [
     div('.row',  {class: {disabled}}, [
       div('.col-12', [
-        h6('.mb-xs', ['Stage or post']),
-        div('.row.mb-4', [
-          div(`.col-12.d-fx-a-c`, [
-            div('.mr-4', ['Staging a listing allows you to invite/confirm performers before going live.  Would you like to stage this listing?']),
-            button(`.appStageButton.btn.btn-outline-warning.d-fx-a-c.fx-j-c.p-0`, {class: {disabled}, attrs: {disabled}, style: {height: "2rem", 'min-width': "5rem"}}, [
-              div('.d-flex.justify-content-center.align-items-center.h-100.w-100', [
-                `Stage`
-              ])
-            ])
-          ])
-        ]),
-        div('.row.mb-4', [
-          div('.col-10.d-flex.fx-j-c.fw-bold', ['Or']),
-        ]),
+        //h4('.mb-xs', ['Stage or post']),
+        h4('.mb-xs', ['Post']),
+        // div('.row.mb-4', [
+        //   div(`.col-12.d-fx-a-c`, [
+        //     div('.mr-4', ['Staging a listing allows you to invite/confirm performers before going live.  Would you like to stage this listing?']),
+        //     button(`.appStageButton.btn.btn-outline-warning.d-fx-a-c.fx-j-c.p-0`, {class: {disabled}, attrs: {disabled}, style: {height: "2rem", 'min-width': "5rem"}}, [
+        //       div('.d-flex.justify-content-center.align-items-center.h-100.w-100', [
+        //         `Stage`
+        //       ])
+        //     ])
+        //   ])
+        // ]),
+        // div('.row.mb-4', [
+        //   div('.col-10.d-flex.fx-j-c.fw-bold', ['Or']),
+        // ]),
         div('.row', [
           div(`.col-12.d-fx-a-c`, [
-            div('.mr-4', [`Posting makes your listing live, enabling you to distribute links/send out invitations and makes events discoverable on search. Would you like to post this event?`]),
+            div('.mr-4', [`Posting makes your listing (and it's recurrences) live, enabling you to distribute links/send out invitations and makes events discoverable on search. Once posted a listing can only be canceled. Would you like to post this event?`]),
             button(`.appPostButton.btn.btn-outline-success.d-fx-a-c.fx-j-c.p-0`, {class: {disabled}, attrs: {disabled}, style: {height: "2rem", 'min-width': "5rem"}}, [
               div('.d-flex.justify-content-center.align-items-center.h-100.w-100', [
                 `Post`
@@ -211,7 +212,7 @@ export default function view(info) {
         type === 'single' ? renderSingleListingPreview(session) : renderRecurringListingPreview(session)         
       ]),
     ]),
-    isOpenMic(listing) || isShow(listing) ? div('.row.mb-4', [
+    isOpenMic(listing) ? div('.row.mb-4', [
       div('.col-12', [
         h6('.mb-xs', ['Interaction properties']),
         renderSummary(listing)    

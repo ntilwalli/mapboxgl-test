@@ -169,8 +169,9 @@ function renderUpcomingEvents(children) {
     .sort((x, y) => x.cuando.begins - y.cuando.begins)
     .slice(0, 5)
     .map(child => {
+      const formatted = child.cuando.begins.format('ddd, M/D/YY h:mm a')
       return li(`.list-group-item`, [
-        a('.btn.btn-link', {attrs: {href: '/listing/' + child.id}, props: {listing: child}}, [child.cuando.begins.format('ddd, M/D/YY h:mm a')])
+        a('.btn.btn-link', {attrs: {href: '/listing/' + child.id}, props: {listing: child}}, [formatted])
       ])
     })
 

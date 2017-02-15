@@ -2,7 +2,7 @@ import {Observable as O} from 'rxjs'
 import {div, span, input, textarea, label, h6, nav, button} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 import Immutable = require('immutable')
-import {combineObj, createProxy, mergeSinks, componentify, targetIsOwner, processHTTP} from '../../../../utils'
+import {toMessageBusMainError, combineObj, createProxy, mergeSinks, componentify, targetIsOwner, processHTTP} from '../../../../utils'
 import {
   ListingTypes, CategoryTypes, 
   EventTypeToProperties
@@ -11,7 +11,7 @@ import {inflateSession, deflateSession, fromCheckbox, getDefaultSession} from '.
 import clone = require('clone')
 
 import Content from './outputMain'
-
+import SaveExitQuery from '../../../../query/saveExitListing'
 import {renderSKFadingCircle6} from '../../../../library/spinners'
 
 const default_instruction = 'Click on a section to see tips'
@@ -169,34 +169,24 @@ function view(state$, components) {
 export function main(sources, inputs) {
   const actions = intent(sources)
   const content = Content(sources, {...inputs, show_errors$: actions.show_errors$})
-
+  const waiting$ = createProxy()
   const state$ = model(actions, {...inputs, instruction_focus$: content.instruction_focus$})
   const vtree$ = view(state$, {content: content.DOM})
 
-  const to_save_exit$ = actions.save_exit$.withLatestFrom(content.output$, (_, output) => {
-    return {
-      url: `/api/user`,
-      method: `post`,
-      category: `saveExitSession`,
-      send: {
-        route: `/listing_session/save`,
-        data: output.session
-      }
-    }
-  }).publish().refCount()
+  const request$ = actions.save_exit$.withLatestFrom(content.output$, (_, output) => output.session)
 
-  const merged = mergeSinks(content)
+  const save_exit_query = SaveExitQuery(sources, {props$: request$})
+
+  const merged = mergeSinks(content, save_exit_query)
+  
+  waiting$.attach(save_exit_query.waiting$)
 
   return {
     ...merged,
     DOM: vtree$,
-    HTTP: O.merge(
-      merged.HTTP,
-      to_save_exit$
-    ),
     Router: O.merge(
       merged.Router,
-      actions.success_save_exit$.withLatestFrom(inputs.Authorization.status$, (_, user) => user)
+      save_exit_query.success$.withLatestFrom(inputs.Authorization.status$, (_, user) => user)
         .map(user => {
           return {
             pathname: '/' + user.username + '/listings',
@@ -232,6 +222,10 @@ export function main(sources, inputs) {
               }
           }
         })
+    ),
+    MessageBus: O.merge(
+      merged.MessageBus,
+      save_exit_query.error$.map(toMessageBusMainError)
     )
   }
 }

@@ -5,8 +5,8 @@ defmodule Shared.Model.RRule do
   @primary_key false
   embedded_schema do
     field :freq, :string, null: false
-    field :dtstart, :naive_datetime
-    field :until, :naive_datetime
+    field :dtstart, :utc_datetime
+    field :until, :utc_datetime
     field :interval, :integer
     field :wkst, :string, default: "monday"
     field :count, :integer

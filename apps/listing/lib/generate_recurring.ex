@@ -54,8 +54,9 @@ defmodule Listing.GenerateRecurring do
   end
 
   defp generate_recurrences(user, listing, registry_name) do
-    #IO.inspect {:generate_recurrences, listing}
     if listing.type === "recurring" && listing.release === "posted" do
+      #IO.inspect {:generate_recurrences, listing}
+
       listing
       |> to_triplet()
       |> to_utc()
@@ -71,6 +72,7 @@ defmodule Listing.GenerateRecurring do
   end
 
   defp to_utc({recurrable, tz, listing}) do
+    #IO.inspect {:triplet, recurrable, tz}
     start_of_today = get_start_of_today(tz)
     start_of_today_naive = Calendar.DateTime.to_naive(start_of_today)
     end_datetime = Calendar.NaiveDateTime.add!(start_of_today_naive, 90*24*60*60)
@@ -134,17 +136,17 @@ defmodule Listing.GenerateRecurring do
     #single_cuando = apply_changes(cs) 
 
     #IO.inspect {:single_cuando, data}
-    release_level =
-      cond do
-        template.user_id === 0 -> "posted"
-        true -> "staged"
-      end
+    # release_level =
+    #   cond do
+    #     template.user_id === 0 -> "posted"
+    #     true -> "staged"
+    #   end
 
     out = %{
       "parent_id" => template.id,
       "type" => "single",
       "visibility" => template.visibility,
-      "release" => release_level,
+      "release" => template.release, #release_level,
       "donde" => template.donde,
       "cuando" => data,#single_cuando,
       "meta" => template.meta,

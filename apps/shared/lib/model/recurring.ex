@@ -5,9 +5,9 @@ defmodule Shared.Model.Recurring do
   @derive {Poison.Encoder, exclude: [:__meta__]}
   @primary_key false
   embedded_schema do
-    field :rdates, {:array, :naive_datetime}
+    field :rdates, {:array, :utc_datetime}
     embeds_many :rrules, Shared.Model.RRule
-    field :exdates, {:array, :naive_datetime}
+    field :exdates, {:array, :utc_datetime}
     field :duration, :float
   end
 
@@ -21,7 +21,8 @@ defmodule Shared.Model.Recurring do
 
 
   def between(%Shared.Model.Recurring{} = recurrable, start_datetime, end_datetime, tz) do
-    recurrences = recurrable.rrules
+    naive_recurrable = to_naive_recurrable(recurrable, tz)
+    recurrences = naive_recurrable.rrules
       |> Enum.flat_map(fn rrule -> single_between(rrule, start_datetime, end_datetime, tz) end) 
       |> Enum.uniq_by(fn x -> 
           {:ok, val, _, _} = Calendar.NaiveDateTime.diff(x, end_datetime)
@@ -29,7 +30,7 @@ defmodule Shared.Model.Recurring do
       end)
       |> Enum.sort(&Calendar.NaiveDateTime.before?/2)
 
-    with_rdates = case recurrable.rdates do
+    with_rdates = case naive_recurrable.rdates do
       nil -> recurrences
       val ->
         rdates_normalized = val 
@@ -44,7 +45,7 @@ defmodule Shared.Model.Recurring do
           |> Enum.sort(&Calendar.NaiveDateTime.before?/2)
     end
 
-    with_exdates = case recurrable.exdates do
+    with_exdates = case naive_recurrable.exdates do
       nil -> with_rdates
       val ->
         with_rdates 
@@ -63,6 +64,53 @@ defmodule Shared.Model.Recurring do
     with_exdates
 
   end
+
+  defp to_naive_recurrable(%Shared.Model.Recurring{} = recurrable, tz) do
+    rdates = 
+      case recurrable.rdates do
+        nil -> nil
+        _ -> 
+          Enum.map(recurrable.rdates, fn utc_dt -> 
+            dt = Calendar.DateTime.to_naive(utc_dt |> Calendar.DateTime.shift_zone(tz) |> elem(1))
+            dt
+          end)
+      end
+
+    exdates = 
+      case recurrable.exdates do
+        nil -> nil
+        _ -> 
+          Enum.map(recurrable.exdates, fn utc_dt -> 
+            dt = Calendar.DateTime.to_naive(utc_dt |> Calendar.DateTime.shift_zone(tz) |> elem(1))
+            dt
+          end)
+      end
+    
+    rrules =
+      case recurrable.rrules do
+        nil -> nil
+        _ ->
+          Enum.map(recurrable.rrules, fn rule -> 
+            dtstart = Calendar.DateTime.to_naive(rule.dtstart |> Calendar.DateTime.shift_zone(tz) |> elem(1))
+            until =
+              case rule.until do
+                nil -> nil
+                _ -> 
+                  until = Calendar.DateTime.to_naive(rule.until |> Calendar.DateTime.shift_zone(tz) |> elem(1))
+                  until
+              end
+            
+            rule |> Map.put(:dtstart, dtstart) |> Map.put(:until, until)
+          end)
+      end
+
+    %{
+      rrules: rrules,
+      exdates: exdates,
+      rdates: rdates,
+      duration: recurrable.duration
+    }
+  end 
 
   def single_between(%Shared.Model.RRule{} = rrule, start_datetime, end_datetime, tz) do
     now_dt = Calendar.DateTime.to_naive(Calendar.DateTime.now! tz)

@@ -14,9 +14,14 @@ defmodule Cuando do
         end
     end
 
+    lng_lat = {listing["lng"],listing["lat"]}
+
+    tz = Shared.TimezoneManager.get(lng_lat)
+
     dtstart = case extract_recurrence_beginning(listing) do
       nil -> 
-        {:ok, dtstart} = NaiveDateTime.new(date, start_time)
+        {:ok, n_dtstart} = NaiveDateTime.new(date, start_time)
+        {:ok, dtstart} = Calendar.DateTime.from_naive(n_dtstart, tz)
         dtstart
       val -> val
     end
@@ -38,8 +43,9 @@ defmodule Cuando do
           nil -> 
             extract_duration(listing)
           val -> 
-            {:ok, dtend} = NaiveDateTime.new(date, end_time)
-            {:ok, seconds, _, _} = Calendar.NaiveDateTime.diff(dtend, dtstart)
+            {:ok, n_dtend} = NaiveDateTime.new(date, end_time)
+            {:ok, dtend} = Calendar.DateTime.from_naive(n_dtend, tz)
+            {:ok, seconds, _, _} = Calendar.DateTime.diff(dtend, dtstart)
             seconds/60
             # IO.inspect note
             # IO.inspect dtstart
@@ -52,7 +58,7 @@ defmodule Cuando do
       "weekly" -> 
         [%{
           "freq" => "weekly",
-          "dtstart" => dtstart,
+          "dtstart" => DateTime.to_iso8601(dtstart |> Calendar.DateTime.shift_zone("Etc/UTC") |> elem(1)),
           "byweekday" => [week_day |> String.downcase]
 
         }]
@@ -61,7 +67,7 @@ defmodule Cuando do
       "bi-weekly" ->
         [%{
           "freq" => "weekly",
-          "dtstart" => dtstart,
+          "dtstart" => DateTime.to_iso8601(dtstart |> Calendar.DateTime.shift_zone("Etc/UTC") |> elem(1)),
           "byweekday" => [week_day |> String.downcase],
           "interval" => 2
         }]
@@ -151,12 +157,12 @@ defmodule Cuando do
     case captures do
       nil ->
         #IO.inspect "Nil captures"
-        day = NaiveDateTime.to_date(dtstart).day
+        day = DateTime.to_date(dtstart).day
         #IO.inspect day
         week_num = round(Float.ceil(day/7))
         [%{
           "freq" => "monthly",
-          "dtstart" => dtstart, #|> Calendar.DateTime.to_naive,
+          "dtstart" => DateTime.to_iso8601(dtstart |> Calendar.DateTime.shift_zone("Etc/UTC") |> elem(1)), #|> Calendar.DateTime.to_naive,
           "bysetpos" => [if week_num == 5 do -1 else week_num end],
           "byweekday" => [week_day |> String.downcase],
         }]
@@ -182,7 +188,7 @@ defmodule Cuando do
 
         Enum.map(bysetpos, fn pos -> %{
           "freq" => "monthly",
-          "dtstart" => dtstart, #|> Calendar.DateTime.to_naive,
+          "dtstart" => DateTime.to_iso8601(dtstart |> Calendar.DateTime.shift_zone("Etc/UTC") |> elem(1)), #|> Calendar.DateTime.to_naive,
           "bysetpos" => [pos],
           "byweekday" => [week_day |> String.downcase]
         } end)

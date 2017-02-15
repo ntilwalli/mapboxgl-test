@@ -77,12 +77,12 @@ defmodule Listing.Worker do
 
   def handle_call({:add_child_from_map, child_listing, user}, _from, %{listing: listing, registry_name: r_name} = state) do
     {:ok, result} = info = Listing.Registry.create_from_map(r_name, child_listing, user) 
-    {:reply, {:ok, result}, state}
+    {:reply, {:ok, result}, %{state | listing: retrieve_listing_with_other_data(listing.id)}}
   end
 
   def handle_call({:add_child_from_struct, child_listing, user}, _from, %{listing: listing, registry_name: r_name} = state) do
     {:ok, result} = info = Listing.Registry.create(r_name, child_listing, user) 
-    {:reply, {:ok, result}, state}
+    {:reply, {:ok, result}, %{state | listing: retrieve_listing_with_other_data(listing.id)}}
   end
 
   def handle_call({:update, updated_listing, user}, _, %{listing: listing, registry_name: r_name} = state) do

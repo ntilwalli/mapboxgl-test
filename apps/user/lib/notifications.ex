@@ -54,7 +54,7 @@ defmodule User.Notifications do
 
 
   def handle_info({:notify, message}, %{user: user, notification_manager: notification_manager, notification_registry: notification_registry} = state) do
-    IO.inspect message, label: "Received message"
+    #IO.inspect message, label: "Received message"
     {:noreply, state}
   end
 
