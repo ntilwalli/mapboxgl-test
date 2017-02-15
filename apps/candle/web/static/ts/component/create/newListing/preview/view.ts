@@ -13,7 +13,7 @@ import {
 function renderAuthorizationButtons(state) {
   return div('.authorization-section', {style: {display: state.authorization ? 'none' : 'flex'}}, [
     div('.d-flex.flex-column.overlay', [
-      div('.mb-4', ["You must be logged in to post a listing.  Sign-up or login now and we'll bring you right back here.  Don't worry you won't lose any work."]),
+      div('.d-flex.mb-4', ["You must be logged in to post a listing.  Sign-up or login now and we'll bring you right back here.  Don't worry you won't lose any work."]),
       div('.d-flex.justify-content-around', [
         button(`.appLoginButton.btn.btn-outline-success.d-fx-a-c.fx-j-c.p-0`, {style: {height: "2rem", 'min-width': "5rem"}}, [
           div('.d-flex.justify-content-center.align-items-center.h-100.w-100', [
