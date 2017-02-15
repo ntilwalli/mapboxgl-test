@@ -31,10 +31,15 @@ function intent(sources) {
   const show_filters$ = DOM.select(`.appShowFilters`).events(`click`)
     .mapTo({type: 'showFilters'})
 
+  const show_calendar$ = DOM.select(`.appShowCalendar`).events(`click`)
+    .mapTo({type: 'showCalendar'})
+
+
   return {
     show_menu$,
+  
     brand_button$,
-    output$: O.merge(change_date$, show_filters$).publishReplay(1).refCount()
+    output$: O.merge(change_date$, show_filters$, show_calendar$).publish().refCount()
   }
 }
 
@@ -137,10 +142,10 @@ function getDateDisplayString(dt) {
 function renderDateController(state) {
   const dt = state.search_date_time
   const [val, status] = getDateDisplayString(dt)
-  return div(`.col-4.d-flex.justify-content-between.search-controller`, [
-    button(`.appSubtractDay.nav-text-button.fa.fa-angle-left.btn.btn-link.float-xs-left`, []),
-    val,
-    button(`.appAddDay.nav-text-button.fa.fa-angle-right.btn.btn-link.d-flex.justify-content-end`),
+  return div('.col-4.d-flex.justify-content-between.search-controller', [
+    button('.appSubtractDay.nav-text-button.fa.fa-arrow-left.fa-2x.btn.btn-link', []),
+    button('.appShowCalendar.btn.btn-link', [val]),
+    button('.appAddDay.nav-text-button.fa.fa-arrow-right.fa-2x.btn.btn-link.d-flex.justify-content-end'),
     //button(`.appShowFilters.nav-text-button.filter-button.fa.fa-cog.btn.btn-link`)
   ])
 }

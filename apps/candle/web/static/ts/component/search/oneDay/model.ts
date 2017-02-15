@@ -10,17 +10,17 @@ const onlyUserRegion = settings => settings.use_region === `user`
 const onlyDefaultRegion = settings => settings.use_region === `default`
 
 function reducers(actions, inputs) {
-  const retrieveR = inputs.waiting$.map(_ => state => {
+  const retrieve_r = inputs.waiting$.map(_ => state => {
     //console.log(`Retrieval status updated...`)
     return state.set(`retrieving`, true)
   })
 
-  const resultsR = inputs.results$.map(results => state => {
+  const results_r = inputs.results$.map(results => state => {
     //console.log(`Search results updated...`)
     return state.set(`results`, Immutable.fromJS(results)).set(`retrieving`, false)
   })
 
-  const userPositionR = inputs.settings$
+  const user_position_r = inputs.settings$
     //.do(x => console.log(`settings`, x))
     .filter(onlyUserRegion)
     .switchMap(settings => {
@@ -34,31 +34,15 @@ function reducers(actions, inputs) {
       }
     })
 
-  const defaultPositionR = inputs.settings$
+  const default_position_r = inputs.settings$
     .filter(onlyDefaultRegion)
     .map(settings => state => {
       return state.set(`searchPosition`, Immutable.fromJS({type: "default", data: settings.default_region.position}))
     })
 
-  const showFiltersR = inputs.show_filters$.map(_ => state => {
-    //console.log(`show filters...`)
-    return state.set(`showFilters`, true)
-  })
-
-  const hideFiltersR = inputs.hide_filters$.map(_ => state => {
-    return state.set(`showFilters`, false)
-  })
-
-  const updateFiltersR = inputs.update_filters$.map(val => state => {
-    //console.log(`update filters:`, val)
-    return state.set(`showFilters`, false).set(`filters`, val)
-  })
-
   return O.merge(
-    retrieveR, resultsR, userPositionR, 
-    defaultPositionR,
-    showFiltersR, hideFiltersR,
-    updateFiltersR
+    retrieve_r, results_r, user_position_r, 
+    default_position_r
   )
 }
 
@@ -94,15 +78,11 @@ export default function model(actions, inputs) {
     })
     .switchMap((info: any) => {
       const {props, settings, cached, authorization} = info
-      //console.log(``)
-      //console.log(`Resetting oneDay state...`)
+
       let searchDateTime
-      //console.log(props)
       if (props && props.searchDateTime) {
-        //console.log(`searchDateTime from props`, props)
         searchDateTime = moment(new Date(props.searchDateTime))
       } else {
-        //console.log(`searchDateTime from now`, moment())
         searchDateTime = moment()
       }
 
@@ -112,8 +92,8 @@ export default function model(actions, inputs) {
           searchDateTime,
           searchPosition: getInitialSearchPosition(settings),
           retrieving: false,
-          showFilters: false,
-          filters: (cached && cached.filters) || getDefaultFilters(),
+          modal: (props && props.modal),
+          filters: (props && props.filters) || (cached && cached.filters) || getDefaultFilters(),
           authorization
         }))
         .scan((acc, f: Function) => f(acc))

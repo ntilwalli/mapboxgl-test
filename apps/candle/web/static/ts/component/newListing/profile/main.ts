@@ -223,7 +223,7 @@ export function renderRecurringListing(state) {
       renderMarkerInfo(donde),
       div(`#listing-location-map`)
     ]),
-    release === 'canceled' ? null : renderUpcomingEvents(children)
+    //release === 'canceled' ? null : renderUpcomingEvents(children)
   ])
 }
 
@@ -308,7 +308,7 @@ function mapview(state$) {
           center,
           zoom,
           dragPan: true,
-          scrollZoom: true
+          scrollZoom: false
         },
         sources: {
           marker: {

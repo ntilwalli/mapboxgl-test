@@ -12,6 +12,7 @@ import view from './view'
 import Grid from './grid/main'
 import DoneModal from '../../../library/doneModal'
 import Filters from './filters'
+import DayChooser from '../../../library/bootstrapCalendarInput'
 import Navigator from '../../../library/navigators/search'
 
 import ListingInfoQuery from '../../../query/listingInfoQuery'
@@ -40,9 +41,8 @@ function main(sources, inputs) {
   const actions = intent(sources)
   const waiting$ = createProxy()
   const results$ = createProxy()
-  const hide_filters$ = createProxy()
-  const update_filters$ = createProxy()
-  const show_filters$ = createProxy()
+  const hide_modal$ = createProxy()
+  const update_from_modal$ = createProxy()
 
   const router_state$ = sources.Router.history$
     .map(x => {
@@ -55,9 +55,8 @@ function main(sources, inputs) {
       ...inputs, 
       props$: router_state$, 
       waiting$, 
-      hide_filters$, 
-      update_filters$,
-      show_filters$,
+      hide_modal$, 
+      update_from_modal$,
       results$
     })
 
@@ -69,14 +68,20 @@ function main(sources, inputs) {
       //.distinctUntilChanged(null, x => x),
   })
 
-  const filtersModal$ = state$.pluck(`showFilters`)
+  const modal$ = state$.pluck('modal')
     .distinctUntilChanged()
     .map(val => {
-      if (val) {
+      if (val === 'filters') {
         return DoneModal(sources, {
           props$: O.of({title: `Filters`}),
           initialState$: state$.pluck(`filters`).take(1),
           content: Filters
+        })
+      } else if (val === 'calendar') {
+        return DoneModal(sources, {
+          props$: O.of({title: `Choose date`}),
+          initialState$: state$.pluck(`searchDateTime`).take(1),
+          content: DayChooser
         })
       } else {
         return {
@@ -88,11 +93,7 @@ function main(sources, inputs) {
     })
     .publishReplay(1).refCount()
   
-  const filters_modal = componentify(filtersModal$)
-
-
-  hide_filters$.attach(filtersModal$.switchMap(x => x.close$))
-  update_filters$.attach(filtersModal$.switchMap(x => x.done$))
+  const modal = componentify(modal$)
 
   const navigator = Navigator(sources, {
     ...inputs,
@@ -101,13 +102,19 @@ function main(sources, inputs) {
       //.distinctUntilChanged(null, x => x),
   })
 
-  show_filters$.attach(navigator.output$.filter((x :any) => x.type === 'showFilters'))
-
+  const show_filters$ = navigator.output$.filter((x :any) => {
+    return x.type === 'showFilters'
+  })
+    .mapTo('filters')
+  const show_calendar$ = navigator.output$.filter((x :any) => {
+    return x.type === 'showCalendar'
+  })
+    .mapTo('calendar')
 
   const components = {
     navigator: navigator.DOM,
     grid$: grid.DOM,
-    filters$: filtersModal$.switchMap(x => x.DOM)
+    modal$: modal.DOM
   }
   const vtree$ = view(state$, components).publishReplay(1).refCount()
 
@@ -141,7 +148,7 @@ function main(sources, inputs) {
       .map(results => results.map(drillInflate).filter(onlySingleStandard))
   )
 
-  const merged = mergeSinks(navigator, grid, filters_modal, listing_info_query)
+  const merged = mergeSinks(navigator, grid, modal, listing_info_query)
 
   return {
     ...merged,
@@ -158,7 +165,57 @@ function main(sources, inputs) {
             type: 'replace',
             action: `REPLACE`,
             state: {
-              searchDateTime: state.searchDateTime.clone().add(amt, 'days').toDate().toISOString()
+              modal: undefined,
+              searchDateTime: state.searchDateTime.clone().add(amt, 'days').toDate().toISOString(),
+              filters: state.filters
+            }
+          }
+        }),
+      modal$.switchMap((x: any) => x.done$)
+        .withLatestFrom(state$, (out, state: any) => {
+          if (state.modal === 'filters') {
+            return {
+              pathname: '/',
+              type: 'replace',
+              state: {
+                modal: undefined, 
+                searchDateTime: state.searchDateTime,
+                filters: out
+              }
+            }
+          } else {
+            return {
+              pathname: '/',
+              type: 'replace',
+              state: {
+                modal: undefined, 
+                searchDateTime: out,
+                filters: state.filters
+              }
+            }
+          }
+        }),
+      modal$.switchMap((x: any) => x.close$)
+        .withLatestFrom(state$, (out, state: any) => {
+          return {
+            pathname: '/',
+            type: 'replace',
+            state: {
+              modal: undefined, 
+              searchDateTime: state.searchDateTime,
+              filters: state.filters
+            }
+          }
+        }),
+      O.merge(show_filters$, show_calendar$)
+        .withLatestFrom(state$, (modal, state: any) => {
+          return {
+            pathname: '/',
+            type: 'replace',
+            state: {
+              modal,
+              searchDateTime: state.searchDateTime,
+              filters: state.filters
             }
           }
         })
