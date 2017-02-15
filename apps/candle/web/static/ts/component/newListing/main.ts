@@ -188,7 +188,7 @@ function isValid({page, authorization, listing_result}) {
 }
 
 function isAuthorized(auth, listing) {
-  if (listing.user_id === auth.id) {
+  if (auth && listing.user_id === auth.id) {
     return true
   } else {
     if (listing.visibility === VisibilityTypes.PUBLIC) {

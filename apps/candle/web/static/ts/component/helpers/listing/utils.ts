@@ -580,7 +580,7 @@ export function getActualRRule(rule) {
     freq: freqToRRuleFreq(rule.freq),
     interval: rule.interval || 1,
     byweekday: rule.byweekday ? rule.byweekday.map(dayToRRuleDay) : [RRule.MO],
-    bysetpos: rule.bysetpos, 
+    bysetpos: rule.bysetpos || null, 
     dtstart: rule.dtstart.toDate(),
     until: rule.until ? rule.until.clone().endOf('day').toDate() : null,
   }
