@@ -5,25 +5,25 @@ defmodule Categories do
     out = []
     if note do
       if Regex.match?(~r/(?<!no )(comics|comedy)/i, note) and not Regex.match?(~r/storytellers/i, note) do
-        out = out ++ ["comedy"]
+        out = out ++ ["/comedy/stand_up"]
       end
 
       if Regex.match?(~r/(?<!no )music/i, note) do
-        out = out ++ ["music"]
+        out = out ++ ["/music"]
       end
 
       if Regex.match?(~r/(?<!no )poetry/i, note) do
-        out = out ++ ["poetry"]
+        out = out ++ ["/spoken_word"]
       end
 
       if Regex.match?(~r/(?<!no )(storytelling|stories)/i, note) do
-        out = out ++ ["storytelling"]
+        out = out ++ ["/storytelling"]
       end
 
     end
 
     out = case Enum.count(out) do
-      0 -> ["comedy"]
+      0 -> ["/comedy/stand_up"]
       _ -> out
     end
 
