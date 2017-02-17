@@ -94,7 +94,7 @@ export default function model(actions, inputs) {
           searchPosition: getInitialSearchPosition(settings),
           retrieving: false,
           modal: (props && props.modal),
-          filters: info.filters,
+          filters: (props && props.filters) || info.filters,
           authorization
         }))
         .scan((acc, f: Function) => f(acc))

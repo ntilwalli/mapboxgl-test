@@ -7,7 +7,7 @@ import ArcGISGetMagicKey from '../thirdParty/ArcGISGetMagicKey'
 import AutocompleteInput from '../library/bootstrapAutocompleteInput'
 
 
-export function createRegionAutocomplete(sources, inputs) {
+export function createRegionAutocomplete(sources, inputs, guid?) {
   const center$ = inputs.props$
     // .do(x => console.log(`region autocomplete center`, x))
     .pluck(`position`)
@@ -34,7 +34,8 @@ export function createRegionAutocomplete(sources, inputs) {
     displayFunction: x => x.normalizedName,
     placeholder: `Type city/state here...`,
     styleClass: `.autocomplete-input`,
-    name: 'venue'
+    name: 'venue',
+    guid
   })
 
   const suggestionComponent = ArcGISSuggest(sources, {

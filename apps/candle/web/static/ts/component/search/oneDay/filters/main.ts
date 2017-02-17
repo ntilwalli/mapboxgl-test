@@ -2,12 +2,13 @@ import {Observable as O} from 'rxjs'
 import {div, input, span, h4} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 import Immutable = require('immutable')
-import {combineObj, normalizeSink, spread, createProxy, componentify, traceStartStop} from '../../../../utils'
+import {combineObj, normalizeSink, spread, mergeSinks, createProxy, componentify, traceStartStop} from '../../../../utils'
 import SmartTextInput from '../../../../library/smartTextInput'
 import {getDefaultFilters} from '../helpers'
 import EventTypesAndCategories from '../../../../component/create/newListing/basics/eventTypesAndCategories'
 import ComboBox from '../../../../library/comboBox'
 import {findEventTypeOpenMic} from '../../../../component/helpers/listing/utils'
+import RegionSelector from '../../../../library/bootstrapRegionSelector'
 
 function BlankComponent() {
   return {
@@ -45,7 +46,12 @@ function reducers(actions, inputs) {
       return state.set(`performer_costs`, val)
     })
 
-  return O.merge(event_types_and_categories_r, performer_cost_r)
+  const search_region_r = inputs.search_region$
+    .map(val => state => {
+      return state.set('search_region', val)
+    })
+
+  return O.merge(event_types_and_categories_r, performer_cost_r, search_region_r)
 }
 
 function model(actions, inputs) {
@@ -74,6 +80,10 @@ function view(state$, components) {
     .map((info: any) => {
       const {state, components} = info
       return div(`.filters-dialog`, {style: {width: '100%'}}, [
+        div('.mb-4', [
+          h4(['Search region']),
+          components.search_region
+        ]),
         components.event_types_and_categories,
         components.performer_cost ? div('.mt-4', [
           h4(['Performer cost']),
@@ -87,6 +97,8 @@ function main(sources, inputs) {
   const props$ = inputs.props$ ? inputs.props$.take(1) : O.of(getDefaultFilters())
   const categories$ = inputs.props$.pluck('categories')
   const event_types$ = inputs.props$.pluck('event_types')
+  const search_region$ = inputs.props$.pluck('search_region')
+  const region_selector = isolate(RegionSelector)(sources, {...inputs, props$: search_region$})
   const event_types_and_categories = EventTypesAndCategories(sources, {...inputs, categories$, event_types$})
   const performer_cost$ = event_types_and_categories.output$
     .pluck('event_types')
@@ -138,16 +150,20 @@ function main(sources, inputs) {
   const state$ = model(actions, {
     props$, 
     event_types_and_categories$: event_types_and_categories.output$.skip(1),
-    performer_cost$: performer_cost.output$
+    performer_cost$: performer_cost.output$,
+    search_region$: region_selector.output$
   })
 
   const components = {
     event_types_and_categories$: event_types_and_categories.DOM,
-    performer_cost$: performer_cost.DOM
+    performer_cost$: performer_cost.DOM,
+    search_region$: region_selector.DOM
   }
 
   const vtree$ = view(state$, components)
+  const merged = mergeSinks(event_types_and_categories, performer_cost, region_selector)
   return {
+    ...merged,
     DOM: vtree$,
     output$: state$
   }

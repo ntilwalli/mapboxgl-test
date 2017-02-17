@@ -73,12 +73,14 @@ function main(sources, inputs) {
     .map((state: any) => {
       if (state.modal === 'filters') {
         return DoneModal(sources, {
+          ...inputs,
           props$: O.of({title: `Filters`}),
           initialState$: O.of(state.filters),
           content: Filters
         })
       } else if (state.modal === 'calendar') {
         return DoneModal(sources, {
+          ...inputs,
           props$: O.of({title: `Choose date`}),
           initialState$: O.of(state.searchDateTime),
           content: DayChooser
@@ -118,19 +120,41 @@ function main(sources, inputs) {
   }
   const vtree$ = view(state$, components).publishReplay(1).refCount()
 
+  // const request$ = state$
+  //   .filter((state: any) => state.searchDateTime && state.searchPosition)
+  //   .map((state: any) => ({
+  //     searchDateTime: state.searchDateTime,
+  //     searchPosition: state.searchPosition,
+  //     filters: state.filters
+  //   }))
+  //   .distinctUntilChanged(deepEqual)
+  //   .map((info: any) => {
+  //     const {searchDateTime, searchPosition, filters} = info
+  //     return {
+  //       donde: {
+  //         center: searchPosition.data,
+  //         radius: 100000
+  //       },
+  //       cuando: {
+  //         begins: searchDateTime.clone().startOf('day'),
+  //         ends: searchDateTime.clone().endOf('day'),
+  //       },
+  //       releases: ['posted']
+  //     }
+  //   })
+
   const request$ = state$
     .filter((state: any) => state.searchDateTime && state.searchPosition)
     .map((state: any) => ({
       searchDateTime: state.searchDateTime,
-      searchPosition: state.searchPosition,
       filters: state.filters
     }))
     .distinctUntilChanged(deepEqual)
     .map((info: any) => {
-      const {searchDateTime, searchPosition, filters} = info
+      const {searchDateTime, filters} = info
       return {
         donde: {
-          center: searchPosition.data,
+          center: filters.search_region.position,
           radius: 100000
         },
         cuando: {
@@ -223,6 +247,14 @@ function main(sources, inputs) {
     ),
     MessageBus: O.merge(
       merged.MessageBus,
+      state$.pluck('filters')
+        .distinctUntilChanged((x, y) => deepEqual(x, y))
+        .map(filters => {
+          return {
+            to: '/services/searchFilters',
+            message: filters
+          }
+        }),
       listing_info_query.error$.map(toMessageBusMainError)
     ),
     Storage: O.never()

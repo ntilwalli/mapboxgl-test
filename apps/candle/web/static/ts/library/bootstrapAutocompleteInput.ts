@@ -266,7 +266,7 @@ function renderAutocompleteMenu({suggestions, highlighted}, itemConfigs) {
 
 function renderComboBox({suggestions, highlighted, selected}, initialText, props) {
   const {itemConfigs, displayFunction, placeholder, name, styleClass} = props
-  return div(`.dropdown.show`, [
+  return div(`.dropdown.show.w-100`, [
     // div('.col-12.form-group.dropdown.open', [
       input(`.appAutocompleteable.form-control`, {
         attrs: {type: `text`, placeholder, name, autofocus: true},

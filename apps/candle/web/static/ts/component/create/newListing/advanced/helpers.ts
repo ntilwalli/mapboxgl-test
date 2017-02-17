@@ -177,6 +177,13 @@ export function BlankComponent() {
   }
 }
 
+export function BlankArray() {
+  return {
+    DOM: O.of(undefined),
+    output$: O.of([])
+  }
+}
+
 export function BlankUndefined() {
   return {
     DOM: O.of(null),

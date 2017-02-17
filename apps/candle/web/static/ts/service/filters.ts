@@ -3,6 +3,8 @@ import {div} from '@cycle/dom'
 import {combineObj, getPreferredRegion$, traceStartStop, processHTTP, onlyError, onlySuccess} from '../utils'
 import Immutable = require('immutable')
 
+import RegionSelector from '../library/bootstrapRegionSelector'
+
 function intent(sources) {
   const {MessageBus} = sources
 
@@ -10,6 +12,10 @@ function intent(sources) {
       .publish().refCount()
 
   const storage_filters$ = sources.Storage.local.getItem(`searchFilters`)
+    .map(x => {
+      const out =  x ? JSON.parse(x) : x
+      return out
+    })
     .take(1)
     .publishReplay(1).refCount()
 
@@ -22,7 +28,7 @@ function intent(sources) {
 function reducers(actions, inputs) {
   const update_r = actions.update$.map(new_settings => state => {
     //console.log(`new settings`, new_settings)
-    return new_settings
+    return Immutable.fromJS(new_settings)
   })
 
   return O.merge(update_r)
@@ -30,16 +36,13 @@ function reducers(actions, inputs) {
 
 function model(actions, inputs) {
   const reducer$ = reducers(actions, inputs)
-  const preferred_region$ = getPreferredRegion$(inputs)
+  const preferred_region$ = getPreferredRegion$(inputs).take(1)
   return combineObj({
-    storage_filters$: actions.storage_filters$,
+    storage_filters$: actions.storage_filters$.take(1),
     preferred_region$
   })
     .switchMap((info: any) => {
-      const init = info.storage_filters ? {
-        ...info.storage_filters,
-        search_region: info.preferred_region
-      } : {
+      const init = info.storage_filters || {
         search_region: info.preferred_region,
         categories: ['/comedy/open_mic'],
         event_types: ['open_mic'],
@@ -50,6 +53,7 @@ function model(actions, inputs) {
         .startWith(Immutable.fromJS(init))
         .scan((acc, f: Function) => f(acc))
     })
+    .map((x: any) => x.toJS())
     //.letBind(traceStartStop(`settings state trace`))
     //.do(x => console.log(`services/settings state`, x))
     .publishReplay(1).refCount()
@@ -60,11 +64,13 @@ function main(sources, inputs) {
   const state$ = model(actions, inputs)
 
   const toStorage$ = state$
-    .map(x => ({
-      action: `setItem`,
-      key: `searchFilters`,
-      value: JSON.stringify(x)
-    }))
+    .map(x => {
+      return {
+        action: `setItem`,
+        key: `searchFilters`,
+        value: JSON.stringify(x)
+      }
+    })
     .skip(1)
     //.do(x => console.log(`set stored application settings`, x))
 

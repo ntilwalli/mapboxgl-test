@@ -70,7 +70,7 @@ function renderModal(info) {
               span(`.appModalClose.close.fa-2x.d-flex.justify-content-end`, [])
             //])
         ]),
-        div(`.modal-body.d-flex.fx-j-c.container-fluid`, {style: {width: '100%'}}, [
+        div(`.modal-body.d-flex.fx-j-c`, {style: {width: '100%'}}, [
           //div(`.col-12${styleClass}`, [
             content
           //])

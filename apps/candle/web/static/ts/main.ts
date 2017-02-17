@@ -49,6 +49,7 @@ function main(sources) {
   }
 
   const searchFiltersService = SearchFiltersService(sources, prelim_inputs)
+  searchFiltersService.output$.subscribe()
 
   const inputs = {
     ...prelim_inputs,
@@ -114,16 +115,16 @@ function main(sources) {
         geoService.HTTP, 
         authorizationService.HTTP, 
         modal.HTTP
-      )
-      .do(x => {
-        console.log(`main/http sink`, x)
-      }),
+      ),
+      // .do(x => {
+      //   console.log(`main/http sink`, x)
+      // }),
     Router: O.merge(out.Router, toRouter$, modal.Router)
       // .do(x => {
       //   console.log(`main/router sink`, x)
       // })
       .delay(1),  // This is IMPORTANT in the case of double Routing, HTTP stream gets cut off without this for some reason, this ensures route is pushed on next event loop turn
-    Storage: O.merge(out.Storage, settingsService.Storage, geoService.Storage, modal.Storage),
+    Storage: O.merge(out.Storage, settingsService.Storage, geoService.Storage, modal.Storage, searchFiltersService.Storage),
     Phoenix: O.merge(out.Phoenix),
     MessageBus: O.merge(
       out.MessageBus, 

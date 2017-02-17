@@ -324,6 +324,16 @@ address {
 }
 
 
+.modal-content {
+  overflow-y: scroll;
+  height: 100%;
+}
+
+.modal-body {
+  overflow-y: scroll;
+  margin-bottom: 1rem;
+}
+
 @media (max-width: 767px) {
   .modal-dialog {
     height: 100%;
@@ -334,7 +344,17 @@ address {
   }
 
   .modal-content {
-    border-radius: none;
+    height: 100%;
+    border-radius: 0;
+    border: none;
+  }
+
+}
+
+@media (min-width: 768px) {
+  .modal-content {
+    max-height: 550px;
+    border-radius: 0;
     border: none;
   }
 
