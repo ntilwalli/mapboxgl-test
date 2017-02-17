@@ -1,12 +1,11 @@
 import {inflateListing} from '../../helpers/listing/utils'
+import {EventTypes} from '../../../listingTypes'
 
 export function getDefaultFilters() {
   return {
-    filterCategories: false,
-    categories: [],
-    filterCosts: false,
-    costs: [],
-    filterStageTime: false,
+    event_types: [EventTypes.OPEN_MIC],
+    categories: ['/comedy/open_mic'],
+    costs: undefined,
     stageTime: undefined
   }
 }

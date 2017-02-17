@@ -313,6 +313,17 @@ address {
   background-color: rgba(0, 0, 0, 0.5);
 }
 
+.form-check-inline {
+  margin-left: 0;
+  margin-right: 0.75rem;
+}
+
+.form-check-inline + .form-check-inline {
+  margin-left: 0;
+  margin-right: 0.75rem;
+}
+
+
 @media (max-width: 767px) {
   .modal-dialog {
     height: 100%;

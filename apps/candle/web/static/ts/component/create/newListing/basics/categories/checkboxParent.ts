@@ -43,7 +43,7 @@ function view(state$, props$, components) {
         div('.d-flex', [
           div('.form-check.form-check-inline', [
             label('.form-check-label', [
-              input('.appCategoryCheckInput.form-check-input', {props: {checked}, attrs: {type: 'checkbox', name: 'categories', value: props.parent_category, checked}}, []),
+              input('.appCategoryCheckInput.form-check-input', {props: {checked}, attrs: {type: 'checkbox', name: 'categories', value: props.parent_category, checked, disabled: specific}}, []),
               span('.ml-xs', [props.parent_category.replace('_', '-')])
             ]),
           ]),
@@ -135,9 +135,8 @@ export default function main(sources, inputs) {
               if (!info.state.specific) {
                 return ['/' + props.parent_category]
               } else {
-                return info.subcategories
+                return info.subcategories.length ? info.subcategories : ['/' + props.parent_category]
               }
-              //Object.keys(props.base).map(key => '/' + props.parent_category + '/' + props.base[key])
             } else {
               return []
             }

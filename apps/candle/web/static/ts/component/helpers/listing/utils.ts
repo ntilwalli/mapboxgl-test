@@ -757,3 +757,15 @@ export function recurrenceDisplayFilterOptionToRange(option) {
 export function clearAdminMessage(session) {
   session.properties.admin.message = undefined
 }
+
+export const findComedy = (x: string) => x.indexOf('/comedy') === 0
+export const findMusic = (x: string) => x.indexOf('/music') === 0
+export const findSpokenWord = (x: string) => x.indexOf('/spoken_word') === 0
+export const findStorytelling = (x: string) => x.indexOf('/storytelling') === 0
+export const findDance = (x: string) => x.indexOf('/dance') === 0
+export const findVariety = (x: string) => x.indexOf('/variety') === 0
+
+export const findEventTypeOpenMic = (x: string) => x.indexOf('open_mic') === 0
+export const findEventTypeShow = (x: string) => x.indexOf('show') === 0
+export const findEventTypeTrivia = (x: string) => x.indexOf('trivia') === 0
+export const findEventTypeDance = (x: string) => x.indexOf('dance') === 0

@@ -59,7 +59,7 @@ function renderModal(info) {
   const {props, content} = info
   const title = props.title || ``
   const styleClass = props.styleClass || ``
-  return div('.appModalContainer.modal', {style: {display: "inline-block"}}, [
+  return div('.appModalContainer.modal', {style: {display: "inline-block", "font-size": "1rem"}}, [
     div(`.modal-dialog.modal-lg`, [
       div(`.modal-content`, [
         div(`.modal-header`, [
@@ -70,7 +70,7 @@ function renderModal(info) {
               span(`.appModalClose.close.fa-2x.d-flex.justify-content-end`, [])
             //])
         ]),
-        div(`.modal-body.d-flex.fx-j-c.container-fluid`, [
+        div(`.modal-body.d-flex.fx-j-c.container-fluid`, {style: {width: '100%'}}, [
           //div(`.col-12${styleClass}`, [
             content
           //])
@@ -99,8 +99,8 @@ function view(props$, content$) {
 export default function main(sources, inputs) {
 
   const actions = intent(sources)
-  const {Geolocation, Authorization, settings$, initialState$} = inputs
-  const content = inputs.content(sources, {props$: initialState$, Geolocation, Authorization, settings$}) 
+  const {initialState$} = inputs
+  const content = inputs.content(sources, {...inputs, props$: initialState$}) 
   const output$ = content.output$
 
   return {

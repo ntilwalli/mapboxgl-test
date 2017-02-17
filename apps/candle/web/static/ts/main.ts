@@ -19,6 +19,7 @@ import routeFunction from './routeFunction'
 import SettingsService from  './service/settings'
 import AuthorizationService from './service/authorization/main'
 import GeolocationService from './service/geolocation'
+import SearchFiltersService from './service/filters'
 
 import getModal from './getModal'
 import intent from './intent'
@@ -41,10 +42,17 @@ function main(sources) {
   settingsService.output$.subscribe()
   const geoService = GeolocationService(sources)
 
-  const inputs = {
+  const prelim_inputs = {
     settings$: settingsService.output$, 
     Authorization: authorizationService.output,
     Geolocation: geoService.output
+  }
+
+  const searchFiltersService = SearchFiltersService(sources, prelim_inputs)
+
+  const inputs = {
+    ...prelim_inputs,
+    search_filters$: searchFiltersService.output$
   }
 
   inputs.Authorization.status$.subscribe()

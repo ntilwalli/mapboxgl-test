@@ -10,8 +10,8 @@ import intent from './intent'
 import model from './model'
 import view from './view'
 import Grid from './grid/main'
-import DoneModal from '../../../library/doneModal'
-import Filters from './filters'
+import DoneModal from '../../../library/bootstrapDoneModal'
+import Filters from './filters/main'
 import DayChooser from '../../../library/bootstrapCalendarInput'
 import Navigator from '../../../library/navigators/search'
 
@@ -61,26 +61,26 @@ function main(sources, inputs) {
     })
 
   const grid = Grid(sources, {
-    props$: state$.map(x => {
+    props$: state$.map((x: any) => {
         return {results: x.results, filters: x.filters}
       })
       //.do(x => console.log(`to grid props$`, x))
       //.distinctUntilChanged(null, x => x),
   })
 
-  const modal$ = state$.pluck('modal')
-    .distinctUntilChanged()
-    .map(val => {
-      if (val === 'filters') {
+  const modal$ = state$
+    .distinctUntilKeyChanged('modal')
+    .map((state: any) => {
+      if (state.modal === 'filters') {
         return DoneModal(sources, {
           props$: O.of({title: `Filters`}),
-          initialState$: state$.pluck(`filters`).take(1),
+          initialState$: O.of(state.filters),
           content: Filters
         })
-      } else if (val === 'calendar') {
+      } else if (state.modal === 'calendar') {
         return DoneModal(sources, {
           props$: O.of({title: `Choose date`}),
-          initialState$: state$.pluck(`searchDateTime`).take(1),
+          initialState$: O.of(state.searchDateTime),
           content: DayChooser
         })
       } else {
@@ -122,11 +122,12 @@ function main(sources, inputs) {
     .filter((state: any) => state.searchDateTime && state.searchPosition)
     .map((state: any) => ({
       searchDateTime: state.searchDateTime,
-      searchPosition: state.searchPosition
+      searchPosition: state.searchPosition,
+      filters: state.filters
     }))
     .distinctUntilChanged(deepEqual)
     .map((info: any) => {
-      const {searchDateTime, searchPosition} = info
+      const {searchDateTime, searchPosition, filters} = info
       return {
         donde: {
           center: searchPosition.data,
@@ -211,7 +212,7 @@ function main(sources, inputs) {
         .withLatestFrom(state$, (modal, state: any) => {
           return {
             pathname: '/',
-            type: 'replace',
+            type: 'push',
             state: {
               modal,
               searchDateTime: state.searchDateTime,

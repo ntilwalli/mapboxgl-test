@@ -84,9 +84,9 @@ function view(state$, components) {
       const {calendar} = components
       return div('.bootstrap-date-input', [
         div(`.calendar-controller.d-flex.fx-j-sa`, [
-          div(`.appDecMonth.btn.btn-link.fa.fa-angle-left.fa-2x`, []),
+          div(`.appDecMonth.btn.btn-link.fa.fa-arrow-left.fa-2x`, []),
           div(`.flex-center`, [moment([calendar_year, calendar_month]).format('MMM YYYY')]),
-          div(`.appIncMonth.btn.btn-link.fa.fa-angle-right.fa-2x`, []) 
+          div(`.appIncMonth.btn.btn-link.fa.fa-arrow-right.fa-2x`, []) 
         ]),
         div('.d-flex.justify-content-center', [
           calendar

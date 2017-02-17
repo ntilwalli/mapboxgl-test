@@ -4,10 +4,8 @@ import isolate from '@cycle/isolate'
 import Immutable = require('immutable')
 import {combineObj, mergeSinks, componentify, has, arrayUnique} from '../../../../../utils'
 import {CategoryTypes, ComedyTypes, MusicTypes, DanceTypes} from '../../../../../listingTypes'
-import {findComedy, findMusic, findDance, findStorytelling, findSpokenWord, findVariety} from '../utils'
+import {findComedy, findMusic, findDance, findStorytelling, findSpokenWord, findVariety} from '../../../../helpers/listing/utils'
 import {fromCheckbox, processCheckboxArray} from '../../../../helpers/listing/utils'
-
-import ShowAndOpenStage from './showAndOpenStage'
 import CheckboxParent from './checkboxParent'
 
 function applyChange(session, val) {
@@ -22,10 +20,7 @@ function BlankComponent() {
 }
 
 export default function main(sources, inputs) {
-  const init_categories$ = inputs.session$
-    .map(session => {
-      return session.listing.meta.categories
-    }).publishReplay(1).refCount()
+  const init_categories$ = inputs.categories$
 
   const comedy_props$ = O.of({
     parent_category: 'comedy',
@@ -75,17 +70,17 @@ export default function main(sources, inputs) {
     props$: storytelling_props$
   })
 
-  const dance_props$ = O.of({
-    parent_category: 'dance',
-    base: DanceTypes,
-    finder: findDance
-  })
+  // const dance_props$ = O.of({
+  //   parent_category: 'dance',
+  //   base: DanceTypes,
+  //   finder: findDance
+  // })
 
-  const dance_component = isolate(CheckboxParent)(sources, {
-    ...inputs, 
-    initial_state$: init_categories$, 
-    props$: dance_props$
-  })
+  // const dance_component = isolate(CheckboxParent)(sources, {
+  //   ...inputs, 
+  //   initial_state$: init_categories$, 
+  //   props$: dance_props$
+  // })
 
   const variety_props$ = O.of({
     parent_category: 'variety',
@@ -105,7 +100,7 @@ export default function main(sources, inputs) {
     music: music_component.DOM,
     spoken_word: spoken_word_component.DOM,
     storytelling: storytelling_component.DOM,
-    dance: dance_component.DOM,
+    //dance: dance_component.DOM,
     variety: variety_component.DOM
   }
 
@@ -117,7 +112,7 @@ export default function main(sources, inputs) {
         components.music,
         components.spoken_word,
         components.storytelling,
-        components.dance,
+        //components.dance,
         components.variety
         // components.music ? div('.ml-4', [
         //   h6(['Music sub-categories']),
@@ -135,7 +130,7 @@ export default function main(sources, inputs) {
       music_component.output$,
       spoken_word_component.output$,
       storytelling_component.output$,
-      dance_component.output$,
+      //dance_component.output$,
       variety_component.output$
     )
     .map(arrs => arrs.reduce((acc: any[], arr) => acc.concat(arr), []))
@@ -154,7 +149,7 @@ export default function main(sources, inputs) {
     music_component, 
     spoken_word_component, 
     storytelling_component,
-    dance_component,
+    //dance_component,
     variety_component
   )
 

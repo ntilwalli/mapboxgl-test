@@ -14,7 +14,7 @@ import FocusWrapper from '../focusWrapperWithInstruction'
 import FocusCardWrapper from '../focusCardWrapper'
 import Name from './name'
 import Description from './description'
-import EventTypesAndCategories from './eventTypesAndCategories'
+import EventTypesAndCategories from './structuredEventTypesAndCategories'
 import Venue from './donde/venue'
 import SearchArea from './donde/searchArea'
 import ListingType from './listingType'
@@ -187,7 +187,16 @@ export default function main(sources, inputs) {
   const description = isolate(Description)(sources, {...inputs, session$: inputs.session$, highlight_error$: show_errors$})
   const description_section: any = isolate(FocusWrapper)(sources, {component: description, title: 'Description', instruction: description_instruction})
   
-  const event_types_and_categories_section = isolate(EventTypesAndCategories)(sources, {...inputs, session$: inputs.session$})
+  const event_types$ = inputs.session$
+    .map(session => session.listing.meta.event_types)
+    .publishReplay(1).refCount()
+
+  const categories$ = inputs.session$
+    .map(session => {
+      return session.listing.meta.categories
+    }).publishReplay(1).refCount()
+
+  const event_types_and_categories_section = isolate(EventTypesAndCategories)(sources, {...inputs, categories$, event_types$,  session$: inputs.session$})
 
   const search_area_instruction = 'Select the city/region to use for the venue autocomplete'
   const search_area = isolate(SearchArea)(sources, {...inputs, session$: inputs.session$})

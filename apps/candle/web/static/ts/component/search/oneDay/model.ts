@@ -74,7 +74,8 @@ export default function model(actions, inputs) {
       props$: inputs.props$.take(1),
       settings$: inputs.settings$.take(1),
       cached$: actions.cached$.take(1),
-      authorization$: inputs.Authorization.status$.take(1)
+      authorization$: inputs.Authorization.status$.take(1),
+      filters$: inputs.search_filters$.take(1)
     })
     .switchMap((info: any) => {
       const {props, settings, cached, authorization} = info
@@ -93,7 +94,7 @@ export default function model(actions, inputs) {
           searchPosition: getInitialSearchPosition(settings),
           retrieving: false,
           modal: (props && props.modal),
-          filters: (props && props.filters) || (cached && cached.filters) || getDefaultFilters(),
+          filters: info.filters,
           authorization
         }))
         .scan((acc, f: Function) => f(acc))

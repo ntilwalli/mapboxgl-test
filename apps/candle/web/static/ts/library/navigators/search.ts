@@ -146,7 +146,7 @@ function renderDateController(state) {
     button('.appSubtractDay.nav-text-button.fa.fa-arrow-left.fa-2x.btn.btn-link', []),
     button('.appShowCalendar.btn.btn-link', [val]),
     button('.appAddDay.nav-text-button.fa.fa-arrow-right.fa-2x.btn.btn-link.d-flex.justify-content-end'),
-    //button(`.appShowFilters.nav-text-button.filter-button.fa.fa-cog.btn.btn-link`)
+    button(`.appShowFilters.nav-text-button.filter-button.fa.fa-cog.btn.btn-link`)
   ])
 }
 

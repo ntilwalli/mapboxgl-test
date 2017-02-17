@@ -159,8 +159,8 @@ export function normalizeComponent(component) {
   }
 }
 
-export function componentify(component$) {
-  return {
+export function componentify(component$, ...extras) {
+  const out =  {
     DOM: normalizeSink(component$, `DOM`).publish().refCount(),
     MapJSON: normalizeSink(component$, `MapJSON`).publish().refCount(),
     Router: normalizeSink(component$, `Router`).publish().refCount(),
@@ -171,6 +171,10 @@ export function componentify(component$) {
     //Heartbeat: normalizeSink(component$, `Heartbeat`).publish().refCount(),
     MessageBus: normalizeSink(component$, `MessageBus`).publish().refCount(),
   }
+
+  extras.forEach(c => out[c] = normalizeSink(component$, c).publishReplay(1).refCount())
+
+  return out
 }
 
 export function normalizeSink(component$, sinkName) {
