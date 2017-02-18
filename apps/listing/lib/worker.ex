@@ -103,7 +103,7 @@ defmodule Listing.Worker do
     update_children(user, updated_listing, diff, r_name)
     enriched_listing = retrieve_listing_with_other_data(listing.id)
     listing_w_info = get_listing_info(enriched_listing, user)
-    {:reply, {:ok, listing_w_info}, %{state | listing: updated_listing}}
+    {:reply, {:ok, listing_w_info}, %{state | listing: enriched_listing}}
   end
 
   def handle_call({:update_internal, updates, user}, _, %{listing: listing, registry_name: r_name} = state) do

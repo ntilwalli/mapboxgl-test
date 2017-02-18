@@ -161,7 +161,11 @@ function main(sources, inputs) {
           begins: searchDateTime.clone().startOf('day'),
           ends: searchDateTime.clone().endOf('day'),
         },
-        releases: ['posted']
+        releases: ['posted'],
+        meta: {
+          event_types: filters.event_types || [],
+          categories: filters.categories || [],
+        }
       }
     })
 

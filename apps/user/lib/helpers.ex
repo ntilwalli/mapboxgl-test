@@ -1,7 +1,7 @@
 defmodule User.Helpers do
   import Ecto.Changeset, only: [apply_changes: 1]
   import Ecto.Query, only: [from: 2]
-  import Ecto.Query.API, only: [fragment: 1]
+  import Ecto.Query.API, only: [fragment: 1, ilike: 2]
   import Shared.Macro.GeoGeography
   
   alias Shared.Repo
@@ -204,8 +204,39 @@ defmodule User.Helpers do
         _ -> query
       end
 
-    #IO.inspect {:listing_query, query}
+    query = 
+      case request.meta do
+        nil -> query
+        meta -> compose_meta_clauses(query, meta)
+      end
+
+    IO.inspect {:listing_query, query}
 
     Shared.Repo.all(query)
   end
+
+  def compose_meta_clauses(query, meta) do
+    query =
+      case meta.event_types do
+        nil -> query
+        event_types -> 
+          from q in query,
+            where: fragment("?->? \\?& ?", q.meta ,"event_types", ^event_types)
+      end
+
+    # query =
+    #   case meta.categories do
+    #     nil -> query
+    #     categories -> 
+    #       Enum.reduce(categories, query, fn (c, acc) ->
+    #         from q in acc,
+    #         join: s in Shared.SingleListingCategories,
+    #         where: q.id == s.listing_id and
+    #           ilike(s.category, ^"#{c}%")
+    #       end)
+    #   end     
+
+    query
+  end
+
 end
