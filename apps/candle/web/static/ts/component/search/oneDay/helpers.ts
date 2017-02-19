@@ -4,7 +4,7 @@ import {EventTypes} from '../../../listingTypes'
 export function getDefaultFilters() {
   return {
     event_types: [EventTypes.OPEN_MIC],
-    categories: ['/comedy/open_mic'],
+    categories: ['/comedy'],
     costs: undefined,
     stageTime: undefined
   }

@@ -44,7 +44,7 @@ function model(actions, inputs) {
     .switchMap((info: any) => {
       const init = info.storage_filters || {
         search_region: info.preferred_region,
-        categories: ['/comedy/open_mic'],
+        categories: ['/comedy'],
         event_types: ['open_mic'],
         cost: ['free', 'paid']
       }

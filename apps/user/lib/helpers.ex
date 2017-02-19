@@ -145,45 +145,43 @@ defmodule User.Helpers do
 
   def listing_query(user, %Listing.Query{} = request) do
     #%Listing.Query{cuando: cuando, releases: releases, parent_id: parent_id} = request
-    query = from l in Shared.Listing, select: l
+    query = 
+      from l in Shared.Listing, 
+        join: s in Shared.SingleListingSearch, 
+        on: l.id == s.listing_id
     
+    query = 
+      case request.meta do
+        nil -> query
+        meta -> compose_meta_clauses(query, meta)
+      end
+
     query = 
       case request.cuando do
         nil -> query
         %Cuando{begins: nil, ends: nil} -> 
             query
         %Cuando{begins: begins, ends: nil} -> 
-          from q in query, 
-            join: s in Shared.SingleListingSearch, 
-              where: q.id == s.listing_id and
-                s.begins >= ^begins
+          from [l, s] in query, 
+            where: s.begins >= ^begins
         %Cuando{begins: nil, ends: ends} -> 
-          from q in query, 
-            join: s in Shared.SingleListingSearch, 
-              where: q.id == s.listing_id and
-                s.begins <= ^ends
+          from [l, s] in query, 
+            where: s.begins <= ^ends
         %Cuando{begins: begins, ends: ends} ->  
-          from q in query, 
-            join: s in Shared.SingleListingSearch, 
-              where: q.id == s.listing_id and
-                s.begins >= ^begins and 
-                s.begins <= ^ends
+          from [l, s] in query, 
+            where:
+              s.begins >= ^begins and 
+              s.begins <= ^ends
 
       end
 
     query = 
       case request.donde do
         nil -> query
-        # %Donde{center: point, radius: nil} -> 
-        #   from q in query
-        #     join: s in Shared.SingleListingSearch,
-        #     where: q.id == s.listing_id and
-        #       st_dwithin_geog(s.geom, ^point, ^10000)
         %Donde{center: %Shared.Message.LngLat{lng: lng, lat: lat}, radius: radius} -> 
           point = %Geo.Point{coordinates: {lng, lat}, srid: 4326}
-          from q in query,
-            join: s in Shared.SingleListingSearch,
-            where: q.id == s.listing_id and
+          from [l, s] in query,
+            where:
               st_dwithin_geog(s.geom, ^point, ^radius)
       end
 
@@ -191,23 +189,17 @@ defmodule User.Helpers do
       case request.parent_id do
         nil -> query
         parent_id -> 
-          from q in query, 
-            where: q.parent_id == ^parent_id
+          from l in query, 
+            where: l.parent_id == ^parent_id
       end
     
     query = 
       case request.releases do
         nil -> query
         releases when is_list(releases) -> 
-          from q in query, 
-            where: q.release in ^releases
+          from l in query, 
+            where: l.release in ^releases
         _ -> query
-      end
-
-    query = 
-      case request.meta do
-        nil -> query
-        meta -> compose_meta_clauses(query, meta)
       end
 
     IO.inspect {:listing_query, query}
@@ -217,24 +209,27 @@ defmodule User.Helpers do
 
   def compose_meta_clauses(query, meta) do
     query =
+      case meta.categories do
+        nil -> query
+        categories -> 
+          with_join = 
+            from l in query,
+            join: s in Shared.SingleListingCategories,
+            on: l.id == s.listing_id
+
+          Enum.reduce(categories, with_join, fn (c, acc) ->
+            from [..., last_join]  in acc,
+            or_where: ilike(last_join.category, ^"#{c}%")
+          end)
+      end 
+
+    query =
       case meta.event_types do
         nil -> query
         event_types -> 
-          from q in query,
-            where: fragment("?->? \\?& ?", q.meta ,"event_types", ^event_types)
-      end
-
-    # query =
-    #   case meta.categories do
-    #     nil -> query
-    #     categories -> 
-    #       Enum.reduce(categories, query, fn (c, acc) ->
-    #         from q in acc,
-    #         join: s in Shared.SingleListingCategories,
-    #         where: q.id == s.listing_id and
-    #           ilike(s.category, ^"#{c}%")
-    #       end)
-    #   end     
+          from l in query,
+            where: fragment("?->? \\?& ?", l.meta ,"event_types", ^event_types)
+      end    
 
     query
   end
