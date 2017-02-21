@@ -32,7 +32,7 @@ export function getDondeAddress(donde) {
   throw new Error(`Invalid type`)
 }
 
-export function getDondeyLngLat(donde) {
+export function getDondeLngLat(donde) {
   return donde.lng_lat
 }
 
@@ -59,7 +59,7 @@ export function getVenueAddress(venue) {
           .filter(x => x.length)
           .map(x => x.trim())[0]
       }
-      
+
       return [address.trim(), state.trim(), postalCode.trim()].join(`, `)
         .replace(/\(.*\)/, '')
         .replace(/street/i, `St`)
