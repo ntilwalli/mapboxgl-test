@@ -6,9 +6,10 @@ defmodule Shared.Model.Once do
   embedded_schema do
     field :begins, :utc_datetime
     field :ends, :utc_datetime
+    field :door, :utc_datetime
   end
 
-  @allowed_fields [:begins, :ends]
+  @allowed_fields [:begins, :ends, :door]
   @required_fields [:begins]
   
   def changeset(schema, params \\ :empty) do

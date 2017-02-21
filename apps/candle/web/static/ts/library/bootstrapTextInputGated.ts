@@ -157,7 +157,7 @@ function view(state$, props$, highlight_error$) {
     props$: props$.map(x => {
       return x
     }),
-    hightlight_error$: highlight_error$.map(x => {
+    highlight_error$: highlight_error$.map(x => {
       return x
     }), 
   }).map((info: any) => {

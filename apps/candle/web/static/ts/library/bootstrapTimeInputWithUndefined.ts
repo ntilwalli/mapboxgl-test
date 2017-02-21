@@ -61,10 +61,12 @@ function intent(sources) {
     minute$,
     meridiem$,
     add_event_guid$: O.merge(click$, dropdown_click$)
-      .map(ev => ({
-        event: ev,
-        guid
-      }))
+      .map(ev => {
+        return {
+          event: ev,
+          guid
+        }
+      })
   }
 }
 

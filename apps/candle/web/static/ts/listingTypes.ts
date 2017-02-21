@@ -68,7 +68,8 @@ const MetaPropertyTypes = {
   NOTES: 'notes', 
   CONTACT_INFO: 'contact_info',
   AUDIENCE_COST: 'audience_cost',
-  LISTED_PERFORMERS: 'listed_performers'
+  LISTED_PERFORMERS: 'listed_performers',
+  AGE_RESTRICTION: 'age_restriction'
 }
 
 const EventTypeToProperties = {
@@ -78,6 +79,7 @@ const EventTypeToProperties = {
     MetaPropertyTypes.PERFORMER_COST,
     MetaPropertyTypes.STAGE_TIME,
     MetaPropertyTypes.PERFORMER_LIMIT,
+    MetaPropertyTypes.AGE_RESTRICTION,
     MetaPropertyTypes.LISTED_HOSTS,
     MetaPropertyTypes.NOTES,
     MetaPropertyTypes.CONTACT_INFO
@@ -86,18 +88,21 @@ const EventTypeToProperties = {
     MetaPropertyTypes.LISTED_HOSTS,
     MetaPropertyTypes.LISTED_PERFORMERS,
     MetaPropertyTypes.AUDIENCE_COST,
+    MetaPropertyTypes.AGE_RESTRICTION,
     MetaPropertyTypes.CONTACT_INFO
   ],
   trivia: [
     MetaPropertyTypes.PARTICIPANT_SIGN_UP,
     MetaPropertyTypes.PARTICIPANT_COST,
     MetaPropertyTypes.PARTICIPANT_LIMIT,
+    MetaPropertyTypes.AGE_RESTRICTION,
     MetaPropertyTypes.LISTED_HOSTS,
     MetaPropertyTypes.CONTACT_INFO,
     MetaPropertyTypes.NOTES,
   ],
   dance: [
     MetaPropertyTypes.PARTICIPANT_COST,
+    MetaPropertyTypes.AGE_RESTRICTION,
     MetaPropertyTypes.LISTED_HOSTS,
     MetaPropertyTypes.LISTED_PERFORMERS,
     MetaPropertyTypes.CONTACT_INFO,
@@ -259,6 +264,12 @@ const RecurrenceDisplayFilterOptions = {
     ALL: "all"
 }
 
+const AgeRestrictionOptions = {
+    ALL_AGES: "all_ages",
+    OVER_18: "over_18",
+    OVER_21: "over_21"
+}
+
 export {
   ReleaseTypes, VisibilityTypes, EventTypes, MetaPropertyTypes, EventTypeToProperties,
   DayOfWeek, RecurrenceFrequency, ListingTypes, CategoryTypes,
@@ -266,5 +277,5 @@ export {
   StageTimeOptions, TierPerkOptions, MinutesTypeOptions, RelativeTimeOptions,
   CostOptions, PurchaseTypeOptions, UndefinedOption, RecurrenceDisplayFilterOptions,
   SetPositionTypes, EventTypeComboOptions, ComedyTypes, MusicTypes, DanceTypes,
-  arrayToEventTypeComboOption, eventTypeComboOptionToArray
+  arrayToEventTypeComboOption, eventTypeComboOptionToArray, AgeRestrictionOptions
 }

@@ -17,7 +17,7 @@ function getDuration(start_time, end_time) {
 
 export function applySingleCuando(session) {
   const {properties, listing} = session
-  const {start_time, end_time, date} = properties.cuando
+  const {start_time, end_time, door_time, date} = properties.cuando
   
   session.listing.type = ListingTypes.SINGLE
 
@@ -37,15 +37,26 @@ export function applySingleCuando(session) {
       
       session.listing.cuando.ends = end_date_time
     } 
+
+    if (door_time) {
+      const door_date_time = getDatetimeFromObj(date, door_time)
+      
+      if (door_date_time.isAfter(start_date_time)) {
+        session.listing.cuando.door = door_date_time.subtract(1, 'day')
+      }
+      
+      session.listing.cuando.door = door_date_time
+    } 
+
   } else {
-    session.listing.cuando = {begins: undefined, ends: undefined}
+    session.listing.cuando = {begins: undefined, ends: undefined, door: undefined}
   }
 }
 
 export function applyRecurringCuando(session) {
   const {properties, listing} = session
   const {cuando} = properties
-  const {recurrence, start_time, end_time} = cuando
+  const {recurrence, start_time, end_time, door_time} = cuando
   const {start_date, end_date, rules, rdates, exdates} = recurrence
 
   session.listing.type = ListingTypes.RECURRING
@@ -73,7 +84,16 @@ export function applyRecurringCuando(session) {
 
   if (start_time && end_time) {
     listing.cuando.duration = getDuration(start_time, end_time)
+  } else {
+    listing.cuando.duration = undefined
   }
+
+  if (start_time && door_time) {
+    listing.cuando.door = getDuration(door_time, start_time)
+  } else {
+    listing.cuando.door = undefined
+  }
+
 }
 
 

@@ -7,7 +7,14 @@ import {
   ListingTypes, CategoryTypes, 
   EventTypeToProperties
 } from '../../../../listingTypes'
-import {inflateSession, deflateSession, fromCheckbox, getDefaultSession} from '../../../helpers/listing/utils'
+import {
+  inflateSession, 
+  deflateSession, 
+  fromCheckbox, 
+  getDefaultSession,
+  findEventTypeShow,
+  findEventTypeDance
+} from '../../../helpers/listing/utils'
 import clone = require('clone')
 
 import FocusWrapper from '../focusWrapperWithInstruction'
@@ -20,6 +27,8 @@ import SearchArea from './donde/searchArea'
 import ListingType from './listingType'
 import StartTime from './cuando/times/startTime'
 import EndTime from './cuando/times/endTime'
+import DoorTime from './cuando/times/doorTime'
+import UndefinedDoorTime from './cuando/times/undefinedDoorTime'
 import SingleDate from './cuando/date'
 import Recurrence from './cuando/recurrence/main'
 
@@ -111,7 +120,7 @@ function renderMainPanel(info: any) {
   const {
     name, description, event_types_and_categories,
     search_area, donde, listing_type, start_time,
-    end_time, date
+    end_time, door_time, date
   } = components
   return div(`.pt-4`, [
     show_errors && errors.length ? div(`.form-group`, [
@@ -144,6 +153,9 @@ function renderMainPanel(info: any) {
     ]),
     div('.mt-4', [
       end_time
+    ]),
+    div('.mt-4', [
+      door_time
     ]),
     div('.mt-4', [
       date
@@ -219,6 +231,22 @@ export default function main(sources, inputs) {
   const end_time = isolate(EndTime)(sources, {...inputs, session$: inputs.session$})
   const end_time_section: any = isolate(FocusWrapper)(sources, {component: end_time, title: 'End time', instruction: end_time_instruction})
 
+  const door_time_section$ = event_types_and_categories_section.output$.map(output => output.data.event_types)
+    .map((event_types: string[]) => {
+      if (event_types.some(findEventTypeShow) || event_types.some(findEventTypeDance)) {
+        const date_instruction = 'When do the doors open?'
+        const door_time = isolate(DoorTime)(sources, {...inputs, session$: inputs.session$})
+        const door_time_section: any = isolate(FocusWrapper)(sources, {component: door_time, title: 'Doors', instruction: date_instruction})
+        return door_time_section
+      } else {
+        const door_time_section = UndefinedDoorTime(sources, inputs)
+        return door_time_section
+      }
+    }).publishReplay(1).refCount()
+
+
+  const door_time_section: any = componentify(door_time_section$, 'output$', 'focus$')
+
   const date_section$ = listing_type_section.output$.pluck('data')
     .map(type => {
       if (type === ListingTypes.SINGLE) {
@@ -239,7 +267,7 @@ export default function main(sources, inputs) {
       }
     }).publishReplay(1).refCount()
 
-  const date_section = componentify(date_section$)
+  const date_section: any = componentify(date_section$, 'output$', 'focus$')
 
   const instruction_focus$ = O.merge(
     name_section.focus$, 
@@ -250,7 +278,8 @@ export default function main(sources, inputs) {
     listing_type_section.focus$,
     start_time_section.focus$,
     end_time_section.focus$,
-    date_section$.switchMap(x => x.focus$),
+    door_time_section.focus$,
+    date_section.focus$,
     actions.main_panel_click$.mapTo(default_instruction).startWith(default_instruction)
   )
 
@@ -263,6 +292,7 @@ export default function main(sources, inputs) {
     listing_type_section.output$,
     start_time_section.output$,
     end_time_section.output$,
+    door_time_section.output$,
     date_section$.switchMap(x => x.output$)
   )
   
@@ -275,6 +305,7 @@ export default function main(sources, inputs) {
     listing_type: listing_type_section.DOM,
     start_time: start_time_section.DOM,
     end_time: end_time_section.DOM,
+    door_time: door_time_section.DOM,
     date: date_section.DOM
   }
 
@@ -287,6 +318,7 @@ export default function main(sources, inputs) {
     listing_type_section,
     start_time_section,
     end_time_section,
+    door_time_section,
     date_section
   )
 

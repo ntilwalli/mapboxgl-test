@@ -8,9 +8,10 @@ defmodule ListingSession.Properties.Cuando do
     field :date, :utc_datetime
     field :start_time, :map
     field :end_time, :map
+    field :door_time, :map
   end
 
-  @allowed_fields [:date, :start_time, :end_time]
+  @allowed_fields [:date, :start_time, :end_time, :door_time]
   def changeset(model, params \\ :empty) do
     model
     |> cast(params, @allowed_fields)

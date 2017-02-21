@@ -7,7 +7,7 @@ import Navigator from '../../library/navigators/simple'
 
 function renderContent() {
   return div(`.container-fluid.mt-4`, [
-    'At Stumplog your privacy is our number six priority, falling slightly behind coding, building fun shit, being good people, being funny and sleeping.  Key thing is privacy is ON the list and that\'s what matters. We will only use your email address and/or phone number for keeping you updated on what\'s going on with your Stumplog specific activity which you\'ll def be interested in.  We won\'t share any of your information with any other users of the site or any third-party ever!'
+    'At Stumplog your privacy is our number six priority, falling slightly behind coding, building fun shit, being good people, being funny and sleeping.  Key thing is privacy is ON the list and that\'s what matters. We will only use your email address and/or phone number for keeping you updated on what\'s going on with your Stumplog specific activity which you\'ll def be interested in.  We won\'t share any of your information with any other users of the site or any third-party ever.'
   ])
 }
 

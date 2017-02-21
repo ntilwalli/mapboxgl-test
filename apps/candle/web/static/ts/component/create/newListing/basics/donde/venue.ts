@@ -135,7 +135,10 @@ function mapview(state$) {
     } else {
       return undefined
     }
-  }).filter(x => !!x)
+  }).filter(x => !!x).delay(30)  // HACK! Belongs in mapboxgl driver, with proper fix. This arbitrary delay ensures root element 
+                                 // which has been recreated by snabbdom is fully swapped out before the check for element existence 
+                                 // is made... ensuring that the map is applied to the new dom element instead of the old one
+                                 // 30 is arbitrary, 25 didn't work...
 }
 
 function applyChange(session, val) {

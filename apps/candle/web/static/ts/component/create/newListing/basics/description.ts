@@ -19,9 +19,6 @@ function applyChange(session, val) {
 export default function main(sources, inputs) {
 
   const out = isolate(TextAreaInput)(sources, {
-    // validator: (val) => {
-
-    // },
     props$: O.of(name_input_props),
     initial_text$: inputs.session$.map(s => {
       return s.listing.meta.description

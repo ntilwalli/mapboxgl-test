@@ -10,7 +10,7 @@ import {
   PerformerSignupOptions, PreRegistrationOptions, PerformerLimitOptions,
   StageTimeOptions, TierPerkOptions, MinutesTypeOptions, RelativeTimeOptions,
   CostOptions, PurchaseTypeOptions, UndefinedOption, RecurrenceDisplayFilterOptions,
-  ComedyTypes, MusicTypes, DanceTypes
+  ComedyTypes, MusicTypes, DanceTypes, AgeRestrictionOptions
 } from '../../../listingTypes'
 
 import {getDefault as getContactInfoDefault} from '../../create/newListing/advanced/contactInfo/main'
@@ -21,6 +21,7 @@ import {getDefault as getPerformerSignupDefault} from '../../create/newListing/a
 import {getDefault as getPerformerLimitDefault} from '../../create/newListing/advanced/performerLimit/main'
 import {getDefault as getStageTimeRoundDefault} from '../../create/newListing/advanced/stageTimeRound/main'
 import {getDefault as getParticipantSignupDefault} from '../../create/newListing/advanced/participantSignUp/main'
+import {getDefault as getAgeRestrictionDefault} from '../../create/newListing/advanced/ageRestriction/main'
 export {
   EventTypes, MetaPropertyTypes, EventTypeToProperties,
   DayOfWeek, RecurrenceFrequency, ListingTypes, CategoryTypes,
@@ -55,6 +56,7 @@ metaPropertyToDefaultFunction[MetaPropertyTypes.AUDIENCE_COST] = getCostDefault
 metaPropertyToDefaultFunction[MetaPropertyTypes.PARTICIPANT_COST] = getCostDefault
 metaPropertyToDefaultFunction[MetaPropertyTypes.PARTICIPANT_LIMIT] = getPerformerLimitDefault
 metaPropertyToDefaultFunction[MetaPropertyTypes.PARTICIPANT_SIGN_UP] = getParticipantSignupDefault
+metaPropertyToDefaultFunction[MetaPropertyTypes.AGE_RESTRICTION] = getAgeRestrictionDefault
 metaPropertyToDefaultFunction['name'] = getNameDefault
 metaPropertyToDefaultFunction['description'] = getDescriptionDefault
 metaPropertyToDefaultFunction['categories'] = getCategoriesDefault
@@ -69,6 +71,7 @@ function addOpenMicDefaults(out) {
   out[MetaPropertyTypes.NOTES] = getNotesDefault()
   out[MetaPropertyTypes.LISTED_HOSTS] = getListedHostsDefault()
   out[MetaPropertyTypes.CONTACT_INFO] = getContactInfoDefault()
+  out[MetaPropertyTypes.AGE_RESTRICTION] = getAgeRestrictionDefault()
 
   return out
 }
@@ -79,6 +82,7 @@ function addShowDefaults(out) {
   out[MetaPropertyTypes.LISTED_PERFORMERS] = getListedPerformersDefault()
   out[MetaPropertyTypes.CONTACT_INFO] = getContactInfoDefault()
   out[MetaPropertyTypes.AUDIENCE_COST] = getCostDefault()
+  out[MetaPropertyTypes.AGE_RESTRICTION] = getAgeRestrictionDefault()
 
   return out
 }
@@ -158,7 +162,8 @@ function getDefaultTimes() {
     end_time: {
       hour: 22,
       minute: 0
-    }
+    },
+    door_time: undefined
   }
 }
 
@@ -230,7 +235,7 @@ export function listingToSession(listing, search_area) {
 }
 
 export function recurringListingCuandoToPropertiesCuando(listing) {
-  const {rrules, rdates, exdates, duration} = listing.cuando
+  const {rrules, rdates, exdates, duration, door} = listing.cuando
   // const {recurrence, start_time, end_time} = cuando
   // const {start_date, end_date, rules, rdates, exdates} = recurrence
 
@@ -240,11 +245,12 @@ export function recurringListingCuandoToPropertiesCuando(listing) {
       rdates: [],
       exdates: [],
       start_date: undefined,
-      end_date: undefined
+      end_date: undefined,
     },
     date: undefined,
     start_time: undefined,
-    end_time: undefined
+    end_time: undefined,
+    door_time: undefined
   }
 
   if (rrules.length) {
@@ -267,6 +273,15 @@ export function recurringListingCuandoToPropertiesCuando(listing) {
         minute: dtend.minute()
       }
     }
+
+    if (door) {
+      const door_time = rule.dtstart.clone().subtract('minute', door)
+      cuando.door_time = {
+        hour: door_time.hour(),
+        minute: door_time.minute()
+      }
+    }
+
   }
 
   if (rdates.length) {
@@ -281,6 +296,14 @@ export function recurringListingCuandoToPropertiesCuando(listing) {
         cuando.end_time = {
           hour: dtend.hour(),
           minute: dtend.minute()
+        }
+      }
+
+      if (door) {
+        const door_time = rdates[0].clone().subtract('minute', door)
+        cuando.door_time = {
+          hour: door_time.hour(),
+          minute: door_time.minute()
         }
       }
     }
@@ -396,9 +419,10 @@ export function inflateListing(listing) {
     if (listing.cuando) { inflateCuando(listing.cuando) }
   } else {
     if (listing.cuando) {
-      const {begins, ends} = listing.cuando
+      const {begins, ends, door} = listing.cuando
       if (begins) { listing.cuando.begins = moment(begins) }
       if (ends) { listing.cuando.ends = moment(ends) }
+      if (door) { listing.cuando.door = moment(door) }
     }
   }
 
@@ -413,9 +437,10 @@ export function deflateListing(listing) {
     if (listing.cuando) { deflateCuando(listing.cuando) }
   } else {
     if (listing.cuando) {
-      const {begins, ends} = listing.cuando
+      const {begins, ends, door} = listing.cuando
       if (begins) { listing.cuando.begins = begins.toDate().toISOString() }
       if (ends) { listing.cuando.ends = ends.toDate().toISOString() }
+      if (door) { listing.cuando.door = door.toDate().toISOString() }
     }
   }
 
@@ -443,9 +468,10 @@ export function inflateSession(session) {
       }
     } else {
       if (session.listing.cuando) {
-        const {begins, ends} = listing.cuando
+        const {begins, ends, door} = listing.cuando
         if (begins) { session.listing.cuando.begins = moment(begins) }
         if (ends) { session.listing.cuando.ends = moment(ends) }
+        if (door) { session.listing.cuando.door = moment(door) }
       }
     }
   }

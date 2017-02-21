@@ -13,6 +13,7 @@ import CostCollection from './costCollection/main'
 import PerformerLimit from './performerLimit/main'
 import PersonName from './personName/main'
 import PersonNameTitle from './personNameTitle/main'
+import AgeRestriction from './ageRestriction/main'
 import ContactInfo from './contactInfo/main'
 import {default as StageTimeRound, getDefault as getStageTimeDefault} from './stageTimeRound/main'
 import {
@@ -147,6 +148,12 @@ function toComponent(type, meta, session$, sources, inputs, authorization) {
       component = (sources, inputs) => {
         const instruction = "Set the number of performer slots available on the mic"
         return wrapWithFocus(sources, PerformerLimit(sources, inputs), 'Performer limit', instruction)
+      }
+      break
+    case MetaPropertyTypes.AGE_RESTRICTION:
+      component = (sources, inputs) => {
+        const instruction = "Set the age restriction for attending this event"
+        return wrapWithFocus(sources, AgeRestriction(sources, inputs), 'Age restriction', instruction)
       }
       break
     case MetaPropertyTypes.LISTED_HOSTS:

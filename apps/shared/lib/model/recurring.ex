@@ -9,9 +9,10 @@ defmodule Shared.Model.Recurring do
     embeds_many :rrules, Shared.Model.RRule
     field :exdates, {:array, :utc_datetime}
     field :duration, :float
+    field :door, :float
   end
 
-  @allowed_fields [:rdates, :exdates, :duration]
+  @allowed_fields [:rdates, :exdates, :duration, :doors]
   @required_fields []
   def changeset(schema, params \\ :empty) do
     schema
