@@ -200,7 +200,17 @@ export default function view(info) {
   const {listing} = session
   const {type} = listing
   const disabled = !state.authorization
-  return div('.preview.appMainPanel', [
+  return div('.preview.appMainPanel', 
+  {
+    hook: {
+      create: (emptyVNode, {elm}) => {
+        window.scrollTo(0, 0)
+      }//,
+      // update: (old, {elm}) => {
+      //   window.scrollTo(0, 0)
+      // }
+    }
+  }, [
     //div(`.heading`, ['Preview listing']),
     div('.row.mb-4', [
       div('.col-12', [

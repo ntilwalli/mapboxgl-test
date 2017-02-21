@@ -52,8 +52,15 @@ export function getVenueAddress(venue) {
   if (source === `foursquare`) {
     
     if (isValid(venue)) {
-      const {address, state, postalCode} = data.location
-      return [data.location.address.trim(), data.location.state.trim(), data.location.postalCode.trim()].join(`, `)
+      let {address, state, postalCode} = data.location
+      if (address.indexOf(postalCode) >= 0) {
+        address = address
+          .split(",")
+          .filter(x => x.length)
+          .map(x => x.trim())[0]
+      }
+      
+      return [address.trim(), state.trim(), postalCode.trim()].join(`, `)
         .replace(/\(.*\)/, '')
         .replace(/street/i, `St`)
         .replace(/avenue/i, `Ave`)
