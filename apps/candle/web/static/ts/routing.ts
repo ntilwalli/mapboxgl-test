@@ -21,7 +21,7 @@ const routes = [
 
 const scrollTop = _ => {
   //console.log('scrolling top')
-  setTimeout(() => window.scrollTo(0, 0), 50)
+  //setTimeout(() => window.scrollTo(0, 0), 50)
 }
 
 export default function routing(sources, inputs) {

@@ -26,9 +26,13 @@ function intent(sources) {
   const show_forgotten$ = mb_main$.filter(x => x.type === `showForgotten`)
     .map(x => ({type: `forgotten`, data: x.data}))
   
-  const show_modal$ = O.merge(modal$, show_menu$, show_login$, show_signup$, show_forgotten$)
+  const show_modal$ = O.merge(modal$.delay(10), show_menu$, show_login$, show_signup$, show_forgotten$)
 
   const hide_modal$ = mb_main$.filter(x => x === `hideModal`)
+    .map(x => {
+      return x
+    })
+    
   const main_error$ = mb_main$.filter(x => x.type === 'error').map(x => x.data)
 
 

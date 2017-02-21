@@ -88,7 +88,18 @@ function view(state$, components) {
     const {modal} = state
     const {grid, filters, navigator} = components
 
-    return div(`.screen.search-results.one-day`, {class: {"no-scroll": !!modal}}, [
+    return div(`.screen.search-results.one-day`, 
+    {
+      class: {"no-scroll": !!modal},
+      hook: {
+        create: (emptyVNode, {elm}) => {
+          window.scrollTo(0, 0)
+        }//,
+        // update: (old, {elm}) => {
+        //   window.scrollTo(0, 0)
+        // }
+      }
+    }, [
       //renderNavigator(state),
       navigator,
       showLoader(state) ? renderLoader() : renderContent(info),

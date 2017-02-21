@@ -46,7 +46,17 @@ function view(components, active$) {
     .map((info: any) => {
       const {components, active} = info
       const {navigator, content} = components
-      return div(`.screen.listing-profile`, [
+      return div(`.screen.listing-profile`, 
+      {
+        hook: {
+        create: (emptyVNode, {elm}) => {
+          window.scrollTo(0, 0)
+        }//,
+        // update: (old, {elm}) => {
+        //   window.scrollTo(0, 0)
+        // }
+      }
+      }, [
         navigator,
         div({style: {"padding-top": active ? "6rem" : "0"}}, [
           content

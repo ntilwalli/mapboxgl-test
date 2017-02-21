@@ -130,16 +130,16 @@ function view(state$, components) {
     const {show_instruction, authorization} = state
     const {content} = components
 
-    return div(`.screen.create-component`, [
+    return div(`.screen.create-component.advanced`, [
       div('.basics.d-flex.align-items-center-section.nav-fixed-offset', {
-        // hook: {
-        //   create: (emptyVNode, {elm}) => {
-        //     window.scrollTo(0, 0)
-        //   },
-        //   update: (old, {elm}) => {
-        //     window.scrollTo(0, 0)
-        //   }
-        // }
+        hook: {
+          create: (emptyVNode, {elm}) => {
+            window.scrollTo(0, 0)
+          }//,
+          // update: (old, {elm}) => {
+          //   window.scrollTo(0, 0)
+          // }
+        }
       }, [
         div('.main-panel.container-fluid.mt-4', [
           div('.appGoToBasicsButton.btn.btn-link.cursor-pointer.d-flex.mb-4', {style: {"flex-flow": "row nowrap", flex: "0 0 fixed"}}, [

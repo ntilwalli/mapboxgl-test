@@ -80,7 +80,7 @@ function main(sources) {
     content$: out.DOM,
     modal$: modal.DOM
   }
-  const vtree$ = view(state$, components)
+  const vtree$ = view(state$, components, sources.Router.history$)
 
   const toRouter$ = state$.pluck(`modal`)
     .distinctUntilChanged()

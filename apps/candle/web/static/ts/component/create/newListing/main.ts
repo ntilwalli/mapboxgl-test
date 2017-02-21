@@ -152,8 +152,14 @@ function view(state$, components) {
       ]) : div(
         {
           // hook: {
-          //   create: () => window.scrollTo(0, 0),
-          //   update: () => window.scrollTo(0, 0)
+          //   create: () => {
+          //     console.log('creating create screen')
+          //     //window.scrollTo(0, 0)
+          //   },
+          //   update: () => {
+          //     console.log('updating create screen')
+          //     //window.scrollTo(0, 0)
+          //   }
           // }
         },
       [

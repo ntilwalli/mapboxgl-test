@@ -133,16 +133,16 @@ function view(state$, components) {
     const {show_instruction, authorization} = state
     const {content} = components
 
-    return div(`.screen.create-component`, [
+    return div(`.screen.create-component.basics`, [
       div('.basics.content-section.nav-fixed-offset', {
-        // hook: {
-        //   create: (emptyVNode, {elm}) => {
-        //     window.scrollTo(0, 0)
-        //   },
-        //   update: (old, {elm}) => {
-        //     window.scrollTo(0, 0)
-        //   }
-        // }
+        hook: {
+          create: (emptyVNode, {elm}) => {
+            window.scrollTo(0, 0)
+          }//,
+          // update: (old, {elm}) => {
+          //   window.scrollTo(0, 0)
+          // }
+        }
       }, [
         div('.main-panel.container-fluid', [
           content,
