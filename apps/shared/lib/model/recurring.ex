@@ -12,7 +12,7 @@ defmodule Shared.Model.Recurring do
     field :door, :float
   end
 
-  @allowed_fields [:rdates, :exdates, :duration, :doors]
+  @allowed_fields [:rdates, :exdates, :duration, :door]
   @required_fields []
   def changeset(schema, params \\ :empty) do
     schema
@@ -109,7 +109,8 @@ defmodule Shared.Model.Recurring do
       rrules: rrules,
       exdates: exdates,
       rdates: rdates,
-      duration: recurrable.duration
+      duration: recurrable.duration,
+      door: recurrable.door
     }
   end 
 

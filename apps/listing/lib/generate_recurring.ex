@@ -132,6 +132,11 @@ defmodule Listing.GenerateRecurring do
       val -> %{begins: begins, ends: Calendar.DateTime.add!(begins, round(val*60.0))}
     end
 
+    data = case cuando.door do
+      nil -> data
+      val -> Map.put(data, :door, Calendar.DateTime.subtract!(begins, round(val*60.0)))
+    end
+
     #cs = CuandoOnce.changeset(%CuandoOnce{}, data)
     #single_cuando = apply_changes(cs) 
 
