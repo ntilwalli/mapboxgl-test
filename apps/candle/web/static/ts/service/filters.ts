@@ -1,6 +1,6 @@
 import {Observable as O} from 'rxjs'
 import {div} from '@cycle/dom'
-import {combineObj, getPreferredRegion$, traceStartStop, processHTTP, onlyError, onlySuccess} from '../utils'
+import {default_region, combineObj, getPreferredRegion$, traceStartStop, processHTTP, onlyError, onlySuccess} from '../utils'
 import Immutable = require('immutable')
 
 import RegionSelector from '../library/bootstrapRegionSelector'
@@ -43,7 +43,7 @@ function model(actions, inputs) {
   })
     .switchMap((info: any) => {
       const init = info.storage_filters || {
-        search_region: info.preferred_region,
+        search_region: default_region, //info.preferred_region,
         categories: ['/comedy'],
         event_types: ['open_mic'],
         cost: ['free', 'paid']

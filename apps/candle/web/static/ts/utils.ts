@@ -6,6 +6,17 @@ import moment = require('moment')
 import clone = require('clone')
 import FactualGeotagService from './thirdParty/FactualGeotagService'
 
+export const default_region = {
+  position: {
+    lng: -74.0059,
+    lat: 40.7128
+  },
+  city_state: {
+    city: `New York`,
+    state_abbr: `NY`
+  }
+}
+
 export function capitalize(val) {
   return val.substring(0, 1).toUpperCase() + val.substring(1)
 }
