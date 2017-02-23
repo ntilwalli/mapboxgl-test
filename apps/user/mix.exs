@@ -48,6 +48,8 @@ defmodule User.Mixfile do
     [
       {:shared, in_umbrella: true},
       {:auth, in_umbrella: true},
+      {:uuid, "~> 1.1"},
+      {:calendar, "~> 0.16.1"},
     ]
   end
 end

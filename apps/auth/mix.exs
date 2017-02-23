@@ -54,6 +54,8 @@ defmodule Auth.Mixfile do
       {:poison, "~> 2.2"},
       {:oauth, github: "tim/erlang-oauth"},
       {:oauth2, "== 0.6.0"},
+      {:uuid, "~> 1.1"},
+      {:calendar, "~> 0.16.1"},
     ]
   end
 end

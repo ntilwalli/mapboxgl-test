@@ -123,7 +123,19 @@ defmodule Auth.Manager do
     case Shared.Repo.one(query) do
       nil -> {:reply, {:error, :email_address_not_found}, state}
       user -> 
-        Candle.EmailManager.forgotten_password(e_mgr, user)
+        after_60 = Calendar.DateTime.add!(Calendar.DateTime.now_utc(), 60*60)
+        token = UUID.uuid1(:hex)
+        changes = %{token: token, expires_at: after_60}
+        result =
+          case Shared.Repo.get(Shared.ForgottenPasswordToken, user.id) do
+            nil  -> %Shared.ForgottenPasswordToken{user_id: user.id} # Post not found, we build one
+            record -> record          # Post exists, let's use it
+          end
+          |> Shared.ForgottenPasswordToken.changeset(changes)
+          |> Shared.Repo.insert_or_update()
+
+        {:ok, model} = result
+        Candle.EmailManager.forgotten_password(e_mgr, user, token)
         {:reply, :ok, state}
     end
   end
