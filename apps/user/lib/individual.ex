@@ -56,6 +56,10 @@ defmodule User.Individual do
     GenServer.call(pid, :home_profile)
   end
 
+  def route(pid, "/home/profile") when is_pid(pid) do
+    GenServer.call(pid, :home_profile)
+  end
+
   def route(user, "/home/profile") do
     pid = ensure_started(user)
     GenServer.call(pid, :home_profile)
@@ -64,6 +68,11 @@ defmodule User.Individual do
   def route(user, "/settings") do
     pid = ensure_started(user)
     GenServer.call(pid, :settings)
+  end
+
+  def route(user, "/profile/retrieve", username) do
+    pid = ensure_started(user)
+    GenServer.call(pid, {:profile_retrieve, username})
   end
 
   def route(user, "/profile/retrieve", username) do

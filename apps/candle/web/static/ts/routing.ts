@@ -5,18 +5,30 @@ import SearchApp from './component/search/oneDay/main'
 //import ListingApp from './component/listing/main'
 import ListingApp from './component/newListing/main'
 import UserApp from './component/user/newMain'
+import ForgottenPasswordApp from './component/forgottenPassword/main'
 import {main as CreateApp} from './component/create/main'
 import {main as SettingsApp} from './component/settings/main'
 import {main as PrivacyApp} from './component/privacy/main'
 
+function RedirectApp() {
+  return {
+    Router: O.of({
+      type: 'replace',
+      pathname: '/'
+    }).delay(10)
+  }
+}
+
 const routes = [
   //{pattern: /^\/user/, value: UserApp},
+  {pattern: /^\/i\/forgotten/, value: {component: ForgottenPasswordApp, auth: false}},
   {pattern: /^\/settings/, value: {component: SettingsApp, auth: false}},
   {pattern: /^\/create/, value: {component: CreateApp, auth: false }},
   {pattern: /^\/listing/, value: {component: ListingApp, auth: false}},
   {pattern: /^\/privacy/, value: {component: PrivacyApp, auth: false}},
-  {pattern: /^\/[a-zA-Z][a-zA-Z0-9]*/, value: {component: UserApp, auth: false, key: 'user'}},
-  {pattern: /.*/, value: {component: SearchApp, auth: false}}
+  {pattern: /^\/[a-zA-Z][a-zA-Z0-9]{4,}/, value: {component: UserApp, auth: false, key: 'user'}},
+  {pattern: /^\/$/, value: {component: SearchApp, auth: false}},
+  {pattern: /.*/, value: {component: RedirectApp, auth: false}}
 ]
 
 const scrollTop = _ => {

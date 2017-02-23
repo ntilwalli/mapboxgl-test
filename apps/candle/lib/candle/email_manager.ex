@@ -15,7 +15,9 @@ defmodule Candle.EmailManager do
 
   def handle_call({:forgotten_password, user}, _from, state) do
     IO.inspect {:reset_password, user.username}
-    #Candle.Email.welcome_text_email("ntilwalli@gmail.com") |> Candle.Mailer.deliver_later
+    Candle.Email.forgotten_password(user) 
+      |> Candle.Mailer.deliver_later
+
     {:reply, :ok, state}
   end
 end

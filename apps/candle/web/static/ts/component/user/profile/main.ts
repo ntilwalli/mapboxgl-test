@@ -18,7 +18,7 @@ function reducers(actions, inputs) {
 function model(actions, inputs) {
   const reducer$ = reducers(actions, inputs)
   return combineObj({
-      selected$: inputs.props$ || O.of(undefined),
+      user$: inputs.props$ || O.of(undefined),
       authorization$: inputs.Authorization.status$
     })
     .switchMap((info: any) => {
@@ -48,10 +48,10 @@ function renderInfo(state) {
       ]),
       div('.media-body', [
         div('.row', [
-          div('.col-12', [state.authorization.name])
+          div('.col-12', [state.user.name])
         ]),
         div('.row', [
-          div('.col-12', ['@' + state.authorization.username])
+          div('.col-12', ['@' + state.user.username])
         ])
       ])
     ])

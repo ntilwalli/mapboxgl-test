@@ -2,6 +2,7 @@ defmodule User.Anon do
   use GenServer
 
   import Ecto.Changeset, only: [apply_changes: 1]
+  import Ecto.Query, only: [from: 2]
   alias Shared.Message.Incoming.Search.Query, as: SearchQueryMessage
   alias Shared.Message.Listing.CheckIn, as: CheckInMessage
   
@@ -70,6 +71,12 @@ defmodule User.Anon do
   def route(user, "/listing/info_query", query) do
     pid = ensure_started(user)
     GenServer.call(pid, {:listing_info_query, query})
+  end
+
+  def route(user, "/profile/retrieve", username) do
+    IO.inspect {:profile_retrieve_client, username}
+    pid = ensure_started(user)
+    GenServer.call(pid, {:profile_retrieve, username})
   end
 
   def route(anonymous_id, unknown_route, message) do 
@@ -170,6 +177,20 @@ defmodule User.Anon do
         {:reply, {:error, "Sent listing id (#{listing_id}) invalid"}, state}
     end
   end
+
+  def handle_call({:profile_retrieve, username}, _from, state) do
+    #IO.inspect {:profile_retrieve, username}
+    case Shared.Repo.one(from u in Shared.User, where: u.username == ^username, select: u) do
+      nil ->
+        #IO.inspect {:user_not_found, username}
+        {:reply, {:error, "User not found"}, state}
+      user ->
+        #IO.inspect {:found_pid, username, user}
+        out = User.Individual.route(user, "/home/profile")
+        {:reply, out, state}
+    end
+  end
+
 
   defp retrieve_listing(listing_id, l_reg) do
     case Listing.Registry.lookup(l_reg, listing_id) do

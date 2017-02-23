@@ -60,7 +60,6 @@ config :ueberauth, Ueberauth.Strategy.Twitter.OAuth,
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
-import_config "#{Mix.env}.exs"
 
 # Configure phoenix generators
 config :phoenix, :generators,
@@ -72,7 +71,7 @@ config :candle, ecto_repos: [Shared.Repo]
 # In your config/config.exs file
 config :candle, Candle.Mailer,
   adapter: Bamboo.SparkPostAdapter,
-  #api_key:
+  api_key: System.get_env("SPARKPOST_PASSWORD"),
   server: "smtp.sparkpostmail.com",
   port: 587,
   username: System.get_env("SPARKPOST_USERNAME"),
@@ -80,4 +79,7 @@ config :candle, Candle.Mailer,
   tls: :if_available, # can be `:always` or `:never`
   ssl: true,
   retries: 1
+
+import_config "#{Mix.env}.exs"
+
 

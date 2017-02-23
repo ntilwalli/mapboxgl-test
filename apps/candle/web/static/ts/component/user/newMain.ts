@@ -120,15 +120,19 @@ function muxRouter(sources, inputs) {
     return {page_name, authorization}
   }).publishReplay(1).refCount()
 
+
   const retrieve_user$ = pair_with_authorization$.filter(({page_name, authorization}) => {
-    page_name !== authorization.username
+    return !authorization || page_name !== authorization.username
   })
+  .map(x => {
+    return x
+  }).publishReplay(1).refCount()
 
   const self$ = pair_with_authorization$.filter(({page_name, authorization}) => {
-    return page_name === authorization.username
+    return authorization && page_name === authorization.username
   }).map((x: any) => {
     return x.authorization
-  })
+  }).publishReplay(1).refCount()
 
   const no_username$ = route$.filter(route => {
       return route.value.info.type === 'error'
@@ -163,6 +167,14 @@ export default function main(sources, inputs): any {
 
   const component$ = O.merge(
     muxed_router.retrieve_user$.map(_ => TimeoutLoader(sources, inputs)),
+    muxed_http.user_result_error_from_http$.map(_ => {
+      return {
+        Router: O.of({
+          pathname: '/',
+          type: 'replace'
+        })
+      }
+    }).delay(1),
     muxed_router.user_result$.map((user: any) => {
       const router_with_listing_id = sources.Router.path(user.username)
       const navigator = isolate(Navigator)({...sources, Router: router_with_listing_id}, {
@@ -205,13 +217,13 @@ export default function main(sources, inputs): any {
   const component = componentify(component$)
 
   const to_http$ = muxed_router.retrieve_user$
-    .map(username => {
+    .map((info: any) => {
       return {
           url: `/api/user`,
           method: `post`,
           send: {
             route: "/profile/retrieve",
-            data: username
+            data: info.page_name
           },
           category: `getUserByUsername`
       }
