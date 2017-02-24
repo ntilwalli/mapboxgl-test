@@ -84,7 +84,7 @@ export default function process(sources) {
     Global: actions.success$.withLatestFrom(message$.map((x: any) => x.data), (_, message) => {
       return {
         type: `redirect`,
-        data: message && message.data.redirect_url || '/'
+        data: message && message.data && message.data.redirect_url || '/'
       }
     }),
     MessageBus: toMessageBus$

@@ -54,17 +54,19 @@ export default function process(sources) {
   const local$ = message$
     .filter(x => x.type === 'local')
     .map(x => x.data)
-    .map(x => ({
+    .map(x => {
+      return {
         url: LOGIN_ENDPOINT,
         method: `post`,
         type: `json`,
         send: {
           username: x.username,
           password: x.password,
-          redirect_url: x.data.redirect_url
+          //redirect_url: x.data.redirect_url
         },
         category: `login`
-    }))
+      }
+    })
     .map(x => {
       return x
     })
@@ -116,7 +118,7 @@ export default function process(sources) {
       twitter$, 
       github$, 
       actions.redirect$.withLatestFrom(message$.map((x: any) => x.data), (_, message) => {
-        return message && message.data.redirect_url || '/'
+        return message && message.data && message.data.redirect_url || '/'
       })
     ).map(x => ({type: 'redirect', data: x})),
     MessageBus: toMessageBus$
