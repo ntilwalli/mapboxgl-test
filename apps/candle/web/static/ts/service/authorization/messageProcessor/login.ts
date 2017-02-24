@@ -12,7 +12,9 @@ function intent(sources) {
     .publish().refCount()
 
   const response_good$ = response$
-    .filter(x => x.status === 200)
+    .filter(x => {
+      return x.status === 200
+    })
     .map(x => x.body)
     .publish().refCount()
 
@@ -21,12 +23,16 @@ function intent(sources) {
     .publish().refCount()
 
   const failedLogin$ = response_good$
-    .filter(x => x.type === `error`)
+    .filter(x => {
+      return x.type === `error`
+    })
     .map(x => x.data)
     .publish().refCount()
 
   const success$ = response_good$
-    .filter(x => x.type === `success`)
+    .filter(x => {
+      return x.type === `success`
+    })
     .publish().refCount()
 
 

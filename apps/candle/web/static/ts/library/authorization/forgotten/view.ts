@@ -29,13 +29,13 @@ function renderSubmitButton(state) {
 }
 
 function renderSuccess(state) {
-  console.log('Success forgotten password state', state)
-  return div(['Success'])
+  //console.log('Success forgotten password state', state)
+  return div(['Check your email for a password reset link!'])
 }
 
 function renderError(state) {
-  console.log('Error forgotten password state', state)
-  return div(['Fail'])
+  //console.log('Error forgotten password state', state)
+  return div(['Check your email for a password reset link!'])
 }
 
 function renderBody({state, components}) {

@@ -1,7 +1,7 @@
 defmodule Candle.PresignupController do
   use Candle.Web, :controller
 
-  import Candle.Auth.Helpers, only: [convert_error: 1, manage_redirect: 1]
+  import Candle.Auth.Helpers, only: [convert_error: 1, manage_redirect: 1, delete_redirect: 1]
 
   import Ecto.Changeset, only: [apply_changes: 1]
   alias Incoming.Authorization.Presignup, as: PresignupMessage
@@ -31,9 +31,8 @@ defmodule Candle.PresignupController do
                     conn
                     |> Guardian.Plug.sign_in(user)
                     |> Plug.Conn.delete_session("partial_authorization")
-                    #|> Plug.Conn.delete_session("redirect_url")
-                    |> manage_redirect
-                    #|> render(message: %{type: "success"})
+                    |> delete_redirect
+                    |> render(message: %{type: "success"})
                 end
             end
         end

@@ -13,6 +13,7 @@ defmodule Auth.Manager do
   alias Incoming.Authorization.Signup, as: SignupMessage
   alias Incoming.Authorization.Presignup, as: PresignupMessage
   alias Incoming.Authorization.ForgottenPassword, as: ForgottenPasswordMessage
+  alias Incoming.Authorization.ResetPassword, as: ResetPasswordMessage
 
   import Ecto.Query, only: [from: 2]
 
@@ -45,6 +46,10 @@ defmodule Auth.Manager do
     GenServer.call(server, {:forgotten_password, email_address})
   end
 
+  def reset_password(server, user, password) do
+    GenServer.call(server, {:reset_password, user, password})
+  end
+
   # Server functions
   def init({:ok, email_manager}) do
     {:ok, %{email_manager: email_manager}}
@@ -60,6 +65,9 @@ defmodule Auth.Manager do
         username: username, 
         password: password
       }, Repo)
+
+
+   IO.inspect {:login_out, out}   
    {:reply, out, state}
   end
 
@@ -139,5 +147,11 @@ defmodule Auth.Manager do
         {:reply, :ok, state}
     end
   end
+
+  def handle_call({:reset_password, user, password}, _from, state) do
+    out = Utils.update_password(user, password, Repo)
+    {:reply, out, state}
+  end
+
 
 end

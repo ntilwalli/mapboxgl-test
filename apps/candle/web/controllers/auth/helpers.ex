@@ -46,4 +46,15 @@ defmodule Candle.Auth.Helpers do
     end
   end
 
+  def delete_redirect(conn) do
+    case Plug.Conn.get_session(conn, "redirect_url") do
+      nil -> 
+        conn
+      url -> 
+        conn
+        |> Plug.Conn.delete_session("redirect_url")
+        |> Plug.Conn.put_resp_cookie("redirect_url", "", max_age: -1)
+    end
+  end
+
 end

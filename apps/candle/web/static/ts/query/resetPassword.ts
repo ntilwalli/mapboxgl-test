@@ -6,12 +6,9 @@ const category = 'resetPasswordQuery'
 export default function main(sources, {props$}) {
   const to_http$ = props$.map(request => {
     return {
-      url: '/api/user',
+      url: '/api_auth/reset_password',
       method: 'post',
-      send: {
-        route: '/resetPassword',
-        data: request
-      },
+      send: request,
       category
     } 
   }).publish().refCount()

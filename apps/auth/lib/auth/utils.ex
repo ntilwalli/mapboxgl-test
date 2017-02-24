@@ -168,11 +168,28 @@ defmodule Auth.Utils do
     end
   end
 
+  def update_password(user, password, repo) do
+    query = from a in Shared.Authorization, where: a.provider == ^"identity" and a.uid == ^user.username, select: a
+    authorization = Shared.Repo.one(query)
+
+    input = %{
+      token: to_string(token_from_password(password)),
+    }
+
+    cs = Authorization.changeset(
+      authorization,
+      input
+    )
+
+    result = repo.update!(cs)
+    result
+  end
+
+
   defp create_user_authorization(auth_temp, user_temp, repo) do
 
     case repo.transaction(
       fn -> 
-        IO.puts "in transaction"
         with {:ok, user} = create_user(user_temp, repo),
              {:ok, auth} = create_authorization(user, auth_temp, repo),
              do: {:ok, user}

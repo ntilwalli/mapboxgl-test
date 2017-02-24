@@ -25,8 +25,8 @@ defmodule Candle.LoginController do
               {:ok, user} ->
                 conn
                 |> Guardian.Plug.sign_in(user)
-                |> manage_redirect
-                #|> render(message: %{type: "success"})
+                #|> manage_redirect
+                |> render(message: %{type: "success"})
             end
         end    
       _ ->  

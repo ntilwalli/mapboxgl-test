@@ -1,7 +1,7 @@
 defmodule Candle.SignupController do
   use Candle.Web, :controller
   import Ecto.Changeset, only: [apply_changes: 1]
-  import Candle.Auth.Helpers, only: [convert_error: 1, save_redirect: 2, manage_redirect: 1]
+  import Candle.Auth.Helpers, only: [convert_error: 1, save_redirect: 2, manage_redirect: 1, delete_redirect: 1]
   alias Candle.Auth.Helpers
   alias Incoming.Authorization.Signup, as: SignupMessage
 
@@ -24,8 +24,8 @@ defmodule Candle.SignupController do
               {:ok, user} ->
                 conn
                 |> Guardian.Plug.sign_in(user)
-                |> manage_redirect
-                #|> render(message: %{type: "success"})
+                |> delete_redirect
+                |> render(message: %{type: "success"})
             end
         end
       _ ->  

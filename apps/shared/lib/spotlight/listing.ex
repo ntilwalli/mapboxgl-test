@@ -12,6 +12,7 @@ defmodule Shared.Listing do
     :__meta__, :sort_id, :source, :parent, :children,
     :user, :group_child_listings, :user_child_listing,
     :single_listing_search, :single_listing_categories, 
+    :forgotten_password_token,
     :single_listing_event_types, :check_ins, :inserted_at, :updated_at
   ]}
 
@@ -40,6 +41,7 @@ defmodule Shared.Listing do
     has_many :single_listing_event_types, Shared.SingleListingEventTypes
     has_many :check_ins, Shared.CheckIn
     has_many :children, Shared.Listing, foreign_key: :parent_id
+    has_one :forgotten_password_token, Shared.ForgottenPasswordToken
 
     timestamps()
   end

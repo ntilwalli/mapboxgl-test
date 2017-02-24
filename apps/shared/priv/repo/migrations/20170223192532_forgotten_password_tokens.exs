@@ -8,5 +8,7 @@ defmodule Shared.Repo.Migrations.ForgottenPasswordTokens do
       add :expires_at, :utc_datetime
       timestamps()
     end
+
+    create unique_index(:forgotten_password_tokens, [:token])
   end
 end

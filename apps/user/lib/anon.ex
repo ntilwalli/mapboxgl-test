@@ -58,6 +58,11 @@ defmodule User.Anon do
     GenServer.call(name, {:search, query})
   end
 
+  def route(anonymous_id, "/reset_password", query) do
+    name = ensure_started(anonymous_id)
+    GenServer.call(name, {:reset_password, query})
+  end
+
   def route(anonymous_id, "/retrieve_listing", listing_id) do
     name = ensure_started(anonymous_id)
     GenServer.call(name, {:retrieve_listing, listing_id})
@@ -74,7 +79,6 @@ defmodule User.Anon do
   end
 
   def route(user, "/profile/retrieve", username) do
-    IO.inspect {:profile_retrieve_client, username}
     pid = ensure_started(user)
     GenServer.call(pid, {:profile_retrieve, username})
   end
@@ -190,7 +194,6 @@ defmodule User.Anon do
         {:reply, out, state}
     end
   end
-
 
   defp retrieve_listing(listing_id, l_reg) do
     case Listing.Registry.lookup(l_reg, listing_id) do
