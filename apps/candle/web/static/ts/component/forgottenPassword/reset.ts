@@ -7,6 +7,7 @@ import queryString = require('query-string')
 import Navigator from '../../library/navigators/simple'
 import ResetPasswordQuery from '../../query/resetPassword'
 import TextInput from '../../library/bootstrapTextInputGated'
+import TokenValidityQuery from '../../query/forgottenPasswordTokenValidity'
 
 function intent(sources) {
   const {DOM} = sources
@@ -69,14 +70,16 @@ function reducers(actions, inputs) {
   })
 
   const highlight_error_r = inputs.highlight_error$.skip(1).map(val => state => state.set('highlight_error', val))
-  const success_r = inputs.success$.map(val => state => state.set('success', true))
+  const success_r = inputs.success$.map(val => state => state.set('status', 'success'))
+  const invalid_r = inputs.invalid$.map(val => state => state.set('status', 'invalid'))
   
 
   return O.merge(
     password_r, 
     confirm_password_r, 
     highlight_error_r,
-    success_r
+    success_r,
+    invalid_r
   )
 }
 
@@ -93,7 +96,7 @@ function model(actions, inputs) {
         valid: false,
         highlight_error: false,
         errors: [],
-        success: false
+        status: undefined
       }))
       .scan((acc, f: Function) => f(acc))
       .map((x: any) => x.toJS())
@@ -134,8 +137,11 @@ function view(state$, components) {
       const {state, components} = info
       return div('.forgotten-password-reset', [
         components.navigator,
-        state.success ? div('.mb-4', [
+        state.status === 'success' ? div('.mb-4', [
           div(['Password reset successfully']),
+          button('.appBackToLogin.btn.btn-link', ['Back to login'])
+        ]) : state.status === 'invalid' ? div('.mb-4', [
+          div(['Reset token is invalid.  Generate a new one from the login page.']),
           button('.appBackToLogin.btn.btn-link', ['Back to login'])
         ]) : renderForm(info)
       ])
@@ -224,12 +230,14 @@ export default function main(sources, inputs) {
   })
 
   const success$ = createProxy()
+  const invalid$ = createProxy()
   const state$ = model(actions, {
     ...inputs, 
     password$: password.output$, 
     confirm_password$: confirm_password.output$,
     highlight_error$,
-    success$
+    success$,
+    invalid$
   })
 
   const navigator = Navigator(sources, inputs)
@@ -256,14 +264,25 @@ export default function main(sources, inputs) {
       })
   })
 
+  const token_validity_query = TokenValidityQuery(sources, {
+    props$: state$.take(1)
+      .map((state: any) => {
+        return {
+          token: state.token
+        }
+      })
+  })
+
+
   const to_storage$ = O.of({
     action: 'removeItem',
     key: 'forgotten_password_token'
   })
 
   success$.attach(reset_password_query.success$)
-
-  const merged = mergeSinks(navigator, reset_password_query)
+  invalid$.attach(O.merge(token_validity_query.error$, reset_password_query.error$))
+  
+  const merged = mergeSinks(navigator, reset_password_query, token_validity_query)
   return {
     ...merged,
     DOM: vtree$,

@@ -9,7 +9,7 @@ defmodule Candle.UserController do
 
   alias Incoming.Authorization.ForgottenPassword
   alias Incoming.Authorization.ResetPassword
-
+  alias Incoming.Authorization.VerifyForgottenPasswordToken
   def geotag(conn, %{"lat" => lat, "lng" => lng} = params, _current_user, _claims) do
     cs = LngLatMessage.changeset(%LngLatMessage{}, params)
     case cs.valid? do
@@ -81,6 +81,24 @@ defmodule Candle.UserController do
         render(conn, "route.json", message: %{type: "success", data: "Password has been reset"})
     end
   end
+
+  def verify_forgotten_password_token(conn, params, _current_user, _claims) do
+    cs = VerifyForgottenPasswordToken.changeset(%VerifyForgottenPasswordToken{}, params)
+    msg = apply_changes(cs)
+    query = 
+      from t in Shared.ForgottenPasswordToken, 
+      where: t.token == ^msg.token and t.expires_at > ^DateTime.utc_now(), 
+      select: t, 
+      preload: :user
+
+    case Shared.Repo.one(query) do
+      nil ->
+        render(conn, "route.json", message: %{type: "error", data: "Invalid or expired token"})
+      record -> 
+        render(conn, "route.json", message: %{type: "success", data: "Valid token"})
+    end
+  end
+
 
   def route(conn, %{"route" => route, "data" => message}, current_user, _claims) do
     response = 

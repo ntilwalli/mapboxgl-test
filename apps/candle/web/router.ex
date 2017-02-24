@@ -49,6 +49,7 @@ defmodule Candle.Router do
     post "/logout", AuthController, :logout
     post "/forgotten_password", UserController, :forgotten_password
     post "/reset_password", UserController, :reset_password
+    post "/verify_forgotten_password_token", UserController, :verify_forgotten_password_token
   end
 
   scope "/api", Candle do
