@@ -336,7 +336,7 @@ function inflateRecurrence(recurrence) {
 
   
   if (rdates && rdates.length) {
-    recurrence.rdate = recurrence.rdates.map(x => moment(x))
+    recurrence.rdates = recurrence.rdates.map(x => moment(x))
   }
 
   if (exdates && exdates.length) {
@@ -356,11 +356,11 @@ function deflateRecurrence(recurrence) {
   }
 
   if (rdates && rdates.length) {
-    recurrence.rdates = recurrence.rdate.map(x => x.toDate().toISOString())
+    recurrence.rdates = recurrence.rdates.map(x => x.toDate().toISOString())
   }
 
   if (exdates && exdates.length) {
-    recurrence.exdates = recurrence.exdate.map(x => x.toDate().toISOString())
+    recurrence.exdates = recurrence.exdates.map(x => x.toDate().toISOString())
   }
 }
 

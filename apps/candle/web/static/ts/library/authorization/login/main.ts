@@ -14,7 +14,7 @@ import TextInput, {SmartTextInputValidation} from '../../bootstrapTextInputGated
 const validator = x => ({value: x, errors: []})
 
 const username_input_props = O.of({
-  placeholder: `Username`,
+  placeholder: `Username/e-mail`,
   name: `username`,
   autofocus: true,
   //required: true,
