@@ -16,8 +16,6 @@ import WTF from '../../library/wtf'
 import UserNotFound from '../../library/listingNotFound'
 import TimeoutLoader from '../../library/timeoutLoader'
 
-import UserProfileQuery from '../../query/userProfileQuery'
-
 import {inflateListing} from '../helpers/listing/utils'
 
 const routes = [
@@ -102,40 +100,33 @@ function muxRouter(sources, inputs) {
   const route$ = Router.define(routes)
     .publishReplay(1).refCount()
   const success$ = route$.filter(route => route.value.info.type === 'success')
-    .do(route => {
-      console.log('success route', route)
-    })
+    // .do(route => {
+    //   console.log('success route', route)
+    // })
     .publishReplay(1).refCount()
   const user$ = success$
     .filter(route => !!route.location.state)
     .map(route => route.location.state)
-    .do(x => {
-      console.log('result from router', x)
-    })
+    // .do(x => {
+    //   console.log('result from router', x)
+    // })
     .publishReplay(1).refCount()
-  const li_wo_push_state$ = success$
-    .filter(route => {
-      return !route.location.state
-    })
-
+  const li_wo_push_state$ = success$.filter(route => !route.location.state)
   const page_name$ = li_wo_push_state$
     .map(route => route.value.match[1])
     .publishReplay(1).refCount()
 
-  const pair_with_authorization$ = page_name$
-    .withLatestFrom(inputs.Authorization.status$, (page_name, authorization) =>{
-      return {page_name, authorization}
-    }).publishReplay(1).refCount()
+  const pair_with_authorization$ = page_name$.withLatestFrom(inputs.Authorization.status$, (page_name, authorization) =>{
+    return {page_name, authorization}
+  }).publishReplay(1).refCount()
 
 
-  const retrieve_user$ = pair_with_authorization$
-  // .filter(({page_name, authorization}) => {
-  //   return !authorization || page_name !== authorization.username
-  // })
-  // .map(x => {
-  //   return x
-  // })
-  .publishReplay(1).refCount()
+  const retrieve_user$ = pair_with_authorization$.filter(({page_name, authorization}) => {
+    return !authorization || page_name !== authorization.username
+  })
+  .map(x => {
+    return x
+  }).publishReplay(1).refCount()
 
   const self$ = pair_with_authorization$.filter(({page_name, authorization}) => {
     return authorization && page_name === authorization.username
@@ -149,7 +140,7 @@ function muxRouter(sources, inputs) {
     .publishReplay(1).refCount()
 
   return {
-    user_result$: O.merge(user$),
+    user_result$: O.merge(user$, self$),
     retrieve_user$,
     no_username$,
     route$
@@ -174,14 +165,9 @@ export default function main(sources, inputs): any {
   const muxed_router = muxRouter(sources, inputs)
   const muxed_http = muxHTTP(sources)
 
-  const user_profile_query = UserProfileQuery(sources, {
-    ...inputs, 
-    props$: muxed_router.retrieve_user$.map((x: any) => x.page_name)
-  })
-
   const component$ = O.merge(
     muxed_router.retrieve_user$.map(_ => TimeoutLoader(sources, inputs)),
-    user_profile_query.error$.map(_ => {
+    muxed_http.user_result_error_from_http$.map(_ => {
       return {
         Router: O.of({
           pathname: '/',
@@ -229,18 +215,30 @@ export default function main(sources, inputs): any {
   ).publishReplay(1).refCount()
 
   const component = componentify(component$)
-  const merged = mergeSinks(component, user_profile_query)
+
+  const to_http$ = muxed_router.retrieve_user$
+    .map((info: any) => {
+      return {
+          url: `/api/user`,
+          method: `post`,
+          send: {
+            route: "/profile/retrieve",
+            data: info.page_name
+          },
+          category: `getUserByUsername`
+      }
+    })
+    //.do(x => console.log(`retrieve listing toHTTP`, x))
 
   return {
-    ...merged,
-    DOM: component.DOM,
+    ...component,
     Router: O.merge(
-      merged.Router.map(x => {
+      component.Router.map(x => {
         return x
       }),
       combineObj({
         route: muxed_router.route$, 
-        result: user_profile_query.success$
+        result: muxed_http.user_result_from_http$
       }).map((info: any) => {
         const {route, result} = info
         return {
@@ -259,6 +257,10 @@ export default function main(sources, inputs): any {
       })
     ).map(x => {
       return x
-    })
+    }),
+    HTTP: O.merge(
+      component.HTTP,
+      to_http$
+    )
   }
 }
