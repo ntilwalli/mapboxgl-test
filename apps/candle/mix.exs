@@ -14,7 +14,6 @@ defmodule Candle.Mixfile do
      compilers: [:phoenix, :gettext] ++ Mix.compilers,
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     aliases: aliases(),
      deps: deps()
     ]
   end
@@ -29,20 +28,7 @@ defmodule Candle.Mixfile do
        :logger,
        :phoenix,
        :phoenix_html,
-       :ueberauth,
-       :ueberauth_facebook,
-       :ueberauth_github,
-       :ueberauth_identity,
-       :ueberauth_twitter,
-       :gettext,
-       :shared,
-       :notification,
-       :auth,
-       :user,
-       :listing,
-       :httpoison,
-       :bamboo,
-       :bamboo_smtp
+       :gettext
     ]]
   end
 
@@ -59,32 +45,7 @@ defmodule Candle.Mixfile do
      {:phoenix_live_reload, "~> 1.0", only: :dev},
      {:gettext, "~> 0.9"},
      {:poison, "~> 2.2", override: true},
-     {:cowboy, "~> 1.0"},
-     {:ueberauth, "~> 0.4.0", override: true},
-     {:ueberauth_github, "~> 0.4.0"},
-     {:ueberauth_facebook, "~> 0.5.0"},
-     {:ueberauth_twitter, "~> 0.2"},
-     {:ueberauth_identity, "~> 0.2.3"},
-     {:guardian, "~> 0.12.0"},
-     {:ecto, "~> 2.1.0-rc", override: true},
-     {:shared, in_umbrella: true},
-     {:auth, in_umbrella: true},
-     {:user, in_umbrella: true},
-     {:httpoison, "~> 0.9.0"},
-     {:bamboo, "~> 0.8"},
-     {:bamboo_smtp, "~> 1.3"},
-     {:bamboo_sparkpost, "~> 0.5.0"}
+     {:cowboy, "~> 1.0"}
    ]
-  end
-
-  # Aliases are shortcut or tasks specific to the current project.
-  # For example, to create, migrate and run the seeds file at once:
-  #
-  #     $ mix ecto.setup
-  #
-  # See the documentation for `Mix` for more info on aliases.
-  defp aliases do
-    ["ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
-     "ecto.reset": ["ecto.drop", "ecto.setup"]]
   end
 end

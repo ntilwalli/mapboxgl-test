@@ -1,149 +1,108 @@
 import {Observable as O} from 'rxjs'
 import Cycle from '@cycle/rxjs-run'
 import {makeDOMDriver, div} from '@cycle/dom'
-import {makeHTTPDriver} from '@cycle/http'
-import makeGlobalDriver from './globalDriver'
-import {makeRouterDriver} from 'cyclic-router'
-import * as History from 'history';
-import storageDriver from '@cycle/storage'
 import {makeMapJSONDriver} from 'cycle-mapboxgl'
-import makePhoenixDriver from './phoenixDriver'
-//import isolate from '@cycle/isolate'
-import queryString = require('query-string')
 
 
+function view() {
+  const dom$ = O.of(undefined).map(x => {
+    return div('.root-container', [
+      div('#the-map', [])
+    ])
+})
 
-import {normalizeComponent, createProxy, traceStartStop, componentify} from './utils'
+  return dom$
+}
 
-import routeFunction from './routeFunction'
-import SettingsService from  './service/settings'
-import AuthorizationService from './service/authorization/main'
-import GeolocationService from './service/geolocation'
-import SearchFiltersService from './service/filters'
-
-import getModal from './getModal'
-import intent from './intent'
-import model from './model'
-import view from './view'
-import routing from './routing'
-
-
-import messageBusify from './messageBusify'
-
-
-function main(sources) {
-  
-  // Keep a persistent subscriber for Global.geolocation$
-  // to maintain validity
-  sources.Global.geolocation$.subscribe()
-
-  const authorizationService = AuthorizationService(sources)
-  const settingsService = SettingsService(sources, {authorization$: authorizationService.output.status$})
-  settingsService.output$.subscribe()
-  const geoService = GeolocationService(sources)
-
-  const prelim_inputs = {
-    settings$: settingsService.output$, 
-    Authorization: authorizationService.output,
-    Geolocation: geoService.output
-  }
-
-  const searchFiltersService = SearchFiltersService(sources, prelim_inputs)
-  searchFiltersService.output$.subscribe()
-
-  const inputs = {
-    ...prelim_inputs,
-    search_filters$: searchFiltersService.output$
-  }
-
-  inputs.Authorization.status$.subscribe()
-  
-  sources.MessageBus.address('main')
-  const out = routing(sources, inputs)
-
-  const actions = intent(sources)
-
-  // Print main MessageBus errors to console for now...
-  actions.main_error$
-    .map(message => 'Error: ' + message)
-    .subscribe(message => {
-      console.error(message)
-    })
-
-  const state$ = model(actions, {})
-  const modal$ = state$.map((state: any) => getModal(state.modal, sources, inputs))
-    .publishReplay(1).refCount()
-
-  const modal = componentify(modal$)
-
-  const components = {
-    content$: out.DOM,
-    modal$: modal.DOM
-  }
-  const vtree$ = view(state$, components, sources.Router.history$)
-
-  const toRouter$ = state$.pluck(`modal`)
-    .distinctUntilChanged()
-    .filter(x => !x)
-    .switchMap(_ => {
-      return actions.url_params$
-        .filter(x => !!x.modal)
-        .map(x => {
-          // Hacky any to be handled later...
-          // From here: http://stackoverflow.com/questions/35959372/property-assign-does-not-exist-on-type-objectconstructor
-          const params = (<any>Object).assign({}, x)
-          delete params.modal
-          const out = queryString.stringify(params)
-          if (out && out.length > 0) {
-            return `?${out}`
-          } else {
-            return '/'
-          }
-        })
-    })
-
-  //out.MessageBus.subscribe(x => console.log(`toMessageBus root:`, x))
-
+function createFeatureCollection(lngLat, properties?) {
   return {
-    ...out,
-    DOM: vtree$,
-    MapJSON: O.merge(out.MapJSON),
-    Global: O.merge(out.Global, authorizationService.Global, modal.Global),
-    HTTP: O.merge(
-        out.HTTP, 
-        settingsService.HTTP, 
-        geoService.HTTP, 
-        authorizationService.HTTP, 
-        modal.HTTP
-      ),
-      // .do(x => {
-      //   console.log(`main/http sink`, x)
-      // }),
-    Router: O.merge(out.Router, toRouter$, modal.Router)
-      // .do(x => {
-      //   console.log(`main/router sink`, x)
-      // })
-      .delay(1),  // This is IMPORTANT in the case of double Routing, HTTP stream gets cut off without this for some reason, this ensures route is pushed on next event loop turn
-    Storage: O.merge(out.Storage, settingsService.Storage, geoService.Storage, modal.Storage, searchFiltersService.Storage),
-    Phoenix: O.merge(out.Phoenix),
-    MessageBus: O.merge(
-      out.MessageBus, 
-      settingsService.MessageBus,
-      authorizationService.MessageBus, 
-      modal.MessageBus
-    )
-    //.letBind(traceStartStop(`main MessageBus trace`)), 
+      type: "FeatureCollection",
+      features: [{
+          type: "Feature",
+          geometry: {
+              type: "Point",
+              coordinates: [lngLat.lng, lngLat.lat]
+          },
+          properties
+      }]
   }
 }
-const wrappedMain = messageBusify(main)
 
-Cycle.run(wrappedMain, {
+function geoToLngLat(x) {
+  const {latitude, longitude} = x.data.coords
+  return {lng: longitude, lat: latitude}
+}
+
+function toLngLatArray(x) {
+  if (x.lng && x.lat) {
+    return [x.lng, x.lat]
+  }
+
+  throw new Error(`Invalid lng/lat object`)
+}
+
+function mapview() {
+  return O.of({lat: 37.7749, lng: -122.4194})
+    .delay(10)
+    .map(state => {
+      const {lng, lat} = state
+      const anchorId = 'the-map'
+      let zoom = 10
+      const center = [lng, lat]
+      const tile = `mapbox://styles/mapbox/bright-v9`
+
+      const descriptor = {
+        controls: {},
+        map: {
+          container: anchorId, 
+          style: tile,
+          center,
+          zoom,
+          dragPan: true,
+          scrollZoom: false
+        },
+        sources: {
+          marker: {
+            type: `geojson`,
+            data: createFeatureCollection(state, {
+              icon: `marker`
+            })
+          }
+        },
+        layers: {
+          marker: {
+            id: `marker`,
+            type: `symbol`,
+            source: `marker`,
+            layout: {
+                "icon-image": `{icon}-15`,
+                "icon-size": 1.5,
+                // "text-field": `{title}`,
+                "text-font": [`Open Sans Semibold`, `Arial Unicode MS Bold`],
+                "text-offset": [0, 0.6],
+                "text-anchor": `top`
+            }
+          }
+        }
+      }
+
+      return descriptor
+    })
+}
+
+function main(sources) {
+
+  const vtree$ = view()
+  const mapvtree$ = mapview()
+
+  return {
+    DOM: vtree$,
+    MapJSON: mapvtree$ 
+  }
+}
+
+Cycle.run(main, {
   DOM: makeDOMDriver(`#app-main`),
   MapJSON: makeMapJSONDriver(
     `pk.eyJ1IjoibXJyZWRlYXJzIiwiYSI6ImNpbHJsZnJ3NzA4dHZ1bGtub2hnbGVnbHkifQ.ph2UH9MoZtkVB0_RNBOXwA`),
-  HTTP: makeHTTPDriver(),
-  Router: makeRouterDriver(History.createHistory() as any, routeFunction, {capture: true}),
-  Global: makeGlobalDriver(),
-  Storage: storageDriver,
-  Phoenix: makePhoenixDriver()
 })

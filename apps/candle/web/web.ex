@@ -18,23 +18,14 @@ defmodule Candle.Web do
 
   def model do
     quote do
-      use Ecto.Schema
-
-      import Ecto
-      import Ecto.Changeset
-      import Ecto.Query, only: [from: 1, from: 2]
     end
   end
 
   def controller do
     quote do
       use Phoenix.Controller
-      use Guardian.Phoenix.Controller
       
       alias Candle.Repo
-      import Ecto
-      import Ecto.Query, only: [from: 1, from: 2]
-
       import Candle.Router.Helpers
       import Candle.Gettext
     end
@@ -67,8 +58,6 @@ defmodule Candle.Web do
       use Phoenix.Channel
 
       alias Candle.Repo
-      import Ecto
-      import Ecto.Query, only: [from: 1, from: 2]
       import Candle.Gettext
     end
   end

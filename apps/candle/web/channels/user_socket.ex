@@ -1,9 +1,5 @@
 defmodule Candle.UserSocket do
   use Phoenix.Socket
-  import Guardian.Phoenix.Socket
-
-  ## Channels
-  channel "user:*", Candle.Notification.IndividualChannel
 
   ## Transports
   transport :websocket, Phoenix.Transports.WebSocket,
@@ -21,17 +17,8 @@ defmodule Candle.UserSocket do
   #
   # See `Phoenix.Token` documentation for examples in
   # performing token verification on connect.
-  def connect(%{"guardian_token" => jwt} = _params, socket) do
-    case sign_in(socket, jwt) do
-      {:ok, authed_socket, guardian_params} ->
-        {:ok, authed_socket}
-      _ ->
-        #unauthenticated socket
-        {:ok, socket}
-    end
-
-    # IO.inspect {:token_during_connect, token}
-    # {:ok, socket}
+  def connect(_params, socket) do
+    {:ok, socket}
   end
 
   # Socket id's are topics that allow you to identify all sockets for a given user:
